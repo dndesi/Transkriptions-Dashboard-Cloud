@@ -146,7 +146,10 @@ async function createCalendarEvent(index) {
       location:    ev.location || '',
       start: { dateTime: startDt, timeZone: 'Europe/Berlin' },
       end:   { dateTime: endDt,   timeZone: 'Europe/Berlin' },
-      attendees: (ev.attendees || []).map(name => ({ displayName: name })),
+      // Nur echte E-Mail-Adressen – Google lehnt reine Namen ab
+      attendees: (ev.attendees || [])
+        .filter(a => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a))
+        .map(a => ({ email: a })),
     };
 
     const res = await fetch(`${CALENDAR_API}/calendars/primary/events`, {
@@ -409,7 +412,9 @@ async function createGmailDraft(index) {
 
   try {
     // RFC 2822 E-Mail aufbauen (Base64url encoded)
-    const toHeader = d.to ? `To: ${d.to}\r\n` : '';
+    // To: nur setzen wenn gültige E-Mail-Adresse – sonst leer lassen
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.to || '');
+    const toHeader = isValidEmail ? `To: ${d.to}\r\n` : '';
     const rawEmail = [
       toHeader,
       `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(d.subject)))}?=\r\n`,
