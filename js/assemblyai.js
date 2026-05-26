@@ -89,8 +89,9 @@ async function fetchAndRenderCleanupList() {
       if (data.transcripts?.length < 50) break;
     }
 
-    // Bereits gelöschte Transkripte ausfiltern – die können nicht nochmal gelöscht werden
-    transcripts = transcripts.filter(t => t.status !== 'deleted');
+    // Bereits gelöschte Transkripte ausfiltern
+    // AssemblyAI setzt is_deleted:true (NICHT status:'deleted')
+    transcripts = transcripts.filter(t => !t.is_deleted && t.audio_url !== 'http://deleted_by_user');
 
     if (transcripts.length === 0) {
       list.innerHTML = '<div style="padding:16px; text-align:center; color:var(--green); font-size:0.9rem">✅ Alles sauber – keine Transkripte auf AssemblyAI.</div>';
