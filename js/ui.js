@@ -257,7 +257,7 @@ function clearSelection() {
 // ═══════════════════════════════════════════════════
 // ANSICHT UMSCHALTEN
 // ═══════════════════════════════════════════════════
-let currentView = 'grid';
+let currentView = 'timeline';
 function setView(v) {
   currentView = v;
   document.getElementById('viewGrid').classList.toggle('active', v === 'grid');

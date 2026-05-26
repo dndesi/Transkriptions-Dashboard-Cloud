@@ -8,6 +8,8 @@ function init() {
   renderBrowser();
   setupAudioSync();
   setDateInputToNow();
+  // Startansicht: chronologische Liste
+  setView('timeline');
 
   // Drag & Drop
   const zone = document.getElementById('uploadZone');

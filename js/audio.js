@@ -106,15 +106,30 @@ function renderTimeline(filter) {
     itemsEl.className = 'timeline-items';
     items.forEach(s => {
       const el = document.createElement('div');
+      // Farbverlauf je nach Typ – passend zu den Kacheln
+      const typeGradient = {
+        arbeit:   'linear-gradient(135deg, rgba(99,102,241,0.10) 0%, rgba(167,139,250,0.05) 100%)',
+        privat:   'linear-gradient(135deg, rgba(52,211,153,0.10) 0%, rgba(16,185,129,0.04) 100%)',
+        gedanken: 'linear-gradient(135deg, rgba(251,191,36,0.10) 0%, rgba(245,158,11,0.04) 100%)',
+      }[s.type || 'privat'] || 'linear-gradient(135deg, rgba(52,211,153,0.10) 0%, rgba(16,185,129,0.04) 100%)';
+      const typeBorder = {
+        arbeit:   'rgba(99,102,241,0.35)',
+        privat:   'rgba(52,211,153,0.35)',
+        gedanken: 'rgba(251,191,36,0.35)',
+      }[s.type || 'privat'] || 'rgba(52,211,153,0.35)';
+      const typeLabel = { arbeit: '💼', privat: '💬', gedanken: '💭' }[s.type || 'privat'] || '💬';
+
       el.className = 'timeline-item';
+      el.style.background = typeGradient;
+      el.style.borderLeftColor = typeBorder;
       el.onclick = () => showTranscript(s);
       const dur = s.duration ? formatDuration(s.duration) : '';
       const tagsHtml = (s.tags||[]).map(t => `<span class="sc-tag">${escHtml(t)}</span>`).join('');
       el.innerHTML = `
         <div class="ti-date">${new Date(s.date).toLocaleDateString('de-DE',{day:'numeric',month:'short'})}</div>
-        <div style="flex:1">
+        <div style="flex:1; min-width:0">
           <div class="ti-name">${escHtml(s.label)}</div>
-          <div class="ti-meta">${escHtml(s.speakerA||'A')} &amp; ${escHtml(s.speakerB||'B')}${dur?' · '+dur:''}</div>
+          <div class="ti-meta">${typeLabel} ${escHtml(s.speakerA||'A')} &amp; ${escHtml(s.speakerB||'B')}${dur?' · '+dur:''}</div>
           ${tagsHtml ? `<div class="sc-tags" style="margin-top:4px">${tagsHtml}</div>` : ''}
         </div>
       `;
