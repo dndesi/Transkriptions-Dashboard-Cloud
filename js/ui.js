@@ -338,67 +338,92 @@ function toggleArchView() {
 function renderArchView() {
   const el = document.getElementById('archView');
   el.innerHTML = `
-  <div style="max-width:900px; margin:0 auto; padding:8px 0 40px">
+  <div style="max-width:960px; margin:0 auto; padding:8px 0 40px">
     <div style="margin-bottom:28px">
-      <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:6px">📐 Systemarchitektur</h2>
-      <p style="font-size:0.85rem; color:var(--muted); line-height:1.6">
-        Alle Komponenten laufen vollständig im Browser. API-Keys werden ausschließlich lokal gespeichert.
-        Es gibt keinen eigenen Backend-Server.
+      <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px">📐 Systemarchitektur</h2>
+      <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
+        Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
+        <span style="color:var(--accent); font-weight:600">Version 3.2</span>
       </p>
     </div>
 
     <!-- Haupt-Diagramm -->
     <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px 24px; margin-bottom:24px">
 
-      <!-- Zeile 1: Externe APIs -->
+      <!-- Zeile 1: Externe APIs (5 Dienste) -->
       <div style="text-align:center; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:12px">Externe Dienste</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:20px">
+      <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:20px">
         ${archBox('🎙️', 'AssemblyAI', 'Transkription + Speaker Diarization', '#fbbf24', 'REST API v2')}
-        ${archBox('🤖', 'Anthropic Claude', 'Haiku 4.5 – KI-Analyse', '#a78bfa', 'claude-haiku-4-5-20251001')}
+        ${archBox('🤖', 'Claude Sonnet', 'KI-Analyse · 360° · Suche · Chat', '#a78bfa', 'claude-sonnet-4-6')}
         ${archBox('☁️', 'Google Drive', 'Sitzungs-Archiv als JSON-Dateien', '#34d399', 'Drive API v3')}
+        ${archBox('📆', 'Google Calendar', 'Termine direkt eingetragen', '#60a5fa', 'Calendar API v3')}
+        ${archBox('✉️', 'Gmail', 'E-Mail-Entwürfe gespeichert', '#f472b6', 'Gmail API v1')}
       </div>
 
-      <!-- Pfeile nach unten -->
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:4px; text-align:center">
-        ${archArrow('#fbbf24')}${archArrow('#a78bfa')}${archArrow('#34d399')}
+      <!-- Pfeile -->
+      <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:4px; text-align:center">
+        ${archArrow('#fbbf24')}${archArrow('#a78bfa')}${archArrow('#34d399')}${archArrow('#60a5fa')}${archArrow('#f472b6')}
       </div>
 
       <!-- Zeile 2: Browser App -->
-      <div style="background:linear-gradient(135deg, rgba(108,99,255,0.1), rgba(167,139,250,0.06)); border:2px solid var(--accent); border-radius:12px; padding:20px; margin-bottom:16px; text-align:center">
+      <div style="background:linear-gradient(135deg, rgba(108,99,255,0.12), rgba(167,139,250,0.06)); border:2px solid var(--accent); border-radius:12px; padding:20px; margin-bottom:16px; text-align:center">
         <div style="font-size:1.6rem; margin-bottom:6px">🌐</div>
         <div style="font-weight:700; font-size:1rem; margin-bottom:4px">Browser-App (GitHub Pages)</div>
-        <div style="font-size:0.78rem; color:var(--muted); line-height:1.6">
-          Statisches HTML · Vanilla JS · CSS Custom Properties<br>
-          <span style="color:var(--accent)">dndesi.github.io/Transkriptions-Dashboard-Cloud</span>
+        <div style="font-size:0.78rem; color:var(--muted); line-height:1.8">
+          Statisches HTML · Vanilla JS (ES2022) · CSS Custom Properties<br>
+          <span style="opacity:0.7">app.js · ui.js · claude.js · drive.js · transcribe.js · recorder.js</span><br>
+          <span style="color:var(--accent2); font-weight:500">features.js · search.js · calendar.js</span><br>
+          <span style="color:var(--accent); font-size:0.72rem">dndesi.github.io/Transkriptions-Dashboard-Cloud</span>
         </div>
       </div>
 
-      <!-- Zeile 3: Lokaler Speicher + Proxy -->
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
-        ${archBox('🔒', 'localStorage', 'API-Keys · Theme · Beziehungen · Einstellungen', '#60a5fa', 'Nur lokal – nie in der Cloud')}
+      <!-- Zeile 3: Lokaler Speicher + Proxy + Auth -->
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px">
+        ${archBox('🔒', 'localStorage', 'API-Keys · Theme · Beziehungen · Vorlagen · Einstellungen', '#60a5fa', 'Nur lokal – nie in der Cloud')}
+        ${archBox('🔑', 'Google OAuth 2.0', 'GIS Client · Drive + Calendar + Gmail · Token-Refresh', '#34d399', 'accounts.google.com/gsi')}
         ${archBox('⚡', 'Cloudflare Worker', 'CORS-Proxy für DELETE-Requests', '#f472b6', 'Optional – workers.dev')}
       </div>
     </div>
 
-    <!-- Datenfluss-Karten -->
-    <div style="margin-bottom:18px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted)">Datenflüsse</div>
+    <!-- JS-Module -->
+    <div style="margin-bottom:18px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted)">JavaScript-Module</div>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:24px">
+      ${flowCard('⚙️ config.js', 'Globaler State', 'API-Keys, Sessions, Drive-Token, OAuth-Scopes (Drive + Calendar + Gmail), Preise, Wechselkurs', '#60a5fa')}
+      ${flowCard('🎙️ transcribe.js', 'Transkription', 'AssemblyAI Upload → Polling → Utterances mit Speaker-Labels und Timestamps', '#fbbf24')}
+      ${flowCard('🤖 claude.js', 'KI-Analyse', 'Privat/Arbeit-Analyse, 360°-Perspektiven, Anonymisierung, Token-Tracking', '#a78bfa')}
+      ${flowCard('☁️ drive.js', 'Cloud Storage', 'Google Drive OAuth, Ordner anlegen, Sessions als JSON speichern/laden/löschen', '#34d399')}
+      ${flowCard('✨ features.js', 'Erweiterte Features', '360°-Analyse, Aufnahme befragen (Chat), Mind Map (Mermaid.js), Eigene Vorlagen', '#f59e0b')}
+      ${flowCard('🔍 search.js', 'Globale Suche', 'Instant-Textsuche über alle Felder + Claude-Semantiksuche, ⌘K Shortcut', '#6ee7b7')}
+      ${flowCard('📆 calendar.js', 'Kalender & Mail', 'Termine via Claude extrahieren → Google Calendar API · E-Mail-Entwürfe → Gmail API', '#f472b6')}
+      ${flowCard('🖼️ ui.js', 'UI-Rendering', 'Session-Browser, Kosten, Personen-Profile, Systemarchitektur, Changelog', '#c084fc')}
+      ${flowCard('🎤 recorder.js', 'Audio-Aufnahme', 'MediaRecorder API, Mikrofon-Zugriff, WebM-Aufnahme direkt im Browser', '#34d399')}
+    </div>
+
+    <!-- Datenflüsse -->
+    <div style="margin-bottom:18px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted)">Wichtige Datenflüsse</div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px">
-      ${flowCard('🎙️ → 🌐', 'Aufnahme / Upload', 'Audio-Datei wird an AssemblyAI gesendet → Transkript mit Speaker-Labels (A, B, C…) wird zurückgegeben', '#fbbf24')}
-      ${flowCard('🌐 → 🤖', 'KI-Analyse', 'Transkript (optional anonymisiert) wird an Claude Haiku gesendet → JSON-Analyse mit Vereinbarungen, Wünschen, "Zwischen den Zeilen" etc.', '#a78bfa')}
-      ${flowCard('🌐 → ☁️', 'Cloud-Speicherung', 'Fertige Sitzung wird als JSON-Datei in Google Drive gespeichert → beim nächsten Login automatisch geladen', '#34d399')}
-      ${flowCard('🌐 → ⚡ → 🗑️', 'Transkript löschen', 'DELETE-Request läuft über Cloudflare Worker (CORS-Bypass) → AssemblyAI entfernt das Transkript von seinen Servern', '#f472b6')}
+      ${flowCard('🎙️ → AssemblyAI → 🌐', 'Transkription', 'Audio → Upload → Polling → Utterances mit Speaker-Labels (A/B/C…)', '#fbbf24')}
+      ${flowCard('🌐 → Claude Sonnet', 'KI-Analyse', 'Transkript (opt. anonymisiert) → JSON: Zusammenfassung, Aufgaben, Psychologie, 360°', '#a78bfa')}
+      ${flowCard('🌐 → Google Drive', 'Cloud-Speicherung', 'Sitzung als JSON → Drive-Ordner → automatisch geladen beim nächsten Login', '#34d399')}
+      ${flowCard('🌐 → Google Calendar', 'Termine eintragen', 'Claude erkennt Termine im Transkript → RFC3339 Event → Calendar API v3 (POST)', '#60a5fa')}
+      ${flowCard('🌐 → Gmail', 'Entwürfe erstellen', 'Claude generiert E-Mails → Base64url → Gmail Drafts API → User sendet selbst ab', '#f472b6')}
+      ${flowCard('🌐 → ⚡ → AssemblyAI', 'Transkript löschen', 'DELETE via Cloudflare Worker (CORS-Bypass) → AssemblyAI entfernt Transkript', '#94a3b8')}
     </div>
 
     <!-- Tech-Stack -->
-    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px">
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; margin-bottom:14px">
       <div style="font-size:0.85rem; font-weight:700; margin-bottom:14px">🔧 Technologie-Stack</div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
         ${techRow('Frontend', 'HTML5 · Vanilla JS (ES2022) · CSS Custom Properties')}
         ${techRow('Hosting', 'GitHub Pages (kostenlos, statisch)')}
-        ${techRow('Transkription', 'AssemblyAI REST API v2 · Speaker Diarization')}
-        ${techRow('KI-Analyse', 'Anthropic Claude Haiku 4.5 via Browser-Fetch')}
-        ${techRow('Cloud-Storage', 'Google Drive API v3 · OAuth 2.0 (GIS)')}
-        ${techRow('Daten lokal', 'localStorage: Keys, Theme, Beziehungen, Einstellungen')}
+        ${techRow('Transkription', 'AssemblyAI REST API v2 · Speaker Diarization · Deutsch')}
+        ${techRow('KI-Modell', 'claude-sonnet-4-6 via Browser-Fetch (direct access)')}
+        ${techRow('Cloud-Storage', 'Google Drive API v3 · OAuth 2.0 (GIS Client)')}
+        ${techRow('Kalender', 'Google Calendar API v3 · Europe/Berlin Zeitzone')}
+        ${techRow('E-Mail', 'Gmail API v1 · RFC 2822 · Base64url · Entwurfsmodus')}
+        ${techRow('Mind Map', 'Mermaid.js v10 (CDN) · mermaid.run()')}
+        ${techRow('OAuth Scopes', 'drive.file · userinfo.profile · calendar.events · gmail.compose')}
+        ${techRow('Daten lokal', 'localStorage: Keys, Theme, Beziehungen, Vorlagen')}
         ${techRow('CORS-Proxy', 'Cloudflare Worker (optional, ~5 Min Setup)')}
         ${techRow('Wechselkurs', 'Frankfurter API (api.frankfurter.app) – USD → EUR')}
         ${techRow('Datenschutz', 'Anonymisierungs-Funktion vor API-Calls aktivierbar')}
@@ -406,10 +431,11 @@ function renderArchView() {
     </div>
 
     <!-- Sicherheitshinweis -->
-    <div style="margin-top:14px; padding:12px 16px; background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.25); border-radius:10px; font-size:0.8rem; color:var(--muted); line-height:1.6">
+    <div style="padding:12px 16px; background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.25); border-radius:10px; font-size:0.8rem; color:var(--muted); line-height:1.6">
       🔐 <strong style="color:var(--text)">Datenschutz-Architektur:</strong>
-      API-Keys verlassen deinen Browser nie – kein eigener Server empfängt oder loggt sie.
-      Gespräche liegen in deiner persönlichen Google Drive. Der optionale Anonymisierungs-Modus ersetzt echte Namen vor der KI-Analyse durch neutrale Labels.
+      API-Keys verlassen deinen Browser nie. Gespräche liegen in deiner persönlichen Google Drive.
+      Kalender und Mail-Zugriff erfordert explizite Google-Zustimmung beim Login.
+      Der optionale Anonymisierungs-Modus ersetzt Namen vor der KI-Analyse durch neutrale Labels.
     </div>
   </div>`;
 }

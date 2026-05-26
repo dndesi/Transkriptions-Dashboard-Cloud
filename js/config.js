@@ -93,10 +93,12 @@ function fmtEur(eur) {
 }
 
 const CLIENT_ID    = '607815751793-jlm965pkt597fpfnk63367rks19tbhkg.apps.googleusercontent.com';
-const SCOPE        = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
+const SCOPE        = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/gmail.compose';
 const DRIVE_API    = 'https://www.googleapis.com/drive/v3';
 const DRIVE_UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
 const FOLDER_NAME  = 'Transkriptions-Dashboard';
+const CALENDAR_API = 'https://www.googleapis.com/calendar/v3';
+const GMAIL_API    = 'https://www.googleapis.com/gmail/v1';
 
 let apiKey = localStorage.getItem('assemblyai_key') || '';
 let anthropicKey = localStorage.getItem('anthropic_key') || '';

@@ -63,7 +63,7 @@
       letter-spacing:0.04em; transition:border-color 0.2s, color 0.2s;"
       onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
       onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
-      v3.1
+      v3.2
     </button>
     <button id="headerPersonsBtn" onclick="togglePersonsView()" title="Personen-Profile" style="
       background:none; border:1px solid var(--border); border-radius:6px;
@@ -311,6 +311,8 @@
           <button class="btn btn-ghost" onclick="swapAllSpeakers()" title="Alle Sprecher A↔B tauschen">⇄ Tauschen</button>
           <button class="btn btn-ghost" onclick="openAskModal()" title="Aufnahme befragen">💬 Fragen</button>
           <button class="btn btn-ghost" id="mindmapBtn" onclick="generateAndShowMindMap()" title="Mind Map generieren">🗺️ Mind Map</button>
+          <button class="btn btn-ghost" onclick="openCalendarModal()" title="Termine aus Transkript ableiten">📆 Kalender</button>
+          <button class="btn btn-ghost" onclick="openGmailModal()" title="E-Mail-Entwürfe erstellen">✉️ E-Mails</button>
           <div class="claude-btn-wrap" id="claudeBtnWrap">
             <button class="btn btn-primary" onclick="toggleTemplatePopover('claudeBtnWrap')">✦ Senden an Claude ▾</button>
             <div class="template-popover" id="claudePopover">
@@ -447,6 +449,24 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v3.2 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v3.2</span>
+          <span class="cl-date">26.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Google Kalender</span>
+          <span class="cl-tag cl-tag-feature">Gmail</span>
+          <span class="cl-tag cl-tag-improvement">Systemarchitektur</span>
+        </div>
+        <ul>
+          <li>📆 <strong>Google Kalender Integration</strong> – Claude erkennt automatisch alle Termine, Meetings und Deadlines im Transkript und erstellt sie direkt im Google Kalender. Mit Edit-Funktion vor dem Speichern.</li>
+          <li>✉️ <strong>Gmail Entwürfe</strong> – Claude generiert professionelle E-Mail-Entwürfe für alle Kommunikationsaufgaben aus dem Gespräch. Werden als Entwürfe in Gmail gespeichert – du sendest selbst ab.</li>
+          <li>🔐 <strong>Neue OAuth-Scopes</strong> – calendar.events und gmail.compose wurden zur Authentifizierung hinzugefügt. Beim nächsten Google-Login neue Berechtigungen erteilen.</li>
+          <li>📐 <strong>Systemarchitektur aktualisiert</strong> – Vollständige Überarbeitung: claude-sonnet-4-6, alle 9 JS-Module, 5 externe Dienste, alle Datenflüsse und OAuth-Scopes dokumentiert.</li>
+        </ul>
+        <div class="cl-tech">Neue Dateien: js/calendar.js (extractCalendarEvents, createCalendarEvent, extractEmailDrafts, createGmailDraft, editCalendarEvent, editGmailDraft, buildRFC3339). config.js: SCOPE erweitert + CALENDAR_API + GMAIL_API Konstanten. index.html: 2 neue Buttons (📆 Kalender, ✉️ E-Mails) in transcript-actions, 2 neue Modals (calModal, mailModal), calendar.js Script-Tag. styles.css: ~100 Zeilen neue Styles (.cal-event-card, .mail-draft-card, .cal-ev-edit, .cal-edit-input etc.). ui.js: renderArchView() komplett neu für v3.2 mit 5 externen Diensten und 9 JS-Modulen.</div>
+      </div>
 
       <!-- ── v3.1 ── -->
       <div class="cl-entry">
@@ -1195,6 +1215,7 @@
 <script src="js/app.js"></script>
 <script src="js/features.js"></script>
 <script src="js/search.js"></script>
+<script src="js/calendar.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>if(window.mermaid) mermaid.initialize({ startOnLoad: false });</script>
 
@@ -1291,6 +1312,58 @@
       <textarea id="newTemplatePrompt" placeholder="Anweisung an Claude  (z.B. „Extrahiere alle medizinischen Befunde und Empfehlungen.")"
         style="width:100%; height:80px; resize:none; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.85rem; outline:none; font-family:inherit; box-sizing:border-box; margin-bottom:10px"></textarea>
       <button onclick="addCustomTemplate()" class="btn btn-primary" style="width:100%; justify-content:center">➕ Vorlage speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: Google Kalender ──────────────────── -->
+<div class="modal-backdrop" id="calModal">
+  <div class="modal" style="max-width:680px; width:96%; max-height:92vh; display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-shrink:0">
+      <div>
+        <h3 style="margin:0; font-size:1.05rem">📆 Google Kalender</h3>
+        <div id="calSessionName" style="font-size:0.78rem; color:var(--muted); margin-top:2px"></div>
+      </div>
+      <button onclick="closeCalendarModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">×</button>
+    </div>
+    <div id="calSummary" style="font-size:0.82rem; color:var(--muted); margin-bottom:10px; padding:8px 12px; background:var(--surface2); border-radius:6px; display:none"></div>
+    <div style="display:flex; gap:8px; margin-bottom:14px; flex-shrink:0">
+      <button id="calExtractBtn" class="btn btn-primary" onclick="extractCalendarEvents(calendarSession)" style="flex:1; justify-content:center">
+        🔍 Termine extrahieren
+      </button>
+      <button class="btn btn-ghost" onclick="renderCalendarEvents(calendarEvents)" title="Ansicht neu laden" style="padding:7px 12px">↺</button>
+    </div>
+    <div id="calEventsList" style="flex:1; overflow-y:auto">
+      <div class="cal-empty">Klicke auf „Termine extrahieren" um das Transkript zu analysieren.</div>
+    </div>
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); flex-shrink:0; font-size:0.75rem; color:var(--muted)">
+      ℹ️ Termine werden direkt in deinen primären Google Kalender eingetragen. Du musst Google-Kalender-Berechtigungen beim nächsten Login erteilen.
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: Gmail ─────────────────────────────── -->
+<div class="modal-backdrop" id="mailModal">
+  <div class="modal" style="max-width:680px; width:96%; max-height:92vh; display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-shrink:0">
+      <div>
+        <h3 style="margin:0; font-size:1.05rem">✉️ Gmail Entwürfe</h3>
+        <div id="mailSessionName" style="font-size:0.78rem; color:var(--muted); margin-top:2px"></div>
+      </div>
+      <button onclick="closeGmailModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">×</button>
+    </div>
+    <div id="mailSummary" style="font-size:0.82rem; color:var(--muted); margin-bottom:10px; padding:8px 12px; background:var(--surface2); border-radius:6px"></div>
+    <div style="display:flex; gap:8px; margin-bottom:14px; flex-shrink:0">
+      <button id="mailExtractBtn" class="btn btn-primary" onclick="extractEmailDrafts(calendarSession)" style="flex:1; justify-content:center">
+        📝 E-Mails ableiten
+      </button>
+      <button class="btn btn-ghost" onclick="renderGmailDrafts(gmailDrafts)" title="Ansicht neu laden" style="padding:7px 12px">↺</button>
+    </div>
+    <div id="mailDraftsList" style="flex:1; overflow-y:auto">
+      <div class="cal-empty">Klicke auf „E-Mails ableiten" um das Transkript zu analysieren.</div>
+    </div>
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); flex-shrink:0; font-size:0.75rem; color:var(--muted)">
+      ℹ️ E-Mails werden als Entwürfe in Gmail gespeichert – du sendest sie selbst ab. Gmail-Compose-Berechtigungen erforderlich.
     </div>
   </div>
 </div>
