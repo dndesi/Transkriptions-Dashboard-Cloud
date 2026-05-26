@@ -110,6 +110,7 @@ async function runAnalysisFromModal() {
   if (document.getElementById('chkSentiment')?.checked) types.push('sentiment');
   if (document.getElementById('chkChapters')?.checked)  types.push('chapters');
   if (document.getElementById('chkTopics')?.checked)    types.push('topics');
+  if (document.getElementById('chk360')?.checked)       types.push('360');
 
   if (!types.length) { showAnalyseError('Bitte mindestens eine Option wählen.'); return; }
   if (!anthropicKey) { showAnalyseError('Kein Anthropic API-Key gesetzt — bitte unter 🔑 eintragen.'); return; }

@@ -411,22 +411,19 @@ async function createGmailDraft(index) {
   if (btn) { btn.disabled = true; btn.textContent = '⏳…'; }
 
   try {
-    // RFC 2822 E-Mail aufbauen (Base64url encoded)
-    // To: nur setzen wenn gültige E-Mail-Adresse – sonst leer lassen
+    // RFC 2822 aufbauen – einfache Variante ohne doppeltes Encoding
     const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.to || '');
-    const toHeader = isValidEmail ? `To: ${d.to}\r\n` : '';
-    const rawEmail = [
-      toHeader,
-      `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(d.subject)))}?=\r\n`,
-      'MIME-Version: 1.0\r\n',
-      'Content-Type: text/plain; charset=UTF-8\r\n',
-      'Content-Transfer-Encoding: base64\r\n',
-      '\r\n',
-      btoa(unescape(encodeURIComponent(d.body)))
-    ].join('');
+    const lines = [];
+    if (isValidEmail) lines.push(`To: ${d.to}`);
+    lines.push(`Subject: ${d.subject}`);
+    lines.push('MIME-Version: 1.0');
+    lines.push('Content-Type: text/plain; charset=utf-8');
+    lines.push('');          // Leerzeile zwischen Header und Body
+    lines.push(d.body);
+    const rawEmail = lines.join('\r\n');
 
-    // Base64url encoden
-    const encoded = btoa(rawEmail)
+    // Base64url encoden (UTF-8-sicher via encodeURIComponent)
+    const encoded = btoa(unescape(encodeURIComponent(rawEmail)))
       .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
     const res = await fetch(`${GMAIL_API}/users/me/drafts`, {
