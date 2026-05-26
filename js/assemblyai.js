@@ -1,24 +1,23 @@
 // ASSEMBLYAI: TRANSKRIPT LÖSCHEN
 // ═══════════════════════════════════════════════════
 async function deleteFromAssemblyAI(transcriptId) {
-  if (!transcriptId) return false;
-  // Wenn kein Proxy gesetzt: direkt versuchen (funktioniert in nativen Apps / Electron)
-  // Von GitHub Pages aus wird DELETE durch CORS blockiert → Proxy nötig
+  if (!transcriptId) return { ok: false, error: 'Keine ID' };
   const deleteUrl = proxyUrl
     ? proxyUrl.replace(/\/$/, '') + '/' + transcriptId
     : `https://api.assemblyai.com/v2/transcript/${transcriptId}`;
+  console.log('[AssemblyAI DELETE] URL:', deleteUrl);
   try {
     const res = await fetch(deleteUrl, {
       method: 'DELETE',
       headers: { 'authorization': apiKey },
     });
-    if (res.ok) return true;
-    const body = await res.json().catch(() => ({}));
-    console.warn(`AssemblyAI DELETE fehlgeschlagen (${res.status}):`, body);
-    return false;
+    const bodyText = await res.text().catch(() => '');
+    console.log(`[AssemblyAI DELETE] Status: ${res.status}`, bodyText);
+    if (res.ok || res.status === 404) return { ok: true }; // 404 = schon gelöscht, auch ok
+    return { ok: false, error: `HTTP ${res.status}: ${bodyText.slice(0, 120)}` };
   } catch(e) {
-    console.warn('AssemblyAI DELETE Netzwerkfehler:', e.message);
-    return false;
+    console.warn('[AssemblyAI DELETE] Netzwerkfehler:', e.message);
+    return { ok: false, error: 'Netzwerkfehler: ' + e.message };
   }
 }
 
@@ -144,29 +143,36 @@ async function deleteSingleTranscript(transcriptId) {
   const btn = document.getElementById(`cbtn-${transcriptId}`);
   if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
 
-  const ok = await deleteFromAssemblyAI(transcriptId);
+  const result = await deleteFromAssemblyAI(transcriptId);
 
-  if (ok) {
+  if (result.ok) {
     const row = document.getElementById(`crow-${transcriptId}`);
     if (row) {
-      row.innerHTML = `<div style="padding:8px 12px; color:var(--green); font-size:0.83rem">✅ Gelöscht (${transcriptId})</div>`;
+      row.innerHTML = `<div style="padding:8px 12px; color:var(--green); font-size:0.83rem">✅ Gelöscht</div>`;
     }
-    // Lokale Session aktualisieren
     const local = sessions.find(s => s.transcriptId === transcriptId);
     if (local) {
       local.transcriptId = null;
       saveSessions();
       saveToArchive(local).catch(() => {});
     }
-    // Prüfen ob noch Einträge übrig
     const remaining = document.querySelectorAll('[id^="cbtn-"]:not(:disabled)').length;
     if (remaining === 0) {
       document.getElementById('cleanupStatus').textContent = '✅ Alle Transkripte gelöscht';
       document.getElementById('cleanupDeleteAllBtn').style.display = 'none';
     }
   } else {
-    if (btn) { btn.disabled = false; btn.textContent = '🗑 Löschen'; btn.style.color = 'var(--red)'; }
-    showToast('Löschen fehlgeschlagen: ' + transcriptId, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '🗑 Löschen'; }
+    // Fehler direkt in der Zeile anzeigen
+    const row = document.getElementById(`crow-${transcriptId}`);
+    if (row) {
+      const errDiv = row.querySelector('.delete-error') || document.createElement('div');
+      errDiv.className = 'delete-error';
+      errDiv.style.cssText = 'color:var(--red); font-size:0.72rem; margin-top:4px; padding:0 12px';
+      errDiv.textContent = '❌ ' + (result.error || 'Unbekannter Fehler');
+      row.appendChild(errDiv);
+    }
+    showToast('Fehler: ' + (result.error || 'Löschen fehlgeschlagen'), 'error');
   }
 }
 
@@ -188,8 +194,8 @@ async function runCleanup() {
   for (const id of ids) {
     const rowBtn = document.getElementById(`cbtn-${id}`);
     if (rowBtn && rowBtn.disabled) continue; // schon gelöscht
-    const deleted = await deleteFromAssemblyAI(id);
-    if (deleted) {
+    const result = await deleteFromAssemblyAI(id);
+    if (result.ok) {
       ok++;
       const row = document.getElementById(`crow-${id}`);
       if (row) row.innerHTML = `<div style="padding:8px 12px; color:var(--green); font-size:0.83rem">✅ Gelöscht</div>`;
@@ -299,11 +305,11 @@ async function processFile(file) {
       : '⬇️ Als Download gespeichert\n🗑️ Lösche bei AssemblyAI…');
 
     // Schritt 6: Bei AssemblyAI löschen
-    const deleted = await deleteFromAssemblyAI(session.transcriptId);
+    const delResult = await deleteFromAssemblyAI(session.transcriptId);
     setProgress(100, 'Fertig!',
       `✅ Transkription abgeschlossen\n` +
       `${saved ? '📂 In Google Drive gespeichert ✓' : '⬇️ Als Datei heruntergeladen'}\n` +
-      `${deleted ? '🗑️ Bei AssemblyAI gelöscht ✓' : '⚠️ AssemblyAI-Löschung fehlgeschlagen (manuell löschen)'}`
+      `${delResult.ok ? '🗑️ Bei AssemblyAI gelöscht ✓' : '⚠️ AssemblyAI-Löschung fehlgeschlagen (manuell löschen)'}`
     );
 
     setTimeout(() => {

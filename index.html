@@ -126,7 +126,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v3.3</button>
+        onmouseout="this.style.color='var(--muted)'">v3.4</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -475,6 +475,22 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v3.4 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v3.4</span>
+          <span class="cl-date">26.05.2026</span>
+          <span class="cl-tag cl-tag-improvement">Bugfixes</span>
+          <span class="cl-tag cl-tag-feature">Listenansicht</span>
+        </div>
+        <ul>
+          <li>📋 <strong>Startansicht ist jetzt die Listenansicht</strong> (chronologisch), nicht mehr die Kachelansicht</li>
+          <li>🎨 <strong>Farb-Coding in der Listenansicht</strong> – Zeilen werden nach Typ (💼 Arbeit, 💬 Privat, 💭 Gedanken) farblich eingefärbt</li>
+          <li>🗑️ <strong>AssemblyAI Bereinigung verbessert</strong> – Fehlermeldungen werden jetzt direkt in der Zeile angezeigt (HTTP-Status + Ursache sichtbar), 404 = schon gelöscht wird als Erfolg gewertet</li>
+        </ul>
+        <div class="cl-tech">Geänderte Dateien: ui.js (currentView auf 'timeline'), app.js (setView('timeline') in init), audio.js (renderTimeline Farbverläufe per Typ), assemblyai.js (deleteFromAssemblyAI gibt {ok, error} zurück, besseres Fehler-Logging).</div>
+      </div>
 
       <!-- ── v3.3 ── -->
       <div class="cl-entry">
