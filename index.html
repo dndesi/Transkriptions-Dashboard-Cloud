@@ -126,7 +126,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v3.2</button>
+        onmouseout="this.style.color='var(--muted)'">v3.3</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -475,6 +475,26 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v3.3 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v3.3</span>
+          <span class="cl-date">26.05.2026</span>
+          <span class="cl-tag cl-tag-improvement">Bugfixes</span>
+          <span class="cl-tag cl-tag-feature">Header Redesign</span>
+        </div>
+        <ul>
+          <li>🎨 <strong>App-Name „Distill Voice"</strong> – Neuer Name, kleinere Schrift, klareres Layout</li>
+          <li>🏠 <strong>Home-Button</strong> – Direkt zurück zur Aufnahmen-Übersicht</li>
+          <li>👤 <strong>Header vereinfacht</strong> – Nur noch Avatar-Buchstabe statt E-Mail, Version direkt daneben</li>
+          <li>📅 <strong>Kostendatum fix</strong> – Kostenübersicht gruppiert jetzt nach Transkriptionsdatum, nicht nach Aufnahmedatum</li>
+          <li>🔄 <strong>360°-Analyse fix</strong> – Checkbox wurde in runAnalysisFromModal() nicht erkannt</li>
+          <li>✉️ <strong>Gmail fix</strong> – E-Mail-Aufbau vereinfacht, UTF-8/Umlaute funktionieren jetzt korrekt</li>
+          <li>🗑️ <strong>AssemblyAI-Bereinigung fix</strong> – Bereits gelöschte Transkripte werden nicht mehr angezeigt</li>
+        </ul>
+        <div class="cl-tech">Geänderte Dateien: index.html (Header komplett neu), assemblyai.js (processedAt + Status-Filter), persons.js (renderCostsView Datum), claude.js (chk360 in runAnalysisFromModal), calendar.js (Gmail RFC-2822 fix).</div>
+      </div>
 
       <!-- ── v3.2 ── -->
       <div class="cl-entry">
