@@ -60,7 +60,7 @@ Regeln:
 
   try {
     const { text } = await callClaudeAPI(prompt);
-    const data = extractJSON(text);
+    const data = JSON.parse(extractJSON(text, '{'));
     calendarEvents = data.events || [];
 
     renderCalendarEvents(calendarEvents);
@@ -304,7 +304,7 @@ Regeln:
 
   try {
     const { text } = await callClaudeAPI(prompt);
-    const data = extractJSON(text);
+    const data = JSON.parse(extractJSON(text, '{'));
     gmailDrafts = data.drafts || [];
 
     renderGmailDrafts(gmailDrafts);
