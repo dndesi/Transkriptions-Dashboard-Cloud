@@ -1,0 +1,128 @@
+// AUDIO PLAYER & SYNC
+// ═══════════════════════════════════════════════════
+let _currentAudioUrl = null;
+
+async function loadAudioForSession(session) {
+  const bar     = document.getElementById('audioPlayerBar');
+  const player  = document.getElementById('audioPlayer');
+  const fnLabel = document.getElementById('audioPlayerFilename');
+  const noFile  = document.getElementById('audioNoFile');
+
+  // Alten Object-URL freigeben
+  if (_currentAudioUrl) { URL.revokeObjectURL(_currentAudioUrl); _currentAudioUrl = null; }
+  player.pause();
+  player.removeAttribute('src');
+  player.load();
+
+  if (!session.audioFilename) {
+    bar.style.display = 'none';
+    return;
+  }
+
+  bar.style.display = 'block';
+  fnLabel.textContent = session.audioFilename;
+
+  if (!driveToken || !session._audioId) {
+    player.style.display = 'none';
+    noFile.style.display = 'block';
+    noFile.textContent = driveToken ? '⚠️ Keine Audio-Datei in Drive verknüpft' : '⚠️ Nicht mit Drive verbunden';
+    return;
+  }
+
+  try {
+    const blob = await driveDownloadBlob(session._audioId);
+    _currentAudioUrl = URL.createObjectURL(blob);
+    player.src = _currentAudioUrl;
+    player.style.display = 'block';
+    noFile.style.display = 'none';
+  } catch (e) {
+    player.style.display = 'none';
+    noFile.style.display = 'block';
+    noFile.textContent = '⚠️ Audio konnte nicht geladen werden: ' + e.message;
+  }
+}
+
+function seekAudio(startMs) {
+  const player = document.getElementById('audioPlayer');
+  if (!player || !player.src) return;
+  player.currentTime = startMs / 1000;
+  player.play();
+}
+
+// Sync: aktuelle Utterance beim Abspielen hervorheben
+function setupAudioSync() {
+  const player = document.getElementById('audioPlayer');
+  if (!player) return;
+  player.addEventListener('timeupdate', () => {
+    const currentMs = player.currentTime * 1000;
+    let activeEl = null;
+    document.querySelectorAll('#utterancesContainer .utterance').forEach(el => {
+      const start = parseFloat(el.dataset.start);
+      const end   = parseFloat(el.dataset.end);
+      const isActive = currentMs >= start && currentMs < end;
+      el.classList.toggle('active-utterance', isActive);
+      if (isActive) activeEl = el;
+    });
+    if (activeEl) {
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// ZEITSTRAHL
+// ═══════════════════════════════════════════════════
+function renderTimeline(filter) {
+  const tl = document.getElementById('timelineView');
+  if (!tl) return;
+  const folderFilter = document.getElementById('folderFilter')?.value || '';
+  const tagFilter = document.getElementById('tagFilter')?.value || '';
+  const searchVal = filter || document.getElementById('sidebarSearchMain')?.value || '';
+  let list = sessions.filter(s => s.status === 'done');
+  if (folderFilter) list = list.filter(s => s.archiveFolder === folderFilter);
+  if (tagFilter) list = list.filter(s => (s.tags||[]).includes(tagFilter));
+  if (searchVal.trim()) {
+    const q = searchVal.toLowerCase();
+    list = list.filter(s => (s.label||'').toLowerCase().includes(q) || (s.filename||'').toLowerCase().includes(q));
+  }
+  list.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+  if (list.length === 0) { tl.innerHTML = '<div class="browser-empty">Keine Sitzungen gefunden.</div>'; return; }
+
+  // Nach Monat gruppieren
+  const groups = {};
+  list.forEach(s => {
+    const key = new Date(s.date).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(s);
+  });
+
+  tl.innerHTML = '';
+  Object.entries(groups).forEach(([month, items]) => {
+    const block = document.createElement('div');
+    block.className = 'timeline-month';
+    block.innerHTML = `<div class="timeline-month-label">${month}</div>`;
+    const itemsEl = document.createElement('div');
+    itemsEl.className = 'timeline-items';
+    items.forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'timeline-item';
+      el.onclick = () => showTranscript(s);
+      const dur = s.duration ? formatDuration(s.duration) : '';
+      const tagsHtml = (s.tags||[]).map(t => `<span class="sc-tag">${escHtml(t)}</span>`).join('');
+      el.innerHTML = `
+        <div class="ti-date">${new Date(s.date).toLocaleDateString('de-DE',{day:'numeric',month:'short'})}</div>
+        <div style="flex:1">
+          <div class="ti-name">${escHtml(s.label)}</div>
+          <div class="ti-meta">${escHtml(s.speakerA||'A')} &amp; ${escHtml(s.speakerB||'B')}${dur?' · '+dur:''}</div>
+          ${tagsHtml ? `<div class="sc-tags" style="margin-top:4px">${tagsHtml}</div>` : ''}
+        </div>
+      `;
+      itemsEl.appendChild(el);
+    });
+    block.appendChild(itemsEl);
+    tl.appendChild(block);
+  });
+}
+
+// ═══════════════════════════════════════════════════

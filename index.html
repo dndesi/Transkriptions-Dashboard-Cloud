@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎙️ Transkriptions-Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://accounts.google.com/gsi/client" async></script>
+</head>
+<body>
+
+<!-- ─── LOGIN OVERLAY ────────────────────────────────── -->
+<div id="loginOverlay" style="
+  display:flex; position:fixed; inset:0; z-index:1000;
+  background:var(--bg); align-items:center; justify-content:center; padding:24px;">
+  <div style="
+    width:100%; max-width:420px; background:var(--surface);
+    border:1px solid var(--border); border-radius:var(--radius);
+    padding:40px 32px; text-align:center;">
+    <div style="font-size:52px; margin-bottom:12px">🎙️</div>
+    <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:6px; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Transkriptions-Dashboard</h2>
+    <p style="color:var(--muted); font-size:0.85rem; margin-bottom:28px">Melde dich mit deinem Google-Konto an, um loszulegen.<br>Deine Transkripte werden in Google Drive gespeichert.</p>
+    <button onclick="signInWithGoogle()" style="
+      display:inline-flex; align-items:center; gap:12px;
+      padding:13px 24px; background:#fff; color:#3c4043;
+      border:none; border-radius:6px; font-size:15px; font-weight:500;
+      cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.35); min-height:48px; width:100%; justify-content:center;">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Mit Google anmelden
+    </button>
+    <p id="loginError" style="display:none; color:var(--red); font-size:0.82rem; margin-top:14px"></p>
+    <p style="color:var(--muted); font-size:0.72rem; margin-top:20px; line-height:1.5">
+      API-Keys (AssemblyAI, Anthropic) werden nur lokal im Browser gespeichert – nie in der Cloud.
+    </p>
+  </div>
+</div>
+
+
+<!-- ─── HEADER ───────────────────────────────────── -->
+<header>
+  <div>
+    <h1>🎙️ Transkriptions-Dashboard</h1>
+    <small>Cloud &nbsp;·&nbsp; AssemblyAI &amp; Claude</small>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px">
+    <button onclick="openSearchModal()" title="Globale Suche (⌘K)" style="
+      background:none; border:1px solid var(--border); border-radius:6px;
+      color:var(--muted); font-size:0.82rem; padding:4px 12px; cursor:pointer;
+      display:flex; align-items:center; gap:6px;
+      transition:border-color 0.2s, color 0.2s;"
+      onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+      🔍 <span style="opacity:0.6; font-size:0.72rem">⌘K</span>
+    </button>
+    <button id="themeToggleBtn" onclick="toggleTheme()" title="Hell/Dunkel wechseln" style="
+      background:none; border:1px solid var(--border); border-radius:6px;
+      color:var(--muted); font-size:0.88rem; padding:4px 10px; cursor:pointer;
+      transition:border-color 0.2s, color 0.2s;">🌙</button>
+    <button onclick="openChangelogModal()" title="Versionsprotokoll anzeigen" style="
+      background:none; border:1px solid var(--border); border-radius:6px;
+      color:var(--muted); font-size:0.72rem; padding:4px 10px; cursor:pointer;
+      letter-spacing:0.04em; transition:border-color 0.2s, color 0.2s;"
+      onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+      v3.1
+    </button>
+    <button id="headerPersonsBtn" onclick="togglePersonsView()" title="Personen-Profile" style="
+      background:none; border:1px solid var(--border); border-radius:6px;
+      color:var(--muted); font-size:0.82rem; padding:4px 10px; cursor:pointer;
+      transition:border-color 0.2s, color 0.2s, background 0.2s;"
+      onmouseover="if(!this.classList.contains('active')){this.style.borderColor='var(--accent)';this.style.color='var(--accent)'}"
+      onmouseout="if(!this.classList.contains('active')){this.style.borderColor='var(--border)';this.style.color='var(--muted)'}">
+      👥
+    </button>
+    <button id="headerCostsBtn" onclick="toggleCostsView()" title="Kostenübersicht" style="
+      background:none; border:1px solid var(--border); border-radius:6px;
+      color:var(--muted); font-size:0.82rem; padding:4px 10px; cursor:pointer;
+      transition:border-color 0.2s, color 0.2s, background 0.2s;"
+      onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+      onmouseout="if(!this.classList.contains('active')){this.style.borderColor='var(--border)';this.style.color='var(--muted)'}">
+      💰
+    </button>
+    <button id="headerArchBtn" onclick="toggleArchView()" title="Systemarchitektur" style="
+      background:none; border:1px solid var(--border); border-radius:6px;
+      color:var(--muted); font-size:0.82rem; padding:4px 10px; cursor:pointer;
+      transition:border-color 0.2s, color 0.2s, background 0.2s;"
+      onmouseover="if(!this.classList.contains('active')){this.style.borderColor='var(--accent)';this.style.color='var(--accent)'}"
+      onmouseout="if(!this.classList.contains('active')){this.style.borderColor='var(--border)';this.style.color='var(--muted)'}">
+      📐
+    </button>
+    <div class="api-badge" onclick="openApiModal()">
+      <span class="dot" id="apiBadgeDot"></span>
+      <span id="apiBadgeText">API-Key eingeben</span>
+    </div>
+    <div id="userBadge" onclick="signOut()" title="Abmelden" style="
+      display:none; align-items:center; gap:8px; cursor:pointer;
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:8px; padding:8px 14px; font-size:0.82rem; color:var(--muted);
+      transition:border-color 0.2s;">
+      <span id="userAvatar" style="
+        width:24px; height:24px; border-radius:50%; background:var(--accent);
+        color:#fff; font-size:0.75rem; font-weight:700;
+        display:flex; align-items:center; justify-content:center; flex-shrink:0;">?</span>
+      <span id="userEmail" style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">—</span>
+    </div>
+  </div>
+</header>
+
+<!-- ─── LAYOUT ───────────────────────────────────── -->
+<div class="layout">
+
+  <!-- ─── SIDEBAR ────────────────────────────────── -->
+  <aside>
+
+    <!-- Schritt 1: API-Key -->
+    <div class="step-block" id="step1">
+      <div class="step-header" style="cursor:pointer" onclick="openApiModal()">
+        <span class="step-number">1</span>
+        <span class="step-title">API-Key</span>
+        <span class="step-check" id="step1Check"></span>
+      </div>
+      <div class="step-body" id="step1Body" style="display:none">
+        <p style="font-size:0.78rem; color:var(--muted); line-height:1.5">
+          AssemblyAI-Key unter <strong style="color:var(--text)">app.assemblyai.com → API Key</strong> finden und oben rechts eingeben.
+        </p>
+        <button class="btn btn-primary" style="width:100%; margin-top:10px; justify-content:center" onclick="openApiModal()">🔑 Key eingeben</button>
+      </div>
+    </div>
+
+    <!-- Schritt 2: Sitzungsname -->
+    <div class="step-block locked" id="step2">
+      <div class="step-header">
+        <span class="step-number">2</span>
+        <span class="step-title">Sitzungsname</span>
+        <span class="step-check" id="step2Check"></span>
+      </div>
+      <div class="step-body">
+        <div class="field" style="margin-bottom:10px">
+          <input type="text" id="sessionLabel" placeholder="z.B. Gespräch 21. Mai 2026"
+            oninput="checkUploadReady()" />
+        </div>
+        <div class="field" style="margin-bottom:10px">
+          <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Aufnahmedatum</label>
+          <input type="datetime-local" id="sessionDate" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none;" />
+        </div>
+        <div class="field" style="margin-bottom:10px">
+          <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Gesprächstyp</label>
+          <select id="sessionType" onchange="onSessionTypeChange()" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.88rem; outline:none; cursor:pointer;">
+            <option value="privat">💬 Privat</option>
+            <option value="arbeit">💼 Arbeit</option>
+            <option value="gedanken">💭 Eigene Gedanken</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:0; position:relative">
+          <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Beteiligte Personen</label>
+          <input type="text" id="sessionPersons" placeholder="z.B. Eva, Markus (kommagetrennt)"
+            oninput="updateSpeakerSummary(); showPersonsAutocomplete(this)"
+            onkeydown="handlePersonsKey(event)"
+            onblur="setTimeout(()=>hidePersonsAutocomplete(),200)"
+            autocomplete="off"
+            style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.88rem; outline:none;" />
+          <div id="personsAutocomplete" class="persons-autocomplete" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schritt 3: Google Drive -->
+    <div class="step-block locked" id="step3">
+      <div class="step-header">
+        <span class="step-number">3</span>
+        <span class="step-title">Google Drive</span>
+        <span class="step-check" id="step3Check"></span>
+      </div>
+      <div class="step-body">
+        <!-- Drive-Verbindungsstatus -->
+        <div id="driveStatusRow" style="margin-bottom:10px">
+          <div style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; font-size:0.82rem;">
+            <span id="driveStatusDot" style="width:8px; height:8px; border-radius:50%; background:var(--red); flex-shrink:0"></span>
+            <span id="driveStatusText" style="color:var(--muted)">Nicht verbunden</span>
+          </div>
+        </div>
+
+        <!-- Unterordner-Auswahl (nur sichtbar wenn Drive verbunden) -->
+        <div id="driveSubfolderSection" style="display:none">
+          <p style="font-size:0.72rem; color:var(--muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Archiv-Unterordner wählen:</p>
+          <div id="driveSubfolderList" style="margin-bottom:8px"></div>
+          <button onclick="createDriveSubfolder()" class="archive-btn" style="margin-top:4px">
+            <span class="archive-icon">➕</span>
+            <span class="archive-label">Neuen Unterordner anlegen…</span>
+          </button>
+        </div>
+
+        <p style="font-size:0.72rem; color:var(--muted); margin-top:8px; line-height:1.5">
+          Jede Sitzung wird mit Audio in dem gewählten Unterordner in Google Drive gespeichert.
+        </p>
+        <button onclick="openCleanupModal()" style="margin-top:10px; width:100%; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.4); color:var(--red); border-radius:8px; padding:8px 12px; font-size:0.8rem; cursor:pointer; text-align:left;">
+          🧹 AssemblyAI bereinigen…
+        </button>
+      </div>
+    </div>
+
+    <!-- Schritt 4: Datei hochladen -->
+    <div class="step-block locked" id="step4">
+      <div class="step-header">
+        <span class="step-number">4</span>
+        <span class="step-title">Aufnahme hochladen</span>
+      </div>
+      <div class="step-body">
+        <!-- Sprecher-Vorschau (automatisch aus Schritt 2) -->
+        <div id="speakerSummary" style="
+          display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;
+          padding:8px 12px; background:var(--surface2); border:1px solid var(--border);
+          border-radius:8px; font-size:0.82rem; color:var(--muted);">
+          <span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)">Ich</strong></span>
+          <span style="color:var(--border)">·</span>
+          <span><span style="color:var(--speaker-b)">●</span> <strong style="color:var(--text)" id="speakerBPreview">Gesprächspartner</strong></span>
+        </div>
+        <div class="upload-zone disabled" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon">🎵</div>
+          <p><span>Datei auswählen</span> oder hier ablegen</p>
+          <p style="font-size:0.75rem; margin-top:6px; color:var(--muted)">MP3, WAV, M4A, OGG · max. 2 GB</p>
+        </div>
+        <div class="upload-hint" id="uploadHint"></div>
+        <input type="file" id="fileInput" accept="audio/*,video/*" onchange="handleFileSelect(event)" />
+        <button class="record-btn disabled" id="recordBtn" onclick="toggleRecording()" style="pointer-events:none;opacity:0.4">
+          <span class="record-dot" id="recordDot"></span>
+          <span id="recordBtnLabel">🎙️ Direkt aufnehmen</span>
+        </button>
+      </div>
+    </div>
+
+
+  </aside>
+
+  <!-- ─── MAIN ──────────────────────────────────── -->
+  <main id="mainContent">
+
+    <!-- Fortschritt -->
+    <div class="progress-card" id="progressCard">
+      <div class="progress-header">
+        <span class="progress-title" id="progressTitle">Wird verarbeitet…</span>
+        <span class="progress-step" id="progressStep"></span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar" id="progressBar" style="width:0%"></div>
+      </div>
+      <div class="progress-log" id="progressLog"></div>
+    </div>
+
+    <!-- Session-Browser -->
+    <div class="browser-view visible" id="browserView">
+      <div class="browser-toolbar">
+        <h2>📂 Sitzungs-Archiv</h2>
+        <select id="folderFilter" onchange="filterBrowser()">
+          <option value="">Alle Ordner</option>
+        </select>
+        <select id="tagFilter" onchange="filterBrowser()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:0.82rem;outline:none;cursor:pointer;">
+          <option value="">Alle Tags</option>
+        </select>
+        <div class="search-box" style="flex:1; min-width:130px;">
+          <span>🔍</span>
+          <input type="text" id="sidebarSearchMain" placeholder="Suchen…" oninput="filterBrowser()" />
+        </div>
+        <div class="view-toggle">
+          <button class="view-btn active" id="viewGrid" onclick="setView('grid')" title="Kachelansicht">⊞</button>
+          <button class="view-btn" id="viewTimeline" onclick="setView('timeline')" title="Zeitstrahl">≡</button>
+        </div>
+        <button class="btn btn-ghost select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()">☑ Auswählen</button>
+      </div>
+      <div class="session-grid" id="sessionGrid">
+        <div class="browser-empty">Noch keine Sitzungen vorhanden.<br>Lade eine Aufnahme hoch, um zu starten.</div>
+      </div>
+      <div class="timeline-view" id="timelineView"></div>
+      <div id="costsView" style="display:none; padding-bottom:40px"></div>
+      <div id="personsView" style="display:none; padding-bottom:40px"></div>
+      <div id="archView" style="display:none; padding-bottom:40px"></div>
+    </div>
+
+    <!-- Transkript -->
+    <div class="transcript-card" id="transcriptCard">
+      <div style="margin-bottom:12px">
+        <button class="back-btn" onclick="showBrowser()">← Zurück zum Archiv</button>
+      </div>
+      <div class="transcript-header">
+        <div class="transcript-info" style="flex:1; min-width:0">
+          <div class="title-rename-wrap" id="titleDisplay">
+            <h2 id="transcriptTitle" style="font-size:1.15rem; font-weight:700"></h2>
+            <button class="btn-icon" title="Umbenennen" onclick="startRename()">✏️</button>
+          </div>
+          <div id="titleEdit" style="display:none; margin-bottom:6px">
+            <input class="title-rename-input" id="titleInput"
+              onkeydown="if(event.key==='Enter') commitRename(); if(event.key==='Escape') cancelRename()" />
+            <div style="display:flex; gap:8px; margin-top:6px">
+              <button class="btn btn-primary" style="padding:6px 14px; font-size:0.8rem" onclick="commitRename()">✓ Speichern</button>
+              <button class="btn btn-ghost" style="padding:6px 14px; font-size:0.8rem" onclick="cancelRename()">Abbrechen</button>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:4px; flex-wrap:wrap">
+            <p id="transcriptMeta" style="font-size:0.82rem; color:var(--muted)"></p>
+            <button class="btn-icon" title="Datum ändern" onclick="openDateEdit()" style="font-size:0.75rem; padding:2px 6px; border-radius:6px; background:var(--surface2); border:1px solid var(--border); color:var(--muted); cursor:pointer;">📅</button>
+          </div>
+          <div id="dateEditRow" style="display:none; margin-top:6px; display:none">
+            <input type="datetime-local" id="sessionDateEdit" style="background:var(--surface2); border:1px solid var(--accent); border-radius:8px; color:var(--text); padding:7px 10px; font-size:0.85rem; outline:none;" />
+            <button class="btn btn-primary" style="padding:5px 12px; font-size:0.8rem; margin-left:6px" onclick="commitDateEdit()">✓</button>
+            <button class="btn btn-ghost" style="padding:5px 12px; font-size:0.8rem; margin-left:4px" onclick="closeDateEdit()">✕</button>
+          </div>
+        </div>
+        <div class="transcript-actions" style="flex-shrink:0">
+          <button class="btn btn-ghost" onclick="exportTxt()">⬇ TXT</button>
+          <button class="btn btn-ghost" onclick="swapAllSpeakers()" title="Alle Sprecher A↔B tauschen">⇄ Tauschen</button>
+          <button class="btn btn-ghost" onclick="openAskModal()" title="Aufnahme befragen">💬 Fragen</button>
+          <button class="btn btn-ghost" id="mindmapBtn" onclick="generateAndShowMindMap()" title="Mind Map generieren">🗺️ Mind Map</button>
+          <div class="claude-btn-wrap" id="claudeBtnWrap">
+            <button class="btn btn-primary" onclick="toggleTemplatePopover('claudeBtnWrap')">✦ Senden an Claude ▾</button>
+            <div class="template-popover" id="claudePopover">
+              <div class="popover-title">Vorlage wählen & senden</div>
+              <button class="tpl-row" onclick="sendToClaude('free')"><span class="tpl-icon">📄</span><span class="tpl-text"><div class="tpl-name">Nur Transkript</div><div class="tpl-desc">Rohtext, eigene Fragen stellen</div></span></button>
+              <button class="tpl-row" onclick="sendToClaude('communication')"><span class="tpl-icon">💬</span><span class="tpl-text"><div class="tpl-name">Kommunikation</div><div class="tpl-desc">Muster, Zuhören, Unterbrechungen</div></span></button>
+              <div class="custom-tpl-slot"></div>
+              <div style="border-top:1px solid var(--border); margin-top:6px; padding-top:6px">
+                <button class="tpl-row" onclick="document.querySelectorAll('.template-popover').forEach(p=>p.classList.remove('open')); openTemplatesModal()"><span class="tpl-icon">⚙️</span><span class="tpl-text"><div class="tpl-name">Vorlagen verwalten</div><div class="tpl-desc">Eigene Vorlagen anlegen</div></span></button>
+              </div>
+            </div>
+          </div>
+          <!-- Analysieren-Button → öffnet Modal -->
+          <button class="btn btn-primary" onclick="openAnalyseModal()" id="analyseBtn">🔍 Analysieren</button>
+          <button class="btn" style="background:rgba(248,113,113,0.12); border:1px solid var(--red); color:var(--red)" onclick="openDeleteModal(currentSessionId)">🗑️</button>
+        </div>
+      </div>
+      <!-- Sprecher-Namen editieren -->
+      <div class="speaker-editor">
+        <span class="speaker-editor-label">Namen:</span>
+        <div class="speaker-name-field">
+          <span class="speaker-name-dot" style="background:var(--speaker-a)"></span>
+          <input class="speaker-name-input speaker-a" id="editSpeakerA"
+            placeholder="Sprecher A"
+            onchange="renameSpeaker('A', this.value)"
+            onkeydown="if(event.key==='Enter') this.blur()" />
+        </div>
+        <div class="speaker-name-field">
+          <span class="speaker-name-dot" style="background:var(--speaker-b)"></span>
+          <input class="speaker-name-input speaker-b" id="editSpeakerB"
+            placeholder="Sprecher B"
+            onchange="renameSpeaker('B', this.value)"
+            onkeydown="if(event.key==='Enter') this.blur()" />
+        </div>
+      </div>
+      <!-- ─── INSIGHTS (Stimmung / Kapitel / Themen) ─── -->
+      <div class="insights-section" id="insightsSection" style="display:none">
+        <!-- Private-Analyse -->
+        <div class="insights-block" id="privateBlock" style="display:none">
+          <div class="insights-block-title" onclick="toggleInsightsBlock('privateBlock')">
+            <span>💬 Gesprächs-Analyse</span>
+            <span class="insights-block-chevron">▾</span>
+          </div>
+          <div class="insights-block-body">
+            <div id="privateContent"></div>
+          </div>
+        </div>
+        <!-- Arbeits-Analyse -->
+        <div class="insights-block" id="workBlock" style="display:none">
+          <div class="insights-block-title" onclick="toggleInsightsBlock('workBlock')">
+            <span>💼 Arbeits-Analyse</span>
+            <span class="insights-block-chevron">▾</span>
+          </div>
+          <div class="insights-block-body">
+            <div id="workContent"></div>
+          </div>
+        </div>
+        <!-- Stimmungsanalyse -->
+        <div class="insights-block" id="sentimentBlock" style="display:none">
+          <div class="insights-block-title" onclick="toggleInsightsBlock('sentimentBlock')">
+            <span>😊 Stimmungsanalyse</span>
+            <span class="insights-block-chevron">▾</span>
+          </div>
+          <div class="insights-block-body">
+            <div id="sentimentContent"></div>
+          </div>
+        </div>
+        <!-- Kapitel -->
+        <div class="insights-block" id="chaptersBlock" style="display:none">
+          <div class="insights-block-title" onclick="toggleInsightsBlock('chaptersBlock')">
+            <span>📖 Kapitel</span>
+            <span class="insights-block-chevron">▾</span>
+          </div>
+          <div class="insights-block-body">
+            <div id="chaptersContent"></div>
+          </div>
+        </div>
+        <!-- Themen -->
+        <div class="insights-block" id="topicsBlock" style="display:none">
+          <div class="insights-block-title" onclick="toggleInsightsBlock('topicsBlock')">
+            <span>🏷️ Themen</span>
+            <span class="insights-block-chevron">▾</span>
+          </div>
+          <div class="insights-block-body">
+            <div id="topicsContent"></div>
+          </div>
+        </div>
+        <!-- 360°-Analyse -->
+        <div class="insights-block" id="block360" style="display:none">
+          <div class="insights-block-title" onclick="toggleInsightsBlock('block360')">
+            <span>🔄 360°-Auswertung</span>
+            <span class="insights-block-chevron">▾</span>
+          </div>
+          <div class="insights-block-body">
+            <div id="content360"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Tags -->
+      <div style="margin-bottom:16px">
+        <div style="font-size:0.75rem; color:var(--muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Tags</div>
+        <div class="tag-input-wrap" id="tagInputWrap">
+          <div id="tagChips"></div>
+          <input class="tag-text-input" id="tagTextInput" placeholder="Tag eingeben + Enter…"
+            onkeydown="handleTagInput(event)" />
+        </div>
+      </div>
+      <!-- Notizen -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:0.75rem; color:var(--muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Notizen</div>
+        <textarea class="notes-area" id="notesArea" placeholder="Persönliche Eindrücke, Kontext, Beobachtungen…"
+          oninput="saveNotes()"></textarea>
+      </div>
+      <!-- Audio-Player -->
+      <div class="audio-player-bar" id="audioPlayerBar" style="display:none">
+        <div class="audio-player-label">🎵 Aufnahme &nbsp;<span id="audioPlayerFilename"></span></div>
+        <audio id="audioPlayer" controls></audio>
+        <div class="audio-no-file" id="audioNoFile" style="display:none">⚠️ Audiodatei nicht im aktiven Archiv-Ordner gefunden</div>
+      </div>
+      <div class="utterances" id="utterancesContainer"></div>
+    </div>
+
+    <!-- Fortschritt oben halten, Leer-Zustand weg -->
+    <div style="display:none" id="emptyState"></div>
+
+  </main>
+</div>
+
+<!-- ─── MODAL: Versionsprotokoll ─────────────────── -->
+<div class="modal-backdrop" id="changelogModal">
+  <div class="modal" style="max-width:620px; width:95%; max-height:85vh; display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-shrink:0">
+      <h3 style="margin:0">📋 Versionsprotokoll</h3>
+      <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v3.1 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v3.1</span>
+          <span class="cl-date">26.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Globale Suche</span>
+        </div>
+        <div class="cl-title">Globale Suche – Sofortsuche + Claude-Semantiksuche über alle Aufnahmen</div>
+        <ul class="cl-list">
+          <li>🔍 <strong>Sofortsuche</strong> – Durchsucht Titel, Transkript, Notizen, Tags, Themen und Personen in Echtzeit beim Tippen</li>
+          <li>✦ <strong>Claude-Suche</strong> – Semantische Suche: natürliche Fragen wie „Wann habe ich zuletzt über Projekt X gesprochen?" werden von Claude über alle Zusammenfassungen beantwortet</li>
+          <li>⏱️ <strong>Zeitstempel-Links</strong> – Treffer im Transkript sind direkt anklickbar und springen zur richtigen Audiostelle</li>
+          <li>⌨️ <strong>Shortcut ⌘K</strong> – Suche jederzeit mit Cmd+K (Mac) oder Ctrl+K (Windows) öffnen</li>
+          <li>🔗 <strong>Session-Links</strong> – In der Claude-Antwort sind Aufnahmen direkt verlinkt und öffnen sich per Klick</li>
+        </ul>
+        <div class="cl-tech">Neues Modul js/search.js. openSearchModal/closeSearchModal/onSearchInput/runInstantSearch/runClaudeSearch/renderInstantResults/renderClaudeSearchResult/openSessionById/highlightTerms/extractSnippet. Tastatur-Listener für ⌘K + Escape. Suchbutton im Header neben Theme-Toggle. Claude-Digest: max. 12.000 Zeichen aus allen Session-Zusammenfassungen.</div>
+      </div>
+
+      <!-- ── v3.0 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v3.0</span>
+          <span class="cl-date">26.05.2026</span>
+          <span class="cl-tag cl-tag-feature">4 neue Features</span>
+        </div>
+        <div class="cl-title">360°-Analyse · Aufnahme befragen · Mind Map · Eigene Vorlagen</div>
+        <ul class="cl-list">
+          <li>🔄 <strong>360°-Auswertung</strong> – Dieselbe Aufnahme aus 4 Perspektiven: Meine Aufgaben, Erwartungen der anderen Person, Emotionale Ebene, Strategische Perspektive</li>
+          <li>💬 <strong>Aufnahme befragen</strong> – Chat direkt gegen das Transkript; Claude zitiert mit Zeitstempel-Referenz, Zeitstempel sind anklickbar und springen zur Audiostelle</li>
+          <li>🗺️ <strong>Mind Map Export</strong> – Claude generiert eine Mermaid.js-Mindmap aus dem Transkript; wird im Browser gerendert, Code kopierbar</li>
+          <li>⚙️ <strong>Eigene Vorlagen</strong> – Beliebige Templates anlegen (Name + Anweisung), erscheinen direkt im Senden-Popover; in localStorage gespeichert</li>
+          <li>🚀 <strong>Modell-Upgrade</strong> – Von claude-haiku auf <code>claude-sonnet-4-6</code> für deutlich tiefere Analysen</li>
+        </ul>
+        <div class="cl-tech">Neues Modul js/features.js mit allen neuen Funktionen. Keine Änderungen am bestehenden Modul-System – features.js wird nach app.js geladen. Mermaid.js v10 per CDN. initFeatures() in init() aufgerufen. chk360 in runAnalysisFromModal + runAnalysisFromChecks. render360Block() aus renderInsights() entkoppelt (separate Funktion in features.js).</div>
+      </div>
+
+      <!-- ── v2.16 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.16</span>
+          <span class="cl-date">26.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Refactoring</span>
+        </div>
+        <div class="cl-title">Codebase modularisiert – 6.300-Zeilen-Monolith aufgeteilt</div>
+        <ul class="cl-list">
+          <li>🗂️ index.html von 6.322 auf 1.113 Zeilen reduziert – enthält nur noch das HTML-Gerüst</li>
+          <li>🎨 CSS ausgelagert in <code>css/styles.css</code> (1.451 Zeilen)</li>
+          <li>📦 JavaScript aufgeteilt in 13 eigenständige Module: config.js, auth.js, drive.js, sessions.js, assemblyai.js, claude.js, ui.js, persons.js, audio.js, recorder.js, tags.js, notes.js, app.js</li>
+          <li>🔧 Kein Build-Schritt nötig – alle Module via &lt;script src&gt; geladen, globaler Scope bleibt erhalten (kompatibel mit bestehenden Inline-Event-Handlern)</li>
+          <li>✅ Alle JS-Dateien syntaktisch geprüft – keine Fehler</li>
+        </ul>
+        <div class="cl-tech">Kein ES-Module-System (wegen 79 Inline-Event-Handlern im HTML). Ladereihenfolge: config → auth → drive → sessions → assemblyai → claude → ui → tags → notes → persons → audio → recorder → app. Backup der alten Datei als index.html.backup_pre_refactor gesichert.</div>
+      </div>
+
+      <!-- ── v2.15 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.15</span>
+          <span class="cl-date">26.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Beziehungskontext · Anonymisierung · Neue Prompts · Architektur-Seite</div>
+        <ul class="cl-list">
+          <li>🔗 Beziehungskontext pro Person (z.B. „Freundin", „Kollege") – editierbares Feld im Personen-Profil, in localStorage gespeichert</li>
+          <li>🔒 Datenschutz-Modus: Anonymisierung aktivierbar in API-Keys → echte Namen werden vor Claude-Calls durch „Person_A/B/..." ersetzt</li>
+          <li>🔍 Neue Analyse-Dimension „Zwischen den Zeilen" in privaten & Arbeits-Analysen – was wurde nicht gesagt, aber war spürbar?</li>
+          <li>🤝 Therapeutisch verbesserte Prompts für analysePrivate, analyseWork, synthesizePerson – tiefgründiger, empathischer Tonfall</li>
+          <li>📐 Architektur-Seite im Dashboard (Header-Button) mit Systemkomponenten, Datenflüssen und Tech-Stack-Übersicht</li>
+          <li>Beziehungskontext fließt automatisch in Profil-Synthese ein</li>
+        </ul>
+        <div class="cl-tech">loadRelationships/saveRelationship/getRelationship() in localStorage. shouldAnonymize()/anonymizeForClaude(text, session) ersetzt Personen-Namen vor API-Call. zwischenzeilen-Feld in privateAnalysis + workAnalysis. renderArchView() mit archBox/flowCard/techRow-Helpers. toggleArchView() analog zu toggleCostsView(). archView-div + headerArchBtn im Header. _showOverlay + setView um archView erweitert.</div>
+      </div>
+
+      <!-- ── v2.14 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.14</span>
+          <span class="cl-date">26.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Design</span>
+        </div>
+        <div class="cl-title">Helles Theme verfeinert – Split-Design</div>
+        <ul class="cl-list">
+          <li>Header bleibt im hellen Modus dunkel (wie im Dark-Theme) – konsistente Navigation</li>
+          <li>Sidebar jetzt anthrazitfarben (#252836) mit eigenem CSS-Variablen-Scope</li>
+          <li>Workflow-Step-Blöcke erscheinen als weiße Kästen im dunklen Sidebar mit leichtem Schatten</li>
+          <li>Sitzungskarten mit Typ-Farbakzent: Linker Rand + Hintergrundverlauf je Typ (Arbeit: Amber, Privat: Pink, Gedanken: Lila)</li>
+          <li>Karten-Typ-Klasse (card-arbeit/card-privat/card-gedanken) wird beim Rendern am DOM-Element gesetzt</li>
+        </ul>
+        <div class="cl-tech">CSS Custom Properties werden pro Element überschrieben (Cascade Scoping). Header und aside erhalten eigene --border/--muted/--text-Variablen. .step-block revertiert zurück auf helle Werte. card.className enthält Typ-Klasse für CSS-Targeting.</div>
+      </div>
+
+      <!-- ── v2.13 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.13</span>
+          <span class="cl-date">26.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Hell/Dunkel-Theme + Theme-Toggle</div>
+        <ul class="cl-list">
+          <li>Neuer ☀️/🌙-Button im Header wechselt zwischen hellem und dunklem Design</li>
+          <li>Helles Design: weißer Hintergrund, sanfte Blau-Grau-Töne, druckfreundlich</li>
+          <li>Theme-Präferenz wird in localStorage gespeichert und beim nächsten Öffnen wiederhergestellt</li>
+          <li>Alle UI-Elemente (Karten, Modals, Sidebar, Analyse-Blöcke) unterstützen beide Themes</li>
+        </ul>
+        <div class="cl-tech">applyTheme(theme), toggleTheme(). [data-theme="light"] CSS-Block mit vollständigem Variablen-Override. IIFE lädt Theme beim Start aus localStorage.</div>
+      </div>
+
+      <!-- ── v2.12 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.12</span>
+          <span class="cl-date">25.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Analyse-Kuration & Personen endgültig löschen</div>
+        <ul class="cl-list">
+          <li>Jeder Eintrag in Vereinbarungen, Wünsche & Bedürfnisse, Offene Themen, Kerngedanken, Nächste Schritte und Arbeits-Analyse bekommt einen 🗑-Button – erscheint beim Hover</li>
+          <li>Gelöschte Einträge werden sofort aus der Sitzung entfernt und nicht ins Personen-Profil übernommen</li>
+          <li>Personen-Profil: "Ausblenden" (reversibel) und "🗑 Löschen" (endgültig, entfernt aus allen Sitzungsdaten)</li>
+          <li>Themen-Markierung (⭐) entfernt – Themen zeigen nur noch 🗑 zum Löschen</li>
+        </ul>
+        <div class="cl-tech">deleteAnalysisItem(sessionId, analysisKey, field, idx), deletePersonPermanently(name). work-item-content + work-item-del CSS für Hover-Löschen. Kein starTopic mehr.</div>
+      </div>
+
+      <!-- ── v2.11 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.11</span>
+          <span class="cl-date">25.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Themen-Kuration, Personen-Autocomplete, Löschen</div>
+        <ul class="cl-list">
+          <li>Themen in der Analyse-Ansicht: ⭐ markieren (wichtig) oder 🗑 löschen – nur markierte Themen fließen ins Personenprofil</li>
+          <li>Personen-Feld: Autocomplete schlägt bekannte Namen aus früheren Sitzungen vor – keine Doppeleinträge mehr</li>
+          <li>Personen-Profil: 🗑-Button blendet eine Person aus allen Profilen aus (Daten bleiben erhalten)</li>
+          <li>Kosten aus den Sitzungskarten entfernt – nur noch in der Kostenübersicht sichtbar</li>
+        </ul>
+        <div class="cl-tech">starTopic(), deleteTopic(), getAllKnownPersonNames(), showPersonsAutocomplete(), selectPersonSuggestion(), deletePerson(), getHiddenPersons(). getAllPersons() filtert hiddenPersons + nur starred claudeTopics. Normalisierung string[]→{text,status}[] bei erstem Render.</div>
+      </div>
+
+      <!-- ── v2.10 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.10</span>
+          <span class="cl-date">25.05.2026</span>
+          <span class="cl-tag cl-tag-fix">UX</span>
+        </div>
+        <div class="cl-title">Sprecher-Felder entfernt – keine Dopplung mehr</div>
+        <ul class="cl-list">
+          <li>Die separaten Sprecher-A/B-Felder in Schritt 4 wurden entfernt</li>
+          <li>Sprecher A ist immer "Ich". Sprecher B (und weitere) werden automatisch aus "Beteiligte Personen" (Schritt 2) übernommen</li>
+          <li>Schritt 4 zeigt eine kompakte Vorschau der erkannten Sprecher – live aktualisiert beim Tippen</li>
+          <li>Bei "Eigene Gedanken" wird kein zweiter Sprecher angezeigt</li>
+        </ul>
+        <div class="cl-tech">updateSpeakerSummary() liest sessionPersons + sessionType und rendert speakerSummary-Div. processFile() leitet speakerA/B direkt ab, ohne DOM-Inputs.</div>
+      </div>
+
+      <!-- ── v2.9 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.9</span>
+          <span class="cl-date">25.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <div class="cl-title">Mehrere Sprecher korrekt anzeigen</div>
+        <ul class="cl-list">
+          <li>AssemblyAI erkennt beliebig viele Sprecher – C, D usw. werden jetzt korrekt als "Sprecher C", "Sprecher D" angezeigt statt fälschlicherweise als Sprecher B</li>
+          <li>Neue Farben: Sprecher C = grün (#34d399), Sprecher D = gelb (#fbbf24), weitere = lila</li>
+          <li>Sitzungskarte zeigt dynamisch alle tatsächlich vorhandenen Sprecher</li>
+          <li>Alle Stellen (Transkript-Viewer, Export, Sentiment, Karten) nutzen jetzt getSpeakerName() / getSpeakerColor()</li>
+        </ul>
+        <div class="cl-tech">getSpeakerName(speaker, session), getSpeakerColor(speaker) als zentrale Hilfsfunktionen. CSS-Variablen --speaker-c, --speaker-d, --speaker-extra ergänzt.</div>
+      </div>
+
+      <!-- ── v2.8 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.8</span>
+          <span class="cl-date">25.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Mein Profil – Selbst-Aggregation</div>
+        <ul class="cl-list">
+          <li>Neue "Ich"-Karte oben in der Personen-Übersicht öffnet "Mein Profil"</li>
+          <li>Aggregiert automatisch: eigene Wünsche & Ziele, eingegangene Vereinbarungen, eigene Aufgaben, offene Themen, Kerngedanken aus Gedanken-Sitzungen, nächste Schritte</li>
+          <li>Häufigste Themen aller eigenen Gespräche als Tag-Cloud</li>
+          <li>Timeline aller Sitzungen mit Typ-Icon (💼/💬/💭)</li>
+          <li>"✦ Selbst-Synthese": Claude schreibt eine persönliche Selbstreflexion in Fließtext in der zweiten Person</li>
+        </ul>
+        <div class="cl-tech">getMeinProfilData(), renderMeinProfil(), synthesizeMeinProfil(). Mein Profil ist Einstiegspunkt in renderPersonsView() als erste Karte.</div>
+      </div>
+
+      <!-- ── v2.7 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.7</span>
+          <span class="cl-date">25.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Personen-Profile</div>
+        <ul class="cl-list">
+          <li>Neuer 👥-Button im Header öffnet Personen-Übersicht mit allen bekannten Personen aus Gesprächen</li>
+          <li>Jede Person zeigt: Gesprächs-Timeline, Wünsche & Bedürfnisse, Vereinbarungen, Offene Themen, Aufgaben aus Arbeitsgesprächen, häufige Themen</li>
+          <li>Daten werden automatisch aus privateAnalysis, workAnalysis und claudeTopics aller Sitzungen aggregiert</li>
+          <li>"✦ Profil-Synthese": Claude generiert ein persönliches Kurzprofil in Fließtext aus allen gesammelten Daten</li>
+          <li>Kosten- und Personen-View schließen sich gegenseitig aus (gemeinsamer Overlay-Mechanismus)</li>
+        </ul>
+        <div class="cl-tech">getAllPersons(), getPersonData(name), renderPersonsView(), renderPersonProfile(name), synthesizePerson(name). _showOverlay/_setHeaderBtn als gemeinsame Helfer. togglePersonsView analog zu toggleCostsView. personsView div im browserView.</div>
+      </div>
+
+      <!-- ── v2.6 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.6</span>
+          <span class="cl-date">25.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Private-Analyse ersetzt Stimmungsanalyse</div>
+        <ul class="cl-list">
+          <li>Neue "💬 Gesprächs-Analyse" für private Gespräche: Vereinbarungen · Wünsche & Bedürfnisse je Person · Offene Themen · Gesprächsdynamik · Zusammenfassung</li>
+          <li>Für Typ "Gedanken": Kerngedanken · Nächste Schritte · Offene Fragen · Zusammenfassung</li>
+          <li>Stimmungsanalyse (Prozentwerte) aus dem Modal für privat/gedanken entfernt – bleibt sichtbar für alte Sitzungen mit gespeicherter Sentiment-Analyse</li>
+        </ul>
+        <div class="cl-tech">analysePrivate(session, transcript) → session.privateAnalysis {agreements, wishes[], openTopics, dynamics, keyThoughts, nextSteps, summary}. Prompt-Zweig über session.type === 'gedanken'. renderInsights() rendert privateBlock. chkPrivate im Modal-HTML. stepLabels + Dispatch in runAnalysisFromModal/Checks/Loop erweitert.</div>
+      </div>
+
+      <!-- ── v2.5 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.5</span>
+          <span class="cl-date">25.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Gesprächskontext & Arbeits-Analyse</div>
+        <ul class="cl-list">
+          <li>Neues Kontext-Feld beim Anlegen: Gesprächstyp (💼 Arbeit · 💬 Privat · 💭 Gedanken) + Beteiligte Personen</li>
+          <li>Typ-Badge und Personen auf jeder Sitzungskarte im Archiv sichtbar</li>
+          <li>Kontextbasierte Analyse: bei Arbeitsgesprächen erscheinen Aufgaben · Entscheidungen · Offene Fragen · Risiken · Zusammenfassung statt Stimmungsanalyse</li>
+          <li>Analyse-Modal passt Checkboxen automatisch an den Gesprächstyp an</li>
+          <li>Bei Typ "Gedanken" werden Sprecher-Felder ausgeblendet</li>
+        </ul>
+        <div class="cl-tech">onSessionTypeChange() blendet Speaker-Row bei 'gedanken' aus. processFile() liest type + persons. renderBrowser() zeigt sc-type-Badge + sc-persons. openAnalyseModal() togglet workChecks/privateChecks per s.type. analyseWork() → session.workAnalysis {tasks,decisions,openQuestions,risks,summary}. renderInsights() rendert workBlock vor sentimentBlock.</div>
+      </div>
+
+      <!-- ── v2.4 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.4</span>
+          <span class="cl-date">25.05.2026</span>
+          <span class="cl-tag cl-tag-fix">UX</span>
+        </div>
+        <div class="cl-title">Kosten-Tab in Header verschoben</div>
+        <ul class="cl-list">
+          <li>💰-Button aus dem Archiv-View-Toggle entfernt</li>
+          <li>Neuer 💰-Button im Header – immer erreichbar, unabhängig vom Archiv</li>
+          <li>Klick öffnet/schließt die Kostenübersicht als Toggle</li>
+        </ul>
+        <div class="cl-tech">toggleCostsView() neu. setView() ohne viewCosts-Toggle. Header-Button mit active-State (Akzentfarbe + Hintergrund).</div>
+      </div>
+
+      <!-- ── v2.3 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.3</span>
+          <span class="cl-date">24.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Tagesaktueller Wechselkurs USD → EUR</div>
+        <ul class="cl-list">
+          <li>Bei jeder Transkription wird der Wechselkurs des Aufnahmetags via api.frankfurter.app abgerufen</li>
+          <li>Kurs wird als session.usdToEur in der JSON gespeichert – historische Sitzungen behalten ihren Kurs</li>
+          <li>Alle Kostenanzeigen (Karte, Tab) nutzen den sitzungsindividuellen Kurs statt eines Pauschalwerts</li>
+          <li>Monatssummen und Gesamtübersicht aggregieren EUR-Werte direkt (ohne Umwegkonvertierung)</li>
+          <li>Fallback: 0,922 EUR/USD falls API nicht erreichbar</li>
+        </ul>
+        <div class="cl-tech">fetchExchangeRate(dateStr) → {rate, date} via api.frankfurter.app. session.usdToEur + session.usdToEurDate in processFile() nach Transkription gespeichert. getSessionRate(s) liest usdToEur oder Fallback. fmtCostSession(usd, s) für Einzelsitzungen. fmtEur(eur) für voraggregierte EUR-Beträge. renderCostsView() summiert totalAsmEur / totalClaudeEur / byMonth[].asmEur / claudeEur.</div>
+      </div>
+
+      <!-- ── v2.2 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.2</span>
+          <span class="cl-date">24.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Kostenübersicht – Option A & B</div>
+        <ul class="cl-list">
+          <li>Kostenbadge auf jeder Sitzungskarte: AssemblyAI · Claude · Gesamt</li>
+          <li>Neuer 💰-Tab im Archiv: Gesamtkosten pro Anbieter, Monatsaufschlüsselung, Tabelle aller Sitzungen</li>
+          <li>Tagesaktuelle Preise: AssemblyAI $0.0064/min · Claude Haiku 4.5: $1.00/$5.00 pro Mio. Tokens (Stand 24.05.2026)</li>
+          <li>Token-Tracking: Claude-API gibt jetzt input_tokens & output_tokens zurück, wird pro Sitzung gespeichert</li>
+          <li>Direkte Links zur Preisseite beider Anbieter</li>
+        </ul>
+        <div class="cl-tech">PRICING-Konstante mit assemblyai (perMinute + diarizationPerMin) und claude (inputPerMToken + outputPerMToken). calculateSessionCost(session) berechnet aus session.duration (Sekunden) und session.claudeTokens ({input, output}). callClaudeAPI() gibt jetzt {text, inputTokens, outputTokens} zurück. addTokensToSession() akkumuliert Tokens über mehrere Analyse-Läufe. renderCostsView() + costCard() neu. setView() um 'costs' erweitert.</div>
+      </div>
+
+      <!-- ── v2.1 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.1</span>
+          <span class="cl-date">24.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <div class="cl-title">Ordner-Zuordnung aus Google Drive direkt gelesen</div>
+        <ul class="cl-list">
+          <li>Sessions werden jetzt dem richtigen Ordner zugeordnet – basierend auf dem echten Drive-Speicherort</li>
+          <li>Dateien die in Drive in "Eva" liegen erscheinen auch im Dashboard unter "Eva"</li>
+          <li>Falsche archiveFolder-Werte im JSON werden beim Laden automatisch korrigiert</li>
+        </ul>
+        <div class="cl-tech">loadFromDrive() baut jetzt zuerst ein folderIdToName-Mapping aus allen Unterordnern auf. Beim Laden jeder Session-JSON wird parents[0] gegen dieses Mapping geprüft und archiveFolder mit dem echten Ordnernamen überschrieben. loadDriveSubfolders() wird nicht mehr separat aufgerufen – integriert in loadFromDrive().</div>
+      </div>
+
+      <!-- ── v2.0 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v2.0</span>
+          <span class="cl-date">24.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <div class="cl-title">Vorlage-Menü & leere Ordner behoben</div>
+        <ul class="cl-list">
+          <li>„Senden an Claude" Vorlage-Menü öffnet sich jetzt nach oben (war nach unten = außerhalb des Bildschirms)</li>
+          <li>Ordner zeigt Sessions korrekt an, auch wenn Status aus Drive leicht abweicht</li>
+        </ul>
+        <div class="cl-tech">#multiBtnWrap .template-popover: top:auto; bottom:calc(100%+8px) statt top:calc(100%+8px). renderBrowser() Filter erweitert: zeigt Sessions auch wenn utterances.length > 0, nicht nur bei status==='done'. Root cause: selection-bar ist position:fixed am unteren Rand, Popover öffnete nach unten = unsichtbar.</div>
+      </div>
+
+      <!-- ── v1.9 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v1.9</span>
+          <span class="cl-date">24.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <div class="cl-title">Mehrfachauswahl → Senden an Claude repariert</div>
+        <ul class="cl-list">
+          <li>Auswählen mehrerer Sitzungen und Senden hat nicht funktioniert</li>
+          <li>Claude.ai-Link im Overlay statt automatisches window.open (Popup-Blocker-Problem)</li>
+          <li>Fallback wenn Zwischenablage nicht verfügbar: Text im Overlay zum manuellen Kopieren</li>
+        </ul>
+        <div class="cl-tech">Hauptursache: window.open() nach await navigator.clipboard.writeText() – auf Android/Mobile verliert der Browser nach einem await den User-Gesture-Kontext und blockiert Popups. Fix: window.open entfernt, stattdessen direkter Link im Overlay. Clipboard-Fallback via document.execCommand('copy') für ältere/restriktive Browser.</div>
+      </div>
+
+      <!-- ── v1.8 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v1.8</span>
+          <span class="cl-date">24.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Cloudflare Worker Proxy für AssemblyAI-Löschen</div>
+        <ul class="cl-list">
+          <li>Proxy-URL Feld in den API-Einstellungen – Cloudflare Worker leitet DELETE-Anfragen weiter</li>
+          <li>Cleanup-Modal zeigt Proxy-Status (aktiv / nicht eingerichtet) mit Anleitung</li>
+          <li>Worker-Code direkt im Dashboard kopierbar</li>
+        </ul>
+        <div class="cl-tech">CORS blockiert DELETE-Requests von GitHub Pages zu AssemblyAI. Cloudflare Worker als serverseitiger Proxy umgeht dies. proxyUrl wird in localStorage gespeichert. deleteFromAssemblyAI() leitet über Proxy wenn gesetzt.</div>
+      </div>
+
+      <!-- ── v1.7 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v1.7</span>
+          <span class="cl-date">24.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <div class="cl-title">Kritischer Syntax-Fehler behoben – Login-Button reagierte nicht</div>
+        <ul class="cl-list">
+          <li>Login-Button war komplett eingefroren nach Upload von v1.6</li>
+        </ul>
+        <div class="cl-tech">openCleanupModal() fehlte das async-Keyword, obwohl await fetchAndRenderCleanupList() darin aufgerufen wurde. JavaScript-Syntaxfehler bricht das gesamte Script ab – daher reagierte auch der Login-Button nicht mehr. Behoben durch: async function openCleanupModal().</div>
+      </div>
+
+      <!-- ── v1.6 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v1.6</span>
+          <span class="cl-date">23.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">AssemblyAI Cleanup-Modal komplett neu gebaut</div>
+        <ul class="cl-list">
+          <li>Zeigt alle aktiven Transkripte direkt von AssemblyAI (nicht aus lokalem Cache)</li>
+          <li>Einzelnes Löschen pro Transkript möglich</li>
+          <li>„Alle löschen"-Button für Massenbereinigung</li>
+          <li>Zeigt Name (falls lokal bekannt), Datum, ID und Status je Eintrag</li>
+        </ul>
+        <div class="cl-tech">GET /v2/transcript?limit=50 mit Pagination (bis 200 Einträge). fetchAndRenderCleanupList() baut die Liste dynamisch. deleteSingleTranscript() löscht einzeln und aktualisiert lokalen Cache + Drive-JSON. runCleanup() löscht alle auf einmal.</div>
+      </div>
+
+      <!-- ── v1.5 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v1.5</span>
+          <span class="cl-date">22.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Drive-Unterordner + Schritt-3-Validierung</div>
+        <ul class="cl-list">
+          <li>Unterordner in Google Drive anlegen und auswählen (wie lokale Ordnerauswahl)</li>
+          <li>Upload erst möglich wenn Unterordner gewählt ist</li>
+          <li>Aufnahmedatum wird sofort beim Einloggen auf heute gesetzt</li>
+          <li>rememberedFolders-Variable wiederhergestellt (Recording/Upload-Fehler behoben)</li>
+        </ul>
+        <div class="cl-tech">checkUploadReady() prüft jetzt !!(driveToken && driveFolderId && driveSubfolderId). driveSubfolderId/driveSubfolderName als State. loadDriveSubfolders(), renderSubfolderList(), selectDriveSubfolder(), createDriveSubfolder() neu. saveToArchive() nutzt driveSubfolderId als parent. ReferenceError auf rememberedFolders war Root Cause für silent-failing uploads.</div>
+      </div>
+
+      <!-- ── v1.4 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v1.4</span>
+          <span class="cl-date">21.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <div class="cl-title">6 Bugs nach erstem vollständigen Test behoben</div>
+        <ul class="cl-list">
+          <li>Aufnahme und Datei-Upload liefen ins Leere (kein Fehler sichtbar)</li>
+          <li>Schritt-3-Validierung blockierte Upload nicht wie erwartet</li>
+          <li>setProgress() hatte falsche Signatur in saveToArchive()</li>
+          <li>AssemblyAI-Bereinigen markierte nur lokal, löschte nicht wirklich</li>
+        </ul>
+        <div class="cl-tech">rememberedFolders fehlte → ReferenceError in updateFolderDropdown() → renderBrowser() crashte → processFile() startete nie. hasFolder war !!(driveToken && driveFolderId) statt mit driveSubfolderId. setProgress(true, ...) statt setProgress(92, ..., ...). runCleanup()-Button existierte nicht im alten Modal.</div>
+      </div>
+
+      <!-- ── v1.3 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v1.3</span>
+          <span class="cl-date">20.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <div class="cl-title">Google Login zuverlässig gemacht</div>
+        <ul class="cl-list">
+          <li>„Google API noch nicht bereit" Fehler beim ersten Klick behoben</li>
+          <li>Login-Button wartet jetzt automatisch bis GIS geladen ist</li>
+        </ul>
+        <div class="cl-tech">Google Identity Services (GIS) wird async geladen. Init war abhängig von init()-Funktion die durch andere Fehler blockiert werden konnte. Lösung: separates window.addEventListener('load') für initGoogleAuth(). signInWithGoogle() zeigt Ladezustand und retried automatisch.</div>
+      </div>
+
+      <!-- ── v1.2 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v1.2</span>
+          <span class="cl-date">19.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">GitHub Pages Deployment – erste lauffähige Cloud-Version</div>
+        <ul class="cl-list">
+          <li>Dashboard live unter dndesi.github.io/Transkriptions-Dashboard-Cloud</li>
+          <li>Google Login funktioniert</li>
+          <li>Transkripte werden in Google Drive gespeichert</li>
+        </ul>
+        <div class="cl-tech">index.html in GitHub Repo dndesi/Transkriptions-Dashboard-Cloud deployed. Google OAuth 2.0 mit drive.file scope. Drive-Ordner „Transkriptions-Dashboard" wird automatisch angelegt.</div>
+      </div>
+
+      <!-- ── v1.1 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v1.1</span>
+          <span class="cl-date">18.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Cloud-Version auf Basis des lokalen Dashboards gebaut</div>
+        <ul class="cl-list">
+          <li>File System Access API ersetzt durch Google Drive API</li>
+          <li>Google OAuth 2.0 eingebaut</li>
+          <li>Design und Workflow aus transkriptions-dashboard.html übernommen</li>
+          <li>AssemblyAI und Claude Haiku unverändert weitergenutzt</li>
+        </ul>
+        <div class="cl-tech">Drive API v3 via REST fetch. Resumable Upload für Audiodateien (5MB Chunks). JSON-Multipart für Metadaten. localStorage nur für API-Keys (AssemblyAI, Anthropic) – nie in der Cloud. GIS Token Client mit drive.file + userinfo scopes.</div>
+      </div>
+
+      <!-- ── v1.0 ── -->
+      <div class="cl-entry" style="border-bottom:none">
+        <div class="cl-header">
+          <span class="cl-version">v1.0</span>
+          <span class="cl-date">Mai 2026</span>
+          <span class="cl-tag" style="background:rgba(107,114,128,0.2); color:var(--muted)">Ursprung</span>
+        </div>
+        <div class="cl-title">Lokales Dashboard (transkriptions-dashboard.html)</div>
+        <ul class="cl-list">
+          <li>Ausgangsbasis für alle Cloud-Versionen</li>
+          <li>File System Access API (Desktop Chrome)</li>
+          <li>Lokale Ordnerstruktur, funktioniert nicht auf Android</li>
+        </ul>
+        <div class="cl-tech">Ursprüngliche Desktop-Version. Wird nicht verändert und dient als Referenz. Grund für Cloud-Migration: File System Access API nicht verfügbar in Android Chrome.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: API-Key ───────────────────────────── -->
+<div class="modal-backdrop" id="apiModal">
+  <div class="modal">
+    <h3>🔑 API-Keys</h3>
+    <div class="field">
+      <label>AssemblyAI API-Key</label>
+      <p style="font-size:0.78rem; color:var(--muted); margin-bottom:6px">Für Transkription — <a href="https://app.assemblyai.com" target="_blank" style="color:var(--accent)">app.assemblyai.com → Account</a></p>
+      <input type="password" id="apiKeyInput" placeholder="…" style="font-family: monospace;" />
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label>Anthropic API-Key</label>
+      <p style="font-size:0.78rem; color:var(--muted); margin-bottom:6px">Für Stimmung, Kapitel &amp; Themen — <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com → API Keys</a></p>
+      <input type="password" id="anthropicKeyInput" placeholder="sk-ant-…" style="font-family: monospace;" />
+    </div>
+    <div class="field" style="margin-top:14px" id="settingsSection">
+      <label>Cloudflare Worker Proxy-URL <span style="font-weight:400; font-size:0.75rem; color:var(--muted)">(optional – für AssemblyAI Löschen)</span></label>
+      <p style="font-size:0.78rem; color:var(--muted); margin-bottom:6px">
+        Nötig, damit das Löschen von Transkripten direkt im Dashboard funktioniert.
+        <a href="https://gist.github.com/" target="_blank" style="color:var(--accent)">Anleitung weiter unten ↓</a>
+      </p>
+      <input type="text" id="proxyUrlInput" placeholder="https://dein-worker.workers.dev/delete" style="font-family: monospace;" />
+      <p style="font-size:0.72rem; color:var(--muted); margin-top:5px">
+        📋 <strong>Cloudflare Worker einrichten (kostenlos, ~5 Min):</strong><br>
+        1. <a href="https://dash.cloudflare.com/sign-up/workers-and-pages" target="_blank" style="color:var(--accent2)">workers.cloudflare.com</a> → kostenlosen Account erstellen<br>
+        2. „Create Worker" → Code unten einfügen → Deploy<br>
+        3. Worker-URL hier eintragen (z.B. <code style="font-size:0.7rem">https://abc.workers.dev/delete</code>)
+      </p>
+      <details style="margin-top:8px">
+        <summary style="font-size:0.75rem; color:var(--accent); cursor:pointer">Worker-Code anzeigen</summary>
+        <pre id="workerCodePre" style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px; font-size:0.68rem; margin-top:6px; overflow-x:auto; white-space:pre; color:var(--text)">export default {
+  async fetch(request) {
+    const cors = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'authorization, content-type',
+      'Access-Control-Max-Age': '86400',
+    };
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: cors });
+    }
+    if (request.method !== 'DELETE') {
+      return new Response('Not allowed', { status: 405, headers: cors });
+    }
+    const id = new URL(request.url).pathname.split('/').pop();
+    if (!id) return new Response('Missing ID', { status: 400, headers: cors });
+    const res = await fetch(`https://api.assemblyai.com/v2/transcript/${id}`, {
+      method: 'DELETE',
+      headers: { authorization: request.headers.get('authorization') || '' },
+    });
+    return new Response(await res.text(), {
+      status: res.status,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+    });
+  },
+};</pre>
+        <button class="btn btn-ghost" style="margin-top:6px; font-size:0.75rem; padding:5px 12px" onclick="copyWorkerCode()">📋 Code kopieren</button>
+      </details>
+    </div>
+    <div class="field" style="margin-top:18px; padding:12px 14px; background:var(--surface2); border-radius:8px; border:1px solid var(--border)">
+      <label style="display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; font-size:0.85rem; font-weight:600; color:var(--text)">
+        <input type="checkbox" id="anonymizeToggle" style="width:16px; height:16px; margin:0; accent-color:var(--accent); cursor:pointer"
+          onchange="const s=JSON.parse(localStorage.getItem('dashboardSettings')||'{}'); s.anonymize=this.checked; localStorage.setItem('dashboardSettings',JSON.stringify(s)); showToast(this.checked ? '🔒 Anonymisierung aktiv' : '🔓 Anonymisierung deaktiviert','ok')" />
+        🔒 Datenschutz-Modus: Namen anonymisieren
+      </label>
+      <p style="font-size:0.76rem; color:var(--muted); margin-top:6px; padding-left:26px; line-height:1.5">
+        Echte Namen werden durch „Person_A", „Person_B" usw. ersetzt, bevor Transkripte an Claude gesendet werden. Nur du siehst die echten Namen im Dashboard.
+      </p>
+    </div>
+    <p style="font-size:0.75rem; color:var(--muted); margin-top:10px">Alle Keys werden nur lokal in deinem Browser gespeichert.</p>
+    <div id="apiTestResult" style="display:none; margin-top:10px; padding:8px 12px; border-radius:8px; font-size:0.8rem;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeApiModal()">Abbrechen</button>
+      <button class="btn btn-ghost" onclick="testApiKeys()">🔌 Verbindung testen</button>
+      <button class="btn btn-primary" onclick="saveApiKey()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: Claude Analyse ────────────────────── -->
+<div class="modal-backdrop" id="analyseModal">
+  <div class="modal" style="max-width:400px">
+    <h3>🔍 Claude-Analyse</h3>
+    <!-- Auswahl-Bereich (normal) -->
+    <div id="analyseChecks">
+      <p style="font-size:0.82rem; color:var(--muted); margin-bottom:16px">Wähle was analysiert werden soll:</p>
+
+      <!-- Arbeit-spezifisch -->
+      <div id="workChecks" style="display:none">
+        <label class="analyse-check-row" style="margin-bottom:8px">
+          <input type="checkbox" id="chkWork" />
+          <span style="font-size:1.1rem">💼</span>
+          <span><div style="font-size:0.88rem; font-weight:600">Arbeits-Analyse</div><div style="font-size:0.75rem; color:var(--muted)">Aufgaben · Entscheidungen · Risiken · Zusammenfassung</div></span>
+        </label>
+      </div>
+
+      <!-- Privat/Gedanken-spezifisch -->
+      <div id="privateChecks">
+        <label class="analyse-check-row" style="margin-bottom:8px">
+          <input type="checkbox" id="chkPrivate" />
+          <span style="font-size:1.1rem">💬</span>
+          <span><div style="font-size:0.88rem; font-weight:600">Gesprächs-Analyse</div><div style="font-size:0.75rem; color:var(--muted)">Vereinbarungen · Wünsche · Offene Themen · Dynamik</div></span>
+        </label>
+      </div>
+
+      <!-- Immer sichtbar -->
+      <label class="analyse-check-row" style="margin-bottom:8px">
+        <input type="checkbox" id="chkChapters" />
+        <span style="font-size:1.1rem">📖</span>
+        <span><div style="font-size:0.88rem; font-weight:600">Kapitel</div><div style="font-size:0.75rem; color:var(--muted)">Automatische Gliederung mit Zeitstempeln</div></span>
+      </label>
+      <label class="analyse-check-row" style="margin-bottom:8px">
+        <input type="checkbox" id="chkTopics" />
+        <span style="font-size:1.1rem">🏷️</span>
+        <span><div style="font-size:0.88rem; font-weight:600">Themen</div><div style="font-size:0.75rem; color:var(--muted)">Themengebiete als Tags erkennen</div></span>
+      </label>
+      <label class="analyse-check-row" style="margin-bottom:8px">
+        <input type="checkbox" id="chk360" />
+        <span style="font-size:1.1rem">🔄</span>
+        <span><div style="font-size:0.88rem; font-weight:600">360°-Auswertung</div><div style="font-size:0.75rem; color:var(--muted)">4 Perspektiven: Meine Aufgaben · Erwartungen · Emotional · Strategie</div></span>
+      </label>
+    </div>
+    <!-- Lade-Bereich (während Analyse läuft) -->
+    <div id="analyseLoadingArea" style="display:none; text-align:center; padding:24px 0 16px">
+      <div class="analyse-spin">✦</div>
+      <div id="analyseLoadingText" style="font-size:0.88rem; color:var(--muted); margin-top:10px">Analyse wird gestartet…</div>
+      <div id="analyseLoadingSteps" style="margin-top:14px; font-size:0.78rem; color:var(--muted); line-height:1.9"></div>
+    </div>
+    <div id="analyseModalError" style="display:none; margin-top:10px; padding:9px 12px; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); border-radius:8px; font-size:0.82rem; color:var(--red);"></div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" id="analyseCancelBtn" onclick="closeAnalyseModal()">Abbrechen</button>
+      <button class="btn btn-primary" id="analyseStartBtn" onclick="runAnalysisFromModal()">✦ Starten</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: AssemblyAI Bereinigung ───────────── -->
+<div class="modal-backdrop" id="cleanupModal">
+  <div class="modal" style="max-width:580px; width:95%">
+    <h3>🧹 AssemblyAI bereinigen</h3>
+
+    <!-- Proxy-Hinweis -->
+    <div id="cleanupProxyHint" style="display:none; margin-bottom:12px; padding:10px 12px; border-radius:8px; font-size:0.8rem; line-height:1.5"></div>
+
+    <!-- Status-Zeile -->
+    <div id="cleanupStatus" style="font-size:0.8rem; color:var(--muted); margin-bottom:8px; min-height:1.2em"></div>
+
+    <!-- Liste -->
+    <div id="cleanupList" style="max-height:280px; overflow-y:auto; margin-bottom:12px; border:1px solid var(--border); border-radius:8px; padding:4px 0;"></div>
+
+    <div class="modal-actions" style="flex-wrap:wrap; gap:8px">
+      <button class="btn btn-ghost" onclick="closeCleanupModal()">Schließen</button>
+      <button class="btn btn-ghost" onclick="openSettingsFromCleanup()" id="cleanupProxyBtn" style="display:none; font-size:0.8rem">⚙️ Proxy einrichten</button>
+      <button class="btn btn-primary" id="cleanupDeleteAllBtn" onclick="runCleanup()" style="display:none; background:var(--red)">🗑️ Alle löschen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: Löschen bestätigen ───────────────── -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal">
+    <h3>🗑️ Sitzung löschen?</h3>
+    <p id="deleteModalText">Diese Sitzung wird unwiderruflich aus dem Dashboard entfernt. Die Archivdatei auf deiner Festplatte bleibt erhalten.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeDeleteModal()">Abbrechen</button>
+      <button class="btn" style="background:var(--red); color:#fff" onclick="confirmDelete()">🗑️ Ja, löschen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: Für Claude kopieren ──────────────── -->
+<div class="modal-backdrop" id="claudeModal">
+  <div class="modal" style="width: 600px;">
+    <h3>📋 Transkript für Claude</h3>
+    <p>Kopiere diesen Text und füge ihn in ein neues Claude-Gespräch ein. Danach kannst du deine Analyse-Frage stellen.</p>
+    <div class="claude-prompt-area" id="claudePromptText" onclick="this.select()"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeClaudeModal()">Schließen</button>
+      <button class="btn btn-primary" onclick="copyClaudeText()">📋 Kopieren</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ─── TOAST ─────────────────────────────────────── -->
+<!-- ─── SELEKTIONS-TOOLBAR ────────────────────────── -->
+<div class="selection-bar" id="selectionBar">
+  <span class="selection-count" id="selectionCount">0 ausgewählt</span>
+  <div class="claude-btn-wrap" id="multiBtnWrap">
+    <button class="btn btn-primary" onclick="toggleTemplatePopover('multiBtnWrap')">✦ Senden an Claude ▾</button>
+    <div class="template-popover" id="multiPopover">
+      <div class="popover-title">Vorlage wählen & senden</div>
+      <button class="tpl-row" onclick="sendToClaudeMulti('free')"><span class="tpl-icon">📄</span><span class="tpl-text"><div class="tpl-name">Nur Transkripte</div><div class="tpl-desc">Rohtext, eigene Fragen</div></span></button>
+      <button class="tpl-row" onclick="sendToClaudeMulti('communication')"><span class="tpl-icon">💬</span><span class="tpl-text"><div class="tpl-name">Kommunikation</div><div class="tpl-desc">Muster über alle Gespräche</div></span></button>
+      <button class="tpl-row" onclick="sendToClaudeMulti('emotions')"><span class="tpl-icon">❤️</span><span class="tpl-text"><div class="tpl-name">Emotionen & Dynamik</div><div class="tpl-desc">Stimmung, Eskalation</div></span></button>
+      <button class="tpl-row" onclick="sendToClaudeMulti('progress')"><span class="tpl-icon">📈</span><span class="tpl-text"><div class="tpl-name">Verlaufsanalyse</div><div class="tpl-desc">Entwicklung der letzten Gespräche</div></span></button>
+    </div>
+  </div>
+  <button class="btn btn-ghost" onclick="clearSelection()">Auswahl aufheben</button>
+</div>
+
+<!-- ─── SEND OVERLAY ──────────────────────────────── -->
+<div class="send-overlay" id="sendOverlay" onclick="closeSendOverlay()">
+  <div class="send-card" onclick="event.stopPropagation()">
+    <div class="send-icon">✦</div>
+    <h2>Bereit für Claude</h2>
+    <p id="sendOverlayText">Transkript wurde kopiert.</p>
+    <!-- Fallback: Textfeld zum manuellen Kopieren -->
+    <div id="sendOverlayFallback" style="display:none; margin-bottom:16px">
+      <p style="font-size:0.8rem; color:var(--yellow); margin-bottom:8px">⚠️ Automatisches Kopieren hat nicht geklappt – bitte manuell kopieren:</p>
+      <textarea id="sendOverlayText2" readonly style="
+        width:100%; height:120px; background:var(--bg); border:1px solid var(--border);
+        border-radius:8px; color:var(--text); font-size:0.72rem; padding:8px;
+        font-family:monospace; resize:none;" onclick="this.select()"></textarea>
+      <button class="btn btn-primary" style="width:100%; margin-top:8px; justify-content:center"
+        onclick="manualCopy()">📋 Kopieren</button>
+    </div>
+    <div id="sendOverlayPasteHint" style="margin-bottom:16px">
+      <p style="font-size:0.9rem; color:var(--text); font-weight:600; margin-bottom:6px">
+        Text ist in der Zwischenablage – einfach bei Claude einfügen:
+      </p>
+      <p style="font-size:0.8rem; color:var(--muted)">
+        iPhone/Android: Tippe & halte → Einsetzen<br>
+        Mac: <span class="kbd">⌘</span><span class="kbd">V</span> &nbsp;·&nbsp;
+        Windows: <span class="kbd">Ctrl</span><span class="kbd">V</span>
+      </p>
+    </div>
+    <a id="sendOverlayClaudeLink" href="https://claude.ai/new" target="_blank"
+      class="btn btn-primary" style="width:100%; justify-content:center; text-decoration:none; margin-bottom:10px"
+      onclick="closeSendOverlay()">✦ Claude.ai öffnen →</a>
+    <button class="btn btn-ghost" style="width:100%; justify-content:center" onclick="closeSendOverlay()">Schließen</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/drive.js"></script>
+<script src="js/sessions.js"></script>
+<script src="js/assemblyai.js"></script>
+<script src="js/claude.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/tags.js"></script>
+<script src="js/notes.js"></script>
+<script src="js/persons.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/recorder.js"></script>
+<script src="js/app.js"></script>
+<script src="js/features.js"></script>
+<script src="js/search.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>if(window.mermaid) mermaid.initialize({ startOnLoad: false });</script>
+
+<!-- ─── MODAL: Globale Suche ─────────────────────── -->
+<div class="modal-backdrop" id="searchModal">
+  <div class="modal" style="max-width:700px; width:96%; max-height:90vh; display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-shrink:0">
+      <span style="font-size:1.1rem">🔍</span>
+      <input id="searchInput" type="text"
+        placeholder="Suchen… z.B. „Budget", „Eva", „Arzttermin""
+        oninput="onSearchInput(event)"
+        onkeydown="if(event.key==='Enter') runClaudeSearch()"
+        style="flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:10px 14px; font-size:0.95rem; outline:none;" />
+      <button onclick="closeSearchModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;flex-shrink:0">×</button>
+    </div>
+
+    <!-- Sofortergebnisse -->
+    <div style="flex:1; overflow-y:auto; min-height:100px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-shrink:0">
+        <span id="searchStats" style="font-size:0.75rem; color:var(--muted)"></span>
+        <button id="searchClaudeBtn" onclick="runClaudeSearch()" class="btn btn-primary" style="font-size:0.8rem; padding:5px 14px">
+          ✦ Claude fragen
+        </button>
+      </div>
+      <div id="searchResults">
+        <div class="search-hint">Tippe um in allen Aufnahmen zu suchen · <kbd style="background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:1px 5px; font-size:0.75rem">⌘K</kbd> öffnet diese Suche</div>
+      </div>
+      <!-- Claude-Suchergebnis -->
+      <div id="searchClaudeResult" style="display:none; margin-top:14px; padding:14px; background:var(--surface2); border:1px solid var(--border); border-radius:10px;">
+        <div style="font-size:0.75rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px">✦ Claude-Antwort</div>
+        <div id="searchClaudeContent" style="font-size:0.85rem; color:var(--text); line-height:1.7"></div>
+      </div>
+    </div>
+
+    <p style="font-size:0.72rem; color:var(--muted); margin-top:10px; flex-shrink:0">
+      Sofortsuche durchsucht Titel · Transkript · Notizen · Tags · Themen · Personen &nbsp;·&nbsp; „Claude fragen" sucht semantisch über alle Inhalte
+    </p>
+  </div>
+</div>
+
+<!-- ─── MODAL: Ask Your Recording ───────────────── -->
+<div class="modal-backdrop" id="askModal">
+  <div class="modal" style="max-width:640px; width:95%; max-height:90vh; display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-shrink:0">
+      <h3 style="margin:0; font-size:1.05rem">💬 Aufnahme befragen</h3>
+      <button onclick="closeAskModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">×</button>
+    </div>
+    <div id="askChatHistory" style="flex:1; overflow-y:auto; min-height:200px; max-height:420px; margin-bottom:14px; padding-right:4px"></div>
+    <div style="display:flex; gap:8px; flex-shrink:0">
+      <textarea id="askInput"
+        placeholder="Frage stellen… z.B. „Was hat Max über das Budget gesagt?""
+        onkeydown="askInputKeydown(event)"
+        style="flex:1; resize:none; height:56px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:10px 12px; font-size:0.88rem; outline:none; font-family:inherit; line-height:1.4"></textarea>
+      <button id="askSendBtn" onclick="sendAskQuestion()" class="btn btn-primary" style="align-self:stretch; padding:0 18px; flex-shrink:0">Senden</button>
+    </div>
+    <p style="font-size:0.72rem; color:var(--muted); margin-top:8px; flex-shrink:0">
+      Claude zitiert direkt aus dem Transkript · Zeitstempel sind anklickbar
+    </p>
+  </div>
+</div>
+
+<!-- ─── MODAL: Mind Map ──────────────────────────── -->
+<div class="modal-backdrop" id="mindmapModal">
+  <div class="modal" style="max-width:820px; width:96%; max-height:92vh; display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-shrink:0">
+      <h3 id="mindmapTitle" style="margin:0; font-size:1.05rem">🗺️ Mind Map</h3>
+      <div style="display:flex; gap:8px">
+        <button onclick="copyMindMapCode()" class="btn btn-ghost" style="font-size:0.8rem">📋 Code kopieren</button>
+        <button onclick="closeMindMapModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">×</button>
+      </div>
+    </div>
+    <div id="mindmapRender" style="flex:1; overflow:auto; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:20px; min-height:300px; display:flex; align-items:center; justify-content:center"></div>
+    <details style="margin-top:12px; flex-shrink:0">
+      <summary style="font-size:0.78rem; color:var(--muted); cursor:pointer">Mermaid-Code anzeigen</summary>
+      <pre id="mindmapCode" style="font-size:0.72rem; color:var(--muted); white-space:pre-wrap; margin-top:8px; background:var(--surface2); padding:10px; border-radius:6px; overflow:auto; max-height:200px"></pre>
+    </details>
+  </div>
+</div>
+
+<!-- ─── MODAL: Eigene Vorlagen ───────────────────── -->
+<div class="modal-backdrop" id="templatesModal">
+  <div class="modal" style="max-width:580px; width:95%; max-height:90vh; display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-shrink:0">
+      <h3 style="margin:0; font-size:1.05rem">⚙️ Eigene Vorlagen</h3>
+      <button onclick="closeTemplatesModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">×</button>
+    </div>
+    <!-- Bestehende Vorlagen -->
+    <div id="customTemplatesList" style="flex:1; overflow-y:auto; margin-bottom:16px; min-height:60px"></div>
+    <!-- Neue Vorlage anlegen -->
+    <div style="border-top:1px solid var(--border); padding-top:16px; flex-shrink:0">
+      <div style="font-size:0.78rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px">Neue Vorlage anlegen</div>
+      <input id="newTemplateName" type="text" placeholder='Name  (z.B. "Arztgespräch")'
+        style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.88rem; outline:none; margin-bottom:8px; box-sizing:border-box" />
+      <textarea id="newTemplatePrompt" placeholder="Anweisung an Claude  (z.B. „Extrahiere alle medizinischen Befunde und Empfehlungen.")"
+        style="width:100%; height:80px; resize:none; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.85rem; outline:none; font-family:inherit; box-sizing:border-box; margin-bottom:10px"></textarea>
+      <button onclick="addCustomTemplate()" class="btn btn-primary" style="width:100%; justify-content:center">➕ Vorlage speichern</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

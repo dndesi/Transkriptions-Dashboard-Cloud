@@ -1,0 +1,267 @@
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+function init() {
+  updateApiIndicator();
+  updateDriveStatus();
+  updateTagFilter();
+  renderBrowser();
+  setupAudioSync();
+  setDateInputToNow();
+
+  // Drag & Drop
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) { applyFileDate(file); processFile(file); }
+  });
+
+  // Neue Features initialisieren (eigene Vorlagen in Popovers laden)
+  if (typeof initFeatures === 'function') initFeatures();
+}
+
+
+// RESET FÜR NEUE SITZUNG
+// ═══════════════════════════════════════════════════
+function onSessionTypeChange() {
+  updateSpeakerSummary();
+}
+
+function updateSpeakerSummary() {
+  const type    = document.getElementById('sessionType')?.value || 'privat';
+  const persons = (document.getElementById('sessionPersons')?.value || '')
+                    .split(',').map(p => p.trim()).filter(Boolean);
+  const summary = document.getElementById('speakerSummary');
+  const preview = document.getElementById('speakerBPreview');
+  if (!summary) return;
+
+  if (type === 'gedanken') {
+    summary.innerHTML = `<span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)">Ich</strong></span>
+      <span style="color:var(--border); margin:0 4px">·</span>
+      <span style="color:var(--muted); font-style:italic">Nur eigene Gedanken – kein zweiter Sprecher</span>`;
+  } else {
+    const bName = persons[0] || (type === 'arbeit' ? 'Kollege/Kollegin' : 'Gesprächspartner/in');
+    const extras = persons.slice(1);
+    let html = `<span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)">Ich</strong></span>
+      <span style="color:var(--border); margin:0 4px">·</span>
+      <span><span style="color:var(--speaker-b)">●</span> <strong style="color:var(--text)">${escHtml(bName)}</strong></span>`;
+    extras.forEach((name, i) => {
+      const col = ['var(--speaker-c)','var(--speaker-d)','var(--speaker-extra)'][i] || 'var(--speaker-extra)';
+      html += `<span style="color:var(--border); margin:0 4px">·</span>
+        <span><span style="color:${col}">●</span> <strong style="color:var(--text)">${escHtml(name)}</strong></span>`;
+    });
+    summary.innerHTML = html;
+  }
+}
+
+function resetForNewSession() {
+  document.getElementById('sessionLabel').value = '';
+  setDateInputToNow();
+  if (document.getElementById('sessionType'))   document.getElementById('sessionType').value = 'privat';
+  if (document.getElementById('sessionPersons')) document.getElementById('sessionPersons').value = '';
+  onSessionTypeChange();
+  checkUploadReady();
+}
+
+function setDateInputToNow() {
+  const el = document.getElementById('sessionDate');
+  if (!el) return;
+  const now = new Date();
+  // Format: YYYY-MM-DDTHH:MM (wie datetime-local erwartet)
+  const pad = n => String(n).padStart(2, '0');
+  el.value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+// ═══════════════════════════════════════════════════
+// SCHRITT-VALIDIERUNG
+// ═══════════════════════════════════════════════════
+// ── Theme-Toggle ─────────────────────────────────────────────────────────────
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.textContent = theme === 'light' ? '🌙' : '☀️';
+  localStorage.setItem('dashboardTheme', theme);
+}
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+// Theme beim Laden anwenden
+(function() {
+  const saved = localStorage.getItem('dashboardTheme') || 'dark';
+  applyTheme(saved);
+})();
+
+function checkUploadReady() {
+  const hasKey     = !!apiKey;
+  const hasLabel   = !!(document.getElementById('sessionLabel')?.value.trim());
+  const hasFolder  = !!(driveToken && driveFolderId && driveSubfolderId);
+
+  // Schritt 1
+  const s1 = document.getElementById('step1');
+  const s1check = document.getElementById('step1Check');
+  const s1body = document.getElementById('step1Body');
+  if (hasKey) {
+    s1.className = 'step-block done';
+    s1check.textContent = '✅';
+    s1body.style.display = 'none';
+  } else {
+    s1.className = 'step-block active';
+    s1check.textContent = '';
+    s1body.style.display = 'block';
+  }
+
+  // Schritt 2 (gesperrt bis Key da)
+  const s2 = document.getElementById('step2');
+  const s2check = document.getElementById('step2Check');
+  if (!hasKey) {
+    s2.className = 'step-block locked';
+    s2check.textContent = '';
+  } else if (hasLabel) {
+    s2.className = 'step-block done';
+    s2check.textContent = '✅';
+  } else {
+    s2.className = 'step-block active';
+    s2check.textContent = '';
+  }
+
+  // Schritt 3 (gesperrt bis Key + Label da)
+  const s3 = document.getElementById('step3');
+  const s3check = document.getElementById('step3Check');
+  if (!hasKey || !hasLabel) {
+    s3.className = 'step-block locked';
+    s3check.textContent = '';
+  } else if (hasFolder) {
+    s3.className = 'step-block done';
+    s3check.textContent = '✅';
+  } else {
+    s3.className = 'step-block active';
+    s3check.textContent = '';
+  }
+
+  // Schritt 4 (gesperrt bis alle 3 da)
+  const s4 = document.getElementById('step4');
+  const zone = document.getElementById('uploadZone');
+  const hint = document.getElementById('uploadHint');
+  const allReady = hasKey && hasLabel && hasFolder;
+
+  if (allReady) {
+    s4.className = 'step-block active';
+    zone.classList.remove('disabled');
+    hint.classList.remove('visible');
+    const rb = document.getElementById('recordBtn');
+    if (rb) { rb.style.pointerEvents=''; rb.style.opacity='1'; }
+  } else {
+    s4.className = 'step-block locked';
+    zone.classList.add('disabled');
+    const missing = [];
+    if (!hasKey)    missing.push('API-Key (Schritt 1)');
+    if (!hasLabel)  missing.push('Sitzungsname (Schritt 2)');
+    if (!hasFolder) missing.push('Unterordner in Drive (Schritt 3)');
+    hint.textContent = '⚠ Noch ausstehend: ' + missing.join(', ');
+    hint.classList.add('visible');
+  }
+}
+
+function openApiModal() {
+  document.getElementById('apiKeyInput').value = apiKey;
+  document.getElementById('anthropicKeyInput').value = anthropicKey;
+  document.getElementById('proxyUrlInput').value = proxyUrl;
+  const settings = JSON.parse(localStorage.getItem('dashboardSettings') || '{}');
+  document.getElementById('anonymizeToggle').checked = !!settings.anonymize;
+  document.getElementById('apiModal').classList.add('open');
+}
+function closeApiModal() { document.getElementById('apiModal').classList.remove('open'); }
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val) { showToast('Bitte AssemblyAI Key eingeben.', 'error'); return; }
+  apiKey = val;
+  localStorage.setItem('assemblyai_key', apiKey);
+  const antVal = document.getElementById('anthropicKeyInput').value.trim();
+  anthropicKey = antVal;
+  if (antVal) localStorage.setItem('anthropic_key', antVal);
+  else localStorage.removeItem('anthropic_key');
+  const pxVal = document.getElementById('proxyUrlInput').value.trim();
+  proxyUrl = pxVal;
+  if (pxVal) localStorage.setItem('proxy_url', pxVal);
+  else localStorage.removeItem('proxy_url');
+  updateApiIndicator();
+  closeApiModal();
+  showToast('Einstellungen gespeichert ✓', 'success');
+}
+
+function copyWorkerCode() {
+  const code = document.getElementById('workerCodePre').textContent;
+  navigator.clipboard.writeText(code).then(() => showToast('Worker-Code kopiert ✓', 'success'));
+}
+
+async function testApiKeys() {
+  const resultEl = document.getElementById('apiTestResult');
+  const asmKey = document.getElementById('apiKeyInput').value.trim();
+  const antKey = document.getElementById('anthropicKeyInput').value.trim();
+  resultEl.style.display = 'block';
+  resultEl.style.background = 'rgba(107,114,128,0.15)';
+  resultEl.style.border = '1px solid var(--border)';
+  resultEl.style.color = 'var(--muted)';
+  resultEl.textContent = '⏳ Teste Verbindungen…';
+
+  const lines = [];
+
+  // AssemblyAI testen
+  if (asmKey) {
+    try {
+      const res = await fetch('https://api.assemblyai.com/v2/transcript', {
+        method: 'GET',
+        headers: { authorization: asmKey }
+      });
+      lines.push(res.status === 200 || res.status === 400 || res.status === 404
+        ? '✅ AssemblyAI: Verbunden'
+        : res.status === 401 ? '❌ AssemblyAI: Key ungültig (401)'
+        : `⚠️ AssemblyAI: HTTP ${res.status}`);
+    } catch (e) { lines.push('❌ AssemblyAI: Netzwerkfehler'); }
+  } else {
+    lines.push('⚪ AssemblyAI: Kein Key eingegeben');
+  }
+
+  // Anthropic testen
+  if (antKey) {
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': antKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 10,
+          messages: [{ role: 'user', content: 'Antworte nur: ok' }]
+        })
+      });
+      lines.push(res.ok ? '✅ Anthropic: Verbunden'
+        : res.status === 401 ? '❌ Anthropic: Key ungültig (401)'
+        : res.status === 403 ? '❌ Anthropic: Zugriff verweigert (403)'
+        : `⚠️ Anthropic: HTTP ${res.status}`);
+    } catch (e) { lines.push('❌ Anthropic: Netzwerkfehler — ' + e.message); }
+  } else {
+    lines.push('⚪ Anthropic: Kein Key eingegeben');
+  }
+
+  const allOk = lines.every(l => l.startsWith('✅'));
+  const hasError = lines.some(l => l.startsWith('❌'));
+  resultEl.style.background = allOk ? 'rgba(52,211,153,0.1)' : hasError ? 'rgba(248,113,113,0.1)' : 'rgba(251,191,36,0.1)';
+  resultEl.style.border = `1px solid ${allOk ? 'rgba(52,211,153,0.4)' : hasError ? 'rgba(248,113,113,0.4)' : 'rgba(251,191,36,0.4)'}`;
+  resultEl.style.color = allOk ? 'var(--green)' : hasError ? 'var(--red)' : 'var(--yellow)';
+  resultEl.innerHTML = lines.join('<br>');
+}
+
+// ═══════════════════════════════════════════════════
+
+// START
+init();
