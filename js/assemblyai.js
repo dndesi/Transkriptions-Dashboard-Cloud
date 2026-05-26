@@ -90,6 +90,9 @@ async function fetchAndRenderCleanupList() {
       if (data.transcripts?.length < 50) break;
     }
 
+    // Bereits gelöschte Transkripte ausfiltern – die können nicht nochmal gelöscht werden
+    transcripts = transcripts.filter(t => t.status !== 'deleted');
+
     if (transcripts.length === 0) {
       list.innerHTML = '<div style="padding:16px; text-align:center; color:var(--green); font-size:0.9rem">✅ Alles sauber – keine Transkripte auf AssemblyAI.</div>';
       status.textContent = '';
@@ -105,8 +108,9 @@ async function fetchAndRenderCleanupList() {
       // Lokale Session suchen für den Namen
       const local = sessions.find(s => s.transcriptId === t.id);
       const name  = local ? local.label : '—';
-      const dateStr = t.created
-        ? new Date(t.created * 1000).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+      const dateObj = t.created ? new Date(t.created * 1000) : null;
+      const dateStr = dateObj && !isNaN(dateObj)
+        ? dateObj.toLocaleString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
         : '—';
       const statusColor = t.status === 'completed' ? 'var(--green)' : t.status === 'error' ? 'var(--red)' : 'var(--yellow)';
       const statusLabel = t.status === 'completed' ? '✓ fertig' : t.status === 'error' ? '✗ Fehler' : '⏳ ' + t.status;
