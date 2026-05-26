@@ -39,32 +39,44 @@
 
 <!-- ─── HEADER ───────────────────────────────────── -->
 <header>
-  <div>
-    <h1>🎙️ Transkriptions-Dashboard</h1>
-    <small>Cloud &nbsp;·&nbsp; AssemblyAI &amp; Claude</small>
+  <!-- App-Name links -->
+  <div style="display:flex; align-items:center; gap:10px; min-width:0">
+    <span style="font-size:1.3rem; line-height:1">🎙️</span>
+    <div>
+      <div style="font-size:0.95rem; font-weight:700; letter-spacing:-0.01em; color:var(--text); line-height:1.2">Distill Voice</div>
+      <div style="font-size:0.65rem; color:var(--muted); line-height:1">AssemblyAI &amp; Claude</div>
+    </div>
   </div>
-  <div style="display:flex; align-items:center; gap:10px">
+
+  <!-- Rechte Seite -->
+  <div style="display:flex; align-items:center; gap:6px; flex-wrap:nowrap">
+
+    <!-- Home -->
+    <button onclick="setView('grid')" title="Zurück zur Übersicht" style="
+      background:none; border:1px solid var(--border); border-radius:6px;
+      color:var(--muted); font-size:0.88rem; padding:4px 10px; cursor:pointer;
+      transition:border-color 0.2s, color 0.2s;"
+      onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">🏠</button>
+
+    <!-- Suche -->
     <button onclick="openSearchModal()" title="Globale Suche (⌘K)" style="
       background:none; border:1px solid var(--border); border-radius:6px;
       color:var(--muted); font-size:0.82rem; padding:4px 12px; cursor:pointer;
-      display:flex; align-items:center; gap:6px;
+      display:flex; align-items:center; gap:5px;
       transition:border-color 0.2s, color 0.2s;"
       onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
       onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
-      🔍 <span style="opacity:0.6; font-size:0.72rem">⌘K</span>
+      🔍 <span style="opacity:0.5; font-size:0.7rem">⌘K</span>
     </button>
+
+    <!-- Theme Toggle -->
     <button id="themeToggleBtn" onclick="toggleTheme()" title="Hell/Dunkel wechseln" style="
       background:none; border:1px solid var(--border); border-radius:6px;
       color:var(--muted); font-size:0.88rem; padding:4px 10px; cursor:pointer;
       transition:border-color 0.2s, color 0.2s;">🌙</button>
-    <button onclick="openChangelogModal()" title="Versionsprotokoll anzeigen" style="
-      background:none; border:1px solid var(--border); border-radius:6px;
-      color:var(--muted); font-size:0.72rem; padding:4px 10px; cursor:pointer;
-      letter-spacing:0.04em; transition:border-color 0.2s, color 0.2s;"
-      onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
-      v3.2
-    </button>
+
+    <!-- Personen -->
     <button id="headerPersonsBtn" onclick="togglePersonsView()" title="Personen-Profile" style="
       background:none; border:1px solid var(--border); border-radius:6px;
       color:var(--muted); font-size:0.82rem; padding:4px 10px; cursor:pointer;
@@ -73,14 +85,18 @@
       onmouseout="if(!this.classList.contains('active')){this.style.borderColor='var(--border)';this.style.color='var(--muted)'}">
       👥
     </button>
+
+    <!-- Kosten -->
     <button id="headerCostsBtn" onclick="toggleCostsView()" title="Kostenübersicht" style="
       background:none; border:1px solid var(--border); border-radius:6px;
       color:var(--muted); font-size:0.82rem; padding:4px 10px; cursor:pointer;
       transition:border-color 0.2s, color 0.2s, background 0.2s;"
-      onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+      onmouseover="if(!this.classList.contains('active')){this.style.borderColor='var(--accent)';this.style.color='var(--accent)'}"
       onmouseout="if(!this.classList.contains('active')){this.style.borderColor='var(--border)';this.style.color='var(--muted)'}">
       💰
     </button>
+
+    <!-- Systemarchitektur -->
     <button id="headerArchBtn" onclick="toggleArchView()" title="Systemarchitektur" style="
       background:none; border:1px solid var(--border); border-radius:6px;
       color:var(--muted); font-size:0.82rem; padding:4px 10px; cursor:pointer;
@@ -89,21 +105,31 @@
       onmouseout="if(!this.classList.contains('active')){this.style.borderColor='var(--border)';this.style.color='var(--muted)'}">
       📐
     </button>
+
+    <!-- API-Key -->
     <div class="api-badge" onclick="openApiModal()">
       <span class="dot" id="apiBadgeDot"></span>
-      <span id="apiBadgeText">API-Key eingeben</span>
+      <span id="apiBadgeText">API-Key</span>
     </div>
-    <div id="userBadge" onclick="signOut()" title="Abmelden" style="
-      display:none; align-items:center; gap:8px; cursor:pointer;
+
+    <!-- User Badge: Avatar + Version -->
+    <div id="userBadge" title="Abmelden" style="
+      display:none; align-items:center; gap:6px; cursor:default;
       background:var(--surface2); border:1px solid var(--border);
-      border-radius:8px; padding:8px 14px; font-size:0.82rem; color:var(--muted);
+      border-radius:8px; padding:5px 10px; font-size:0.82rem; color:var(--muted);
       transition:border-color 0.2s;">
-      <span id="userAvatar" style="
+      <span id="userAvatar" onclick="signOut()" title="Abmelden (klicken)" style="
         width:24px; height:24px; border-radius:50%; background:var(--accent);
-        color:#fff; font-size:0.75rem; font-weight:700;
+        color:#fff; font-size:0.75rem; font-weight:700; cursor:pointer;
         display:flex; align-items:center; justify-content:center; flex-shrink:0;">?</span>
-      <span id="userEmail" style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">—</span>
+      <button onclick="openChangelogModal()" title="Versionsprotokoll" style="
+        background:none; border:none; color:var(--muted); font-size:0.7rem;
+        padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
+        onmouseover="this.style.color='var(--accent)'"
+        onmouseout="this.style.color='var(--muted)'">v3.2</button>
     </div>
+    <!-- userEmail versteckt (wird intern noch genutzt) -->
+    <span id="userEmail" style="display:none">—</span>
   </div>
 </header>
 

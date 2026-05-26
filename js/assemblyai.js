@@ -283,6 +283,7 @@ async function processFile(file) {
     session.utterances = result.utterances || [];
     session.status = 'done';
     session.duration = result.audio_duration;
+    session.processedAt = new Date().toISOString(); // Zeitpunkt der Transkription
     // Tageskurs für den Aufnahmetag abrufen und speichern
     const rateDay = new Date(sessionDate).toISOString().slice(0, 10);
     const { rate: eurRate, date: eurRateDate } = await fetchExchangeRate(rateDay);

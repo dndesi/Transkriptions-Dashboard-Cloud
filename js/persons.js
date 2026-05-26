@@ -424,10 +424,10 @@ function renderCostsView() {
   });
   const totalAllEur = totalAsmEur + totalClaudeEur;
 
-  // Monatsgruppen (EUR-Summen mit Tageskurs)
+  // Monatsgruppen nach Transkriptionsdatum (processedAt), Fallback auf Aufnahmedatum
   const byMonth = {};
   done.forEach(s => {
-    const d   = new Date(s.date);
+    const d   = new Date(s.processedAt || s.date);
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
     const lbl = d.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
     if (!byMonth[key]) byMonth[key] = { label: lbl, sessions: [], asmEur: 0, claudeEur: 0 };
@@ -490,7 +490,10 @@ function renderCostsView() {
                 onmouseover="this.style.background='rgba(108,99,255,0.05)'"
                 onmouseout="this.style.background=''">
               <td style="padding:8px 8px; font-weight:600; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${escHtml(s.label)}</td>
-              <td style="padding:8px 8px; color:var(--muted)">${new Date(s.date).toLocaleDateString('de-DE')}</td>
+              <td style="padding:8px 8px; color:var(--muted)">
+                ${s.processedAt ? new Date(s.processedAt).toLocaleDateString('de-DE') : new Date(s.date).toLocaleDateString('de-DE')}
+                ${s.processedAt && s.date ? `<div style="font-size:0.68rem;opacity:0.5">Aufn.: ${new Date(s.date).toLocaleDateString('de-DE')}</div>` : ''}
+              </td>
               <td style="padding:8px 8px; text-align:right; color:var(--muted)">${s.duration ? formatDuration(s.duration) : '?'}</td>
               <td style="padding:8px 8px; text-align:right">${fmtCostSession(c.assemblyai, s)}</td>
               <td style="padding:8px 8px; text-align:right">${fmtCostSession(c.claude, s)}</td>
