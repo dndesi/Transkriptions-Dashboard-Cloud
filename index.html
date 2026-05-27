@@ -44,8 +44,9 @@
 
 <!-- ─── HEADER ───────────────────────────────────── -->
 <header>
-  <!-- App-Name links -->
-  <div style="display:flex; align-items:center; gap:10px; min-width:0">
+  <!-- App-Name: klickbar → Projektübersicht -->
+  <div onclick="setView('timeline'); showBrowser();" title="Zur Projektübersicht"
+    style="display:flex; align-items:center; gap:10px; min-width:0; cursor:pointer">
     <i data-lucide="mic" style="width:20px;height:20px;stroke:var(--accent);stroke-width:2;fill:none;flex-shrink:0"></i>
     <div>
       <div style="font-size:0.95rem; font-weight:700; letter-spacing:-0.01em; color:var(--text); line-height:1.2">Distill Voice</div>
@@ -53,38 +54,33 @@
     </div>
   </div>
 
-  <!-- Hamburger: nur Mobile -->
-  <button id="hamburgerBtn" class="hdr-btn" onclick="toggleMobileMenu()" title="Menü"
-    onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
-    aria-label="Menü öffnen" aria-expanded="false">
-    <i data-lucide="menu" class="hdr-icon" id="hamburgerIcon"></i>
-  </button>
+  <!-- Immer sichtbare Aktionen (Desktop + Mobile) -->
+  <div style="display:flex; align-items:center; gap:6px; margin-left:auto">
 
-  <!-- Rechte Seite (Desktop: flex-row, Mobile: Dropdown via #hdrNav) -->
-  <div id="hdrNav">
-
-    <!-- Home -->
-    <!-- Sidebar-Toggle: nur Mobile (im Dropdown sichtbar) -->
-    <button onclick="toggleSidebar()" title="Sitzungen" class="hdr-btn mobile-only"
-      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
-      style="align-items:center;gap:6px">
-      <i data-lucide="panel-left" class="hdr-icon"></i>
-      <span style="font-size:0.78rem">Sitzungen</span>
-    </button>
-
-    <!-- Home -->
-    <button onclick="setView('timeline')" title="Zurück zur Übersicht" class="hdr-btn"
-      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')">
-      <i data-lucide="home" class="hdr-icon"></i>
-    </button>
-
-    <!-- Suche -->
+    <!-- Suche: immer sichtbar -->
     <button onclick="openSearchModal()" title="Globale Suche (⌘K)" class="hdr-btn"
       onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
       style="display:flex;align-items:center;gap:5px">
       <i data-lucide="search" class="hdr-icon"></i>
-      <span style="opacity:0.45; font-size:0.65rem; font-family:monospace">⌘K</span>
+      <span class="search-shortcut" style="opacity:0.45; font-size:0.65rem; font-family:monospace">⌘K</span>
     </button>
+
+    <!-- Sidebar-Toggle: nur Mobile sichtbar (via CSS) -->
+    <button id="sidebarToggleBtn" onclick="toggleSidebar()" title="Sitzungen" class="hdr-btn mobile-only"
+      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')">
+      <i data-lucide="panel-left" class="hdr-icon"></i>
+    </button>
+
+    <!-- Hamburger: nur Mobile -->
+    <button id="hamburgerBtn" class="hdr-btn" onclick="toggleMobileMenu()" title="Menü"
+      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
+      aria-label="Menü öffnen" aria-expanded="false">
+      <i data-lucide="menu" class="hdr-icon" id="hamburgerIcon"></i>
+    </button>
+  </div>
+
+  <!-- Nav-Dropdown (Desktop: flex-row, Mobile: aufklappbar) -->
+  <div id="hdrNav">
 
     <!-- Theme Toggle -->
     <button id="themeToggleBtn" onclick="toggleTheme()" title="Hell/Dunkel wechseln" class="hdr-btn"
@@ -133,7 +129,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v3.8</button>
+        onmouseout="this.style.color='var(--muted)'">v3.9</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -485,6 +481,22 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v3.9 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v3.9</span>
+          <span class="cl-date">27.05.2026</span>
+          <span class="cl-tag cl-tag-improvement">Mobile UX</span>
+        </div>
+        <ul>
+          <li><strong>Suche immer im Header</strong> – Suchbutton (⌘K) ist jetzt dauerhaft im Header sichtbar, auch auf Mobile. Nicht mehr im aufklappbaren Menü versteckt.</li>
+          <li><strong>„Distill Voice" als Home-Button</strong> – App-Name im Header ist klickbar und führt direkt zur Projektübersicht (Listenansicht). Separater Home-Button entfernt.</li>
+          <li><strong>Sidebar-Toggle dauerhaft im Header</strong> – Panel-Left-Icon steht neben Suche und Hamburger, immer sichtbar auf Mobile.</li>
+          <li><strong>⌘K-Shortcut auf Touch ausgeblendet</strong> – Shortcut-Hinweis im Suchbutton wird auf Mobile nicht angezeigt (keine Tastatur vorhanden).</li>
+        </ul>
+        <div class="cl-tech">Betroffen: index.html (Header-Struktur), css/styles.css (.search-shortcut Mobile-Regel).</div>
+      </div>
 
       <!-- ── v3.8 ── -->
       <div class="cl-entry">
