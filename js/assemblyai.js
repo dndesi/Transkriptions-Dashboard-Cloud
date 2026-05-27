@@ -4,7 +4,7 @@ async function deleteFromAssemblyAI(transcriptId) {
   if (!transcriptId) return { ok: false, error: 'Keine ID' };
   const deleteUrl = proxyUrl
     ? proxyUrl.replace(/\/$/, '') + '/' + transcriptId
-    : `https://api.assemblyai.com/v2/transcript/${transcriptId}`;
+    : `${assemblyBase()}/v2/transcript/${transcriptId}`;
   console.log('[AssemblyAI DELETE] URL:', deleteUrl);
   try {
     const res = await fetch(deleteUrl, {
@@ -79,7 +79,7 @@ async function fetchAndRenderCleanupList() {
   try {
     // Alle Transkripte von AssemblyAI holen (max. 200)
     let transcripts = [];
-    let url = 'https://api.assemblyai.com/v2/transcript?limit=50';
+    let url = `${assemblyBase()}/v2/transcript?limit=50`;
     while (url && transcripts.length < 200) {
       const res = await fetch(url, { headers: { authorization: apiKey } });
       if (!res.ok) throw new Error('AssemblyAI API ' + res.status);
@@ -341,7 +341,7 @@ async function processFile(file) {
 async function uploadAudio(file) {
   let res;
   try {
-    res = await fetch('https://api.assemblyai.com/v2/upload', {
+    res = await fetch(`${assemblyBase()}/v2/upload`, {
       method: 'POST',
       headers: { 'authorization': apiKey, 'transfer-encoding': 'chunked' },
       body: file,
@@ -370,7 +370,7 @@ async function requestTranscription(audioUrl) {
 
   let res;
   try {
-    res = await fetch('https://api.assemblyai.com/v2/transcript', {
+    res = await fetch(`${assemblyBase()}/v2/transcript`, {
       method: 'POST',
       headers: { 'authorization': apiKey, 'content-type': 'application/json' },
       body: JSON.stringify(body),
@@ -393,7 +393,7 @@ async function requestTranscription(audioUrl) {
 }
 
 async function pollTranscription(transcriptId) {
-  const url = `https://api.assemblyai.com/v2/transcript/${transcriptId}`;
+  const url = `${assemblyBase()}/v2/transcript/${transcriptId}`;
   const headers = { 'authorization': apiKey };
   let attempts = 0;
 

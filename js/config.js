@@ -116,6 +116,14 @@ const GMAIL_API    = 'https://www.googleapis.com/gmail/v1';
 let apiKey = localStorage.getItem('assemblyai_key') || '';
 let anthropicKey = localStorage.getItem('anthropic_key') || '';
 let proxyUrl = localStorage.getItem('proxy_url') || '';
+let assemblyRegion = localStorage.getItem('assembly_region') || 'eu';
+
+// DSGVO: EU-Server oder US-Server
+function assemblyBase() {
+  return assemblyRegion === 'eu'
+    ? 'https://api.eu.assemblyai.com'
+    : 'https://api.assemblyai.com';
+}
 let sessions = JSON.parse(localStorage.getItem('transcription_sessions') || '[]');
 let currentSessionId = null;
 let pollTimer = null;
