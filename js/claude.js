@@ -135,7 +135,46 @@ function buildTranscriptText(session) {
   }).join('\n');
 }
 
+// ── Pflichtpfad-Helfer ──────────────────────────────
+function checkSpeakersNamed() {
+  const s = getSession();
+  if (!s || !s.utterances?.length) return true;
+  const isGedanken = s.type === 'gedanken';
+  if (!s.speakerA) return false;
+  if (!isGedanken && !s.speakerB) return false;
+  return true;
+}
+
+function updateSpeakerStatus() {
+  const hint = document.getElementById('speakerHint');
+  if (!hint) return;
+  const s = getSession();
+  if (!s || !s.utterances?.length) { hint.style.display = 'none'; return; }
+  const named = checkSpeakersNamed();
+  hint.style.display = named ? 'none' : 'flex';
+  if (window.lucide) lucide.createIcons({ nodes: [hint] });
+}
+// ────────────────────────────────────────────────────
+
 function openAnalyseModal() {
+  const s = getSession();
+
+  // ── Pflichtpfad-Guard: Sprecher müssen benannt sein ──
+  if (s?.utterances?.length && !checkSpeakersNamed()) {
+    const isGedanken = s.type === 'gedanken';
+    const elA = document.getElementById('editSpeakerA');
+    const elB = document.getElementById('editSpeakerB');
+    if (!s.speakerA && elA) {
+      elA.classList.add('input-required');
+      setTimeout(() => elA.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    }
+    if (!isGedanken && !s.speakerB && elB) {
+      elB.classList.add('input-required');
+    }
+    showToast('Bitte erst die Sprecher benennen.', 'warning');
+    return;
+  }
+
   document.getElementById('analyseModalError').style.display = 'none';
   document.getElementById('analyseChecks').style.display = 'block';
   document.getElementById('analyseLoadingArea').style.display = 'none';
@@ -143,7 +182,6 @@ function openAnalyseModal() {
   document.getElementById('analyseStartBtn').style.display = '';
 
   // Kontextbasierte Checkboxen ein-/ausblenden
-  const s = getSession();
   const isWork = s?.type === 'arbeit';
   const workChecks    = document.getElementById('workChecks');
   const privateChecks = document.getElementById('privateChecks');
@@ -804,6 +842,7 @@ function showTranscript(session) {
   // Namensfelder befüllen
   document.getElementById('editSpeakerA').value = session.speakerA || 'Sprecher A';
   document.getElementById('editSpeakerB').value = session.speakerB || 'Sprecher B';
+  updateSpeakerStatus();
 
   // Tags & Notizen
   renderTagChips(session);
@@ -874,6 +913,10 @@ function renameSpeaker(speaker, newName) {
   else s.speakerB = newName.trim();
   saveSessions();
   saveToArchive(s);
+  // Pflichtpfad: Required-Highlight entfernen, Status aktualisieren
+  const el = document.getElementById(speaker === 'A' ? 'editSpeakerA' : 'editSpeakerB');
+  if (el) el.classList.remove('input-required');
+  updateSpeakerStatus();
   // Nur Utterances neu rendern, nicht die Inputs (die hat der User gerade editiert)
   renderUtterances(s);
   showToast(`Sprecher ${speaker} → „${newName.trim()}" ✓`, 'success');

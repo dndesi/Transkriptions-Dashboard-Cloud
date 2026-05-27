@@ -825,6 +825,28 @@
     .toast.show { opacity: 1; transform: translateY(0); }
     .toast.success { border-left: 3px solid var(--green); }
     .toast.error { border-left: 3px solid var(--red); }
+    .toast.warning { border-left: 3px solid #f59e0b; }
+
+    /* Pflichtpfad: Sprecher-Name Required */
+    .speaker-name-input.input-required {
+      border-color: var(--red) !important;
+      box-shadow: 0 0 0 2px rgba(248,113,113,0.25);
+      animation: shake 0.3s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-4px); }
+      75%      { transform: translateX(4px); }
+    }
+    #speakerHint {
+      font-size: 0.72rem;
+      color: #f59e0b;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 12px 8px;
+      margin-top: -2px;
+    }
 
     /* Session-Browser */
     .browser-view { display: none; flex-direction: column; gap: 20px; }
