@@ -179,6 +179,8 @@ function openApiModal() {
   document.getElementById('apiKeyInput').value = apiKey;
   document.getElementById('anthropicKeyInput').value = anthropicKey;
   document.getElementById('proxyUrlInput').value = proxyUrl;
+  const regionEl = document.getElementById('assemblyRegionSelect');
+  if (regionEl) regionEl.value = assemblyRegion;
   const settings = JSON.parse(localStorage.getItem('dashboardSettings') || '{}');
   document.getElementById('anonymizeToggle').checked = !!settings.anonymize;
   document.getElementById('apiModal').classList.add('open');
@@ -197,6 +199,9 @@ function saveApiKey() {
   proxyUrl = pxVal;
   if (pxVal) localStorage.setItem('proxy_url', pxVal);
   else localStorage.removeItem('proxy_url');
+  const regionVal = document.getElementById('assemblyRegionSelect')?.value || 'eu';
+  assemblyRegion = regionVal;
+  localStorage.setItem('assembly_region', assemblyRegion);
   updateApiIndicator();
   closeApiModal();
   showToast('Einstellungen gespeichert', 'success');

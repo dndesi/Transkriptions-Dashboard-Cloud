@@ -129,7 +129,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.3</button>
+        onmouseout="this.style.color='var(--muted)'">v4.4</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -508,6 +508,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.4 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.4</span>
+          <span class="cl-date">27.05.2026</span>
+          <span class="cl-tag cl-tag-feature">DSGVO</span>
+        </div>
+        <ul>
+          <li><strong>AssemblyAI EU-Server</strong> – Audio und Transkripte werden jetzt standardmäßig über den EU-Server (<code>api.eu.assemblyai.com</code>) verarbeitet. Daten verlassen die EU nicht mehr. Die Region ist in den API-Einstellungen (🔑) umschaltbar: EU Frankfurt (Standard, empfohlen) oder US.</li>
+        </ul>
+        <div class="cl-tech">Betroffen: js/config.js (assemblyRegion, assemblyBase()), js/assemblyai.js (5 URLs dynamisch), js/app.js (openApiModal, saveApiKey), index.html (Region-Selector im API-Modal).</div>
+      </div>
 
       <!-- ── v4.3 ── -->
       <div class="cl-entry">
@@ -1208,6 +1221,17 @@
       <label>AssemblyAI API-Key</label>
       <p style="font-size:0.78rem; color:var(--muted); margin-bottom:6px">Für Transkription — <a href="https://app.assemblyai.com" target="_blank" style="color:var(--accent)">app.assemblyai.com → Account</a></p>
       <input type="password" id="apiKeyInput" placeholder="…" style="font-family: monospace;" />
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label style="display:flex;align-items:center;gap:6px">
+        Server-Region
+        <span style="font-size:0.7rem; font-weight:500; background:rgba(52,211,153,0.15); color:var(--green); border:1px solid rgba(52,211,153,0.3); border-radius:4px; padding:1px 6px">DSGVO</span>
+      </label>
+      <p style="font-size:0.78rem; color:var(--muted); margin-bottom:6px">EU-Server: Audio &amp; Transkripte bleiben in Europa.</p>
+      <select id="assemblyRegionSelect" style="width:100%; padding:8px 10px; border-radius:6px; background:var(--card); border:1px solid var(--border); color:var(--text); font-size:0.85rem">
+        <option value="eu">🇪🇺 EU – Frankfurt (DSGVO-konform, empfohlen)</option>
+        <option value="us">🇺🇸 US – Standard</option>
+      </select>
     </div>
     <div class="field" style="margin-top:14px">
       <label>Anthropic API-Key</label>
