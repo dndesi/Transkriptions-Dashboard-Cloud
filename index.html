@@ -133,7 +133,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v3.7</button>
+        onmouseout="this.style.color='var(--muted)'">v3.8</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -485,6 +485,22 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v3.8 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v3.8</span>
+          <span class="cl-date">27.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Mobile Bugfixes</span>
+        </div>
+        <ul>
+          <li><strong>Hamburger-Menü repariert</strong> – Inline-Style <code>display:flex</code> auf <code>#hdrNav</code> verhinderte das Ausblenden auf Mobile. Styling auf CSS-Klassen umgestellt.</li>
+          <li><strong>Löschen-Button in Sessionliste</strong> – War nur per Hover sichtbar (funktioniert nicht auf Touch-Geräten). Auf Mobile jetzt dauerhaft eingeblendet, Touch-Ziel vergrößert.</li>
+          <li><strong>Lösch-Bestätigung repariert</strong> – Eigene CSS-Regel (<code>[class*="modal"] > div</code>) machte Modal auf Mobile unbedienbar. Regel entfernt, Modals bleiben zentriert mit <code>92vw</code> Breite.</li>
+          <li><strong>Löschen synchronisiert Drive</strong> – Beim Löschen einer Session wird die Datei jetzt auch aus Google Drive entfernt. Verhindert, dass gelöschte Sessions auf anderen Geräten nach Drive-Sync wieder erscheinen.</li>
+        </ul>
+        <div class="cl-tech">Betroffen: css/styles.css (Mobile Media Query), js/sessions.js (confirmDelete + Drive-Sync).</div>
+      </div>
 
       <!-- ── v3.7 ── -->
       <div class="cl-entry">

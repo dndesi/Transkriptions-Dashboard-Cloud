@@ -1563,6 +1563,33 @@
         pointer-events: auto;
       }
 
+      /* ── Sessionkarten: Löschen-Button immer sichtbar ── */
+      .session-card .sc-actions {
+        opacity: 1 !important;
+      }
+      .sc-btn {
+        padding: 7px 10px; /* größer für Touch */
+      }
+
+      /* ── Detailansicht: Header + Aktions-Buttons ── */
+
+      /* Header: Titel oben, Buttons darunter */
+      .transcript-header {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .transcript-actions {
+        flex-shrink: 1;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+      }
+      /* Buttons kompakter auf Mobile */
+      .transcript-actions .btn {
+        font-size: 0.78rem;
+        padding: 6px 10px;
+      }
+
       /* ── Allgemeine Layout-Fixes ── */
 
       /* Analyse-Buttons: umbrechen statt überlaufen */
@@ -1579,16 +1606,8 @@
         grid-template-columns: 1fr !important;
       }
 
-      /* Modals: volle Breite auf Mobile */
-      .modal-box,
-      [class*="modal"] > div:first-child {
-        max-width: 100% !important;
-        margin: 0 !important;
-        border-radius: var(--radius) var(--radius) 0 0 !important;
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important; right: 0 !important;
-      }
+      /* Modals: bereits durch max-width:90vw mobile-tauglich, kein Umbau nötig */
+      .modal { max-width: 92vw; padding: 20px; }
 
       /* Step-Blöcke in Sidebar: kompakter */
       .step-block { padding: 12px 14px; }
