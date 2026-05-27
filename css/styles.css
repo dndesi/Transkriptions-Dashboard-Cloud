@@ -1523,8 +1523,11 @@
       #hdrNav .api-badge,
       #hdrNav #userBadge { flex: 1 1 100%; justify-content: center; }
 
-      /* Sidebar-Toggle sichtbar im Dropdown */
+      /* Sidebar-Toggle sichtbar im Header */
       .mobile-only { display: inline-flex !important; }
+
+      /* ⌘K-Shortcut im Suchbutton auf Touch verstecken */
+      .search-shortcut { display: none; }
 
       /* ── Layout ── */
       .layout {
