@@ -129,7 +129,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v3.9</button>
+        onmouseout="this.style.color='var(--muted)'">v4.0</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -464,7 +464,19 @@
         <audio id="audioPlayer" controls></audio>
         <div class="audio-no-file" id="audioNoFile" style="display:none">⚠️ Audiodatei nicht im aktiven Archiv-Ordner gefunden</div>
       </div>
-      <div class="utterances" id="utterancesContainer"></div>
+      <!-- Transkript als Accordion -->
+      <div class="insights-block collapsed" id="transcriptBlock">
+        <div class="insights-block-title" onclick="toggleInsightsBlock('transcriptBlock')">
+          <span style="display:inline-flex;align-items:center;gap:6px">
+            <i data-lucide="align-left" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+            Transkript
+          </span>
+          <span class="insights-block-chevron">▾</span>
+        </div>
+        <div class="insights-block-body" style="padding:10px 14px 14px">
+          <div class="utterances" id="utterancesContainer"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Fortschritt oben halten, Leer-Zustand weg -->
@@ -481,6 +493,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.0 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.0</span>
+          <span class="cl-date">27.05.2026</span>
+          <span class="cl-tag cl-tag-improvement">UX</span>
+        </div>
+        <ul>
+          <li><strong>Transkript: Sprechername über dem Text</strong> – Name steht jetzt als eigene Zeile über dem Absatz statt links daneben. Spart horizontal Platz, besonders auf Mobile.</li>
+          <li><strong>Transkript aufklappbar</strong> – Das gesamte Transkript ist jetzt ein aufklappbarer Block (standardmäßig zugeklappt), damit die Projektansicht übersichtlich bleibt.</li>
+          <li><strong>Analyse-Ergebnisse aufklappbar</strong> – Alle Analyse-Blöcke (Gesprächsanalyse, Arbeitsanalyse, Stimmung, Kapitel, Themen, 360°) werden beim ersten Laden zugeklappt eingeblendet. Einmal geöffnet bleibt der Zustand erhalten.</li>
+        </ul>
+        <div class="cl-tech">Betroffen: css/styles.css (utterance-Layout flex-column, border-left statt outline), js/claude.js (showInsightsBlock-Helfer, renderUtterances + transcriptBlock), js/features.js (render360Block), index.html (transcriptBlock Accordion).</div>
+      </div>
 
       <!-- ── v3.9 ── -->
       <div class="cl-entry">
