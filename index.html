@@ -129,7 +129,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.2</button>
+        onmouseout="this.style.color='var(--muted)'">v4.3</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -389,6 +389,12 @@
             onkeydown="if(event.key==='Enter') this.blur()" />
         </div>
       </div>
+      <!-- Pflichtpfad: Sprecher-Hinweis -->
+      <div id="speakerHint">
+        <i data-lucide="alert-circle" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        Sprecher benennen, um die Analyse freizuschalten.
+      </div>
+
       <!-- ─── INSIGHTS (Stimmung / Kapitel / Themen) ─── -->
       <div class="insights-section" id="insightsSection" style="display:none">
         <!-- Private-Analyse -->
@@ -502,6 +508,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.3 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.3</span>
+          <span class="cl-date">27.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul>
+          <li><strong>Pflichtpfad: Sprecher benennen</strong> – Analyse ist jetzt blockiert, solange Sprecher A (und bei Zwei-Personen-Gesprächen auch B) nicht benannt wurden. Hinweistext erscheint unter den Namensfeldern; Felder werden visuell hervorgehoben (rot + Shake-Animation). Sobald beide Namen eingetragen sind, verschwindet der Hinweis automatisch.</li>
+        </ul>
+        <div class="cl-tech">Betroffen: js/claude.js (checkSpeakersNamed, updateSpeakerStatus, openAnalyseModal Guard, renameSpeaker), js/ui.js (showToast warning-Typ), css/styles.css (.input-required, .toast.warning, #speakerHint), index.html (#speakerHint-Element).</div>
+      </div>
 
       <!-- ── v4.2 ── -->
       <div class="cl-entry">

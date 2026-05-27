@@ -189,7 +189,9 @@ function showErrorCard(message, sessionLabel) {
 // ═══════════════════════════════════════════════════
 function showToast(msg, type = 'success') {
   const t = document.getElementById('toast');
-  t.innerHTML = (type === 'success' ? icon('check-circle',14,'margin-right:6px;color:var(--green)') : icon('x-circle',14,'margin-right:6px;color:var(--red)')) + escHtml(msg);
+  const iconName  = type === 'success' ? 'check-circle' : type === 'warning' ? 'alert-circle' : 'x-circle';
+  const iconColor = type === 'success' ? 'var(--green)'  : type === 'warning' ? '#f59e0b'       : 'var(--red)';
+  t.innerHTML = icon(iconName, 14, `margin-right:6px;color:${iconColor}`) + escHtml(msg);
   t.className = 'toast show ' + type;
   setTimeout(() => t.classList.remove('show'), 3500);
 }
