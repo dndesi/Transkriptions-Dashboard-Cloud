@@ -129,7 +129,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.1</button>
+        onmouseout="this.style.color='var(--muted)'">v4.2</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -502,6 +502,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.2 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.2</span>
+          <span class="cl-date">27.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Bugfix</span>
+        </div>
+        <ul>
+          <li><strong>Sidebar Mobile scrollbar</strong> – Kacheln wurden zusammengequetscht und waren nicht nutzbar. Ursache: fehlerhaftes <code>overflow:hidden</code> aus v4.1. Jetzt <code>overflow-y:scroll</code> direkt auf <code>aside</code> – Inhalt hat vollen Platz und ist nach unten scrollbar.</li>
+        </ul>
+        <div class="cl-tech">Betroffen: css/styles.css (aside Mobile: display:block, overflow-y:scroll, padding-bottom:80px).</div>
+      </div>
 
       <!-- ── v4.1 ── -->
       <div class="cl-entry">

@@ -1547,25 +1547,33 @@
         position: relative;
       }
 
-      /* ── Sidebar: fixed overlay ── */
+      /* ── Sidebar: fixed overlay, vollständig scrollbar ── */
       aside {
         position: fixed;
         top: 53px;
-        left: -105vw;       /* vollständig außerhalb */
+        left: -105vw;
         bottom: 0;
-        width: 100vw;       /* volle Bildschirmbreite */
+        width: 100vw;
         max-width: 100vw;
         border-right: none;
         border-bottom: none;
         border-top: 1px solid var(--border);
         z-index: 150;
         transition: left 0.25s ease;
-        overflow-y: auto;
+        overflow-y: scroll;   /* immer scrollbar, auch wenn Inhalt passt */
         overflow-x: hidden;
-        padding: 16px 16px 60px;  /* unten: Puffer damit letztes Element erreichbar */
+        padding: 0 16px 80px;
         box-sizing: border-box;
+        /* Kacheln dürfen sich nicht komprimieren */
+        display: block;
       }
       aside.sidebar-open { left: 0; }
+
+      /* Kacheln in der Sidebar behalten ihre natürliche Höhe */
+      aside .step-block {
+        min-height: unset;
+        flex-shrink: unset;
+      }
 
       /* Overlay bei voller Breite nicht nötig */
       #sidebarOverlay {
