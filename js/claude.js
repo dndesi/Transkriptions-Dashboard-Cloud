@@ -522,6 +522,14 @@ function toggleInsightsBlock(blockId) {
   if (block) block.classList.toggle('collapsed');
 }
 
+// Block einblenden – beim ersten Mal zugeklappt, danach aktuellen Zustand behalten
+function showInsightsBlock(block) {
+  if (!block) return;
+  const wasHidden = block.style.display === 'none' || block.style.display === '';
+  block.style.display = 'block';
+  if (wasHidden) block.classList.add('collapsed');
+}
+
 function renderInsights(session) {
   const section = document.getElementById('insightsSection');
   let anyVisible = false;
@@ -610,7 +618,7 @@ function renderInsights(session) {
     }
 
     privateContent.innerHTML = html;
-    privateBlock.style.display = 'block';
+    showInsightsBlock(privateBlock);
     anyVisible = true;
   } else {
     privateBlock.style.display = 'none';
@@ -688,7 +696,7 @@ function renderInsights(session) {
     }
 
     workContent.innerHTML = html;
-    workBlock.style.display = 'block';
+    showInsightsBlock(workBlock);
     anyVisible = true;
   } else {
     workBlock.style.display = 'none';
@@ -722,7 +730,7 @@ function renderInsights(session) {
     if (cs.summary) html += `<div style="font-size:0.8rem; color:var(--muted); margin-top:8px; line-height:1.4; border-top:1px solid var(--border); padding-top:8px">${escHtml(cs.summary)}</div>`;
     html += `<div class="sentiment-legend">${icon('check-circle',11,'color:var(--green);margin-right:3px')} positiv &nbsp;${icon('check',11,'opacity:0.5;margin-right:3px')} neutral &nbsp;${icon('alert-circle',11,'color:var(--red);margin-right:3px')} kritisch</div>`;
     sentContent.innerHTML = html;
-    sentBlock.style.display = 'block';
+    showInsightsBlock(sentBlock);
     anyVisible = true;
   } else {
     sentBlock.style.display = 'none';
@@ -747,7 +755,7 @@ function renderInsights(session) {
           ${ch.timestamp ? `<div class="chapter-time">▶ ${escHtml(ch.timestamp)}</div>` : ''}
         </div>`;
     }).join('');
-    chapBlock.style.display = 'block';
+    showInsightsBlock(chapBlock);
     anyVisible = true;
   } else {
     chapBlock.style.display = 'none';
@@ -774,7 +782,7 @@ function renderInsights(session) {
           onclick="deleteTopic('${tSid}',${i})" style="color:var(--red)">${icon('trash-2',10)}</button>
       </span>`;
     }).join('')}</div>`;
-    topicsBlock.style.display = 'block';
+    showInsightsBlock(topicsBlock);
     anyVisible = true;
   } else {
     topicsBlock.style.display = 'none';
@@ -809,11 +817,20 @@ function showTranscript(session) {
 
 function renderUtterances(session) {
   const container = document.getElementById('utterancesContainer');
+  const tBlock = document.getElementById('transcriptBlock');
   container.innerHTML = '';
 
   if (!session.utterances || session.utterances.length === 0) {
+    if (tBlock) tBlock.style.display = 'none';
     container.innerHTML = '<p style="color:var(--muted); font-size:0.85rem">Keine Sprecherabschnitte gefunden.</p>';
     return;
+  }
+  // Transkript-Block einblenden (beim ersten Mal zugeklappt)
+  if (tBlock) {
+    if (tBlock.style.display === 'none' || tBlock.style.display === '') {
+      tBlock.classList.add('collapsed');
+    }
+    tBlock.style.display = 'block';
   }
 
   session.utterances.forEach((u, idx) => {

@@ -85,7 +85,11 @@ function render360Block(session) {
   html += '</div>';
 
   content.innerHTML = html;
-  block.style.display = 'block';
+  if (typeof showInsightsBlock === 'function') {
+    showInsightsBlock(block);
+  } else {
+    block.style.display = 'block';
+  }
 
   // in renderInsights() sichtbar machen
   const section = document.getElementById('insightsSection');
