@@ -33,10 +33,21 @@ async function callClaudeAPI(prompt) {
 }
 
 // Hilfsfunktion: Token-Nutzung zur Session addieren
+// Jeder API-Call bekommt einen eigenen Eintrag mit Zeitstempel im claudeCostLog.
+// So können Kosten, die an verschiedenen Tagen entstehen, korrekt dem jeweiligen Monat zugeordnet werden.
 function addTokensToSession(session, inputTokens, outputTokens) {
+  // Neues Format: Log-Array (ein Eintrag pro API-Call)
+  if (!session.claudeCostLog) session.claudeCostLog = [];
+  session.claudeCostLog.push({
+    date:   new Date().toISOString(),
+    input:  inputTokens,
+    output: outputTokens,
+  });
+  // Legacy-Felder beibehalten (Abwärtskompatibilität mit bestehenden Sitzungen)
   if (!session.claudeTokens) session.claudeTokens = { input: 0, output: 0 };
   session.claudeTokens.input  += inputTokens;
   session.claudeTokens.output += outputTokens;
+  session.claudeLastCallAt = new Date().toISOString();
 }
 
 // ── Beziehungskontext ──────────────────────────────────────────────────────
@@ -54,19 +65,66 @@ function getRelationship(name) {
   return loadRelationships()[name] || '';
 }
 
-// ── Anonymisierung vor Claude-API-Calls ───────────────────────────────────
-function shouldAnonymize() {
-  try { return JSON.parse(localStorage.getItem('dashboardSettings') || '{}').anonymize === true; } catch { return false; }
+// ── Anonymisierung (immer aktiv – kein Opt-in) ────────────────────────────
+// Baut bidirektionale Name↔Label Maps: Person_A = speakerA, Person_B = speakerB, …
+const _ANON_DEFAULTS = new Set(['ich', 'sprecher a', 'sprecher b', 'gesprächspartner', 'unbekannt', '']);
+
+function buildAnonMap(session) {
+  const forward = {};  // realName → Person_X
+  const reverse = {};  // Person_X → realName
+  let idx = 0;
+  const add = (name) => {
+    if (!name || !name.trim()) return;
+    const t = name.trim();
+    if (_ANON_DEFAULTS.has(t.toLowerCase())) return;
+    if (forward[t]) return;
+    const label = `Person_${String.fromCharCode(65 + idx++)}`;
+    forward[t] = label;
+    reverse[label] = t;
+  };
+  // Reihenfolge: speakerA → A, speakerB → B, dann weitere Personen
+  add(session.speakerA);
+  add(session.speakerB);
+  (session.persons || []).forEach(p => add(p));
+  return { forward, reverse };
 }
-function anonymizeForClaude(text, session) {
-  if (!shouldAnonymize()) return text;
-  const persons = (session.persons || []).filter(p => p && p !== 'Ich');
-  let anonymized = text;
-  persons.forEach((name, i) => {
-    const label = `Person_${String.fromCharCode(65 + i)}`;
-    anonymized = anonymized.replace(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), label);
+
+function anonymizeText(text, forwardMap) {
+  if (!text || typeof text !== 'string' || !Object.keys(forwardMap).length) return text;
+  // Längste Namen zuerst → verhindert Teilersetzung
+  const sorted = Object.keys(forwardMap).sort((a, b) => b.length - a.length);
+  let r = text;
+  sorted.forEach(name => {
+    r = r.replace(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), forwardMap[name]);
   });
-  return anonymized;
+  return r;
+}
+
+function deanonymizeText(text, reverseMap) {
+  if (!text || typeof text !== 'string' || !Object.keys(reverseMap).length) return text;
+  let r = text;
+  Object.entries(reverseMap).forEach(([label, real]) => {
+    r = r.replace(new RegExp(label, 'g'), real);
+  });
+  return r;
+}
+
+function deanonymizeObject(obj, reverseMap) {
+  if (!reverseMap || !Object.keys(reverseMap).length) return obj;
+  if (typeof obj === 'string') return deanonymizeText(obj, reverseMap);
+  if (Array.isArray(obj)) return obj.map(item => deanonymizeObject(item, reverseMap));
+  if (obj !== null && typeof obj === 'object') {
+    const out = {};
+    for (const [k, v] of Object.entries(obj)) out[k] = deanonymizeObject(v, reverseMap);
+    return out;
+  }
+  return obj;
+}
+
+// Legacy-Wrapper für verbleibende externe Aufrufe
+function anonymizeForClaude(text, session) {
+  const { forward } = buildAnonMap(session);
+  return anonymizeText(text, forward);
 }
 
 function buildTranscriptText(session) {
@@ -227,19 +285,20 @@ async function runAnalysis(types) {
 }
 
 async function analysePrivate(session, transcript) {
+  const { forward, reverse } = buildAnonMap(session);
   const isThoughts = session.type === 'gedanken';
   const speakerA   = session.speakerA || 'Ich';
   const speakerB   = session.speakerB || 'Gesprächspartner';
   const persons    = (session.persons || []).join(', ') || 'nicht angegeben';
   const relContext = speakerB && speakerB !== 'Gesprächspartner' ? getRelationship(speakerB) : '';
-  const anonText   = anonymizeForClaude(trimTranscript(transcript, 9000), session);
+  const trimmed    = trimTranscript(transcript, 9000);
 
   let prompt;
   if (isThoughts) {
     prompt = `Du bist ein einfühlsamer, psychologisch geschulter Gesprächsanalyst. Analysiere die folgenden eigenen Gedanken und Reflexionen auf Deutsch mit echtem Tiefgang – nicht oberflächlich, sondern so wie ein guter Therapeut oder Supervisor zuhören würde.
 
 Inhalt:
-${anonText}
+${trimmed}
 
 Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 {
@@ -259,7 +318,7 @@ Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurüc
 Beteiligte: ${speakerA} und ${speakerB}. Weitere Personen: ${persons}.${relLine}
 
 Transkript:
-${anonText}
+${trimmed}
 
 Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 {
@@ -284,9 +343,9 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`;
   }
 
-  const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
+  const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
   addTokensToSession(session, inputTokens, outputTokens);
-  const json = JSON.parse(extractJSON(text, '{'));
+  const json = deanonymizeObject(JSON.parse(extractJSON(text, '{')), reverse);
   session.privateAnalysis = {
     agreements:    Array.isArray(json.agreements)  ? json.agreements  : [],
     wishes:        Array.isArray(json.wishes)       ? json.wishes      : [],
@@ -300,16 +359,16 @@ Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurüc
 }
 
 async function analyseWork(session, transcript) {
+  const { forward, reverse } = buildAnonMap(session);
   const persons  = (session.persons || []).join(', ') || 'nicht angegeben';
   const speakerA = session.speakerA || 'Sprecher A';
   const speakerB = session.speakerB || 'Sprecher B';
-  const anonText = anonymizeForClaude(trimTranscript(transcript, 9000), session);
 
   const prompt = `Du bist ein erfahrener Business-Coach und Kommunikationsanalyst. Analysiere das folgende Arbeitsgespräch auf Deutsch – präzise, klar und mit Blick für das, was auch zwischen den Zeilen geschieht.
 Beteiligte: ${speakerA} und ${speakerB}. Weitere Personen: ${persons}.
 
 Transkript:
-${anonText}
+${trimTranscript(transcript, 9000)}
 
 Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 {
@@ -335,9 +394,9 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 }
 Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`;
 
-  const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
+  const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
   addTokensToSession(session, inputTokens, outputTokens);
-  const json = JSON.parse(extractJSON(text, '{'));
+  const json = deanonymizeObject(JSON.parse(extractJSON(text, '{')), reverse);
   session.workAnalysis = {
     tasks:          Array.isArray(json.tasks)         ? json.tasks         : [],
     decisions:      Array.isArray(json.decisions)     ? json.decisions     : [],
@@ -349,13 +408,14 @@ Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurüc
 }
 
 async function analyseSentiment(session, transcript) {
+  const { forward, reverse } = buildAnonMap(session);
   const speakerA = session.speakerA || 'Sprecher A';
   const speakerB = session.speakerB || 'Sprecher B';
   const prompt = `Analysiere die Stimmung der Sprecher in diesem deutschen Gesprächstranskript.
 Sprecher A heißt "${speakerA}", Sprecher B heißt "${speakerB}".
 
 Transkript:
-${transcript}
+${trimTranscript(transcript, 9000)}
 
 Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 {
@@ -373,19 +433,19 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
   ],
   "summary": "1-2 Sätze zur Gesprächsdynamik (auf Deutsch)"
 }`;
-  const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
+  const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
   addTokensToSession(session, inputTokens, outputTokens);
-  const json = JSON.parse(extractJSON(text, '{'));
+  const json = deanonymizeObject(JSON.parse(extractJSON(text, '{')), reverse);
   session.claudeSentiment = json;
 }
 
 async function analyseChapters(session, transcript) {
-  const trimmed = trimTranscript(transcript, 7000);
+  const { forward, reverse } = buildAnonMap(session);
   const prompt = `Erstelle eine Kapitelübersicht für dieses deutsche Gesprächstranskript.
 Die Zeitangaben im Format [MM:SS] stehen am Anfang jeder Zeile.
 
 Transkript:
-${trimmed}
+${trimTranscript(transcript, 7000)}
 
 Antworte NUR mit einem JSON-Array (kein Markdown, keine Erklärungen):
 [
@@ -395,14 +455,15 @@ Antworte NUR mit einem JSON-Array (kein Markdown, keine Erklärungen):
     "timestamp": "MM:SS aus dem Transkript wo das Kapitel beginnt"
   }
 ]`;
-  const { text: chapText, inputTokens: chapIn, outputTokens: chapOut } = await callClaudeAPI(prompt);
+  const { text: chapText, inputTokens: chapIn, outputTokens: chapOut } = await callClaudeAPI(anonymizeText(prompt, forward));
   addTokensToSession(session, chapIn, chapOut);
-  const json = JSON.parse(extractJSON(chapText, '['));
+  const json = deanonymizeObject(JSON.parse(extractJSON(chapText, '[')), reverse);
   session.claudeChapters = json;
 }
 
 async function analyseTopics(session, transcript) {
-  const trimmed = anonymizeForClaude(trimTranscript(transcript, 7000), session);
+  const { forward, reverse } = buildAnonMap(session);
+  const trimmed = trimTranscript(transcript, 7000);
   const prompt = `Erkenne die Hauptthemen in diesem deutschen Gesprächstranskript.
 
 Transkript:
@@ -410,7 +471,7 @@ ${trimmed}
 
 Antworte NUR mit einem JSON-Array aus kurzen Themen-Tags auf Deutsch (max. 10 Tags):
 ["Thema 1", "Thema 2", ...]`;
-  const { text: topText, inputTokens: topIn, outputTokens: topOut } = await callClaudeAPI(prompt);
+  const { text: topText, inputTokens: topIn, outputTokens: topOut } = await callClaudeAPI(anonymizeText(prompt, forward));
   addTokensToSession(session, topIn, topOut);
   const json = JSON.parse(extractJSON(topText, '['));
   session.claudeTopics = Array.isArray(json)

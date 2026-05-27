@@ -9,15 +9,15 @@
 // ═══════════════════════════════════════════════════
 
 async function analyse360(session, transcript) {
+  const { forward, reverse } = buildAnonMap(session);
   const speakerA = session.speakerA || 'Ich';
   const speakerB = session.speakerB || 'Gesprächspartner';
-  const anonText = anonymizeForClaude(trimTranscript(transcript, 9000), session);
 
   const prompt = `Du bist ein erfahrener Kommunikations- und Konfliktanalyst. Analysiere dieses Gespräch aus vier verschiedenen Perspektiven. Gehe dabei wirklich in die Tiefe – nicht nur Oberfläche.
 Sprecher A = "${speakerA}", Sprecher B = "${speakerB}".
 
 Transkript:
-${anonText}
+${trimTranscript(transcript, 9000)}
 
 Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 {
@@ -39,9 +39,9 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
   }
 }`;
 
-  const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
+  const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
   addTokensToSession(session, inputTokens, outputTokens);
-  const json = JSON.parse(extractJSON(text, '{'));
+  const json = deanonymizeObject(JSON.parse(extractJSON(text, '{')), reverse);
   session.claude360 = {
     meineAufgaben:       json.meineAufgaben       || { titel: `Perspektive: ${speakerA}`, punkte: [] },
     andereErwartungen:   json.andereErwartungen   || { titel: `Perspektive: ${speakerB}`, punkte: [] },
@@ -134,6 +134,7 @@ async function sendAskQuestion() {
   renderAskHistory();
 
   try {
+    const { forward, reverse } = buildAnonMap(s);
     const transcript = buildTranscriptText(s);
     const historyText = askHistory.slice(0, -1)
       .map(h => `${h.role === 'user' ? 'Frage' : 'Antwort'}: ${h.text}`)
@@ -148,11 +149,11 @@ ${trimTranscript(transcript, 8000)}
 ${historyText ? `\nBISHERIGE FRAGEN:\n${historyText}\n` : ''}
 FRAGE: ${question}`;
 
-    const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
     addTokensToSession(s, inputTokens, outputTokens);
     saveSessions();
 
-    askHistory.push({ role: 'assistant', text });
+    askHistory.push({ role: 'assistant', text: deanonymizeText(text, reverse) });
   } catch(e) {
     askHistory.push({ role: 'error', text: e.message });
   } finally {
@@ -217,6 +218,7 @@ async function generateAndShowMindMap() {
   if (btn) { btn.disabled = true; btn.innerHTML = icon('loader',12,'margin-right:5px') + ' Generiere…'; }
 
   try {
+    const { forward, reverse } = buildAnonMap(s);
     const transcript = buildTranscriptText(s);
     const prompt = `Erstelle eine Mind Map für dieses deutsche Gesprächstranskript im Mermaid.js Format.
 Verwende exakt "mindmap" als ersten Bezeichner. Max. 3 Ebenen, max. 20 Knoten.
@@ -232,7 +234,8 @@ mindmap
       Detail 1a
     Thema 2`;
 
-    const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
+    const { text: rawText, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
+    const text = deanonymizeText(rawText, reverse);
     addTokensToSession(s, inputTokens, outputTokens);
 
     let mermaidCode = text.trim();

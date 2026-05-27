@@ -1478,10 +1478,117 @@
     .archive-icon { font-size: 1.1rem; flex-shrink: 0; }
     .archive-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    /* Responsive */
+    /* ─── RESPONSIVE ────────────────────────────── */
+
+    /* Desktop: Hamburger + Sidebar-Overlay unsichtbar */
+    #hamburgerBtn    { display: none; }
+    #sidebarOverlay  { display: none; }
+    .mobile-only     { display: none !important; }
+
     @media (max-width: 768px) {
-      .layout { grid-template-columns: 1fr; }
-      aside { border-right: none; border-bottom: 1px solid var(--border); }
+
+      /* ── Header ── */
+      header { padding: 10px 16px; }
+
+      /* App-Name: Untertitel auf Mobile ausblenden */
+      #appSubtitle { display: none; }
+
+      /* Hamburger-Button einblenden */
+      #hamburgerBtn { display: inline-flex; }
+
+      /* Rechte Nav: auf Mobile als Dropdown unter dem Header */
+      #hdrNav {
+        display: none;
+        position: fixed;
+        top: 53px;
+        left: 0; right: 0;
+        background: var(--surface);
+        border-bottom: 2px solid var(--border);
+        padding: 12px 16px 16px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+        z-index: 200;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      }
+      #hdrNav.mobile-open { display: flex; }
+
+      /* In Dropdown: API-Badge und User-Badge volle Breite */
+      #hdrNav .api-badge,
+      #hdrNav #userBadge { flex: 1 1 100%; justify-content: center; }
+
+      /* Sidebar-Toggle sichtbar im Dropdown */
+      .mobile-only { display: inline-flex !important; }
+
+      /* ── Layout ── */
+      .layout {
+        grid-template-columns: 1fr;
+        position: relative;
+      }
+
+      /* ── Sidebar: fixed overlay ── */
+      aside {
+        position: fixed;
+        top: 53px;
+        left: -360px;
+        bottom: 0;
+        width: 320px;
+        max-width: 88vw;
+        border-right: 1px solid var(--border);
+        border-bottom: none;
+        z-index: 150;
+        transition: left 0.25s ease;
+        overflow-y: auto;
+      }
+      aside.sidebar-open { left: 0; }
+
+      /* Dunkles Overlay hinter der Sidebar */
+      #sidebarOverlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0);
+        z-index: 149;
+        pointer-events: none;
+        transition: background 0.25s ease;
+      }
+      #sidebarOverlay.sidebar-open {
+        background: rgba(0,0,0,0.45);
+        pointer-events: auto;
+      }
+
+      /* ── Allgemeine Layout-Fixes ── */
+
+      /* Analyse-Buttons: umbrechen statt überlaufen */
+      .analyse-actions,
+      [class*="action-row"] {
+        flex-wrap: wrap;
+      }
+
+      /* Breite Tabellen scrollbar statt überlaufen */
+      table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+      /* Kostenübersicht: 1-Spalten-Grid statt 3 */
+      [style*="grid-template-columns:1fr 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Modals: volle Breite auf Mobile */
+      .modal-box,
+      [class*="modal"] > div:first-child {
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: var(--radius) var(--radius) 0 0 !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important; right: 0 !important;
+      }
+
+      /* Step-Blöcke in Sidebar: kompakter */
+      .step-block { padding: 12px 14px; }
+
+      /* Haupt-Bereich: kein Padding-Overflow */
+      main, .main-content { padding: 16px !important; }
     }
 
 /* ═══════════════════════════════════════════════════

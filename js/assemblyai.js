@@ -90,8 +90,12 @@ async function fetchAndRenderCleanupList() {
     }
 
     // Bereits gelöschte Transkripte ausfiltern
-    // AssemblyAI setzt is_deleted:true (NICHT status:'deleted')
-    transcripts = transcripts.filter(t => !t.is_deleted && t.audio_url !== 'http://deleted_by_user');
+    // AssemblyAI markiert gelöschte Einträge mit: status:'deleted', is_deleted:true, oder audio_url:'http://deleted_by_user'
+    transcripts = transcripts.filter(t =>
+      !t.is_deleted &&
+      t.status !== 'deleted' &&
+      t.audio_url !== 'http://deleted_by_user'
+    );
 
     if (transcripts.length === 0) {
       list.innerHTML = `<div style="padding:16px; text-align:center; color:var(--green); font-size:0.9rem">${icon('check-circle',14,'margin-right:5px')} Alles sauber – keine Transkripte auf AssemblyAI.</div>`;

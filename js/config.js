@@ -40,12 +40,25 @@ function calculateSessionCost(session) {
     const mins = session.duration / 60;
     assemblyai = mins * (PRICING.assemblyai.perMinute + PRICING.assemblyai.diarizationPerMin);
   }
-  // Claude: gespeicherte Token-Nutzung
-  const inp = session.claudeTokens?.input  || 0;
-  const out = session.claudeTokens?.output || 0;
-  claude = (inp / 1e6) * PRICING.claude.inputPerMToken
-         + (out / 1e6) * PRICING.claude.outputPerMToken;
+  // Claude: aus Cost-Log summieren (neues Format); Fallback auf claudeTokens (altes Format)
+  if (session.claudeCostLog && session.claudeCostLog.length > 0) {
+    session.claudeCostLog.forEach(entry => {
+      claude += (entry.input  / 1e6) * PRICING.claude.inputPerMToken
+              + (entry.output / 1e6) * PRICING.claude.outputPerMToken;
+    });
+  } else {
+    const inp = session.claudeTokens?.input  || 0;
+    const out = session.claudeTokens?.output || 0;
+    claude = (inp / 1e6) * PRICING.claude.inputPerMToken
+           + (out / 1e6) * PRICING.claude.outputPerMToken;
+  }
   return { assemblyai, claude, total: assemblyai + claude };
+}
+
+// Claude-Kosten eines einzelnen Log-Eintrags berechnen
+function calcLogEntryCost(entry) {
+  return (entry.input  / 1e6) * PRICING.claude.inputPerMToken
+       + (entry.output / 1e6) * PRICING.claude.outputPerMToken;
 }
 
 // Fallback-Wechselkurs falls API nicht erreichbar

@@ -49,12 +49,28 @@
     <i data-lucide="mic" style="width:20px;height:20px;stroke:var(--accent);stroke-width:2;fill:none;flex-shrink:0"></i>
     <div>
       <div style="font-size:0.95rem; font-weight:700; letter-spacing:-0.01em; color:var(--text); line-height:1.2">Distill Voice</div>
-      <div style="font-size:0.65rem; color:var(--muted); line-height:1">AssemblyAI &amp; Claude</div>
+      <div id="appSubtitle" style="font-size:0.65rem; color:var(--muted); line-height:1">AssemblyAI &amp; Claude</div>
     </div>
   </div>
 
-  <!-- Rechte Seite -->
-  <div style="display:flex; align-items:center; gap:6px; flex-wrap:nowrap">
+  <!-- Hamburger: nur Mobile -->
+  <button id="hamburgerBtn" class="hdr-btn" onclick="toggleMobileMenu()" title="Menü"
+    onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
+    aria-label="Menü öffnen" aria-expanded="false">
+    <i data-lucide="menu" class="hdr-icon" id="hamburgerIcon"></i>
+  </button>
+
+  <!-- Rechte Seite (Desktop: flex-row, Mobile: Dropdown via #hdrNav) -->
+  <div id="hdrNav" style="display:flex; align-items:center; gap:6px; flex-wrap:nowrap">
+
+    <!-- Home -->
+    <!-- Sidebar-Toggle: nur Mobile (im Dropdown sichtbar) -->
+    <button onclick="toggleSidebar()" title="Sitzungen" class="hdr-btn mobile-only"
+      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
+      style="align-items:center;gap:6px">
+      <i data-lucide="panel-left" class="hdr-icon"></i>
+      <span style="font-size:0.78rem">Sitzungen</span>
+    </button>
 
     <!-- Home -->
     <button onclick="setView('timeline')" title="Zurück zur Übersicht" class="hdr-btn"
@@ -117,12 +133,15 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v3.6</button>
+        onmouseout="this.style.color='var(--muted)'">v3.7</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
   </div>
 </header>
+
+<!-- Overlay für Mobile-Sidebar (schließt Sidebar bei Klick) -->
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <!-- ─── LAYOUT ───────────────────────────────────── -->
 <div class="layout">
@@ -466,6 +485,24 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v3.7 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v3.7</span>
+          <span class="cl-date">27.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Bugfix</span>
+          <span class="cl-tag cl-tag-improvement">Responsive</span>
+          <span class="cl-tag cl-tag-feature">DSGVO</span>
+        </div>
+        <ul>
+          <li><strong>Kosten-Datum korrekt</strong> – Claude-Kosten werden dem Monat des tatsächlichen API-Calls zugeordnet, nicht dem Aufnahmedatum. Jeder Analyse-Call schreibt einen eigenen Eintrag in <code>claudeCostLog</code> mit eigenem Timestamp – Kosten aus verschiedenen Tagen/Monaten erscheinen korrekt getrennt.</li>
+          <li><strong>Responsives Design</strong> – Hamburger-Menü auf Mobile: alle Header-Buttons klappen als Dropdown aus. Sidebar als ausklappbares Overlay mit Slide-in-Animation. Tabellen scrollbar, Kosten-Grid einspaltig, Modals als Bottom-Sheet auf schmalen Screens.</li>
+          <li><strong>DSGVO-Anonymisierung vollständig</strong> – Alle 8 Claude-API-Calls anonymisieren Sprecher-Namen (speakerA/B + Personen) vor der Übertragung und de-anonymisieren Antworten automatisch. Kein Opt-in nötig. Bidirektionale Maps: <code>buildAnonMap</code>, <code>anonymizeText</code>, <code>deanonymizeObject</code>.</li>
+          <li><strong>AssemblyAI Cleanup-Bug behoben</strong> – Bereits gelöschte Transkripte tauchten nach erneutem Öffnen des Cleanup-Modals wieder auf. Fix: Filter prüft jetzt zusätzlich <code>status !== 'deleted'</code>.</li>
+        </ul>
+        <div class="cl-tech">Betroffen: js/claude.js (addTokensToSession + Anonymisierung), js/config.js (calculateSessionCost + calcLogEntryCost), js/persons.js (Kostenübersicht byMonth), js/assemblyai.js (Cleanup-Filter), js/ui.js (toggleMobileMenu, toggleSidebar), css/styles.css (@media mobile), index.html (Hamburger, sidebarOverlay).</div>
+      </div>
 
       <!-- ── v3.6 ── -->
       <div class="cl-entry">

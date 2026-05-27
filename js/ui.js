@@ -475,3 +475,46 @@ function techRow(label, value) {
 }
 
 // ═══════════════════════════════════════════════════
+
+// ─── RESPONSIVE: Hamburger-Menü & Mobile Sidebar ───
+function toggleMobileMenu() {
+  const nav  = document.getElementById('hdrNav');
+  const btn  = document.getElementById('hamburgerBtn');
+  const icon = document.getElementById('hamburgerIcon');
+  const open = nav.classList.toggle('mobile-open');
+  btn.setAttribute('aria-expanded', open);
+  // Icon: menu ↔ x
+  if (icon) {
+    icon.setAttribute('data-lucide', open ? 'x' : 'menu');
+    if (window.lucide) lucide.createIcons();
+  }
+  // Sidebar schließen wenn Menü öffnet
+  if (open) closeSidebar();
+}
+
+function toggleSidebar() {
+  const aside   = document.querySelector('aside');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!aside) return;
+  const open = aside.classList.toggle('sidebar-open');
+  overlay.classList.toggle('sidebar-open', open);
+  // Hamburger-Menü schließen
+  document.getElementById('hdrNav')?.classList.remove('mobile-open');
+  const btn  = document.getElementById('hamburgerBtn');
+  const icon = document.getElementById('hamburgerIcon');
+  if (btn)  btn.setAttribute('aria-expanded', 'false');
+  if (icon) { icon.setAttribute('data-lucide', 'menu'); if (window.lucide) lucide.createIcons(); }
+}
+
+function closeSidebar() {
+  document.querySelector('aside')?.classList.remove('sidebar-open');
+  document.getElementById('sidebarOverlay')?.classList.remove('sidebar-open');
+}
+
+// Bei Resize auf Desktop: Dropdown und Sidebar schließen
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) {
+    document.getElementById('hdrNav')?.classList.remove('mobile-open');
+    closeSidebar();
+  }
+});

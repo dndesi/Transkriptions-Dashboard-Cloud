@@ -414,29 +414,65 @@ function renderCostsView() {
     return;
   }
 
-  // Gesamtkosten in EUR berechnen (pro Sitzung mit dem jeweiligen Tageskurs)
+  // Gesamtkosten – werden nach byMonth-Aufbau aus den Monatssummen aggregiert (weiter unten).
+  // Vorläufige Initialisierung, Werte werden nach der Monatsgruppierung gesetzt.
   let totalAsmEur = 0, totalClaudeEur = 0;
-  done.forEach(s => {
-    const c    = calculateSessionCost(s);
-    const rate = getSessionRate(s);
-    totalAsmEur    += c.assemblyai * rate;
-    totalClaudeEur += c.claude * rate;
-  });
-  const totalAllEur = totalAsmEur + totalClaudeEur;
 
-  // Monatsgruppen nach Transkriptionsdatum (processedAt), Fallback auf Aufnahmedatum
+  // Monatsgruppen:
+  // AssemblyAI-Kosten  → Transkriptionsdatum (processedAt), Fallback date
+  // Claude-Kosten      → je Log-Eintrag einzeln mit eigenem Datum (claudeCostLog)
+  //                      Fallback für alte Sitzungen: claudeLastCallAt / processedAt
   const byMonth = {};
-  done.forEach(s => {
-    const d   = new Date(s.processedAt || s.date);
+
+  const getOrCreateMonth = (dateStr) => {
+    const d   = new Date(dateStr);
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
     const lbl = d.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
-    if (!byMonth[key]) byMonth[key] = { label: lbl, sessions: [], asmEur: 0, claudeEur: 0 };
-    const c    = calculateSessionCost(s);
+    if (!byMonth[key]) byMonth[key] = { label: lbl, sessions: new Map(), asmEur: 0, claudeEur: 0 };
+    return key;
+  };
+
+  const getOrCreateEntry = (key, s) => {
+    if (!byMonth[key].sessions.has(s.id))
+      byMonth[key].sessions.set(s.id, { s, asmEur: 0, claudeEur: 0 });
+    return byMonth[key].sessions.get(s.id);
+  };
+
+  done.forEach(s => {
     const rate = getSessionRate(s);
-    byMonth[key].sessions.push({ s, c });
-    byMonth[key].asmEur    += c.assemblyai * rate;
-    byMonth[key].claudeEur += c.claude * rate;
+    const c    = calculateSessionCost(s);
+
+    // AssemblyAI → Transkriptions-Monat
+    const keyAsm = getOrCreateMonth(s.processedAt || s.date);
+    const asmEur = c.assemblyai * rate;
+    byMonth[keyAsm].asmEur += asmEur;
+    getOrCreateEntry(keyAsm, s).asmEur += asmEur;
+
+    // Claude → je Log-Eintrag einzeln
+    if (s.claudeCostLog && s.claudeCostLog.length > 0) {
+      s.claudeCostLog.forEach(entry => {
+        const keyCla    = getOrCreateMonth(entry.date);
+        const claudeEur = calcLogEntryCost(entry) * rate;
+        byMonth[keyCla].claudeEur += claudeEur;
+        getOrCreateEntry(keyCla, s).claudeEur += claudeEur;
+      });
+    } else if (c.claude > 0) {
+      // Fallback für alte Sitzungen ohne Log
+      const keyCla    = getOrCreateMonth(s.claudeLastCallAt || s.processedAt || s.date);
+      const claudeEur = c.claude * rate;
+      byMonth[keyCla].claudeEur += claudeEur;
+      getOrCreateEntry(keyCla, s).claudeEur += claudeEur;
+    }
   });
+  // Map → Array für Rendering
+  Object.values(byMonth).forEach(m => { m.sessions = Array.from(m.sessions.values()); });
+
+  // Gesamtsummen aus Monatswerten ableiten (korrekte Zuordnung nach Kostenentstehungs-Zeitpunkt)
+  Object.values(byMonth).forEach(m => {
+    totalAsmEur    += m.asmEur;
+    totalClaudeEur += m.claudeEur;
+  });
+  const totalAllEur = totalAsmEur + totalClaudeEur;
 
   const pricingUpdated = PRICING.assemblyai.updatedAt;
 
@@ -484,21 +520,27 @@ function renderCostsView() {
             </tr>
           </thead>
           <tbody>
-            ${m.sessions.map(({s,c}) => `
+            ${m.sessions.map(({s, asmEur, claudeEur}) => {
+              const rowTotal = asmEur + claudeEur;
+              // Tooltip zeigt alle Log-Einträge dieser Session
+              const logTip = (s.claudeCostLog && s.claudeCostLog.length > 1)
+                ? `${s.claudeCostLog.length} Analyse-Aufrufe`
+                : '';
+              return `
             <tr style="border-bottom:1px solid var(--border); cursor:pointer"
                 onclick="showTranscript(sessions.find(x=>x.id==='${s.id}'))"
                 onmouseover="this.style.background='rgba(108,99,255,0.05)'"
                 onmouseout="this.style.background=''">
               <td style="padding:8px 8px; font-weight:600; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${escHtml(s.label)}</td>
               <td style="padding:8px 8px; color:var(--muted)">
-                ${s.processedAt ? new Date(s.processedAt).toLocaleDateString('de-DE') : new Date(s.date).toLocaleDateString('de-DE')}
-                ${s.processedAt && s.date ? `<div style="font-size:0.68rem;opacity:0.5">Aufn.: ${new Date(s.date).toLocaleDateString('de-DE')}</div>` : ''}
+                <div>${new Date(s.processedAt || s.date).toLocaleDateString('de-DE')}</div>
+                ${s.claudeLastCallAt ? `<div style="font-size:0.68rem;opacity:0.6;margin-top:2px">${icon('sparkles',10,'margin-right:2px;vertical-align:middle')}Analyse: ${new Date(s.claudeLastCallAt).toLocaleDateString('de-DE')}${logTip ? ` (${logTip})` : ''}</div>` : ''}
               </td>
               <td style="padding:8px 8px; text-align:right; color:var(--muted)">${s.duration ? formatDuration(s.duration) : '?'}</td>
-              <td style="padding:8px 8px; text-align:right">${fmtCostSession(c.assemblyai, s)}</td>
-              <td style="padding:8px 8px; text-align:right">${fmtCostSession(c.claude, s)}</td>
-              <td style="padding:8px 8px; text-align:right; font-weight:700; color:var(--green)">${fmtCostSession(c.total, s)}</td>
-            </tr>`).join('')}
+              <td style="padding:8px 8px; text-align:right">${asmEur > 0 ? fmtEur(asmEur) : '—'}</td>
+              <td style="padding:8px 8px; text-align:right">${claudeEur > 0 ? fmtEur(claudeEur) : '—'}</td>
+              <td style="padding:8px 8px; text-align:right; font-weight:700; color:var(--green)">${fmtEur(rowTotal)}</td>
+            </tr>`;}).join('')}
             <tr style="font-weight:700; font-size:0.78rem; color:var(--muted); background:rgba(255,255,255,0.02)">
               <td colspan="3" style="padding:8px 8px">Monatssumme</td>
               <td style="padding:8px 8px; text-align:right">${fmtEur(m.asmEur)}</td>
