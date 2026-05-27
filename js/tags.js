@@ -51,7 +51,7 @@ function updateTagFilter() {
   sel.innerHTML = '<option value="">Alle Tags</option>';
   allTags.forEach(t => {
     const opt = document.createElement('option');
-    opt.value = t; opt.textContent = '🏷 ' + t;
+    opt.value = t; opt.textContent = t;
     if (t === cur) opt.selected = true;
     sel.appendChild(opt);
   });

@@ -9,13 +9,13 @@ async function saveToArchive(session, audioFile = null) {
   try {
     // Audio hochladen falls neu
     if (audioFile && !session._audioId) {
-      setProgress(92, 'Audio wird zu Drive hochgeladen…', '📤 Audiodatei wird hochgeladen…');
+      setProgress(92, 'Audio wird zu Drive hochgeladen…', icon('cloud',12,'margin-right:5px') + ' Audiodatei wird hochgeladen…');
       const nameParts = (audioFile.name || 'aufnahme.webm').split('.');
       const ext = nameParts.length > 1 ? nameParts.pop() : 'webm';
       const audioName = safeFilename(session.label) + '_' + session.id + '.' + ext;
       session.audioFilename = audioName;
       const audioId = await driveUploadAudioResumable(audioName, audioFile,
-        pct => setProgress(92 + Math.round(pct * 0.04), 'Audio hochladen…', `📤 ${pct}% hochgeladen…`),
+        pct => setProgress(92 + Math.round(pct * 0.04), 'Audio hochladen…', icon('cloud',12,'margin-right:5px') + ` ${pct}% hochgeladen…`),
         targetFolder);
       session._audioId = audioId;
     }
@@ -85,7 +85,7 @@ async function loadFromDrive() {
     saveSessions();
     updateFolderDropdown();
     renderBrowser();
-    if (loaded.length > 0) showToast(`${loaded.length} Sitzung(en) aus Drive geladen ✓`, 'success');
+    if (loaded.length > 0) showToast(`${loaded.length} Sitzung(en) aus Drive geladen`, 'success');
   } catch(e) {
     showToast('Drive laden fehlgeschlagen: ' + e.message, 'error');
   }
@@ -290,7 +290,7 @@ async function commitDateEdit() {
     `${s.filename}${dur} · ${new Date(s.date).toLocaleString('de-DE')}`;
   closeDateEdit();
   renderBrowser();
-  showToast('Datum aktualisiert ✓', 'success');
+  showToast('Datum aktualisiert', 'success');
 }
 
 // ═══════════════════════════════════════════════════
@@ -336,7 +336,7 @@ function confirmDelete() {
   } else {
     renderBrowser();
   }
-  showToast('Sitzung gelöscht ✓', 'success');
+  showToast('Sitzung gelöscht', 'success');
 }
 
 // ═══════════════════════════════════════════════════

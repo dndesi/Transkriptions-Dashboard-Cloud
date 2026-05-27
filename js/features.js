@@ -58,11 +58,17 @@ function render360Block(session) {
   const d = session.claude360;
   if (!d) { block.style.display = 'none'; return; }
 
+  const perspIcons = {
+    meineAufgaben:     icon('target',14,'margin-right:5px'),
+    andereErwartungen: icon('user',14,'margin-right:5px'),
+    emotionaleEbene:   icon('heart',14,'margin-right:5px'),
+    strategischeEbene: icon('layers',14,'margin-right:5px'),
+  };
   const perspectives = [
-    { key: 'meineAufgaben',     icon: '🎯', color: 'var(--accent)' },
-    { key: 'andereErwartungen', icon: '👤', color: 'var(--speaker-b)' },
-    { key: 'emotionaleEbene',   icon: '💙', color: '#818cf8' },
-    { key: 'strategischeEbene', icon: '🔭', color: 'var(--green)' }
+    { key: 'meineAufgaben',     color: 'var(--accent)' },
+    { key: 'andereErwartungen', color: 'var(--speaker-b)' },
+    { key: 'emotionaleEbene',   color: '#818cf8' },
+    { key: 'strategischeEbene', color: 'var(--green)' }
   ];
 
   let html = '<div class="perspectives-grid">';
@@ -70,7 +76,7 @@ function render360Block(session) {
     const data = d[p.key];
     if (!data) return;
     html += `<div class="perspective-card" style="border-top:3px solid ${p.color}">
-      <div class="perspective-title">${p.icon} ${escHtml(data.titel)}</div>
+      <div class="perspective-title">${perspIcons[p.key]} ${escHtml(data.titel)}</div>
       <ul class="perspective-list">
         ${(data.punkte || []).map(pt => `<li>${escHtml(pt)}</li>`).join('')}
       </ul>
@@ -181,7 +187,7 @@ function renderAskHistory() {
       });
       return `<div class="ask-bubble ask-claude"><div class="ask-bubble-label">Claude</div><div style="line-height:1.6">${withLinks}</div></div>`;
     } else {
-      return `<div class="ask-bubble ask-error">⚠️ ${escHtml(h.text)}</div>`;
+      return `<div class="ask-bubble ask-error">${icon('alert-triangle',13,'margin-right:5px;color:var(--yellow)')} ${escHtml(h.text)}</div>`;
     }
   }).join('');
 
@@ -208,7 +214,7 @@ async function generateAndShowMindMap() {
   }
 
   const btn = document.getElementById('mindmapBtn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Generiere…'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = icon('loader',12,'margin-right:5px') + ' Generiere…'; }
 
   try {
     const transcript = buildTranscriptText(s);
@@ -240,7 +246,7 @@ mindmap
   } catch(e) {
     showToast('Fehler: ' + e.message, 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '🗺️ Mind Map'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = icon('map',12,'margin-right:5px') + ' Mind Map'; }
   }
 }
 
@@ -279,7 +285,7 @@ function closeMindMapModal() {
 function copyMindMapCode() {
   const code = document.getElementById('mindmapCode')?.textContent;
   if (!code) return;
-  navigator.clipboard.writeText(code).then(() => showToast('Mermaid-Code kopiert ✓', 'success'));
+  navigator.clipboard.writeText(code).then(() => showToast('Mermaid-Code kopiert', 'success'));
 }
 
 // Gespeicherte Mind Map einer Session anzeigen
@@ -328,7 +334,7 @@ function addCustomTemplate() {
   renderTemplatesList();
   document.getElementById('newTemplateName').value   = '';
   document.getElementById('newTemplatePrompt').value = '';
-  showToast('Vorlage gespeichert ✓', 'success');
+  showToast('Vorlage gespeichert', 'success');
   updateCustomTemplatePopovers();
 }
 
@@ -351,10 +357,10 @@ function renderTemplatesList() {
   container.innerHTML = templates.map(t => `
     <div class="template-item">
       <div>
-        <div class="template-item-name">📋 ${escHtml(t.name)}</div>
+        <div class="template-item-name">${icon('clipboard',13,'margin-right:5px')} ${escHtml(t.name)}</div>
         <div class="template-item-prompt">${escHtml(t.prompt.slice(0, 100))}${t.prompt.length > 100 ? '…' : ''}</div>
       </div>
-      <button class="template-item-del" onclick="deleteCustomTemplate('${t.id}')">🗑️</button>
+      <button class="template-item-del" onclick="deleteCustomTemplate('${t.id}')">${icon('trash-2',13)}</button>
     </div>
   `).join('');
 }
@@ -368,7 +374,7 @@ function updateCustomTemplatePopovers() {
       <div style="font-size:0.7rem; color:var(--muted); padding:4px 12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em">Eigene Vorlagen</div>` +
       templates.map(t => `
         <button class="tpl-row" onclick="sendToClaudeCustom('${t.id}')">
-          <span class="tpl-icon">📋</span>
+          <span class="tpl-icon">${icon('clipboard',13)}</span>
           <span class="tpl-text">
             <div class="tpl-name">${escHtml(t.name)}</div>
             <div class="tpl-desc">Eigene Vorlage</div>

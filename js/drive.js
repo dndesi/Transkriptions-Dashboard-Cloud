@@ -173,10 +173,10 @@ function renderSubfolderList(folders) {
   list.innerHTML = folders.map(f => {
     const isActive = f.id === driveSubfolderId;
     return `<div class="known-folder-row">
-      <span class="known-folder-name ${isActive ? 'active-folder' : ''}">📁 ${escHtml(f.name)}</span>
+      <span class="known-folder-name ${isActive ? 'active-folder' : ''}" style="display:inline-flex;align-items:center;gap:5px">${icon('folder',13)} ${escHtml(f.name)}</span>
       <button class="known-folder-connect ${isActive ? 'connected' : ''}"
         ${isActive ? 'disabled' : `onclick="selectDriveSubfolder('${f.id}','${f.name.replace(/'/g,"\\'")}')"`}>
-        ${isActive ? '✓ Aktiv' : 'Wählen'}
+        ${isActive ? icon('check',11,'margin-right:3px')+' Aktiv' : 'Wählen'}
       </button>
     </div>`;
   }).join('');
@@ -188,7 +188,7 @@ function selectDriveSubfolder(id, name) {
   updateFolderDropdown();
   checkUploadReady();
   loadDriveSubfolders();
-  showToast(`Ordner „${name}" ausgewählt ✓`, 'success');
+  showToast(`Ordner „${name}" ausgewählt`, 'success');
 }
 
 async function createDriveSubfolder() {
@@ -202,7 +202,7 @@ async function createDriveSubfolder() {
     });
     selectDriveSubfolder(f.id, name.trim());
     await loadDriveSubfolders();
-    showToast(`Ordner „${name.trim()}" angelegt ✓`, 'success');
+    showToast(`Ordner „${name.trim()}" angelegt`, 'success');
   } catch(e) {
     showToast('Anlegen fehlgeschlagen: ' + e.message, 'error');
   }

@@ -138,7 +138,7 @@ function renderInstantResults(results, query) {
 
   container.innerHTML = results.map(({ session: s, hits }) => {
     const date = new Date(s.date).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
-    const typeIcon = s.type === 'arbeit' ? '💼' : s.type === 'gedanken' ? '💭' : '💬';
+    const typeIcon = s.type === 'arbeit' ? icon('briefcase',12) : s.type === 'gedanken' ? icon('message-square',12) : icon('message-circle',12);
     const dur = s.duration ? ` · ${formatDuration(s.duration)}` : '';
 
     const hitsHtml = hits.map(h => {

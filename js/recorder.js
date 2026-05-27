@@ -54,7 +54,7 @@ function resetRecordBtn() {
   if (btn) btn.classList.remove('recording');
   if (dot) dot.classList.remove('pulse');
   const lbl = document.getElementById('recordBtnLabel');
-  if (lbl) lbl.textContent = '🎙️ Direkt aufnehmen';
+  if (lbl) lbl.innerHTML = icon('mic',13,'margin-right:5px') + ' Direkt aufnehmen';
 }
 
 // ═══════════════════════════════════════════════════

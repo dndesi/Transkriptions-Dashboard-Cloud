@@ -22,6 +22,9 @@ function init() {
     if (file) { applyFileDate(file); processFile(file); }
   });
 
+  // Lucide Icons rendern
+  if (window.lucide) lucide.createIcons();
+
   // Neue Features initialisieren (eigene Vorlagen in Popovers laden)
   if (typeof initFeatures === 'function') initFeatures();
 }
@@ -84,8 +87,11 @@ function setDateInputToNow() {
 // ── Theme-Toggle ─────────────────────────────────────────────────────────────
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  const btn = document.getElementById('themeToggleBtn');
-  if (btn) btn.textContent = theme === 'light' ? '🌙' : '☀️';
+  const icon = document.getElementById('themeIcon');
+  if (icon) {
+    icon.setAttribute('data-lucide', theme === 'light' ? 'moon' : 'sun');
+    if (window.lucide) lucide.createIcons({ nodes: [icon] });
+  }
   localStorage.setItem('dashboardTheme', theme);
 }
 function toggleTheme() {
@@ -109,7 +115,7 @@ function checkUploadReady() {
   const s1body = document.getElementById('step1Body');
   if (hasKey) {
     s1.className = 'step-block done';
-    s1check.textContent = '✅';
+    s1check.innerHTML = icon('check-circle',16,'color:var(--green)');
     s1body.style.display = 'none';
   } else {
     s1.className = 'step-block active';
@@ -125,7 +131,7 @@ function checkUploadReady() {
     s2check.textContent = '';
   } else if (hasLabel) {
     s2.className = 'step-block done';
-    s2check.textContent = '✅';
+    s2check.innerHTML = icon('check-circle',16,'color:var(--green)');
   } else {
     s2.className = 'step-block active';
     s2check.textContent = '';
@@ -139,7 +145,7 @@ function checkUploadReady() {
     s3check.textContent = '';
   } else if (hasFolder) {
     s3.className = 'step-block done';
-    s3check.textContent = '✅';
+    s3check.innerHTML = icon('check-circle',16,'color:var(--green)');
   } else {
     s3.className = 'step-block active';
     s3check.textContent = '';
@@ -164,7 +170,7 @@ function checkUploadReady() {
     if (!hasKey)    missing.push('API-Key (Schritt 1)');
     if (!hasLabel)  missing.push('Sitzungsname (Schritt 2)');
     if (!hasFolder) missing.push('Unterordner in Drive (Schritt 3)');
-    hint.textContent = '⚠ Noch ausstehend: ' + missing.join(', ');
+    hint.innerHTML = icon('alert-triangle',12,'margin-right:5px;color:var(--yellow)') + ' Noch ausstehend: ' + escHtml(missing.join(', '));
     hint.classList.add('visible');
   }
 }
@@ -193,12 +199,12 @@ function saveApiKey() {
   else localStorage.removeItem('proxy_url');
   updateApiIndicator();
   closeApiModal();
-  showToast('Einstellungen gespeichert ✓', 'success');
+  showToast('Einstellungen gespeichert', 'success');
 }
 
 function copyWorkerCode() {
   const code = document.getElementById('workerCodePre').textContent;
-  navigator.clipboard.writeText(code).then(() => showToast('Worker-Code kopiert ✓', 'success'));
+  navigator.clipboard.writeText(code).then(() => showToast('Worker-Code kopiert', 'success'));
 }
 
 async function testApiKeys() {
@@ -209,9 +215,10 @@ async function testApiKeys() {
   resultEl.style.background = 'rgba(107,114,128,0.15)';
   resultEl.style.border = '1px solid var(--border)';
   resultEl.style.color = 'var(--muted)';
-  resultEl.textContent = '⏳ Teste Verbindungen…';
+  resultEl.innerHTML = icon('loader',13,'margin-right:5px') + ' Teste Verbindungen…';
 
-  const lines = [];
+  // status: 'ok' | 'error' | 'warn' | 'none'
+  const entries = [];
 
   // AssemblyAI testen
   if (asmKey) {
@@ -220,13 +227,14 @@ async function testApiKeys() {
         method: 'GET',
         headers: { authorization: asmKey }
       });
-      lines.push(res.status === 200 || res.status === 400 || res.status === 404
-        ? '✅ AssemblyAI: Verbunden'
-        : res.status === 401 ? '❌ AssemblyAI: Key ungültig (401)'
-        : `⚠️ AssemblyAI: HTTP ${res.status}`);
-    } catch (e) { lines.push('❌ AssemblyAI: Netzwerkfehler'); }
+      entries.push(res.status === 200 || res.status === 400 || res.status === 404
+        ? { status:'ok',   text:'AssemblyAI: Verbunden' }
+        : res.status === 401
+          ? { status:'error', text:'AssemblyAI: Key ungültig (401)' }
+          : { status:'warn',  text:`AssemblyAI: HTTP ${res.status}` });
+    } catch (e) { entries.push({ status:'error', text:'AssemblyAI: Netzwerkfehler' }); }
   } else {
-    lines.push('⚪ AssemblyAI: Kein Key eingegeben');
+    entries.push({ status:'none', text:'AssemblyAI: Kein Key eingegeben' });
   }
 
   // Anthropic testen
@@ -246,21 +254,28 @@ async function testApiKeys() {
           messages: [{ role: 'user', content: 'Antworte nur: ok' }]
         })
       });
-      lines.push(res.ok ? '✅ Anthropic: Verbunden'
-        : res.status === 401 ? '❌ Anthropic: Key ungültig (401)'
-        : res.status === 403 ? '❌ Anthropic: Zugriff verweigert (403)'
-        : `⚠️ Anthropic: HTTP ${res.status}`);
-    } catch (e) { lines.push('❌ Anthropic: Netzwerkfehler — ' + e.message); }
+      entries.push(res.ok
+        ? { status:'ok',    text:'Anthropic: Verbunden' }
+        : res.status === 401 ? { status:'error', text:'Anthropic: Key ungültig (401)' }
+        : res.status === 403 ? { status:'error', text:'Anthropic: Zugriff verweigert (403)' }
+        : { status:'warn', text:`Anthropic: HTTP ${res.status}` });
+    } catch (e) { entries.push({ status:'error', text:'Anthropic: Netzwerkfehler — ' + e.message }); }
   } else {
-    lines.push('⚪ Anthropic: Kein Key eingegeben');
+    entries.push({ status:'none', text:'Anthropic: Kein Key eingegeben' });
   }
 
-  const allOk = lines.every(l => l.startsWith('✅'));
-  const hasError = lines.some(l => l.startsWith('❌'));
+  const allOk    = entries.every(e => e.status === 'ok');
+  const hasError = entries.some(e => e.status === 'error');
   resultEl.style.background = allOk ? 'rgba(52,211,153,0.1)' : hasError ? 'rgba(248,113,113,0.1)' : 'rgba(251,191,36,0.1)';
   resultEl.style.border = `1px solid ${allOk ? 'rgba(52,211,153,0.4)' : hasError ? 'rgba(248,113,113,0.4)' : 'rgba(251,191,36,0.4)'}`;
   resultEl.style.color = allOk ? 'var(--green)' : hasError ? 'var(--red)' : 'var(--yellow)';
-  resultEl.innerHTML = lines.join('<br>');
+  resultEl.innerHTML = entries.map(e => {
+    const ico = e.status === 'ok' ? icon('check-circle',13,'margin-right:5px;color:var(--green)')
+              : e.status === 'error' ? icon('x-circle',13,'margin-right:5px;color:var(--red)')
+              : e.status === 'warn'  ? icon('alert-triangle',13,'margin-right:5px;color:var(--yellow)')
+              : icon('check',13,'margin-right:5px;opacity:0.4');
+    return `<div style="display:flex;align-items:center;gap:3px">${ico}${escHtml(e.text)}</div>`;
+  }).join('');
 }
 
 // ═══════════════════════════════════════════════════

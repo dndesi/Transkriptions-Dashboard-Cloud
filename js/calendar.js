@@ -78,7 +78,7 @@ Regeln:
     showToast('Fehler beim Extrahieren: ' + e.message, 'error');
     console.error('[Calendar] Extract error:', e);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '🔍 Termine extrahieren'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = icon('search',13,'margin-right:5px') + ' Termine extrahieren'; }
   }
 }
 
@@ -95,10 +95,10 @@ function renderCalendarEvents(events) {
   container.innerHTML = events.map((ev, i) => {
     const priorityColor = ev.priority === 'hoch' ? 'var(--red)' : ev.priority === 'mittel' ? 'var(--yellow)' : 'var(--green)';
     const attendeesHtml = (ev.attendees || []).length
-      ? `<div class="cal-ev-attendees">👥 ${ev.attendees.map(a => escHtml(a)).join(', ')}</div>`
+      ? `<div class="cal-ev-attendees">${icon('users',12,'margin-right:4px')} ${ev.attendees.map(a => escHtml(a)).join(', ')}</div>`
       : '';
     const locationHtml = ev.location
-      ? `<div class="cal-ev-location">📍 ${escHtml(ev.location)}</div>`
+      ? `<div class="cal-ev-location">${icon('map',12,'margin-right:4px')} ${escHtml(ev.location)}</div>`
       : '';
     const dateTime = ev.date && ev.time
       ? `${ev.date} um ${ev.time} Uhr (${ev.duration || 60} Min.)`
@@ -109,16 +109,16 @@ function renderCalendarEvents(events) {
         <div class="cal-ev-title">${escHtml(ev.title)}</div>
         <span class="cal-ev-priority" style="color:${priorityColor}">●</span>
       </div>
-      <div class="cal-ev-datetime">📅 ${escHtml(dateTime)}</div>
+      <div class="cal-ev-datetime">${icon('calendar',12,'margin-right:4px')} ${escHtml(dateTime)}</div>
       ${locationHtml}
       ${attendeesHtml}
       ${ev.description ? `<div class="cal-ev-desc">${escHtml(ev.description)}</div>` : ''}
       <div class="cal-ev-actions">
         <button class="btn-small btn-primary" onclick="createCalendarEvent(${i})">
-          📆 In Kalender
+          ${icon('calendar',12,'margin-right:4px')} In Kalender
         </button>
         <button class="btn-small btn-ghost" onclick="editCalendarEvent(${i})">
-          ✏️ Bearbeiten
+          ${icon('save',12,'margin-right:4px')} Bearbeiten
         </button>
       </div>
     </div>`;
@@ -133,7 +133,7 @@ async function createCalendarEvent(index) {
   if (!ev) return;
 
   const btn = document.querySelector(`#cal-ev-${index} .btn-primary`);
-  if (btn) { btn.disabled = true; btn.textContent = '⏳…'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = icon('loader',12); }
 
   try {
     // RFC3339 Datum/Zeit bauen
@@ -167,19 +167,19 @@ async function createCalendarEvent(index) {
     }
 
     const created = await res.json();
-    showToast(`✅ Termin erstellt: ${ev.title}`, 'success');
+    showToast(`Termin erstellt: ${ev.title}`, 'success');
 
     // Card als "erstellt" markieren
     const card = document.getElementById(`cal-ev-${index}`);
     if (card) {
       card.classList.add('cal-ev-done');
-      if (btn) { btn.textContent = '✅ Erstellt'; btn.disabled = true; }
+      if (btn) { btn.innerHTML = icon('check-circle',12,'margin-right:4px') + ' Erstellt'; btn.disabled = true; }
       // Link zum Event anzeigen
       if (created.htmlLink) {
         const link = document.createElement('a');
         link.href    = created.htmlLink;
         link.target  = '_blank';
-        link.textContent = '🔗 Im Kalender öffnen';
+        link.innerHTML = icon('calendar',12,'margin-right:4px') + ' Im Kalender öffnen';
         link.className = 'cal-ev-link';
         card.appendChild(link);
       }
@@ -187,7 +187,7 @@ async function createCalendarEvent(index) {
   } catch(e) {
     showToast('Fehler: ' + e.message, 'error');
     console.error('[Calendar] Create error:', e);
-    if (btn) { btn.disabled = false; btn.textContent = '📆 In Kalender'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = icon('calendar',12,'margin-right:4px') + ' In Kalender'; }
   }
 }
 
@@ -208,8 +208,8 @@ function editCalendarEvent(index) {
       <input class="cal-edit-input" id="cal-edit-location-${index}" value="${escHtml(ev.location || '')}" placeholder="Ort (optional)">
       <textarea class="cal-edit-input" id="cal-edit-desc-${index}" rows="2" placeholder="Beschreibung">${escHtml(ev.description || '')}</textarea>
       <div class="cal-ev-actions">
-        <button class="btn-small btn-primary" onclick="saveCalendarEdit(${index})">✅ Speichern & in Kalender</button>
-        <button class="btn-small btn-ghost" onclick="cancelCalendarEdit(${index})">✕ Abbrechen</button>
+        <button class="btn-small btn-primary" onclick="saveCalendarEdit(${index})">${icon('check',12,'margin-right:4px')} Speichern & in Kalender</button>
+        <button class="btn-small btn-ghost" onclick="cancelCalendarEdit(${index})">${icon('x',12,'margin-right:4px')} Abbrechen</button>
       </div>
     </div>`;
 }
@@ -325,7 +325,7 @@ Regeln:
     showToast('Fehler: ' + e.message, 'error');
     console.error('[Gmail] Extract error:', e);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '📝 E-Mails ableiten'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = icon('mail',12,'margin-right:5px') + ' E-Mails ableiten'; }
   }
 }
 
@@ -343,16 +343,16 @@ function renderGmailDrafts(drafts) {
     const priorityColor = d.priority === 'hoch' ? 'var(--red)' : d.priority === 'mittel' ? 'var(--yellow)' : 'var(--green)';
     return `<div class="mail-draft-card" id="mail-draft-${i}">
       <div class="cal-ev-header">
-        <div class="cal-ev-title">✉️ ${escHtml(d.subject)}</div>
+        <div class="cal-ev-title" style="display:flex;align-items:center;gap:6px">${icon('mail',13)} ${escHtml(d.subject)}</div>
         <span class="cal-ev-priority" style="color:${priorityColor}">●</span>
       </div>
       ${d.to ? `<div class="mail-to">An: <strong>${escHtml(d.to)}</strong></div>` : ''}
-      ${d.context ? `<div class="mail-context">💡 ${escHtml(d.context)}</div>` : ''}
+      ${d.context ? `<div class="mail-context">${icon('lightbulb',12,'margin-right:4px')} ${escHtml(d.context)}</div>` : ''}
       <div class="mail-body-preview">${escHtml(d.body.slice(0, 150))}${d.body.length > 150 ? '…' : ''}</div>
       <div class="cal-ev-actions">
-        <button class="btn-small btn-primary" onclick="createGmailDraft(${i})">📬 Als Entwurf speichern</button>
-        <button class="btn-small btn-ghost" onclick="editGmailDraft(${i})">✏️ Bearbeiten</button>
-        <button class="btn-small btn-ghost" onclick="toggleMailBodyFull(${i})">👁 Volltext</button>
+        <button class="btn-small btn-primary" onclick="createGmailDraft(${i})">${icon('mail',12,'margin-right:4px')} Als Entwurf speichern</button>
+        <button class="btn-small btn-ghost" onclick="editGmailDraft(${i})">${icon('save',12,'margin-right:4px')} Bearbeiten</button>
+        <button class="btn-small btn-ghost" onclick="toggleMailBodyFull(${i})">${icon('eye',12,'margin-right:4px')} Volltext</button>
       </div>
       <div class="mail-body-full" id="mail-body-full-${i}" style="display:none">
         <pre class="mail-body-text">${escHtml(d.body)}</pre>
@@ -380,8 +380,8 @@ function editGmailDraft(index) {
       <input class="cal-edit-input" id="mail-edit-subj-${index}" value="${escHtml(d.subject)}" placeholder="Betreff">
       <textarea class="cal-edit-input" id="mail-edit-body-${index}" rows="8" placeholder="E-Mail-Text">${escHtml(d.body)}</textarea>
       <div class="cal-ev-actions">
-        <button class="btn-small btn-primary" onclick="saveMailEdit(${index})">✅ Speichern & als Entwurf</button>
-        <button class="btn-small btn-ghost" onclick="cancelMailEdit(${index})">✕ Abbrechen</button>
+        <button class="btn-small btn-primary" onclick="saveMailEdit(${index})">${icon('check',12,'margin-right:4px')} Speichern & als Entwurf</button>
+        <button class="btn-small btn-ghost" onclick="cancelMailEdit(${index})">${icon('x',12,'margin-right:4px')} Abbrechen</button>
       </div>
     </div>`;
 }
@@ -408,7 +408,7 @@ async function createGmailDraft(index) {
   if (!d) return;
 
   const btn = document.querySelector(`#mail-draft-${index} .btn-primary`);
-  if (btn) { btn.disabled = true; btn.textContent = '⏳…'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = icon('loader',12); }
 
   try {
     // RFC 2822 aufbauen – einfache Variante ohne doppeltes Encoding
@@ -440,23 +440,23 @@ async function createGmailDraft(index) {
       throw new Error(err.error?.message || `HTTP ${res.status}`);
     }
 
-    showToast(`✅ Entwurf gespeichert: ${d.subject}`, 'success');
+    showToast(`Entwurf gespeichert: ${d.subject}`, 'success');
     const card = document.getElementById(`mail-draft-${index}`);
     if (card) {
       card.classList.add('cal-ev-done');
-      if (btn) { btn.textContent = '✅ In Gmail'; btn.disabled = true; }
+      if (btn) { btn.innerHTML = icon('check-circle',12,'margin-right:4px') + ' In Gmail'; btn.disabled = true; }
       // Link zu Gmail Entwürfen
       const link = document.createElement('a');
       link.href    = 'https://mail.google.com/mail/#drafts';
       link.target  = '_blank';
-      link.textContent = '📬 Entwürfe in Gmail öffnen';
+      link.innerHTML = icon('mail',12,'margin-right:4px') + ' Entwürfe in Gmail öffnen';
       link.className = 'cal-ev-link';
       card.appendChild(link);
     }
   } catch(e) {
     showToast('Fehler: ' + e.message, 'error');
     console.error('[Gmail] Draft error:', e);
-    if (btn) { btn.disabled = false; btn.textContent = '📬 Als Entwurf speichern'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = icon('mail',12,'margin-right:4px') + ' Als Entwurf speichern'; }
   }
 }
 

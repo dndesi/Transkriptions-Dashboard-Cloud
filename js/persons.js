@@ -126,7 +126,7 @@ function renderPersonsView() {
 
   el.innerHTML = `<div style="max-width:900px; margin:0 auto; padding:4px 0 32px">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px">
-      <h2 style="font-size:1.1rem; font-weight:700">👥 Personen-Profile</h2>
+      <h2 style="font-size:1.1rem; font-weight:700; display:flex;align-items:center;gap:7px">${icon('users',16)} Personen-Profile</h2>
       <span style="font-size:0.78rem; color:var(--muted)">${persons.length} Person${persons.length!==1?'en':''} + du</span>
     </div>
     <div class="person-grid">
@@ -152,7 +152,7 @@ function renderPersonsView() {
 function renderMeinProfil() {
   const el   = document.getElementById('personsView');
   const data = getMeinProfilData();
-  const typeLabel = { arbeit:'💼', privat:'💬', gedanken:'💭' };
+  const typeIcons = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), gedanken: icon('message-square',12) };
 
   const section = (title, items, renderItem) => items.length === 0 ? '' : `
     <div class="work-section">
@@ -160,8 +160,8 @@ function renderMeinProfil() {
       ${items.map(renderItem).join('')}
     </div>`;
 
-  const itemRow = (icon, text, meta='') => `
-    <div class="work-item"><span>${icon}</span>
+  const itemRow = (ico, text, meta='') => `
+    <div class="work-item"><span>${ico}</span>
       <div><div>${escHtml(text)}</div>${meta?`<div class="work-item-meta">${meta}</div>`:''}</div>
     </div>`;
 
@@ -184,38 +184,38 @@ function renderMeinProfil() {
 
     <div id="syntheseResult" style="display:none"></div>
 
-    ${section('💭 Meine Wünsche & Ziele', data.myWishes,
+    ${section(`${icon('target',13,'margin-right:5px')} Meine Wünsche & Ziele`, data.myWishes,
       w => itemRow('→', w.text, `${w.dateStr} · ${w.sessionLabel}`))}
 
-    ${section('🤝 Meine Vereinbarungen', data.myCommitments,
-      c => itemRow('✓', c.text, `${c.dateStr} · ${c.sessionLabel}`))}
+    ${section(`${icon('check',13,'margin-right:5px')} Meine Vereinbarungen`, data.myCommitments,
+      c => itemRow(icon('check',11,'color:var(--green)'), c.text, `${c.dateStr} · ${c.sessionLabel}`))}
 
-    ${section('✅ Meine Aufgaben', data.myTasks,
-      t => itemRow('☐', t.task, [t.deadline?'📅 '+t.deadline:'', t.dateStr, t.sessionLabel].filter(Boolean).join(' · ')))}
+    ${section(`${icon('check-circle',13,'margin-right:5px')} Meine Aufgaben`, data.myTasks,
+      t => itemRow(icon('square',12), t.task, [t.deadline?'Fällig: '+t.deadline:'', t.dateStr, t.sessionLabel].filter(Boolean).join(' · ')))}
 
-    ${section('💡 Kerngedanken (aus Gedanken-Sitzungen)', data.keyThoughts,
+    ${section(`${icon('lightbulb',13,'margin-right:5px')} Kerngedanken (aus Gedanken-Sitzungen)`, data.keyThoughts,
       t => itemRow('→', t.text, `${t.dateStr} · ${t.sessionLabel}`))}
 
-    ${section('⏭️ Nächste Schritte', data.nextSteps,
-      t => itemRow('☐', t.text, `${t.dateStr} · ${t.sessionLabel}`))}
+    ${section(`${icon('skip-forward',13,'margin-right:5px')} Nächste Schritte`, data.nextSteps,
+      t => itemRow(icon('square',12), t.text, `${t.dateStr} · ${t.sessionLabel}`))}
 
-    ${section('⏳ Offene Themen (aus allen Gesprächen)', data.openTopics.slice(0,15),
+    ${section(`${icon('clock',13,'margin-right:5px')} Offene Themen (aus allen Gesprächen)`, data.openTopics.slice(0,15),
       t => itemRow('○', t.text, `${t.dateStr} · ${t.sessionLabel}`))}
 
     ${data.topTopics.length ? `<div class="work-section">
-      <div class="work-section-title">🏷️ Häufigste Themen deiner Gespräche</div>
+      <div class="work-section-title">${icon('tag',13,'margin-right:5px')} Häufigste Themen deiner Gespräche</div>
       <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px">
         ${data.topTopics.map(t=>`<span class="person-topic-chip" style="font-size:0.72rem">${escHtml(t.topic)}${t.count>1?` ×${t.count}`:''}</span>`).join('')}
       </div>
     </div>` : ''}
 
     <div class="work-section">
-      <div class="work-section-title">📅 Alle Sitzungen</div>
+      <div class="work-section-title">${icon('calendar',13,'margin-right:5px')} Alle Sitzungen</div>
       ${data.sessions.map(s => {
         const d = new Date(s.date).toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'});
         const t = s.type || 'privat';
         return `<div class="profile-session-row" onclick="showTranscript(sessions.find(x=>x.id==='${s.id}'))">
-          <span class="profile-session-type sc-type sc-type-${t}">${typeLabel[t]||'💬'}</span>
+          <span class="profile-session-type sc-type sc-type-${t}" style="display:inline-flex;align-items:center;gap:3px">${typeIcons[t]||icon('message-circle',12)}</span>
           <span class="profile-session-date">${d}</span>
           <span>${escHtml(s.label)}</span>
         </div>`;
@@ -270,7 +270,7 @@ Schreibe eine ehrliche, direkte Selbstreflexion in 4-6 Sätzen. Was beschäftigt
 function renderPersonProfile(name) {
   const el   = document.getElementById('personsView');
   const data = getPersonData(name);
-  const typeLabel = { arbeit:'💼', privat:'💬', gedanken:'💭' };
+  const typeIcons2 = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), gedanken: icon('message-square',12) };
 
   const firstDate = data.firstContact ? new Date(data.firstContact).toLocaleDateString('de-DE',{month:'long',year:'numeric'}) : '–';
   const lastDate  = data.lastContact  ? new Date(data.lastContact).toLocaleDateString('de-DE',{month:'long',year:'numeric'}) : '–';
@@ -281,8 +281,8 @@ function renderPersonProfile(name) {
       ${items.map(renderItem).join('')}
     </div>`;
 
-  const itemRow = (icon, text, meta='') => `
-    <div class="work-item"><span>${icon}</span>
+  const itemRow = (ico, text, meta='') => `
+    <div class="work-item"><span>${ico}</span>
       <div><div>${escHtml(text)}</div>${meta ? `<div class="work-item-meta">${meta}</div>` : ''}</div>
     </div>`;
 
@@ -298,7 +298,7 @@ function renderPersonProfile(name) {
           ${data.firstContact !== data.lastContact ? ` · ${firstDate} – ${lastDate}` : ` · ${lastDate}`}
         </div>
         <div style="margin-top:8px; display:flex; align-items:center; gap:8px">
-          <span style="font-size:0.76rem; color:var(--muted); white-space:nowrap">🔗 Beziehung:</span>
+          <span style="font-size:0.76rem; color:var(--muted); white-space:nowrap; display:inline-flex;align-items:center;gap:4px">${icon('link',11)} Beziehung:</span>
           <input id="relCtxInput"
             type="text"
             value="${escHtml(getRelationship(name))}"
@@ -315,39 +315,39 @@ function renderPersonProfile(name) {
         </button>
         <button class="btn btn-ghost" title="Person ausblenden (reversibel)"
           onclick="deletePerson('${escHtml(name).replace(/'/g,"\\'")}')">Ausblenden</button>
-        <button class="btn btn-ghost" title="Person endgültig löschen" style="color:var(--red); border-color:rgba(239,68,68,0.3)"
-          onclick="deletePersonPermanently('${escHtml(name).replace(/'/g,"\\'")}')">🗑 Löschen</button>
+        <button class="btn btn-ghost" title="Person endgültig löschen" style="color:var(--red); border-color:rgba(239,68,68,0.3); display:inline-flex;align-items:center;gap:5px"
+          onclick="deletePersonPermanently('${escHtml(name).replace(/'/g,"\\'")}'">${icon('trash-2',12)} Löschen</button>
       </div>
     </div>
 
     <div id="syntheseResult" style="display:none"></div>
 
-    ${section('🎯 Wünsche & Bedürfnisse', data.wishes,
-      w => itemRow('💭', w.text, `${w.dateStr} · ${w.sessionLabel}`))}
+    ${section(`${icon('target',13,'margin-right:5px')} Wünsche & Bedürfnisse`, data.wishes,
+      w => itemRow('→', w.text, `${w.dateStr} · ${w.sessionLabel}`))}
 
-    ${section('🤝 Vereinbarungen', data.agreements,
-      a => itemRow('✓', a.text, `${a.dateStr} · ${a.sessionLabel}`))}
+    ${section(`${icon('check',13,'margin-right:5px')} Vereinbarungen`, data.agreements,
+      a => itemRow(icon('check',11,'color:var(--green)'), a.text, `${a.dateStr} · ${a.sessionLabel}`))}
 
-    ${section('⏳ Offene Themen', data.openTopics,
+    ${section(`${icon('clock',13,'margin-right:5px')} Offene Themen`, data.openTopics,
       t => itemRow('○', t.text, `${t.dateStr} · ${t.sessionLabel}`))}
 
-    ${section('✅ Aufgaben (Arbeit)', data.workTasks,
-      t => itemRow('☐', t.task, `${t.person ? '👤 '+t.person : ''} ${t.deadline ? '· 📅 '+t.deadline : ''} · ${t.dateStr}`))}
+    ${section(`${icon('check-circle',13,'margin-right:5px')} Aufgaben (Arbeit)`, data.workTasks,
+      t => itemRow(icon('square',12), t.task, `${t.person ? t.person : ''} ${t.deadline ? '· Fällig: '+t.deadline : ''} · ${t.dateStr}`))}
 
     ${data.topTopics.length ? `<div class="work-section">
-      <div class="work-section-title">🏷️ Häufige Themen</div>
+      <div class="work-section-title">${icon('tag',13,'margin-right:5px')} Häufige Themen</div>
       <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px">
         ${data.topTopics.map(t=>`<span class="person-topic-chip" style="font-size:0.72rem">${escHtml(t.topic)}${t.count>1?` ×${t.count}`:''}</span>`).join('')}
       </div>
     </div>` : ''}
 
     <div class="work-section">
-      <div class="work-section-title">📅 Gespräche</div>
+      <div class="work-section-title">${icon('calendar',13,'margin-right:5px')} Gespräche</div>
       ${data.sessions.map(s => {
         const d = new Date(s.date).toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'});
         const t = s.type || 'privat';
         return `<div class="profile-session-row" onclick="showTranscript(sessions.find(x=>x.id==='${s.id}'))">
-          <span class="profile-session-type sc-type sc-type-${t}">${typeLabel[t]||'💬'}</span>
+          <span class="profile-session-type sc-type sc-type-${t}" style="display:inline-flex;align-items:center;gap:3px">${typeIcons2[t]||icon('message-circle',12)}</span>
           <span class="profile-session-date">${d}</span>
           <span>${escHtml(s.label)}</span>
         </div>`;
@@ -445,7 +445,7 @@ function renderCostsView() {
 
     <!-- Gesamtübersicht -->
     <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:28px">
-      ${costCard('🎙️ AssemblyAI', PRICING.assemblyai.model, fmtEur(totalAsmEur),
+      ${costCard(icon('mic',13,'margin-right:4px') + ' AssemblyAI', PRICING.assemblyai.model, fmtEur(totalAsmEur),
           `$${(PRICING.assemblyai.perMinute + PRICING.assemblyai.diarizationPerMin).toFixed(4)}/min (inkl. Diarization)`,
           PRICING.assemblyai.source)}
       ${costCard('✦ Claude', PRICING.claude.model, fmtEur(totalClaudeEur),
@@ -513,7 +513,7 @@ function renderCostsView() {
     <!-- Preishinweis -->
     <div style="margin-top:16px; padding:12px 16px; background:rgba(107,114,128,0.08);
                 border:1px solid var(--border); border-radius:10px; font-size:0.75rem; color:var(--muted); line-height:1.6">
-      <strong style="color:var(--text)">ℹ️ Preishinweis</strong> – Stand ${pricingUpdated} · Fallback-Kurs 1 USD = ${USD_TO_EUR_FALLBACK} € (Tageskurs wird pro Sitzung gespeichert)<br>
+      <strong style="color:var(--text); display:inline-flex; align-items:center; gap:4px">${icon('info',13)} Preishinweis</strong> – Stand ${pricingUpdated} · Fallback-Kurs 1 USD = ${USD_TO_EUR_FALLBACK} € (Tageskurs wird pro Sitzung gespeichert)<br>
       Originalpreise der Anbieter sind in USD. Alle Beträge hier in Euro umgerechnet.<br>
       AssemblyAI: <a href="${PRICING.assemblyai.source}" target="_blank" style="color:var(--accent)">assemblyai.com/pricing</a> ·
       Claude: <a href="${PRICING.claude.source}" target="_blank" style="color:var(--accent)">platform.claude.com/docs/pricing</a><br>

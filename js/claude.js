@@ -100,7 +100,7 @@ function closeAnalyseModal() {
 
 function showAnalyseError(msg) {
   const el = document.getElementById('analyseModalError');
-  if (el) { el.textContent = '⚠️ ' + msg; el.style.display = 'block'; }
+  if (el) { el.innerHTML = icon('alert-triangle',13,'color:var(--red);margin-right:5px;vertical-align:middle') + ' ' + escHtml(msg); el.style.display = 'block'; }
 }
 
 async function runAnalysisFromModal() {
@@ -127,16 +127,16 @@ async function runAnalysisFromModal() {
 
   const loadingText  = document.getElementById('analyseLoadingText');
   const loadingSteps = document.getElementById('analyseLoadingSteps');
-  const stepLabels   = { work: '💼 Arbeits-Analyse', private: '💬 Gesprächs-Analyse', sentiment: '😊 Stimmungsanalyse', chapters: '📖 Kapitel', topics: '🏷️ Themen', '360': '🔄 360°-Analyse' };
+  const stepLabels   = { work: icon('briefcase',12)+' Arbeits-Analyse', private: icon('message-circle',12)+' Gesprächs-Analyse', sentiment: icon('smile',12)+' Stimmungsanalyse', chapters: icon('book-open',12)+' Kapitel', topics: icon('tag',12)+' Themen', '360': icon('refresh-cw',12)+' 360°-Analyse' };
   const stepsDone    = [];
 
   function setStep(type) {
-    loadingText.textContent = stepLabels[type] + ' wird analysiert…';
+    loadingText.innerHTML = stepLabels[type] + ' wird analysiert…';
     loadingSteps.innerHTML  = types.map(t =>
-      stepsDone.includes(t) ? `<span style="color:var(--green)">✓ ${stepLabels[t]}</span>` :
-      t === type             ? `<span style="color:var(--accent)">⏳ ${stepLabels[t]}</span>` :
-                               `<span style="opacity:0.4">○ ${stepLabels[t]}</span>`
-    ).join('<br>');
+      stepsDone.includes(t) ? `<span style="color:var(--green);display:flex;align-items:center;gap:5px">${icon('check',12)} ${stepLabels[t]}</span>` :
+      t === type             ? `<span style="color:var(--accent);display:flex;align-items:center;gap:5px">${icon('loader',12)} ${stepLabels[t]}</span>` :
+                               `<span style="opacity:0.4;display:flex;align-items:center;gap:5px">${icon('chevron-right',12)} ${stepLabels[t]}</span>`
+    ).join('');
   }
 
   try {
@@ -156,7 +156,7 @@ async function runAnalysisFromModal() {
     renderInsights(s);
     if (typeof render360Block === 'function') render360Block(s);
     closeAnalyseModal();
-    showToast('Analyse abgeschlossen ✓', 'success');
+    showToast('Analyse abgeschlossen', 'success');
   } catch (e) {
     console.error('Analyse-Fehler:', e);
     // Zurück in den Auswahl-Zustand, Fehler anzeigen
@@ -200,8 +200,8 @@ async function runAnalysis(types) {
   if (!s.utterances?.length) { showToast('Fehler: Keine Sprecherabschnitte', 'error'); return; }
 
   const btn = document.getElementById('analyseBtn');
-  const origText = btn.textContent;
-  btn.textContent = '⏳ Analysiere…';
+  const origHTML = btn.innerHTML;
+  btn.innerHTML = icon('loader',12,'margin-right:5px') + ' Analysiere…';
   btn.disabled = true;
 
   try {
@@ -216,12 +216,12 @@ async function runAnalysis(types) {
     await saveToArchive(s);
     renderInsights(s);
     if (typeof render360Block === 'function') render360Block(s);
-    showToast('Analyse abgeschlossen ✓', 'success');
+    showToast('Analyse abgeschlossen', 'success');
   } catch (e) {
     console.error('Analyse-Fehler:', e);
-    showToast('❌ ' + (e.message || 'Unbekannter Fehler'), 'error');
+    showToast((e.message || 'Unbekannter Fehler'), 'error');
   } finally {
-    btn.textContent = origText;
+    btn.innerHTML = origHTML;
     btn.disabled = false;
   }
 }
@@ -482,14 +482,14 @@ function renderInsights(session) {
 
     if (pa.dynamics) {
       html += `<div class="work-section">
-        <div class="work-section-title">💬 Gesprächsdynamik</div>
+        <div class="work-section-title">${icon('message-circle',13,'margin-right:5px')} Gesprächsdynamik</div>
         <div class="private-dynamics">${escHtml(pa.dynamics)}</div>
       </div>`;
     }
 
     if (pa.zwischenzeilen) {
       html += `<div class="work-section">
-        <div class="work-section-title">🔍 Zwischen den Zeilen</div>
+        <div class="work-section-title">${icon('search',13,'margin-right:5px')} Zwischen den Zeilen</div>
         <div class="private-dynamics" style="border-left:3px solid var(--accent2); padding-left:12px; font-style:italic">${escHtml(pa.zwischenzeilen)}</div>
       </div>`;
     }
@@ -497,23 +497,23 @@ function renderInsights(session) {
     const sid = session.id;
     const delBtn = (aKey, field, i) =>
       `<button class="work-item-del" title="Eintrag löschen"
-        onclick="deleteAnalysisItem('${sid}','${aKey}','${field}',${i})">🗑</button>`;
+        onclick="deleteAnalysisItem('${sid}','${aKey}','${field}',${i})">${icon('trash-2',12)}</button>`;
 
     if (pa.agreements?.length) {
-      html += `<div class="work-section"><div class="work-section-title">🤝 Vereinbarungen</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('check-circle',13,'margin-right:5px')} Vereinbarungen</div>`;
       pa.agreements.forEach((a, i) => {
-        html += `<div class="work-item"><span>✓</span><div class="work-item-content">${escHtml(a)}</div>${delBtn('privateAnalysis','agreements',i)}</div>`;
+        html += `<div class="work-item"><span>${icon('check',11,'color:var(--green)')}</span><div class="work-item-content">${escHtml(a)}</div>${delBtn('privateAnalysis','agreements',i)}</div>`;
       });
       html += `</div>`;
     }
 
     if (pa.wishes?.length) {
-      html += `<div class="work-section"><div class="work-section-title">🎯 Wünsche & Bedürfnisse</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('target',13,'margin-right:5px')} Wünsche & Bedürfnisse</div>`;
       pa.wishes.forEach((w, i) => {
         const pName = typeof w === 'object' ? w.person : '';
         const wish  = typeof w === 'object' ? w.wish   : w;
         html += `<div class="work-item">
-          <span>💭</span>
+          <span>${icon('message-square',11)}</span>
           <div class="work-item-content">
             ${pName ? `<div style="font-size:0.72rem; color:var(--muted); font-weight:700; margin-bottom:2px">${escHtml(pName)}</div>` : ''}
             <div>${escHtml(wish)}</div>
@@ -525,7 +525,7 @@ function renderInsights(session) {
     }
 
     if (pa.openTopics?.length) {
-      html += `<div class="work-section"><div class="work-section-title">⏳ Offene Themen</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('clock',13,'margin-right:5px')} Offene Themen</div>`;
       pa.openTopics.forEach((t, i) => {
         html += `<div class="work-item"><span>○</span><div class="work-item-content">${escHtml(t)}</div>${delBtn('privateAnalysis','openTopics',i)}</div>`;
       });
@@ -533,7 +533,7 @@ function renderInsights(session) {
     }
 
     if (pa.keyThoughts?.length) {
-      html += `<div class="work-section"><div class="work-section-title">💡 Kerngedanken</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('lightbulb',13,'margin-right:5px')} Kerngedanken</div>`;
       pa.keyThoughts.forEach((t, i) => {
         html += `<div class="work-item"><span>→</span><div class="work-item-content">${escHtml(t)}</div>${delBtn('privateAnalysis','keyThoughts',i)}</div>`;
       });
@@ -541,9 +541,9 @@ function renderInsights(session) {
     }
 
     if (pa.nextSteps?.length) {
-      html += `<div class="work-section"><div class="work-section-title">⏭️ Nächste Schritte</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('arrow-right',13,'margin-right:5px')} Nächste Schritte</div>`;
       pa.nextSteps.forEach((t, i) => {
-        html += `<div class="work-item"><span>☐</span><div class="work-item-content">${escHtml(t)}</div>${delBtn('privateAnalysis','nextSteps',i)}</div>`;
+        html += `<div class="work-item"><span>${icon('square',11,'opacity:0.5')}</span><div class="work-item-content">${escHtml(t)}</div>${delBtn('privateAnalysis','nextSteps',i)}</div>`;
       });
       html += `</div>`;
     }
@@ -573,19 +573,19 @@ function renderInsights(session) {
     const wSid = session.id;
     const wDel = (field, i) =>
       `<button class="work-item-del" title="Eintrag löschen"
-        onclick="deleteAnalysisItem('${wSid}','workAnalysis','${field}',${i})">🗑</button>`;
+        onclick="deleteAnalysisItem('${wSid}','workAnalysis','${field}',${i})">${icon('trash-2',12)}</button>`;
 
     if (wa.tasks?.length) {
-      html += `<div class="work-section"><div class="work-section-title">✅ Aufgaben (${wa.tasks.length})</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('check-circle',13,'margin-right:5px')} Aufgaben (${wa.tasks.length})</div>`;
       wa.tasks.forEach((t, i) => {
         const prioClass = t.priority === 'hoch' ? 'work-prio-hoch' : t.priority === 'niedrig' ? 'work-prio-niedrig' : 'work-prio-mittel';
         html += `<div class="work-item">
-          <span>☐</span>
+          <span>${icon('square',11,'opacity:0.5')}</span>
           <div class="work-item-content">
             <div>${escHtml(t.task)}</div>
             <div class="work-item-meta">
-              ${t.person ? `👤 ${escHtml(t.person)}` : ''}
-              ${t.deadline ? ` · 📅 ${escHtml(t.deadline)}` : ''}
+              ${t.person ? `${icon('user',11,'margin-right:3px')}${escHtml(t.person)}` : ''}
+              ${t.deadline ? ` · ${icon('calendar',11,'margin-right:3px')}${escHtml(t.deadline)}` : ''}
               ${t.priority ? ` · <span class="${prioClass}">${escHtml(t.priority)}</span>` : ''}
             </div>
           </div>
@@ -596,15 +596,15 @@ function renderInsights(session) {
     }
 
     if (wa.decisions?.length) {
-      html += `<div class="work-section"><div class="work-section-title">📋 Entscheidungen</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('clipboard',13,'margin-right:5px')} Entscheidungen</div>`;
       wa.decisions.forEach((d, i) => {
-        html += `<div class="work-item"><span>✓</span><div class="work-item-content">${escHtml(d)}</div>${wDel('decisions',i)}</div>`;
+        html += `<div class="work-item"><span>${icon('check',11,'color:var(--green)')}</span><div class="work-item-content">${escHtml(d)}</div>${wDel('decisions',i)}</div>`;
       });
       html += `</div>`;
     }
 
     if (wa.openQuestions?.length) {
-      html += `<div class="work-section"><div class="work-section-title">❓ Offene Fragen</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('alert-circle',13,'margin-right:5px')} Offene Fragen</div>`;
       wa.openQuestions.forEach((q, i) => {
         html += `<div class="work-item"><span>?</span><div class="work-item-content">${escHtml(q)}</div>${wDel('openQuestions',i)}</div>`;
       });
@@ -612,16 +612,16 @@ function renderInsights(session) {
     }
 
     if (wa.risks?.length) {
-      html += `<div class="work-section"><div class="work-section-title">⚠️ Risiken</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('alert-triangle',13,'margin-right:5px')} Risiken</div>`;
       wa.risks.forEach((r, i) => {
-        html += `<div class="work-item"><span>⚠</span><div class="work-item-content">${escHtml(r)}</div>${wDel('risks',i)}</div>`;
+        html += `<div class="work-item"><span>${icon('alert-triangle',11,'color:var(--yellow)')}</span><div class="work-item-content">${escHtml(r)}</div>${wDel('risks',i)}</div>`;
       });
       html += `</div>`;
     }
 
     if (wa.zwischenzeilen) {
       html += `<div class="work-section">
-        <div class="work-section-title">🔍 Zwischen den Zeilen</div>
+        <div class="work-section-title">${icon('search',13,'margin-right:5px')} Zwischen den Zeilen</div>
         <div class="private-dynamics" style="border-left:3px solid var(--accent2); padding-left:12px; font-style:italic">${escHtml(wa.zwischenzeilen)}</div>
       </div>`;
     }
@@ -645,7 +645,7 @@ function renderInsights(session) {
       const posP = Math.max(0, Math.min(100, sp.posP || 0));
       const negP = Math.max(0, Math.min(100, sp.negP || 0));
       const neuP = Math.max(0, Math.min(100, 100 - posP - negP));
-      const trendIcon = sp.trend === 'positiv' ? '😊' : sp.trend === 'kritisch' ? '😟' : '😐';
+      const trendIcon = sp.trend === 'positiv' ? icon('smile',12,'color:var(--green)') : sp.trend === 'kritisch' ? icon('alert-circle',12,'color:var(--red)') : icon('check',12,'opacity:0.5');
       html += `
         <div class="sentiment-speaker-row">
           <span class="sentiment-speaker-name" style="color:${color}">${escHtml(sp.name || sp.speaker)}</span>
@@ -659,7 +659,7 @@ function renderInsights(session) {
         ${sp.highlight ? `<div style="font-size:0.75rem; color:var(--muted); margin:-2px 0 8px 120px; font-style:italic;">"${escHtml(sp.highlight)}"</div>` : ''}`;
     });
     if (cs.summary) html += `<div style="font-size:0.8rem; color:var(--muted); margin-top:8px; line-height:1.4; border-top:1px solid var(--border); padding-top:8px">${escHtml(cs.summary)}</div>`;
-    html += `<div class="sentiment-legend">🟢 positiv &nbsp;⬛ neutral &nbsp;🔴 kritisch</div>`;
+    html += `<div class="sentiment-legend">${icon('check-circle',11,'color:var(--green);margin-right:3px')} positiv &nbsp;${icon('check',11,'opacity:0.5;margin-right:3px')} neutral &nbsp;${icon('alert-circle',11,'color:var(--red);margin-right:3px')} kritisch</div>`;
     sentContent.innerHTML = html;
     sentBlock.style.display = 'block';
     anyVisible = true;
@@ -710,7 +710,7 @@ function renderInsights(session) {
       return `<span class="topic-chip">
         ${escHtml(txt)}
         <button class="topic-chip-btn" title="Thema löschen"
-          onclick="deleteTopic('${tSid}',${i})" style="color:var(--red)">🗑</button>
+          onclick="deleteTopic('${tSid}',${i})" style="color:var(--red)">${icon('trash-2',10)}</button>
       </span>`;
     }).join('')}</div>`;
     topicsBlock.style.display = 'block';
@@ -816,7 +816,7 @@ function swapAllSpeakers() {
   if (elB) elB.value = s.speakerB || 'Sprecher B';
   // Transkript neu rendern (Namen haben sich geändert)
   renderUtterances(s);
-  showToast('Sprecher A ↔ B getauscht ✓', 'success');
+  showToast('Sprecher A ↔ B getauscht', 'success');
 }
 
 function toggleUtteranceSpeaker(idx) {
@@ -995,7 +995,7 @@ async function doSend(sessionList, template) {
     if (fallbackEl) fallbackEl.style.display = 'none';
     if (pasteHint)  pasteHint.style.display  = '';
   } else {
-    overlayText.textContent = '⚠️ Zwischenablage nicht verfügbar – bitte manuell kopieren.';
+    overlayText.innerHTML = icon('alert-triangle',13,'margin-right:5px;color:var(--yellow)') + ' Zwischenablage nicht verfügbar – bitte manuell kopieren.';
     if (fallbackEl) { fallbackEl.style.display = ''; ta2.value = text; }
     if (pasteHint)  pasteHint.style.display = 'none';
   }

@@ -56,21 +56,24 @@ function renderBrowser(filter = '') {
     };
     const dur = s.duration ? formatDuration(s.duration) : '?';
     const statusClass = s.status === 'done' ? 'done' : 'error';
-    const statusLabel = s.status === 'done' ? '✓ Transkribiert' : '✗ Fehler';
+    const statusLabel = s.status === 'done'
+      ? `${icon('check-circle',11,'margin-right:3px;color:var(--green)')} Transkribiert`
+      : `${icon('x-circle',11,'margin-right:3px;color:var(--red)')} Fehler`;
     const tagsHtml = (s.tags||[]).map(t => `<span class="sc-tag">${escHtml(t)}</span>`).join('');
     card.innerHTML = `
-      <div class="card-checkbox">${selectedIds.has(s.id)?'✓':''}</div>
+      <div class="card-checkbox">${selectedIds.has(s.id) ? icon('check',11) : ''}</div>
       <div class="sc-actions" onclick="event.stopPropagation()">
-        <button class="sc-btn del" onclick="deleteSession(event,'${s.id}')">🗑</button>
+        <button class="sc-btn del" onclick="deleteSession(event,'${s.id}')" style="display:inline-flex;align-items:center;justify-content:center">${icon('trash-2',13)}</button>
       </div>
       ${(()=>{
-        const typeLabel = { arbeit: '💼 Arbeit', privat: '💬 Privat', gedanken: '💭 Gedanken' };
+        const typeIcon  = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), gedanken: icon('message-square',12) };
+        const typeLabel = { arbeit: 'Arbeit', privat: 'Privat', gedanken: 'Gedanken' };
         const typeCls   = { arbeit: 'sc-type-arbeit', privat: 'sc-type-privat', gedanken: 'sc-type-gedanken' };
         const t = s.type || 'privat';
-        return `<span class="sc-type ${typeCls[t]||'sc-type-privat'}">${typeLabel[t]||'💬 Privat'}</span>`;
+        return `<span class="sc-type ${typeCls[t]||'sc-type-privat'}" style="display:inline-flex;align-items:center;gap:4px">${typeIcon[t]||icon('message-circle',12)} ${typeLabel[t]||'Privat'}</span>`;
       })()}
       <div class="sc-name">${escHtml(s.label)}</div>
-      ${s.persons?.length ? `<div class="sc-persons">👥 ${s.persons.map(p=>escHtml(p)).join(' · ')}</div>` : ''}
+      ${s.persons?.length ? `<div class="sc-persons" style="display:flex;align-items:center;gap:5px">${icon('users',12,'margin-right:3px')} ${s.persons.map(p=>escHtml(p)).join(' · ')}</div>` : ''}
       <div class="sc-meta">
         ${new Date(s.date).toLocaleDateString('de-DE', {day:'numeric',month:'long',year:'numeric'})}<br>
         ${escHtml(s.filename || '')} · ${dur}
@@ -86,7 +89,7 @@ function renderBrowser(filter = '') {
           }).join('');
         })()}
       </div>
-      ${s.archiveFolder ? `<div class="sc-folder">📁 ${escHtml(s.archiveFolder)}</div>` : ''}
+      ${s.archiveFolder ? `<div class="sc-folder" style="display:flex;align-items:center;gap:4px">${icon('folder',12)} ${escHtml(s.archiveFolder)}</div>` : ''}
       ${tagsHtml ? `<div class="sc-tags">${tagsHtml}</div>` : ''}
       <span class="sc-status ${statusClass}">${statusLabel}</span>
     `;
@@ -115,7 +118,7 @@ function updateFolderDropdown() {
     const opt = document.createElement('option');
     const count = sessions.filter(s => s.archiveFolder === f).length;
     opt.value = f;
-    opt.textContent = '📁 ' + f + (count > 0 ? ` (${count})` : ' – leer');
+    opt.textContent = f + (count > 0 ? ` (${count})` : ' – leer');
     if (f === current) opt.selected = true;
     sel.appendChild(opt);
   });
@@ -168,7 +171,7 @@ function showErrorCard(message, sessionLabel) {
   document.getElementById('transcriptCard').classList.remove('visible');
   const card = document.getElementById('progressCard');
   card.classList.add('visible');
-  document.getElementById('progressTitle').innerHTML = '❌ Fehler bei: ' + escHtml(sessionLabel);
+  document.getElementById('progressTitle').innerHTML = `${icon('x-circle',15,'color:var(--red);margin-right:5px')} Fehler bei: ` + escHtml(sessionLabel);
   document.getElementById('progressStep').textContent = '';
   document.getElementById('progressBar').style.width = '100%';
   document.getElementById('progressBar').style.background = 'var(--red)';
@@ -186,7 +189,7 @@ function showErrorCard(message, sessionLabel) {
 // ═══════════════════════════════════════════════════
 function showToast(msg, type = 'success') {
   const t = document.getElementById('toast');
-  t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+  t.innerHTML = (type === 'success' ? icon('check-circle',14,'margin-right:6px;color:var(--green)') : icon('x-circle',14,'margin-right:6px;color:var(--red)')) + escHtml(msg);
   t.className = 'toast show ' + type;
   setTimeout(() => t.classList.remove('show'), 3500);
 }
@@ -213,7 +216,9 @@ function toggleSelectMode() {
   const btn = document.getElementById('selectModeBtn');
   const grid = document.getElementById('sessionGrid');
   btn.classList.toggle('active', selectMode);
-  btn.textContent = selectMode ? '✕ Abbrechen' : '☑ Auswählen';
+  btn.innerHTML = selectMode
+    ? icon('x',12,'margin-right:4px') + ' Abbrechen'
+    : icon('check-circle',12,'margin-right:4px') + ' Auswählen';
   grid?.classList.toggle('select-mode', selectMode);
   updateSelectionBar();
   renderBrowser();
@@ -229,7 +234,7 @@ function toggleCardSelect(e, id) {
     const cid = card.dataset.id;
     card.classList.toggle('selected', selectedIds.has(cid));
     const cb = card.querySelector('.card-checkbox');
-    if (cb) cb.textContent = selectedIds.has(cid) ? '✓' : '';
+    if (cb) cb.innerHTML = selectedIds.has(cid) ? icon('check',11) : '';
   });
 }
 
@@ -248,7 +253,7 @@ function clearSelection() {
   selectedIds.clear();
   selectMode = false;
   document.getElementById('selectModeBtn').classList.remove('active');
-  document.getElementById('selectModeBtn').textContent = '☑ Auswählen';
+  document.getElementById('selectModeBtn').innerHTML = icon('check-circle',12,'margin-right:4px') + ' Auswählen';
   document.getElementById('sessionGrid')?.classList.remove('select-mode');
   updateSelectionBar();
   renderBrowser();
@@ -279,9 +284,10 @@ function _setHeaderBtn(id, active) {
   const btn = document.getElementById(id);
   if (!btn) return;
   btn.classList.toggle('active', active);
-  btn.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
-  btn.style.color       = active ? 'var(--accent)' : 'var(--muted)';
-  btn.style.background  = active ? 'rgba(108,99,255,0.08)' : 'none';
+  // Farben werden jetzt per CSS .hdr-btn.active gesteuert
+  btn.style.borderColor = '';
+  btn.style.color       = '';
+  btn.style.background  = '';
 }
 
 function _showOverlay(viewId, btnId, renderFn) {
@@ -340,7 +346,7 @@ function renderArchView() {
   el.innerHTML = `
   <div style="max-width:960px; margin:0 auto; padding:8px 0 40px">
     <div style="margin-bottom:28px">
-      <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px">📐 Systemarchitektur</h2>
+      <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
       <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
         Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
         <span style="color:var(--accent); font-weight:600">Version 3.2</span>
@@ -353,11 +359,11 @@ function renderArchView() {
       <!-- Zeile 1: Externe APIs (5 Dienste) -->
       <div style="text-align:center; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:12px">Externe Dienste</div>
       <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:20px">
-        ${archBox('🎙️', 'AssemblyAI', 'Transkription + Speaker Diarization', '#fbbf24', 'REST API v2')}
-        ${archBox('🤖', 'Claude Sonnet', 'KI-Analyse · 360° · Suche · Chat', '#a78bfa', 'claude-sonnet-4-6')}
-        ${archBox('☁️', 'Google Drive', 'Sitzungs-Archiv als JSON-Dateien', '#34d399', 'Drive API v3')}
-        ${archBox('📆', 'Google Calendar', 'Termine direkt eingetragen', '#60a5fa', 'Calendar API v3')}
-        ${archBox('✉️', 'Gmail', 'E-Mail-Entwürfe gespeichert', '#f472b6', 'Gmail API v1')}
+        ${archBox(icon('mic',18,'color:#fbbf24'), 'AssemblyAI', 'Transkription + Speaker Diarization', '#fbbf24', 'REST API v2')}
+        ${archBox(icon('cpu',18,'color:#a78bfa'), 'Claude Sonnet', 'KI-Analyse · 360° · Suche · Chat', '#a78bfa', 'claude-sonnet-4-6')}
+        ${archBox(icon('cloud',18,'color:#34d399'), 'Google Drive', 'Sitzungs-Archiv als JSON-Dateien', '#34d399', 'Drive API v3')}
+        ${archBox(icon('calendar',18,'color:#60a5fa'), 'Google Calendar', 'Termine direkt eingetragen', '#60a5fa', 'Calendar API v3')}
+        ${archBox(icon('mail',18,'color:#f472b6'), 'Gmail', 'E-Mail-Entwürfe gespeichert', '#f472b6', 'Gmail API v1')}
       </div>
 
       <!-- Pfeile -->
@@ -367,7 +373,7 @@ function renderArchView() {
 
       <!-- Zeile 2: Browser App -->
       <div style="background:linear-gradient(135deg, rgba(108,99,255,0.12), rgba(167,139,250,0.06)); border:2px solid var(--accent); border-radius:12px; padding:20px; margin-bottom:16px; text-align:center">
-        <div style="font-size:1.6rem; margin-bottom:6px">🌐</div>
+        <div style="margin-bottom:8px; display:flex;justify-content:center">${icon('globe',28,'color:var(--accent)')}</div>
         <div style="font-weight:700; font-size:1rem; margin-bottom:4px">Browser-App (GitHub Pages)</div>
         <div style="font-size:0.78rem; color:var(--muted); line-height:1.8">
           Statisches HTML · Vanilla JS (ES2022) · CSS Custom Properties<br>
@@ -379,40 +385,40 @@ function renderArchView() {
 
       <!-- Zeile 3: Lokaler Speicher + Proxy + Auth -->
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px">
-        ${archBox('🔒', 'localStorage', 'API-Keys · Theme · Beziehungen · Vorlagen · Einstellungen', '#60a5fa', 'Nur lokal – nie in der Cloud')}
-        ${archBox('🔑', 'Google OAuth 2.0', 'GIS Client · Drive + Calendar + Gmail · Token-Refresh', '#34d399', 'accounts.google.com/gsi')}
-        ${archBox('⚡', 'Cloudflare Worker', 'CORS-Proxy für DELETE-Requests', '#f472b6', 'Optional – workers.dev')}
+        ${archBox(icon('lock',18,'color:#60a5fa'), 'localStorage', 'API-Keys · Theme · Beziehungen · Vorlagen · Einstellungen', '#60a5fa', 'Nur lokal – nie in der Cloud')}
+        ${archBox(icon('key',18,'color:#34d399'), 'Google OAuth 2.0', 'GIS Client · Drive + Calendar + Gmail · Token-Refresh', '#34d399', 'accounts.google.com/gsi')}
+        ${archBox(icon('zap',18,'color:#f472b6'), 'Cloudflare Worker', 'CORS-Proxy für DELETE-Requests', '#f472b6', 'Optional – workers.dev')}
       </div>
     </div>
 
     <!-- JS-Module -->
     <div style="margin-bottom:18px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted)">JavaScript-Module</div>
     <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:24px">
-      ${flowCard('⚙️ config.js', 'Globaler State', 'API-Keys, Sessions, Drive-Token, OAuth-Scopes (Drive + Calendar + Gmail), Preise, Wechselkurs', '#60a5fa')}
-      ${flowCard('🎙️ transcribe.js', 'Transkription', 'AssemblyAI Upload → Polling → Utterances mit Speaker-Labels und Timestamps', '#fbbf24')}
-      ${flowCard('🤖 claude.js', 'KI-Analyse', 'Privat/Arbeit-Analyse, 360°-Perspektiven, Anonymisierung, Token-Tracking', '#a78bfa')}
-      ${flowCard('☁️ drive.js', 'Cloud Storage', 'Google Drive OAuth, Ordner anlegen, Sessions als JSON speichern/laden/löschen', '#34d399')}
-      ${flowCard('✨ features.js', 'Erweiterte Features', '360°-Analyse, Aufnahme befragen (Chat), Mind Map (Mermaid.js), Eigene Vorlagen', '#f59e0b')}
-      ${flowCard('🔍 search.js', 'Globale Suche', 'Instant-Textsuche über alle Felder + Claude-Semantiksuche, ⌘K Shortcut', '#6ee7b7')}
-      ${flowCard('📆 calendar.js', 'Kalender & Mail', 'Termine via Claude extrahieren → Google Calendar API · E-Mail-Entwürfe → Gmail API', '#f472b6')}
-      ${flowCard('🖼️ ui.js', 'UI-Rendering', 'Session-Browser, Kosten, Personen-Profile, Systemarchitektur, Changelog', '#c084fc')}
-      ${flowCard('🎤 recorder.js', 'Audio-Aufnahme', 'MediaRecorder API, Mikrofon-Zugriff, WebM-Aufnahme direkt im Browser', '#34d399')}
+      ${flowCard('config.js', 'Globaler State', 'API-Keys, Sessions, Drive-Token, OAuth-Scopes (Drive + Calendar + Gmail), Preise, Wechselkurs', '#60a5fa')}
+      ${flowCard('transcribe.js', 'Transkription', 'AssemblyAI Upload → Polling → Utterances mit Speaker-Labels und Timestamps', '#fbbf24')}
+      ${flowCard('claude.js', 'KI-Analyse', 'Privat/Arbeit-Analyse, 360°-Perspektiven, Anonymisierung, Token-Tracking', '#a78bfa')}
+      ${flowCard('drive.js', 'Cloud Storage', 'Google Drive OAuth, Ordner anlegen, Sessions als JSON speichern/laden/löschen', '#34d399')}
+      ${flowCard('features.js', 'Erweiterte Features', '360°-Analyse, Aufnahme befragen (Chat), Mind Map (Mermaid.js), Eigene Vorlagen', '#f59e0b')}
+      ${flowCard('search.js', 'Globale Suche', 'Instant-Textsuche über alle Felder + Claude-Semantiksuche, ⌘K Shortcut', '#6ee7b7')}
+      ${flowCard('calendar.js', 'Kalender & Mail', 'Termine via Claude extrahieren → Google Calendar API · E-Mail-Entwürfe → Gmail API', '#f472b6')}
+      ${flowCard('ui.js', 'UI-Rendering', 'Session-Browser, Kosten, Personen-Profile, Systemarchitektur, Changelog', '#c084fc')}
+      ${flowCard('recorder.js', 'Audio-Aufnahme', 'MediaRecorder API, Mikrofon-Zugriff, WebM-Aufnahme direkt im Browser', '#34d399')}
     </div>
 
     <!-- Datenflüsse -->
     <div style="margin-bottom:18px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted)">Wichtige Datenflüsse</div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px">
-      ${flowCard('🎙️ → AssemblyAI → 🌐', 'Transkription', 'Audio → Upload → Polling → Utterances mit Speaker-Labels (A/B/C…)', '#fbbf24')}
-      ${flowCard('🌐 → Claude Sonnet', 'KI-Analyse', 'Transkript (opt. anonymisiert) → JSON: Zusammenfassung, Aufgaben, Psychologie, 360°', '#a78bfa')}
-      ${flowCard('🌐 → Google Drive', 'Cloud-Speicherung', 'Sitzung als JSON → Drive-Ordner → automatisch geladen beim nächsten Login', '#34d399')}
-      ${flowCard('🌐 → Google Calendar', 'Termine eintragen', 'Claude erkennt Termine im Transkript → RFC3339 Event → Calendar API v3 (POST)', '#60a5fa')}
-      ${flowCard('🌐 → Gmail', 'Entwürfe erstellen', 'Claude generiert E-Mails → Base64url → Gmail Drafts API → User sendet selbst ab', '#f472b6')}
-      ${flowCard('🌐 → ⚡ → AssemblyAI', 'Transkript löschen', 'DELETE via Cloudflare Worker (CORS-Bypass) → AssemblyAI entfernt Transkript', '#94a3b8')}
+      ${flowCard('Mic → AssemblyAI', 'Transkription', 'Audio → Upload → Polling → Utterances mit Speaker-Labels (A/B/C…)', '#fbbf24')}
+      ${flowCard('Browser → Claude Sonnet', 'KI-Analyse', 'Transkript (opt. anonymisiert) → JSON: Zusammenfassung, Aufgaben, Psychologie, 360°', '#a78bfa')}
+      ${flowCard('Browser → Google Drive', 'Cloud-Speicherung', 'Sitzung als JSON → Drive-Ordner → automatisch geladen beim nächsten Login', '#34d399')}
+      ${flowCard('Browser → Google Calendar', 'Termine eintragen', 'Claude erkennt Termine im Transkript → RFC3339 Event → Calendar API v3 (POST)', '#60a5fa')}
+      ${flowCard('Browser → Gmail', 'Entwürfe erstellen', 'Claude generiert E-Mails → Base64url → Gmail Drafts API → User sendet selbst ab', '#f472b6')}
+      ${flowCard('Worker → AssemblyAI', 'Transkript löschen', 'DELETE via Cloudflare Worker (CORS-Bypass) → AssemblyAI entfernt Transkript', '#94a3b8')}
     </div>
 
     <!-- Tech-Stack -->
     <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; margin-bottom:14px">
-      <div style="font-size:0.85rem; font-weight:700; margin-bottom:14px">🔧 Technologie-Stack</div>
+      <div style="font-size:0.85rem; font-weight:700; margin-bottom:14px; display:flex;align-items:center;gap:6px">${icon('wrench',14)} Technologie-Stack</div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
         ${techRow('Frontend', 'HTML5 · Vanilla JS (ES2022) · CSS Custom Properties')}
         ${techRow('Hosting', 'GitHub Pages (kostenlos, statisch)')}
@@ -432,7 +438,7 @@ function renderArchView() {
 
     <!-- Sicherheitshinweis -->
     <div style="padding:12px 16px; background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.25); border-radius:10px; font-size:0.8rem; color:var(--muted); line-height:1.6">
-      🔐 <strong style="color:var(--text)">Datenschutz-Architektur:</strong>
+      ${icon('lock',13,'margin-right:5px;color:var(--green)')} <strong style="color:var(--text)">Datenschutz-Architektur:</strong>
       API-Keys verlassen deinen Browser nie. Gespräche liegen in deiner persönlichen Google Drive.
       Kalender und Mail-Zugriff erfordert explizite Google-Zustimmung beim Login.
       Der optionale Anonymisierungs-Modus ersetzt Namen vor der KI-Analyse durch neutrale Labels.

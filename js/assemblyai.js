@@ -42,7 +42,7 @@ async function openCleanupModal() {
   }
   document.getElementById('cleanupModal').classList.add('open');
   document.getElementById('cleanupDeleteAllBtn').style.display = 'none';
-  document.getElementById('cleanupStatus').textContent = '⏳ Lade Transkripte von AssemblyAI…';
+  document.getElementById('cleanupStatus').innerHTML = icon('loader',13,'margin-right:5px') + ' Lade Transkripte von AssemblyAI…';
   document.getElementById('cleanupList').innerHTML =
     '<div style="padding:20px; text-align:center; color:var(--muted); font-size:0.85rem">Wird geladen…</div>';
 
@@ -54,14 +54,14 @@ async function openCleanupModal() {
     hint.style.background = 'rgba(52,211,153,0.1)';
     hint.style.border = '1px solid rgba(52,211,153,0.3)';
     hint.style.color = 'var(--green)';
-    hint.innerHTML = '✅ Proxy aktiv – Löschen funktioniert direkt.';
+    hint.innerHTML = icon('check-circle',13,'margin-right:5px') + ' Proxy aktiv – Löschen funktioniert direkt.';
     if (proxyBtn) proxyBtn.style.display = 'none';
   } else {
     hint.style.display = 'block';
     hint.style.background = 'rgba(251,191,36,0.1)';
     hint.style.border = '1px solid rgba(251,191,36,0.3)';
     hint.style.color = 'var(--yellow)';
-    hint.innerHTML = '⚠️ <strong>Kein Proxy eingerichtet.</strong> GitHub Pages blockiert das Löschen direkt bei AssemblyAI (CORS). '
+    hint.innerHTML = icon('alert-triangle',13,'margin-right:5px') + ' <strong>Kein Proxy eingerichtet.</strong> GitHub Pages blockiert das Löschen direkt bei AssemblyAI (CORS). '
       + 'Richte einen kostenlosen Cloudflare Worker ein, um das Löschen zu aktivieren. '
       + '<a href="https://developers.cloudflare.com/workers/get-started/guide/" target="_blank" style="color:var(--accent2)">Anleitung →</a>';
     if (proxyBtn) proxyBtn.style.display = '';
@@ -94,7 +94,7 @@ async function fetchAndRenderCleanupList() {
     transcripts = transcripts.filter(t => !t.is_deleted && t.audio_url !== 'http://deleted_by_user');
 
     if (transcripts.length === 0) {
-      list.innerHTML = '<div style="padding:16px; text-align:center; color:var(--green); font-size:0.9rem">✅ Alles sauber – keine Transkripte auf AssemblyAI.</div>';
+      list.innerHTML = `<div style="padding:16px; text-align:center; color:var(--green); font-size:0.9rem">${icon('check-circle',14,'margin-right:5px')} Alles sauber – keine Transkripte auf AssemblyAI.</div>`;
       status.textContent = '';
       return;
     }
@@ -113,7 +113,7 @@ async function fetchAndRenderCleanupList() {
         ? dateObj.toLocaleString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
         : '—';
       const statusColor = t.status === 'completed' ? 'var(--green)' : t.status === 'error' ? 'var(--red)' : 'var(--yellow)';
-      const statusLabel = t.status === 'completed' ? '✓ fertig' : t.status === 'error' ? '✗ Fehler' : '⏳ ' + t.status;
+      const statusLabel = t.status === 'completed' ? icon('check',12,'color:var(--green);margin-right:3px')+'fertig' : t.status === 'error' ? icon('x-circle',12,'color:var(--red);margin-right:3px')+'Fehler' : icon('loader',12,'margin-right:3px')+t.status;
 
       const row = document.createElement('div');
       row.id = `crow-${t.id}`;
@@ -127,14 +127,14 @@ async function fetchAndRenderCleanupList() {
         <button id="cbtn-${t.id}" onclick="deleteSingleTranscript('${t.id}')"
           style="flex-shrink:0; background:rgba(248,113,113,0.15); border:1px solid rgba(248,113,113,0.4);
                  color:var(--red); border-radius:6px; padding:5px 12px; font-size:0.78rem; cursor:pointer; white-space:nowrap">
-          🗑 Löschen
+          ${icon('trash-2',12,'margin-right:4px')} Löschen
         </button>
       `;
       list.appendChild(row);
     });
 
   } catch(e) {
-    list.innerHTML = `<div style="padding:16px; color:var(--red); font-size:0.85rem">❌ Fehler: ${escHtml(e.message)}</div>`;
+    list.innerHTML = `<div style="padding:16px; color:var(--red); font-size:0.85rem">${icon('x-circle',13,'margin-right:5px')} Fehler: ${escHtml(e.message)}</div>`;
     status.textContent = '';
   }
 }
@@ -142,14 +142,14 @@ async function fetchAndRenderCleanupList() {
 // Einzelnes Transkript löschen
 async function deleteSingleTranscript(transcriptId) {
   const btn = document.getElementById(`cbtn-${transcriptId}`);
-  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = icon('loader',12); }
 
   const result = await deleteFromAssemblyAI(transcriptId);
 
   if (result.ok) {
     const row = document.getElementById(`crow-${transcriptId}`);
     if (row) {
-      row.innerHTML = `<div style="padding:8px 12px; color:var(--green); font-size:0.83rem">✅ Gelöscht</div>`;
+      row.innerHTML = `<div style="padding:8px 12px; color:var(--green); font-size:0.83rem">${icon('check-circle',13,'margin-right:4px')} Gelöscht</div>`;
     }
     const local = sessions.find(s => s.transcriptId === transcriptId);
     if (local) {
@@ -159,18 +159,18 @@ async function deleteSingleTranscript(transcriptId) {
     }
     const remaining = document.querySelectorAll('[id^="cbtn-"]:not(:disabled)').length;
     if (remaining === 0) {
-      document.getElementById('cleanupStatus').textContent = '✅ Alle Transkripte gelöscht';
+      document.getElementById('cleanupStatus').innerHTML = icon('check-circle',13,'margin-right:5px;color:var(--green)') + ' Alle Transkripte gelöscht';
       document.getElementById('cleanupDeleteAllBtn').style.display = 'none';
     }
   } else {
-    if (btn) { btn.disabled = false; btn.textContent = '🗑 Löschen'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = icon('trash-2',12,'margin-right:4px') + ' Löschen'; }
     // Fehler direkt in der Zeile anzeigen
     const row = document.getElementById(`crow-${transcriptId}`);
     if (row) {
       const errDiv = row.querySelector('.delete-error') || document.createElement('div');
       errDiv.className = 'delete-error';
       errDiv.style.cssText = 'color:var(--red); font-size:0.72rem; margin-top:4px; padding:0 12px';
-      errDiv.textContent = '❌ ' + (result.error || 'Unbekannter Fehler');
+      errDiv.innerHTML = icon('x-circle',12,'margin-right:3px') + ' ' + escHtml(result.error || 'Unbekannter Fehler');
       row.appendChild(errDiv);
     }
     showToast('Fehler: ' + (result.error || 'Löschen fehlgeschlagen'), 'error');
@@ -190,7 +190,7 @@ async function runCleanup() {
   const ids = JSON.parse(btn.dataset.ids || '[]');
   if (ids.length === 0) return;
   btn.disabled = true;
-  btn.textContent = '⏳ Lösche alle…';
+  btn.innerHTML = icon('loader',12,'margin-right:5px') + ' Lösche alle…';
   let ok = 0, fail = 0;
   for (const id of ids) {
     const rowBtn = document.getElementById(`cbtn-${id}`);
@@ -199,14 +199,14 @@ async function runCleanup() {
     if (result.ok) {
       ok++;
       const row = document.getElementById(`crow-${id}`);
-      if (row) row.innerHTML = `<div style="padding:8px 12px; color:var(--green); font-size:0.83rem">✅ Gelöscht</div>`;
+      if (row) row.innerHTML = `<div style="padding:8px 12px; color:var(--green); font-size:0.83rem">${icon('check-circle',13,'margin-right:4px')} Gelöscht</div>`;
       const local = sessions.find(s => s.transcriptId === id);
       if (local) { local.transcriptId = null; saveToArchive(local).catch(() => {}); }
     } else { fail++; }
   }
   saveSessions();
-  document.getElementById('cleanupStatus').textContent =
-    fail === 0 ? `✅ Alle ${ok} Transkripte gelöscht` : `${ok} gelöscht, ${fail} fehlgeschlagen`;
+  document.getElementById('cleanupStatus').innerHTML =
+    fail === 0 ? icon('check-circle',13,'margin-right:5px;color:var(--green)') + ` Alle ${ok} Transkripte gelöscht` : icon('alert-triangle',13,'margin-right:5px;color:var(--yellow)') + ` ${ok} gelöscht, ${fail} fehlgeschlagen`;
   btn.style.display = 'none';
   showToast(`AssemblyAI: ${ok} gelöscht${fail ? ', ' + fail + ' fehlgeschlagen' : ''}.`, fail ? 'error' : 'success');
   if (fail === 0) setTimeout(() => closeCleanupModal(), 1800);
@@ -272,19 +272,19 @@ async function processFile(file) {
 
   try {
     // Schritt 1: Upload
-    setProgress(15, 'Audiodatei wird hochgeladen…', '📤 Upload zu AssemblyAI…');
+    setProgress(15, 'Audiodatei wird hochgeladen…', icon('cloud',12,'margin-right:5px') + ' Upload zu AssemblyAI…');
     const uploadUrl = await uploadAudio(file);
-    setProgress(35, 'Upload abgeschlossen', '✅ Upload erfolgreich\n🔄 Starte Transkription…');
+    setProgress(35, 'Upload abgeschlossen', icon('check-circle',12,'margin-right:5px;color:var(--green)') + ' Upload erfolgreich\n' + icon('refresh-cw',12,'margin-right:5px') + ' Starte Transkription…');
 
     // Schritt 2: Transkription anfordern
     const transcriptId = await requestTranscription(uploadUrl);
     session.transcriptId = transcriptId;
     saveSessions();
-    setProgress(50, 'Transkription läuft…', `✅ Job gestartet (ID: ${transcriptId})\n⏳ Warte auf Ergebnis…`);
+    setProgress(50, 'Transkription läuft…', icon('check-circle',12,'margin-right:5px;color:var(--green)') + ` Job gestartet (ID: ${transcriptId})\n` + icon('loader',12,'margin-right:5px') + ' Warte auf Ergebnis…');
 
     // Schritt 3: Polling
     const result = await pollTranscription(transcriptId);
-    setProgress(90, 'Verarbeitung abgeschlossen', '✅ Transkription fertig\n📄 Ergebnis wird geladen…');
+    setProgress(90, 'Verarbeitung abgeschlossen', icon('check-circle',12,'margin-right:5px;color:var(--green)') + ' Transkription fertig\n' + icon('file-text',12,'margin-right:5px') + ' Ergebnis wird geladen…');
 
     // Schritt 4: Ergebnis speichern
     session.utterances = result.utterances || [];
@@ -297,20 +297,20 @@ async function processFile(file) {
     session.usdToEur = eurRate;
     session.usdToEurDate = eurRateDate;
     saveSessions();
-    setProgress(92, 'Archiviere…', '✅ Transkription fertig\n💾 Speichere ins Archiv…');
+    setProgress(92, 'Archiviere…', icon('check-circle',12,'margin-right:5px;color:var(--green)') + ' Transkription fertig\n' + icon('save',12,'margin-right:5px') + ' Speichere ins Archiv…');
 
     // Schritt 5: Lokal archivieren (inkl. Audiodatei)
     const saved = await saveToArchive(session, file);
     setProgress(96, 'Lösche bei AssemblyAI…', saved
-      ? '✅ Im Archiv-Ordner gespeichert\n🗑️ Lösche bei AssemblyAI…'
-      : '⬇️ Als Download gespeichert\n🗑️ Lösche bei AssemblyAI…');
+      ? icon('check-circle',12,'margin-right:5px;color:var(--green)') + ' Im Archiv-Ordner gespeichert\n' + icon('trash-2',12,'margin-right:5px') + ' Lösche bei AssemblyAI…'
+      : icon('download',12,'margin-right:5px') + ' Als Download gespeichert\n' + icon('trash-2',12,'margin-right:5px') + ' Lösche bei AssemblyAI…');
 
     // Schritt 6: Bei AssemblyAI löschen
     const delResult = await deleteFromAssemblyAI(session.transcriptId);
     setProgress(100, 'Fertig!',
-      `✅ Transkription abgeschlossen\n` +
-      `${saved ? '📂 In Google Drive gespeichert ✓' : '⬇️ Als Datei heruntergeladen'}\n` +
-      `${delResult.ok ? '🗑️ Bei AssemblyAI gelöscht ✓' : '⚠️ AssemblyAI-Löschung fehlgeschlagen (manuell löschen)'}`
+      icon('check-circle',12,'margin-right:5px;color:var(--green)') + ' Transkription abgeschlossen\n' +
+      (saved ? icon('folder',12,'margin-right:5px') + ' In Google Drive gespeichert' : icon('download',12,'margin-right:5px') + ' Als Datei heruntergeladen') + '\n' +
+      (delResult.ok ? icon('trash-2',12,'margin-right:5px') + ' Bei AssemblyAI gelöscht' : icon('alert-triangle',12,'margin-right:5px;color:var(--yellow)') + ' AssemblyAI-Löschung fehlgeschlagen (manuell löschen)')
     );
 
     setTimeout(() => {
@@ -403,7 +403,7 @@ async function pollTranscription(transcriptId) {
 
     attempts++;
     const progress = 50 + Math.min(35, attempts * 0.5);
-    setProgress(progress, `Warte… (${attempts * 5}s)`, `⏳ Status: ${data.status}\n⏱️ Bisher ${attempts * 5} Sekunden gewartet…`);
+    setProgress(progress, `Warte… (${attempts * 5}s)`, icon('loader',12,'margin-right:5px') + ` Status: ${data.status}\n` + icon('clock',12,'margin-right:5px') + ` Bisher ${attempts * 5} Sekunden gewartet…`);
   }
   throw new Error('Timeout – Transkription dauert zu lange');
 }
@@ -424,7 +424,7 @@ function setProgress(pct, step, log) {
   document.getElementById('progressBar').style.width = pct + '%';
   document.getElementById('progressStep').textContent = step;
   const logEl = document.getElementById('progressLog');
-  logEl.textContent = log;
+  logEl.innerHTML = log.replace(/\n/g, '<br>');
 }
 
 // ═══════════════════════════════════════════════════

@@ -25,7 +25,7 @@ async function loadAudioForSession(session) {
   if (!driveToken || !session._audioId) {
     player.style.display = 'none';
     noFile.style.display = 'block';
-    noFile.textContent = driveToken ? '⚠️ Keine Audio-Datei in Drive verknüpft' : '⚠️ Nicht mit Drive verbunden';
+    noFile.innerHTML = icon('alert-triangle',13,'margin-right:5px;color:var(--yellow)') + (driveToken ? ' Keine Audio-Datei in Drive verknüpft' : ' Nicht mit Drive verbunden');
     return;
   }
 
@@ -38,7 +38,7 @@ async function loadAudioForSession(session) {
   } catch (e) {
     player.style.display = 'none';
     noFile.style.display = 'block';
-    noFile.textContent = '⚠️ Audio konnte nicht geladen werden: ' + e.message;
+    noFile.innerHTML = icon('alert-triangle',13,'margin-right:5px;color:var(--yellow)') + ' Audio konnte nicht geladen werden: ' + escHtml(e.message);
   }
 }
 
@@ -117,7 +117,7 @@ function renderTimeline(filter) {
         privat:   'rgba(52,211,153,0.35)',
         gedanken: 'rgba(251,191,36,0.35)',
       }[s.type || 'privat'] || 'rgba(52,211,153,0.35)';
-      const typeLabel = { arbeit: '💼', privat: '💬', gedanken: '💭' }[s.type || 'privat'] || '💬';
+      const typeLabel = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), gedanken: icon('message-square',12) }[s.type || 'privat'] || icon('message-circle',12);
 
       el.className = 'timeline-item';
       el.style.background = typeGradient;

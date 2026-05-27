@@ -131,7 +131,7 @@ function updateApiIndicator() {
   const text = document.getElementById('apiBadgeText');
   if (apiKey) {
     dot.classList.add('ok');
-    text.textContent = 'API-Key gesetzt ✓';
+    text.innerHTML = 'API-Key gesetzt ' + icon('check',11,'color:var(--green)');
   } else {
     dot.classList.remove('ok');
     text.textContent = 'API-Key eingeben';
