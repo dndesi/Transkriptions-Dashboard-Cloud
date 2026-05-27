@@ -328,8 +328,11 @@ function confirmDelete() {
   if (!pendingDeleteId) return;
   const id = pendingDeleteId;
   closeDeleteModal();
+  const session = sessions.find(s => s.id === id);
   sessions = sessions.filter(s => s.id !== id);
   saveSessions();
+  // Drive-Datei ebenfalls löschen – sonst taucht die Session beim nächsten Drive-Sync wieder auf
+  if (session) deleteSessionFromDrive(session);
   if (currentSessionId === id) {
     currentSessionId = null;
     showBrowser();

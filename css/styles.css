@@ -1480,7 +1480,13 @@
 
     /* ─── RESPONSIVE ────────────────────────────── */
 
-    /* Desktop: Hamburger + Sidebar-Overlay unsichtbar */
+    /* Desktop: Nav immer sichtbar, Hamburger + Overlay versteckt */
+    #hdrNav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
     #hamburgerBtn    { display: none; }
     #sidebarOverlay  { display: none; }
     .mobile-only     { display: none !important; }
