@@ -88,6 +88,12 @@
       <i data-lucide="moon" class="hdr-icon" id="themeIcon"></i>
     </button>
 
+    <!-- Home / Archiv -->
+    <button onclick="showBrowser()" title="Sitzungs-Archiv" class="hdr-btn"
+      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')">
+      <i data-lucide="home" class="hdr-icon"></i>
+    </button>
+
     <!-- Personen -->
     <button id="headerPersonsBtn" onclick="togglePersonsView()" title="Personen-Profile" class="hdr-btn"
       onmouseover="if(!this.classList.contains('active'))this.classList.add('hdr-btn-hover')"
@@ -136,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.15</button>
+        onmouseout="this.style.color='var(--muted)'">v4.16</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -340,6 +346,7 @@
             <button class="btn btn-ghost sdh-btn" id="mindmapBtn" onclick="generateAndShowMindMap()" title="Mind Map"><i data-lucide="git-branch" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Mind Map</button>
             <button class="btn btn-ghost sdh-btn" onclick="openCalendarModal()" title="Kalender"><i data-lucide="calendar" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Kalender</button>
             <button class="btn btn-ghost sdh-btn" onclick="openGmailModal()" title="E-Mails"><i data-lucide="mail" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mails</button>
+            <button class="btn btn-ghost sdh-btn" onclick="openDeleteModal(currentSessionId)" title="Sitzung löschen"><i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i></button>
             <!-- Senden an Claude: versteckt, aber im DOM aktiv -->
             <div class="claude-btn-wrap" id="claudeBtnWrap" style="display:none">
               <button class="btn btn-primary" onclick="toggleTemplatePopover('claudeBtnWrap')">✦ Senden an Claude ▾</button>
@@ -397,9 +404,6 @@
           <button class="btn btn-primary" onclick="startSelectedAnalysis()" id="analyseDropdownStartBtn"
             disabled style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;font-size:0.85rem">
             <i data-lucide="play" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Starten
-          </button>
-          <button class="btn sdh-delete-btn" onclick="openDeleteModal(currentSessionId)" title="Sitzung löschen">
-            <i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
           </button>
         </div>
       </div>
@@ -580,6 +584,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.16 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.16</span>
+          <span class="cl-date">28.05.2026</span>
+          <span class="cl-tag cl-tag-fix">UI</span>
+        </div>
+        <div class="cl-title">Papierkorb in Aktionsleiste · Home-Button im Header</div>
+        <ul>
+          <li><strong>Papierkorb verschoben</strong> – Der Löschen-Button ist aus der Analyse-Leiste in die obere Aktionszeile gewandert (neben E-Mails), hat das gleiche weiße Styling wie die anderen Buttons.</li>
+          <li><strong>Home-Button</strong> – Neuer Haus-Icon-Button im Header-Menü (vor Personen), verlinkt direkt auf das Sitzungs-Archiv.</li>
+        </ul>
+        <div class="cl-tech">index.html: sdh-actions + trash-btn, headerNav + home-btn.</div>
+      </div>
 
       <!-- ── v4.15 ── -->
       <div class="cl-entry">
