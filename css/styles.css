@@ -425,31 +425,149 @@
       line-height: 1.7;
     }
 
-    /* Transkript */
+    /* Transkript / Sitzungsdetail */
     .transcript-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 28px;
+      padding: 0;
       display: none;
+      overflow: hidden;
     }
     .transcript-card.visible { display: block; }
-    .transcript-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      gap: 16px;
+
+    /* ── Session Detail Header (lila) ── */
+    .sdh {
+      background: linear-gradient(135deg, rgba(108,99,255,0.85) 0%, rgba(139,92,246,0.8) 100%);
+      padding: 20px 24px 18px;
+      border-radius: var(--radius) var(--radius) 0 0;
     }
-    .transcript-info h2 {
-      font-size: 1.15rem;
-      font-weight: 700;
+    .sdh-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .sdh-top .back-btn {
+      color: rgba(255,255,255,0.85);
+      font-size: 0.82rem;
+    }
+    .sdh-top .back-btn:hover { color: #fff; }
+    .sdh-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .sdh-btn {
+      font-size: 0.78rem;
+      padding: 5px 10px;
+      background: rgba(255,255,255,0.12) !important;
+      border-color: rgba(255,255,255,0.2) !important;
+      color: rgba(255,255,255,0.9) !important;
+    }
+    .sdh-btn:hover {
+      background: rgba(255,255,255,0.22) !important;
+      color: #fff !important;
+    }
+    /* Analyse-Leiste */
+    .sdh-analyse-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.18);
+    }
+    .sdh-analyse-select {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      color: #fff;
+      padding: 7px 10px;
+      font-size: 0.82rem;
+      outline: none;
+      cursor: pointer;
+      min-width: 180px;
+    }
+    .sdh-analyse-select option { background: var(--surface); color: var(--text); }
+    .sdh-analyse-select optgroup { background: var(--surface); color: var(--muted); }
+    .sdh-delete-btn {
+      background: rgba(248,113,113,0.18) !important;
+      border: 1px solid rgba(248,113,113,0.4) !important;
+      color: #fca5a5 !important;
+      padding: 7px 10px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 8px; cursor: pointer;
+    }
+    .sdh-delete-btn:hover { background: rgba(248,113,113,0.32) !important; }
+
+    /* ── Akkordeon ── */
+    .session-accordion {
+      border-top: none;
+    }
+    .acc-panel {
+      border-bottom: 1px solid var(--border);
+    }
+    .acc-panel:last-child { border-bottom: none; }
+    .acc-panel-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 20px;
+      background: var(--surface);
+      border: none;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      text-align: left;
+      transition: background 0.15s;
+    }
+    .acc-panel-header:hover { background: var(--surface2); }
+    .acc-panel.open .acc-panel-header { background: var(--surface2); color: var(--accent); }
+    .acc-chevron {
+      font-size: 0.75rem;
+      color: var(--muted);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .acc-panel.open .acc-chevron { transform: rotate(180deg); }
+    .acc-panel-body {
+      display: none;
+      padding: 14px 20px 18px;
+      background: var(--surface);
+    }
+    .acc-panel.open .acc-panel-body { display: block; }
+
+    /* Namen-Panel innere Zeile */
+    .acc-namen-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .acc-namen-row .speaker-name-field { flex: 1; min-width: 120px; }
+
+    /* Audio player im Akkordeon */
+    .audio-player-bar {
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+    .audio-player-label {
+      font-size: 0.8rem;
+      color: var(--muted);
       margin-bottom: 4px;
     }
-    .transcript-info p {
-      font-size: 0.82rem;
-      color: var(--muted);
-    }
+
+    /* Analysen-Panel: insights-section immer sichtbar */
+    #accAnalysen .insights-section { display: block; }
+
     .transcript-actions { display: flex; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
     .tag-chip {
       display: inline-block;
@@ -950,8 +1068,9 @@
       display: none;
       align-items: center;
       gap: 5px;
-      padding: 2px 12px 8px;
-      margin-top: -2px;
+      padding: 6px 20px;
+      background: rgba(245,158,11,0.08);
+      border-bottom: 1px solid rgba(245,158,11,0.2);
     }
 
     /* Session-Browser */
@@ -1727,24 +1846,16 @@
         padding: 7px 10px; /* größer für Touch */
       }
 
-      /* ── Detailansicht: Header + Aktions-Buttons ── */
-
-      /* Header: Titel oben, Buttons darunter */
-      .transcript-header {
-        flex-direction: column;
-        gap: 12px;
-      }
-      .transcript-actions {
-        flex-shrink: 1;
-        flex-wrap: wrap;
-        gap: 6px;
-        width: 100%;
-      }
-      /* Buttons kompakter auf Mobile */
-      .transcript-actions .btn {
-        font-size: 0.78rem;
-        padding: 6px 10px;
-      }
+      /* ── Detailansicht Mobile ── */
+      .sdh { padding: 16px; border-radius: var(--radius) var(--radius) 0 0; }
+      .sdh-actions { gap: 4px; }
+      .sdh-btn { font-size: 0.74rem; padding: 4px 8px; }
+      .sdh-analyse-bar { gap: 6px; }
+      .sdh-analyse-select { min-width: 0; flex: 1; }
+      .acc-panel-header { padding: 12px 14px; font-size: 0.84rem; }
+      .acc-panel-body { padding: 12px 14px 16px; }
+      .acc-namen-row { flex-direction: column; align-items: stretch; }
+      .acc-namen-row .speaker-name-field { min-width: 0; flex: none; width: 100%; }
 
       /* ── Allgemeine Layout-Fixes ── */
 

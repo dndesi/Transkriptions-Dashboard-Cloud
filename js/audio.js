@@ -58,8 +58,10 @@ function stopAudio() {
 }
 
 function _updateAudioStopBtn(playing) {
-  const btn = document.getElementById('audioStopBtn');
-  if (btn) btn.style.display = playing ? 'inline-flex' : 'none';
+  const btn      = document.getElementById('audioStopBtn');
+  const btnFloat = document.getElementById('audioStopBtnFloat');
+  if (btn)      btn.style.display      = playing ? 'inline-flex' : 'none';
+  if (btnFloat) btnFloat.style.display = playing ? 'inline-flex' : 'none';
 }
 
 // Sync: aktuelle Utterance beim Abspielen hervorheben
