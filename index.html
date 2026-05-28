@@ -136,7 +136,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.10</button>
+        onmouseout="this.style.color='var(--muted)'">v4.11</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -537,6 +537,23 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.11 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.11</span>
+          <span class="cl-date">28.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <div class="cl-title">Bearbeitbare Standard-Analysen in Prompt-Bibliothek</div>
+        <ul>
+          <li><strong>360°, Themen, Kapitel editierbar</strong> – Die drei Standard-Analysen erscheinen jetzt als eigener Abschnitt „Standard-Analysen" in der Prompt-Bibliothek. Prompt-Text kann frei bearbeitet werden (Name/Icon bleiben fix).</li>
+          <li><strong>Reset-Button</strong> – Angepasste Prompts können per „Reset" wieder auf den Original-Text zurückgesetzt werden. Im Editor-Modal steht der Reset-Button nur für angepasste Prompts zur Verfügung.</li>
+          <li><strong>Änderungen greifen sofort</strong> – Die Analyse-Funktionen (360°, Themen, Kapitel) lesen den angepassten Prompt aus localStorage. Platzhalter {{transkript}}, {{speakerA}}, {{speakerB}} werden wie bei eigenen Prompts ersetzt.</li>
+          <li><strong>„Angepasst"-Badge</strong> – Kacheln zeigen ein lila Badge wenn der Prompt vom Standard abweicht.</li>
+        </ul>
+        <div class="cl-tech">EDITABLE_PROMPT_DEFAULTS + getEditablePromptText/saveEditablePromptText/resetEditablePrompt in prompts.js. analyseChapters/analyseTopics (claude.js) und analyse360 (features.js) lesen via getEditablePromptText() und ersetzen Platzhalter. promptEditorResetBtn in index.html. openEditablePromptEditor/saveEditablePromptFromEditor/resetEditablePromptAndRefresh in prompts.js.</div>
+      </div>
 
       <!-- ── v4.10 ── -->
       <div class="cl-entry">
@@ -1492,6 +1509,9 @@
 
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closePromptEditorModal()">Abbrechen</button>
+      <button id="promptEditorResetBtn" class="btn" style="display:none; gap:6px; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:var(--red)">
+        <i data-lucide="refresh-cw" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Zurücksetzen
+      </button>
       <button id="promptEditorSaveBtn" class="btn btn-primary" onclick="savePromptFromEditor()" style="gap:6px">
         <i data-lucide="save" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i> Speichern
       </button>
