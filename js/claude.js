@@ -188,6 +188,9 @@ function openAnalyseModal() {
   if (workChecks)    workChecks.style.display    = isWork ? 'block' : 'none';
   if (privateChecks) privateChecks.style.display = isWork ? 'none'  : 'block';
 
+  // Eigene Prompts in Checkboxen laden
+  if (typeof renderCustomPromptCheckboxes === 'function') renderCustomPromptCheckboxes();
+
   document.getElementById('analyseModal').classList.add('open');
 }
 function closeAnalyseModal() {
@@ -208,6 +211,13 @@ async function runAnalysisFromModal() {
   if (document.getElementById('chkTopics')?.checked)    types.push('topics');
   if (document.getElementById('chk360')?.checked)       types.push('360');
 
+  // Eigene Prompts einsammeln
+  if (typeof getCustomPrompts === 'function') {
+    getCustomPrompts().forEach(p => {
+      if (document.getElementById('chkCustom_' + p.id)?.checked) types.push('custom:' + p.id);
+    });
+  }
+
   if (!types.length) { showAnalyseError('Bitte mindestens eine Option wählen.'); return; }
   if (!anthropicKey) { showAnalyseError('Kein Anthropic API-Key gesetzt — bitte unter 🔑 eintragen.'); return; }
   const s = getSession();
@@ -224,14 +234,19 @@ async function runAnalysisFromModal() {
   const loadingText  = document.getElementById('analyseLoadingText');
   const loadingSteps = document.getElementById('analyseLoadingSteps');
   const stepLabels   = { work: icon('briefcase',12)+' Arbeits-Analyse', private: icon('message-circle',12)+' Gesprächs-Analyse', sentiment: icon('smile',12)+' Stimmungsanalyse', chapters: icon('book-open',12)+' Kapitel', topics: icon('tag',12)+' Themen', '360': icon('refresh-cw',12)+' 360°-Analyse' };
+  // Custom Prompt Labels dynamisch hinzufügen
+  if (typeof getCustomPrompts === 'function') {
+    getCustomPrompts().forEach(p => { stepLabels['custom:'+p.id] = icon(p.icon||'sparkles',12)+' '+p.name; });
+  }
   const stepsDone    = [];
 
   function setStep(type) {
-    loadingText.innerHTML = stepLabels[type] + ' wird analysiert…';
+    const label = stepLabels[type] || type;
+    loadingText.innerHTML = label + ' wird analysiert…';
     loadingSteps.innerHTML  = types.map(t =>
-      stepsDone.includes(t) ? `<span style="color:var(--green);display:flex;align-items:center;gap:5px">${icon('check',12)} ${stepLabels[t]}</span>` :
-      t === type             ? `<span style="color:var(--accent);display:flex;align-items:center;gap:5px">${icon('loader',12)} ${stepLabels[t]}</span>` :
-                               `<span style="opacity:0.4;display:flex;align-items:center;gap:5px">${icon('chevron-right',12)} ${stepLabels[t]}</span>`
+      stepsDone.includes(t) ? `<span style="color:var(--green);display:flex;align-items:center;gap:5px">${icon('check',12)} ${stepLabels[t]||t}</span>` :
+      t === type             ? `<span style="color:var(--accent);display:flex;align-items:center;gap:5px">${icon('loader',12)} ${stepLabels[t]||t}</span>` :
+                               `<span style="opacity:0.4;display:flex;align-items:center;gap:5px">${icon('chevron-right',12)} ${stepLabels[t]||t}</span>`
     ).join('');
   }
 
@@ -239,12 +254,17 @@ async function runAnalysisFromModal() {
     const transcript = buildTranscriptText(s);
     for (const type of types) {
       setStep(type);
-      if (type === 'work')      await analyseWork(s, transcript);
-      if (type === 'private')   await analysePrivate(s, transcript);
-      if (type === 'sentiment') await analyseSentiment(s, transcript);
-      if (type === 'chapters')  await analyseChapters(s, transcript);
-      if (type === 'topics')    await analyseTopics(s, transcript);
-      if (type === '360')       await analyse360(s, transcript);
+      if (type === 'work')           await analyseWork(s, transcript);
+      if (type === 'private')        await analysePrivate(s, transcript);
+      if (type === 'sentiment')      await analyseSentiment(s, transcript);
+      if (type === 'chapters')       await analyseChapters(s, transcript);
+      if (type === 'topics')         await analyseTopics(s, transcript);
+      if (type === '360')            await analyse360(s, transcript);
+      if (type.startsWith('custom:') && typeof runCustomPrompt === 'function') {
+        const pid = type.slice(7);
+        const promptObj = getCustomPrompts().find(p => p.id === pid);
+        if (promptObj) await runCustomPrompt(s, promptObj, transcript);
+      }
       stepsDone.push(type);
     }
     saveSessions();
@@ -951,6 +971,40 @@ function renderInsights(session) {
     anyVisible = true;
   } else {
     topicsBlock.style.display = 'none';
+  }
+
+  // ── Custom Prompt Ergebnisse ──────────────────────
+  const customContainer = document.getElementById('customResultsContainer');
+  if (customContainer) {
+    const customResults = session.customResults || {};
+    const keys = Object.keys(customResults);
+    if (keys.length > 0) {
+      customContainer.innerHTML = keys.map(pid => {
+        const res  = customResults[pid];
+        const bid  = 'customBlock_' + pid;
+        const cid  = 'customContent_' + pid;
+        const icoName = (typeof getCustomPrompts === 'function'
+          ? (getCustomPrompts().find(p => p.id === pid)?.icon || 'sparkles')
+          : 'sparkles');
+        return `
+          <div class="insights-block" id="${bid}">
+            <div class="insights-block-title" onclick="toggleInsightsBlock('${bid}')">
+              <span style="display:inline-flex;align-items:center;gap:6px">
+                ${icon(icoName,14,'stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0')}
+                ${escHtml(res.promptName || 'Eigener Prompt')}
+              </span>
+              <span class="insights-block-chevron">▾</span>
+            </div>
+            <div class="insights-block-body">
+              <div id="${cid}" class="custom-result-text">${escHtml(res.text || '')}</div>
+            </div>
+          </div>`;
+      }).join('');
+      showInsightsBlock(customContainer.querySelector('.insights-block'));
+      anyVisible = true;
+    } else {
+      customContainer.innerHTML = '';
+    }
   }
 
   section.style.display = anyVisible ? 'block' : 'none';
