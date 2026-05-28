@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.18</button>
+        onmouseout="this.style.color='var(--muted)'">v4.19</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -617,6 +617,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.19 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.19</span>
+          <span class="cl-date">28.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Export-Buttons im Light-Mode sichtbar</strong> – Farben auf CSS-Variablen (var(--surface2), var(--border), var(--muted)) umgestellt statt hardcoded rgba(255,255,255,…); funktioniert jetzt in beiden Modi.</li>
+        </ul>
+        <div class="cl-tech">styles.css: .insights-export-btn Farben auf Theme-Variablen umgestellt.</div>
+      </div>
 
       <!-- ── v4.18 ── -->
       <div class="cl-entry">
