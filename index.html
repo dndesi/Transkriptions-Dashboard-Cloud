@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.19</button>
+        onmouseout="this.style.color='var(--muted)'">v4.20</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -304,32 +304,62 @@
 
     <!-- Session-Browser -->
     <div class="browser-view visible" id="browserView">
-      <div class="browser-toolbar" id="browserToolbar">
-        <h2 style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="folder" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Sitzungs-Archiv</h2>
-        <select id="folderFilter" onchange="filterBrowser()">
-          <option value="">Alle Ordner</option>
-        </select>
-        <select id="tagFilter" onchange="filterBrowser()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:0.82rem;outline:none;cursor:pointer;">
-          <option value="">Alle Tags</option>
-        </select>
-        <div class="search-box" style="flex:1; min-width:130px;">
-          <i data-lucide="search" style="width:14px;height:14px;stroke:var(--muted);stroke-width:2;fill:none;flex-shrink:0"></i>
-          <input type="text" id="sidebarSearchMain" placeholder="Suchen…" oninput="filterBrowser()" />
+      <div class="browser-layout">
+
+        <!-- ── Ordner-Sidebar ── -->
+        <div class="folder-sidebar" id="folderSidebar">
+          <div class="folder-sidebar-header">
+            <span style="font-size:0.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Ordner</span>
+            <button class="folder-new-btn" onclick="createFolder()" title="Neuer Ordner">＋</button>
+          </div>
+          <div class="folder-list" id="folderList">
+            <!-- wird per JS befüllt -->
+          </div>
         </div>
-        <div class="view-toggle">
-          <button class="view-btn active" id="viewGrid" onclick="setView('grid')" title="Kachelansicht">⊞</button>
-          <button class="view-btn" id="viewTimeline" onclick="setView('timeline')" title="Zeitstrahl">≡</button>
+
+        <!-- ── Haupt-Bereich ── -->
+        <div class="browser-main" id="browserMain">
+          <div class="browser-toolbar" id="browserToolbar">
+            <h2 id="browserTitle" style="display:inline-flex;align-items:center;gap:7px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              <i data-lucide="folder" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+              <span id="browserTitleText">Alle Sitzungen</span>
+            </h2>
+            <select id="tagFilter" onchange="filterBrowser()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:0.82rem;outline:none;cursor:pointer;">
+              <option value="">Alle Tags</option>
+            </select>
+            <div class="search-box" style="flex:1; min-width:130px;">
+              <i data-lucide="search" style="width:14px;height:14px;stroke:var(--muted);stroke-width:2;fill:none;flex-shrink:0"></i>
+              <input type="text" id="sidebarSearchMain" placeholder="Suchen…" oninput="filterBrowser()" />
+            </div>
+            <div class="view-toggle">
+              <button class="view-btn active" id="viewGrid" onclick="setView('grid')" title="Kachelansicht">⊞</button>
+              <button class="view-btn" id="viewTimeline" onclick="setView('timeline')" title="Zeitstrahl">≡</button>
+            </div>
+            <button class="btn btn-ghost select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()">☑ Auswählen</button>
+          </div>
+          <div class="session-grid" id="sessionGrid">
+            <div class="browser-empty">Noch keine Sitzungen vorhanden.<br>Lade eine Aufnahme hoch, um zu starten.</div>
+          </div>
+          <div class="timeline-view" id="timelineView"></div>
+          <div id="costsView" style="display:none; padding-bottom:40px"></div>
+          <div id="personsView" style="display:none; padding-bottom:40px"></div>
+          <div id="archView" style="display:none; padding-bottom:40px"></div>
+          <div id="promptsView" style="display:none; padding-bottom:40px"></div>
         </div>
-        <button class="btn btn-ghost select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()">☑ Auswählen</button>
+
       </div>
-      <div class="session-grid" id="sessionGrid">
-        <div class="browser-empty">Noch keine Sitzungen vorhanden.<br>Lade eine Aufnahme hoch, um zu starten.</div>
+    </div>
+
+    <!-- ── Ordner-Zuweisung Modal ── -->
+    <div class="modal-backdrop" id="assignFolderModal">
+      <div class="modal" style="max-width:360px">
+        <h3 style="display:flex;align-items:center;gap:8px"><i data-lucide="folder" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"></i> Ordner zuweisen</h3>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">Wähle einen Ordner für diese Sitzung:</p>
+        <div id="assignFolderList" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto"></div>
+        <div class="modal-actions" style="margin-top:16px">
+          <button class="btn btn-ghost" onclick="document.getElementById('assignFolderModal').classList.remove('open')">Abbrechen</button>
+        </div>
       </div>
-      <div class="timeline-view" id="timelineView"></div>
-      <div id="costsView" style="display:none; padding-bottom:40px"></div>
-      <div id="personsView" style="display:none; padding-bottom:40px"></div>
-      <div id="archView" style="display:none; padding-bottom:40px"></div>
-      <div id="promptsView" style="display:none; padding-bottom:40px"></div>
     </div>
 
     <!-- Transkript / Sitzungsdetail -->
@@ -617,6 +647,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.20 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.20</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Projekt-Ordner Sidebar</strong> – Linke Sidebar im Archiv mit Ordnerliste: „Alle Sitzungen", „Allgemein" (ohne Ordner), plus eigene Ordner. Klick filtert das Archiv direkt.</li>
+          <li><strong>Ordner erstellen / umbenennen / löschen</strong> – ＋-Button in der Sidebar, ✎ und ✕ erscheinen beim Hover auf einem Ordner.</li>
+          <li><strong>Sitzung einem Ordner zuweisen</strong> – Ordner-Button (📁+) auf jeder Sitzungskarte öffnet ein Modal mit allen verfügbaren Ordnern.</li>
+        </ul>
+        <div class="cl-tech">index.html: browser-layout, folder-sidebar, assignFolderModal. ui.js: activeFolderFilter, renderFolderSidebar(), createFolder(), renameFolder(), deleteFolder(), openAssignFolder(), assignFolderToSession(). audio.js: Timeline nutzt activeFolderFilter. styles.css: .browser-layout, .folder-sidebar, .folder-item.</div>
+      </div>
 
       <!-- ── v4.19 ── -->
       <div class="cl-entry">

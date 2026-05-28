@@ -11,13 +11,12 @@ function showBrowser() {
 }
 
 function renderBrowser(filter = '') {
-  const folderFilter = document.getElementById('folderFilter')?.value || '';
   const searchVal = filter || document.getElementById('sidebarSearchMain')?.value || '';
   const grid = document.getElementById('sessionGrid');
   if (!grid) return;
 
-  // Ordner-Dropdown aktualisieren
-  updateFolderDropdown();
+  // Sidebar aktualisieren
+  renderFolderSidebar();
 
   // Sessions anzeigen: 'done'/'error' ODER wenn utterances vorhanden (aus Drive geladen)
   let list = sessions.filter(s =>
@@ -25,7 +24,8 @@ function renderBrowser(filter = '') {
     (s.utterances && s.utterances.length > 0)
   );
 
-  if (folderFilter) list = list.filter(s => s.archiveFolder === folderFilter);
+  if (activeFolderFilter === '__none__') list = list.filter(s => !s.archiveFolder);
+  else if (activeFolderFilter) list = list.filter(s => s.archiveFolder === activeFolderFilter);
 
   if (searchVal.trim()) {
     const q = searchVal.toLowerCase();
@@ -67,6 +67,7 @@ function renderBrowser(filter = '') {
     card.innerHTML = `
       <div class="card-checkbox">${selectedIds.has(s.id) ? icon('check',11) : ''}</div>
       <div class="sc-actions" onclick="event.stopPropagation()">
+        <button class="sc-btn" onclick="openAssignFolder('${s.id}')" title="Ordner zuweisen" style="display:inline-flex;align-items:center;justify-content:center">${icon('folder-plus',13)}</button>
         <button class="sc-btn del" onclick="deleteSession(event,'${s.id}')" style="display:inline-flex;align-items:center;justify-content:center">${icon('trash-2',13)}</button>
       </div>
       <div class="sc-icon">${icon(typeIconMap[t]||'message-circle', 17)}</div>
@@ -106,23 +107,175 @@ function filterBrowser() {
   if (currentView === 'timeline') renderTimeline(q);
 }
 
+// ── Aktiver Ordner-Filter (null = Alle) ──────────────────
+let activeFolderFilter = null;
+
 function updateFolderDropdown() {
-  const sel = document.getElementById('folderFilter');
-  if (!sel) return;
-  // Ordner aus Sitzungen + Drive-Unterordner zusammenführen
+  // Legacy-Dropdown nicht mehr vorhanden – Sidebar wird stattdessen genutzt
+  renderFolderSidebar();
+}
+
+function getFolderNames() {
   const fromSessions = sessions.filter(s => s.archiveFolder).map(s => s.archiveFolder);
-  const fromMemory = (rememberedFolders || []).map(f => f.name);
-  const folders = [...new Set([...fromSessions, ...fromMemory])].sort();
-  const current = sel.value;
-  sel.innerHTML = '<option value="">Alle Ordner</option>';
+  const fromMemory   = (rememberedFolders || []).map(f => f.name);
+  return [...new Set([...fromSessions, ...fromMemory])].sort();
+}
+
+function renderFolderSidebar() {
+  const list = document.getElementById('folderList');
+  if (!list) return;
+  const folders = getFolderNames();
+  list.innerHTML = '';
+
+  // Alle Sitzungen
+  const allItem = document.createElement('div');
+  allItem.className = 'folder-item' + (activeFolderFilter === null ? ' active' : '');
+  const allCount = sessions.filter(s => s.status === 'done' || (s.utterances?.length > 0)).length;
+  allItem.innerHTML = `${icon('layers', 13)} Alle Sitzungen <span class="folder-count">${allCount}</span>`;
+  allItem.onclick = () => { activeFolderFilter = null; _updateBrowserTitle('Alle Sitzungen'); renderBrowser(); renderFolderSidebar(); };
+  list.appendChild(allItem);
+
+  // Allgemein (ohne Ordner)
+  const noFolderCount = sessions.filter(s => !s.archiveFolder && (s.status === 'done' || s.utterances?.length > 0)).length;
+  if (noFolderCount > 0 || activeFolderFilter === '__none__') {
+    const noneItem = document.createElement('div');
+    noneItem.className = 'folder-item' + (activeFolderFilter === '__none__' ? ' active' : '');
+    noneItem.innerHTML = `${icon('inbox', 13)} Allgemein <span class="folder-count">${noFolderCount}</span>`;
+    noneItem.onclick = () => { activeFolderFilter = '__none__'; _updateBrowserTitle('Allgemein'); renderBrowser(); renderFolderSidebar(); };
+    list.appendChild(noneItem);
+  }
+
+  // Trennlinie
+  if (folders.length) {
+    const sep = document.createElement('div');
+    sep.style.cssText = 'border-top:1px solid var(--border);margin:6px 14px';
+    list.appendChild(sep);
+  }
+
   folders.forEach(f => {
-    const opt = document.createElement('option');
-    const count = sessions.filter(s => s.archiveFolder === f).length;
-    opt.value = f;
-    opt.textContent = f + (count > 0 ? ` (${count})` : ' – leer');
-    if (f === current) opt.selected = true;
-    sel.appendChild(opt);
+    const count = sessions.filter(s => s.archiveFolder === f && (s.status === 'done' || s.utterances?.length > 0)).length;
+    const item = document.createElement('div');
+    item.className = 'folder-item' + (activeFolderFilter === f ? ' active' : '');
+    item.innerHTML = `
+      ${icon('folder', 13)}
+      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(f)}</span>
+      <span class="folder-count">${count}</span>
+      <span class="folder-item-actions">
+        <button class="folder-action-btn" onclick="event.stopPropagation();renameFolder('${escHtml(f)}')" title="Umbenennen">✎</button>
+        <button class="folder-action-btn" onclick="event.stopPropagation();deleteFolder('${escHtml(f)}')" title="Löschen" style="color:var(--red)">✕</button>
+      </span>
+    `;
+    item.onclick = () => { activeFolderFilter = f; _updateBrowserTitle(f); renderBrowser(); renderFolderSidebar(); };
+    list.appendChild(item);
   });
+}
+
+function _updateBrowserTitle(title) {
+  const el = document.getElementById('browserTitleText');
+  if (el) el.textContent = title;
+}
+
+function createFolder() {
+  const name = prompt('Name des neuen Ordners:');
+  if (!name?.trim()) return;
+  const trimmed = name.trim();
+  if (getFolderNames().includes(trimmed)) { showToast('Ordner existiert bereits.', 'error'); return; }
+  // Als rememberedFolder speichern
+  const rf = rememberedFolders || [];
+  rf.push({ name: trimmed });
+  rememberedFolders = rf;
+  localStorage.setItem('rememberedFolders', JSON.stringify(rf));
+  renderFolderSidebar();
+  showToast(`Ordner „${trimmed}" erstellt.`, 'ok');
+}
+
+function renameFolder(oldName) {
+  const newName = prompt('Neuer Name:', oldName);
+  if (!newName?.trim() || newName.trim() === oldName) return;
+  const trimmed = newName.trim();
+  // Alle Sitzungen mit dem alten Namen aktualisieren
+  sessions.forEach(s => { if (s.archiveFolder === oldName) { s.archiveFolder = trimmed; saveToArchive(s); } });
+  saveSessions();
+  // rememberedFolders aktualisieren
+  if (rememberedFolders) {
+    const idx = rememberedFolders.findIndex(f => f.name === oldName);
+    if (idx > -1) rememberedFolders[idx].name = trimmed;
+    localStorage.setItem('rememberedFolders', JSON.stringify(rememberedFolders));
+  }
+  if (activeFolderFilter === oldName) { activeFolderFilter = trimmed; _updateBrowserTitle(trimmed); }
+  renderFolderSidebar();
+  renderBrowser();
+  showToast(`Umbenannt zu „${trimmed}".`, 'ok');
+}
+
+function deleteFolder(name) {
+  if (!confirm(`Ordner „${name}" löschen? Sitzungen werden nach „Allgemein" verschoben.`)) return;
+  sessions.forEach(s => { if (s.archiveFolder === name) { s.archiveFolder = ''; saveToArchive(s); } });
+  saveSessions();
+  if (rememberedFolders) {
+    rememberedFolders = rememberedFolders.filter(f => f.name !== name);
+    localStorage.setItem('rememberedFolders', JSON.stringify(rememberedFolders));
+  }
+  if (activeFolderFilter === name) { activeFolderFilter = null; _updateBrowserTitle('Alle Sitzungen'); }
+  renderFolderSidebar();
+  renderBrowser();
+  showToast(`Ordner „${name}" gelöscht.`, 'ok');
+}
+
+function openAssignFolder(sessionId) {
+  const modal = document.getElementById('assignFolderModal');
+  const listEl = document.getElementById('assignFolderList');
+  if (!modal || !listEl) return;
+  const session = sessions.find(s => s.id === sessionId);
+  if (!session) return;
+  const folders = getFolderNames();
+  listEl.innerHTML = '';
+
+  // Kein Ordner
+  const noneBtn = document.createElement('button');
+  noneBtn.className = 'btn btn-ghost';
+  noneBtn.style.cssText = 'text-align:left;justify-content:flex-start;' + (!session.archiveFolder ? 'border-color:var(--accent);color:var(--accent)' : '');
+  noneBtn.innerHTML = `${icon('inbox',13)} Allgemein (kein Ordner)`;
+  noneBtn.onclick = () => { assignFolderToSession(sessionId, ''); modal.classList.remove('open'); };
+  listEl.appendChild(noneBtn);
+
+  folders.forEach(f => {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-ghost';
+    btn.style.cssText = 'text-align:left;justify-content:flex-start;' + (session.archiveFolder === f ? 'border-color:var(--accent);color:var(--accent)' : '');
+    btn.innerHTML = `${icon('folder',13)} ${escHtml(f)}`;
+    btn.onclick = () => { assignFolderToSession(sessionId, f); modal.classList.remove('open'); };
+    listEl.appendChild(btn);
+  });
+
+  // Neuer Ordner direkt aus Modal
+  const newBtn = document.createElement('button');
+  newBtn.className = 'btn btn-ghost';
+  newBtn.style.cssText = 'text-align:left;justify-content:flex-start;color:var(--accent)';
+  newBtn.innerHTML = `${icon('plus',13)} Neuer Ordner…`;
+  newBtn.onclick = () => {
+    modal.classList.remove('open');
+    const name = prompt('Name des neuen Ordners:');
+    if (!name?.trim()) return;
+    const trimmed = name.trim();
+    const rf = rememberedFolders || [];
+    if (!rf.find(f => f.name === trimmed)) { rf.push({ name: trimmed }); rememberedFolders = rf; localStorage.setItem('rememberedFolders', JSON.stringify(rf)); }
+    assignFolderToSession(sessionId, trimmed);
+  };
+  listEl.appendChild(newBtn);
+
+  modal.classList.add('open');
+}
+
+function assignFolderToSession(sessionId, folderName) {
+  const session = sessions.find(s => s.id === sessionId);
+  if (!session) return;
+  session.archiveFolder = folderName;
+  saveSessions();
+  saveToArchive(session);
+  renderFolderSidebar();
+  renderBrowser();
+  showToast(folderName ? `In „${folderName}" verschoben.` : 'Aus Ordner entfernt.', 'ok');
 }
 
 // ═══════════════════════════════════════════════════
