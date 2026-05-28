@@ -183,6 +183,8 @@ function openApiModal() {
   if (regionEl) regionEl.value = assemblyRegion;
   const settings = JSON.parse(localStorage.getItem('dashboardSettings') || '{}');
   document.getElementById('anonymizeToggle').checked = !!settings.anonymize;
+  const whisperEl = document.getElementById('whisperUrlInput');
+  if (whisperEl) whisperEl.value = localStorage.getItem('whisperUrl') || '';
   document.getElementById('apiModal').classList.add('open');
 }
 function closeApiModal() { document.getElementById('apiModal').classList.remove('open'); }

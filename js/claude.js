@@ -743,7 +743,37 @@ function toggleInsightsBlock(blockId) {
 // Akkordeon-Panels in der Sitzungsdetailansicht öffnen/schließen
 function toggleAccPanel(panelId) {
   const panel = document.getElementById(panelId);
-  if (panel) panel.classList.toggle('open');
+  if (!panel) return;
+  panel.classList.toggle('open');
+  _saveAccState();
+}
+
+function _saveAccState() {
+  if (!currentSessionId) return;
+  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen'];
+  const open = panels.filter(id => {
+    const el = document.getElementById(id);
+    return el && el.classList.contains('open');
+  });
+  localStorage.setItem('accState_' + currentSessionId, JSON.stringify(open));
+}
+
+function _restoreAccState(sessionId) {
+  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen'];
+  // Alle schließen
+  panels.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('open');
+  });
+  const stored = localStorage.getItem('accState_' + sessionId);
+  if (stored) {
+    try {
+      JSON.parse(stored).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('open');
+      });
+    } catch(e) {}
+  }
 }
 
 // Block einblenden – beim ersten Mal zugeklappt, danach aktuellen Zustand behalten
@@ -1083,6 +1113,10 @@ function showTranscript(session) {
   document.getElementById('transcriptMeta').textContent =
     `${session.filename}${dur} · ${new Date(session.date).toLocaleString('de-DE')}`;
 
+  // Typ-Selector setzen
+  const typeSelect = document.getElementById('sessionTypeSelect');
+  if (typeSelect) typeSelect.value = session.type || 'arbeit';
+
   // Namensfelder befüllen
   document.getElementById('editSpeakerA').value = session.speakerA || 'Sprecher A';
   document.getElementById('editSpeakerB').value = session.speakerB || 'Sprecher B';
@@ -1097,6 +1131,83 @@ function showTranscript(session) {
   renderInsights(session);
   loadAudioForSession(session);
   renderUtterances(session);
+  _restoreAccState(session.id);
+}
+
+function exportAnalysisMarkdown() {
+  const session = getSession(currentSessionId);
+  if (!session) return;
+  const lines = [];
+  lines.push(`# Analysen: ${session.label}`);
+  lines.push(`**Datum:** ${new Date(session.date).toLocaleString('de-DE')}  `);
+  lines.push(`**Typ:** ${session.type || 'unbekannt'}  `);
+  lines.push(`**Sprecher:** ${session.speakerA || 'A'} & ${session.speakerB || 'B'}`);
+  lines.push('');
+
+  const pa = session.privateAnalysis;
+  if (pa) {
+    lines.push('## Gesprächsanalyse');
+    if (pa.summary) { lines.push('### Zusammenfassung'); lines.push(pa.summary); lines.push(''); }
+    if (pa.keyPoints?.length) { lines.push('### Kernpunkte'); pa.keyPoints.forEach(k => lines.push(`- ${k}`)); lines.push(''); }
+    if (pa.actionItems?.length) { lines.push('### Maßnahmen'); pa.actionItems.forEach(a => lines.push(`- ${a}`)); lines.push(''); }
+    if (pa.openQuestions?.length) { lines.push('### Offene Fragen'); pa.openQuestions.forEach(q => lines.push(`- ${q}`)); lines.push(''); }
+  }
+
+  const wa = session.workAnalysis;
+  if (wa) {
+    lines.push('## Arbeitsanalyse');
+    if (wa.summary) { lines.push('### Zusammenfassung'); lines.push(wa.summary); lines.push(''); }
+    if (wa.keyPoints?.length) { lines.push('### Kernpunkte'); wa.keyPoints.forEach(k => lines.push(`- ${k}`)); lines.push(''); }
+    if (wa.actionItems?.length) { lines.push('### Maßnahmen'); wa.actionItems.forEach(a => lines.push(`- ${a}`)); lines.push(''); }
+    if (wa.followUpEmails?.length) { lines.push('### E-Mail-Vorlagen'); wa.followUpEmails.forEach(e => lines.push(`**An ${e.to}:** ${e.subject}\n\n${e.body}`)); lines.push(''); }
+  }
+
+  const cs = session.claudeSentiment;
+  if (cs) {
+    lines.push('## Stimmungsanalyse');
+    if (cs.overall) { lines.push(`**Gesamtstimmung:** ${cs.overall}`); lines.push(''); }
+    if (cs.speakerA) { lines.push(`**${session.speakerA || 'A'}:** ${cs.speakerA}`); }
+    if (cs.speakerB) { lines.push(`**${session.speakerB || 'B'}:** ${cs.speakerB}`); }
+    lines.push('');
+  }
+
+  const chapters = session.claudeChapters;
+  if (chapters?.length) {
+    lines.push('## Kapitel');
+    chapters.forEach(c => lines.push(`- **${formatMs(c.start)}** ${c.title}`));
+    lines.push('');
+  }
+
+  const topics = session.claudeTopics;
+  if (topics?.length) {
+    lines.push('## Themen');
+    topics.forEach(t => lines.push(`- ${typeof t === 'string' ? t : t.text}`));
+    lines.push('');
+  }
+
+  if (session.claude360) {
+    lines.push('## 360°-Auswertung');
+    lines.push(typeof session.claude360 === 'string' ? session.claude360 : JSON.stringify(session.claude360, null, 2));
+    lines.push('');
+  }
+
+  const md = lines.join('\n');
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `${(session.label || 'analysen').replace(/[^a-z0-9äöü\s]/gi,'').trim().replace(/\s+/g,'-')}-analysen.md`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function changeSessionType(newType) {
+  const session = getSession(currentSessionId);
+  if (!session) return;
+  session.type = newType;
+  saveSessions();
+  saveToArchive(session);
+  updateAnalyseDropdown();
 }
 
 function renderUtterances(session) {
@@ -1145,6 +1256,40 @@ function renderUtterances(session) {
   });
 
   currentSessionId = session.id;
+  // Suchfeld leeren wenn neue Sitzung geladen
+  const searchInput = document.getElementById('transcriptSearch');
+  if (searchInput) searchInput.value = '';
+}
+
+function filterTranscript(query) {
+  const container = document.getElementById('utterancesContainer');
+  if (!container) return;
+  const q = query.trim().toLowerCase();
+  let firstMatch = null;
+  container.querySelectorAll('.utterance').forEach(div => {
+    const textEl = div.querySelector('.utterance-text');
+    if (!textEl) return;
+    const raw = textEl.dataset.rawText || textEl.textContent;
+    if (!textEl.dataset.rawText) textEl.dataset.rawText = raw; // Cache original
+    if (!q) {
+      textEl.innerHTML = escHtml(raw);
+      div.style.display = '';
+      return;
+    }
+    const idx = raw.toLowerCase().indexOf(q);
+    if (idx === -1) {
+      div.style.display = 'none';
+    } else {
+      div.style.display = '';
+      // Highlight
+      const before = escHtml(raw.slice(0, idx));
+      const match  = escHtml(raw.slice(idx, idx + q.length));
+      const after  = escHtml(raw.slice(idx + q.length));
+      textEl.innerHTML = `${before}<mark style="background:var(--accent); color:#fff; border-radius:3px; padding:0 2px">${match}</mark>${after}`;
+      if (!firstMatch) firstMatch = div;
+    }
+  });
+  if (firstMatch) firstMatch.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // ═══════════════════════════════════════════════════

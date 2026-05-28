@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.16</button>
+        onmouseout="this.style.color='var(--muted)'">v4.17</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -377,10 +377,15 @@
           </div>
         </div>
 
-        <!-- Zeile 3: Meta + Datum-Button -->
+        <!-- Zeile 3: Meta + Datum-Button + Typ-Selector -->
         <div style="display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap">
           <p id="transcriptMeta" style="font-size:0.82rem; color:rgba(255,255,255,0.7)"></p>
           <button class="btn-icon" title="Datum ändern" onclick="openDateEdit()" style="padding:2px 6px; border-radius:6px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.8); cursor:pointer; display:inline-flex;align-items:center;justify-content:center"><i data-lucide="calendar" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i></button>
+          <select id="sessionTypeSelect" onchange="changeSessionType(this.value)" title="Sitzungstyp ändern" style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:6px; color:rgba(255,255,255,0.9); padding:2px 8px; font-size:0.78rem; cursor:pointer; outline:none; appearance:auto">
+            <option value="arbeit">💼 Arbeit</option>
+            <option value="privat">💬 Privat</option>
+            <option value="gedanken">🧠 Gedanken</option>
+          </select>
         </div>
         <div id="dateEditRow" style="display:none; margin-top:6px">
           <input type="datetime-local" id="sessionDateEdit" style="background:var(--surface2); border:1px solid var(--accent); border-radius:8px; color:var(--text); padding:7px 10px; font-size:0.85rem; outline:none;" />
@@ -472,6 +477,10 @@
             <span class="acc-chevron">▾</span>
           </button>
           <div class="acc-panel-body">
+            <div style="padding:8px 16px 0">
+              <input id="transcriptSearch" type="search" placeholder="Im Transkript suchen…" oninput="filterTranscript(this.value)"
+                style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:7px 12px; font-size:0.85rem; outline:none; box-sizing:border-box">
+            </div>
             <div class="utterances" id="utterancesContainer"></div>
           </div>
         </div>
@@ -562,6 +571,11 @@
               <!-- Eigene Prompts (dynamisch) -->
               <div id="customResultsContainer"></div>
             </div>
+            <div style="padding:12px 16px 4px; border-top:1px solid var(--border)">
+              <button class="btn btn-ghost" onclick="exportAnalysisMarkdown()" style="font-size:0.8rem; display:inline-flex; align-items:center; gap:6px">
+                <i data-lucide="download" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Als Markdown exportieren
+              </button>
+            </div>
           </div>
         </div>
 
@@ -584,6 +598,23 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.17 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.17</span>
+          <span class="cl-date">28.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Sitzungstyp ändern</strong> – Dropdown im Sitzungs-Header (💼 Arbeit / 💬 Privat / 🧠 Gedanken) ändert den Typ direkt, wird lokal und in Google Drive gespeichert.</li>
+          <li><strong>Akkordeon-Zustand merken</strong> – Welche Panels offen sind, wird pro Sitzung in localStorage gespeichert und beim Öffnen wiederhergestellt.</li>
+          <li><strong>Analyseergebnisse exportieren</strong> – Button im Analysen-Panel lädt alle vorhandenen Analysen als Markdown-Datei herunter.</li>
+          <li><strong>Volltextsuche im Transkript</strong> – Suchfeld im Transkript-Panel filtert Sprecherabschnitte in Echtzeit und hebt Treffer farbig hervor.</li>
+          <li><strong>Whisper-Vorbereitung</strong> – Neuer Abschnitt im API-Modal für die spätere lokale Offline-Transkription: URL speicherbar, Aktivierungsschalter noch deaktiviert (In Entwicklung).</li>
+        </ul>
+        <div class="cl-tech">index.html: Typ-Select in SDH, Transkript-Suche, Whisper-Abschnitt, Export-Button. claude.js: changeSessionType(), filterTranscript(), exportAnalysisMarkdown(), _saveAccState(), _restoreAccState(). app.js: whisperUrl in openApiModal.</div>
+      </div>
 
       <!-- ── v4.16 ── -->
       <div class="cl-entry">
@@ -1559,6 +1590,26 @@
         Echte Namen werden durch „Person_A", „Person_B" usw. ersetzt, bevor Transkripte an Claude gesendet werden. Nur du siehst die echten Namen im Dashboard.
       </p>
     </div>
+    <!-- Lokale Transkription (Whisper) -->
+    <div class="field" style="margin-top:18px; padding:12px 14px; background:var(--surface2); border-radius:8px; border:1px solid var(--border)">
+      <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; font-weight:600; color:var(--text); margin-bottom:4px">
+        <i data-lucide="cpu" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        Lokale Transkription (Whisper)
+        <span style="font-size:0.7rem; font-weight:500; background:rgba(251,191,36,0.15); color:#f59e0b; border:1px solid rgba(251,191,36,0.35); border-radius:4px; padding:1px 6px">In Entwicklung</span>
+      </label>
+      <p style="font-size:0.77rem; color:var(--muted); margin-bottom:8px; line-height:1.5">
+        Offline-Transkription über einen lokalen Whisper-Server. Keine Cloud-Abhängigkeit, keine DSGVO-Bedenken.
+      </p>
+      <input type="url" id="whisperUrlInput" placeholder="http://localhost:8080/v1/audio/transcriptions"
+        oninput="localStorage.setItem('whisperUrl', this.value)"
+        style="font-family:monospace; width:100%; box-sizing:border-box" />
+      <div style="margin-top:10px; display:flex; align-items:center; gap:10px; opacity:0.5; pointer-events:none; user-select:none">
+        <input type="checkbox" id="whisperToggle" disabled style="width:16px; height:16px; margin:0; accent-color:var(--accent)" />
+        <label for="whisperToggle" style="font-size:0.85rem; color:var(--text)">Whisper als Standard-Transkriptionsdienst verwenden</label>
+      </div>
+      <p style="font-size:0.72rem; color:var(--muted); margin-top:6px">Die Aktivierung wird in einer späteren Version freigeschaltet.</p>
+    </div>
+
     <p style="font-size:0.75rem; color:var(--muted); margin-top:10px">Alle Keys werden nur lokal in deinem Browser gespeichert.</p>
     <div id="apiTestResult" style="display:none; margin-top:10px; padding:8px 12px; border-radius:8px; font-size:0.8rem;"></div>
     <div class="modal-actions">
