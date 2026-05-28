@@ -17,7 +17,7 @@ async function analyse360(session, transcript) {
 Sprecher A = "${speakerA}", Sprecher B = "${speakerB}".
 
 Transkript:
-${trimTranscript(transcript, 9000)}
+${trimTranscript(transcript, 300000)}
 
 Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 {
@@ -149,7 +149,7 @@ Antworte immer auf Deutsch. Zitiere wenn möglich direkt aus dem Transkript und 
 Wenn die Antwort nicht im Transkript zu finden ist, sage das klar – erfinde nichts.
 
 TRANSKRIPT (${s.label}):
-${trimTranscript(transcript, 8000)}
+${trimTranscript(transcript, 300000)}
 ${historyText ? `\nBISHERIGE FRAGEN:\n${historyText}\n` : ''}
 FRAGE: ${question}`;
 
@@ -229,7 +229,7 @@ Verwende exakt "mindmap" als ersten Bezeichner. Max. 3 Ebenen, max. 20 Knoten.
 Verwende nur einfache Texte ohne runde Klammern außer für den Root-Knoten. Keine Sonderzeichen in den Knoten.
 
 Transkript:
-${trimTranscript(transcript, 6000)}
+${trimTranscript(transcript, 300000)}
 
 Antworte NUR mit dem rohen Mermaid-Code, ohne Markdown-Blöcke:
 mindmap

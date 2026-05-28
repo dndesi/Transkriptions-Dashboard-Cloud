@@ -129,7 +129,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.7</button>
+        onmouseout="this.style.color='var(--muted)'">v4.8</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -509,6 +509,19 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
+      <!-- ── v4.8 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.8</span>
+          <span class="cl-date">27.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Bugfix</span>
+        </div>
+        <ul>
+          <li><strong>Transkript-Limit in features.js nachgezogen</strong> – 360°-Analyse (9.000), „Aufnahme befragen" (8.000) und Mind Map (6.000) hatten beim Fix in v4.7 noch die alten Limits. Jetzt ebenfalls auf 300.000 Zeichen.</li>
+        </ul>
+        <div class="cl-tech">Betroffen: js/features.js (analyse360, sendAskQuestion, generateMindMap: 6000/8000/9000 → 300000).</div>
+      </div>
+
       <!-- ── v4.7 ── -->
       <div class="cl-entry">
         <div class="cl-header">
@@ -520,7 +533,7 @@
           <li><strong>Input-Limit auf 300.000 Zeichen erhöht</strong> – Deckt ~5 Stunden Gesprächszeit ab (vorher ~1,5h bei 100k Zeichen).</li>
           <li><strong>Output-Limit auf 8.192 Tokens erhöht</strong> – Verhindert abgeschnittene JSON-Antworten bei langen Aufnahmen mit vielen Kapiteln (vorher 4.096 Tokens).</li>
         </ul>
-        <div class="cl-tech">Betroffen: js/claude.js (trimTranscript 100000→300000, max_tokens 4096→8192).</div>
+        <div class="cl-tech">Betroffen: js/claude.js (trimTranscript 100000→300000, max_tokens 4096→8192), js/features.js (analyse360, sendAskQuestion, generateMindMap: 6000/8000/9000→300000 — wurden beim vorherigen Fix übersehen).</div>
       </div>
 
       <!-- ── v4.6 ── -->
