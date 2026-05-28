@@ -1134,71 +1134,101 @@ function showTranscript(session) {
   _restoreAccState(session.id);
 }
 
-function exportAnalysisMarkdown() {
+// Baut reinen Text für einen Analysebereich
+function _buildSectionText(type, session) {
+  const lines = [];
+  const header = (t) => lines.push(t, '─'.repeat(t.length), '');
+  const item   = (t) => lines.push('• ' + t);
+
+  const meta = `${session.label}  |  ${new Date(session.date).toLocaleString('de-DE')}  |  ${session.speakerA || 'A'} & ${session.speakerB || 'B'}`;
+
+  if (type === 'private') {
+    const pa = session.privateAnalysis;
+    if (!pa) return null;
+    header('GESPRÄCHSANALYSE');
+    lines.push(meta, '');
+    if (pa.summary)           { lines.push('Zusammenfassung', pa.summary, ''); }
+    if (pa.keyPoints?.length) { lines.push('Kernpunkte'); pa.keyPoints.forEach(item); lines.push(''); }
+    if (pa.actionItems?.length){ lines.push('Maßnahmen'); pa.actionItems.forEach(item); lines.push(''); }
+    if (pa.openQuestions?.length){ lines.push('Offene Fragen'); pa.openQuestions.forEach(item); lines.push(''); }
+
+  } else if (type === 'work') {
+    const wa = session.workAnalysis;
+    if (!wa) return null;
+    header('ARBEITSANALYSE');
+    lines.push(meta, '');
+    if (wa.summary)            { lines.push('Zusammenfassung', wa.summary, ''); }
+    if (wa.keyPoints?.length)  { lines.push('Kernpunkte'); wa.keyPoints.forEach(item); lines.push(''); }
+    if (wa.actionItems?.length){ lines.push('Maßnahmen'); wa.actionItems.forEach(item); lines.push(''); }
+    if (wa.followUpEmails?.length){ lines.push('E-Mail-Vorlagen'); wa.followUpEmails.forEach(e => { lines.push(`An: ${e.to}`, `Betreff: ${e.subject}`, e.body, ''); }); }
+
+  } else if (type === 'sentiment') {
+    const cs = session.claudeSentiment;
+    if (!cs) return null;
+    header('STIMMUNGSANALYSE');
+    lines.push(meta, '');
+    if (cs.overall)  lines.push('Gesamt: ' + cs.overall, '');
+    if (cs.speakerA) lines.push(`${session.speakerA || 'A'}: ` + cs.speakerA);
+    if (cs.speakerB) lines.push(`${session.speakerB || 'B'}: ` + cs.speakerB);
+
+  } else if (type === 'chapters') {
+    const ch = session.claudeChapters;
+    if (!ch?.length) return null;
+    header('KAPITEL');
+    lines.push(meta, '');
+    ch.forEach(c => lines.push(`${formatMs(c.start)}  ${c.title}`));
+
+  } else if (type === 'topics') {
+    const tp = session.claudeTopics;
+    if (!tp?.length) return null;
+    header('THEMEN');
+    lines.push(meta, '');
+    tp.forEach(t => item(typeof t === 'string' ? t : t.text));
+
+  } else if (type === '360') {
+    if (!session.claude360) return null;
+    header('360°-AUSWERTUNG');
+    lines.push(meta, '');
+    lines.push(typeof session.claude360 === 'string' ? session.claude360 : JSON.stringify(session.claude360, null, 2));
+  }
+
+  return lines.join('\n');
+}
+
+function exportSection(type, format) {
   const session = getSession(currentSessionId);
   if (!session) return;
-  const lines = [];
-  lines.push(`# Analysen: ${session.label}`);
-  lines.push(`**Datum:** ${new Date(session.date).toLocaleString('de-DE')}  `);
-  lines.push(`**Typ:** ${session.type || 'unbekannt'}  `);
-  lines.push(`**Sprecher:** ${session.speakerA || 'A'} & ${session.speakerB || 'B'}`);
-  lines.push('');
+  const text = _buildSectionText(type, session);
+  if (!text) { showToast('Keine Daten für diesen Bereich vorhanden.', 'error'); return; }
 
-  const pa = session.privateAnalysis;
-  if (pa) {
-    lines.push('## Gesprächsanalyse');
-    if (pa.summary) { lines.push('### Zusammenfassung'); lines.push(pa.summary); lines.push(''); }
-    if (pa.keyPoints?.length) { lines.push('### Kernpunkte'); pa.keyPoints.forEach(k => lines.push(`- ${k}`)); lines.push(''); }
-    if (pa.actionItems?.length) { lines.push('### Maßnahmen'); pa.actionItems.forEach(a => lines.push(`- ${a}`)); lines.push(''); }
-    if (pa.openQuestions?.length) { lines.push('### Offene Fragen'); pa.openQuestions.forEach(q => lines.push(`- ${q}`)); lines.push(''); }
+  const slug   = (session.label || 'analyse').replace(/[^a-z0-9äöü\s]/gi,'').trim().replace(/\s+/g,'-');
+  const labels = { private:'gespraech', work:'arbeit', sentiment:'stimmung', chapters:'kapitel', topics:'themen', '360':'360grad' };
+  const fname  = `${slug}-${labels[type] || type}`;
+
+  if (format === 'txt') {
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), { href: url, download: fname + '.txt' });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  } else if (format === 'pdf') {
+    // Print-basierter PDF-Export
+    const win = window.open('', '_blank', 'width=800,height=900');
+    if (!win) { showToast('Popup blockiert – bitte Popup-Blocker deaktivieren.', 'error'); return; }
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+      <title>${fname}</title>
+      <style>
+        body { font-family: system-ui, sans-serif; font-size: 13px; line-height: 1.7;
+               max-width: 700px; margin: 40px auto; padding: 0 24px; color: #111; }
+        pre  { white-space: pre-wrap; word-break: break-word; font-family: inherit; }
+        @media print { body { margin: 20px; } }
+      </style></head>
+      <body><pre>${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+      <script>setTimeout(()=>{ window.print(); window.close(); }, 300);<\/script>
+      </body></html>`);
+    win.document.close();
   }
-
-  const wa = session.workAnalysis;
-  if (wa) {
-    lines.push('## Arbeitsanalyse');
-    if (wa.summary) { lines.push('### Zusammenfassung'); lines.push(wa.summary); lines.push(''); }
-    if (wa.keyPoints?.length) { lines.push('### Kernpunkte'); wa.keyPoints.forEach(k => lines.push(`- ${k}`)); lines.push(''); }
-    if (wa.actionItems?.length) { lines.push('### Maßnahmen'); wa.actionItems.forEach(a => lines.push(`- ${a}`)); lines.push(''); }
-    if (wa.followUpEmails?.length) { lines.push('### E-Mail-Vorlagen'); wa.followUpEmails.forEach(e => lines.push(`**An ${e.to}:** ${e.subject}\n\n${e.body}`)); lines.push(''); }
-  }
-
-  const cs = session.claudeSentiment;
-  if (cs) {
-    lines.push('## Stimmungsanalyse');
-    if (cs.overall) { lines.push(`**Gesamtstimmung:** ${cs.overall}`); lines.push(''); }
-    if (cs.speakerA) { lines.push(`**${session.speakerA || 'A'}:** ${cs.speakerA}`); }
-    if (cs.speakerB) { lines.push(`**${session.speakerB || 'B'}:** ${cs.speakerB}`); }
-    lines.push('');
-  }
-
-  const chapters = session.claudeChapters;
-  if (chapters?.length) {
-    lines.push('## Kapitel');
-    chapters.forEach(c => lines.push(`- **${formatMs(c.start)}** ${c.title}`));
-    lines.push('');
-  }
-
-  const topics = session.claudeTopics;
-  if (topics?.length) {
-    lines.push('## Themen');
-    topics.forEach(t => lines.push(`- ${typeof t === 'string' ? t : t.text}`));
-    lines.push('');
-  }
-
-  if (session.claude360) {
-    lines.push('## 360°-Auswertung');
-    lines.push(typeof session.claude360 === 'string' ? session.claude360 : JSON.stringify(session.claude360, null, 2));
-    lines.push('');
-  }
-
-  const md = lines.join('\n');
-  const blob = new Blob([md], { type: 'text/markdown' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = `${(session.label || 'analysen').replace(/[^a-z0-9äöü\s]/gi,'').trim().replace(/\s+/g,'-')}-analysen.md`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function changeSessionType(newType) {

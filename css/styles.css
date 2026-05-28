@@ -689,6 +689,23 @@
       opacity: 0.6;
     }
     .insights-block.collapsed .insights-block-chevron { transform: rotate(-90deg); }
+    .insights-export-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      color: rgba(255,255,255,0.65);
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      cursor: pointer;
+      line-height: 1.6;
+      transition: background 0.15s, color 0.15s;
+    }
+    .insights-export-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
     .insights-block-body {
       padding: 0 16px 14px 16px;
       /* Kein display:none, damit Animationen möglich bleiben */
@@ -957,6 +974,8 @@
       padding: 32px;
       width: 460px;
       max-width: 90vw;
+      max-height: 88vh;
+      overflow-y: auto;
     }
     .modal h3 { font-size: 1.1rem; margin-bottom: 8px; }
     .modal p { font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }

@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.17</button>
+        onmouseout="this.style.color='var(--muted)'">v4.18</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -524,7 +524,11 @@
               <div class="insights-block" id="privateBlock" style="display:none">
                 <div class="insights-block-title" onclick="toggleInsightsBlock('privateBlock')">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="message-circle" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Gesprächsanalyse</span>
-                  <span class="insights-block-chevron">▾</span>
+                  <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('private','txt')" title="TXT">TXT</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('private','pdf')" title="PDF">PDF</button>
+                    <span class="insights-block-chevron">▾</span>
+                  </span>
                 </div>
                 <div class="insights-block-body"><div id="privateContent"></div></div>
               </div>
@@ -532,7 +536,11 @@
               <div class="insights-block" id="workBlock" style="display:none">
                 <div class="insights-block-title" onclick="toggleInsightsBlock('workBlock')">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="briefcase" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Arbeitsanalyse</span>
-                  <span class="insights-block-chevron">▾</span>
+                  <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('work','txt')" title="TXT">TXT</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('work','pdf')" title="PDF">PDF</button>
+                    <span class="insights-block-chevron">▾</span>
+                  </span>
                 </div>
                 <div class="insights-block-body"><div id="workContent"></div></div>
               </div>
@@ -540,7 +548,11 @@
               <div class="insights-block" id="sentimentBlock" style="display:none">
                 <div class="insights-block-title" onclick="toggleInsightsBlock('sentimentBlock')">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="activity" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Stimmungsanalyse</span>
-                  <span class="insights-block-chevron">▾</span>
+                  <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('sentiment','txt')" title="TXT">TXT</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('sentiment','pdf')" title="PDF">PDF</button>
+                    <span class="insights-block-chevron">▾</span>
+                  </span>
                 </div>
                 <div class="insights-block-body"><div id="sentimentContent"></div></div>
               </div>
@@ -548,7 +560,11 @@
               <div class="insights-block" id="chaptersBlock" style="display:none">
                 <div class="insights-block-title" onclick="toggleInsightsBlock('chaptersBlock')">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="book-open" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Kapitel</span>
-                  <span class="insights-block-chevron">▾</span>
+                  <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('chapters','txt')" title="TXT">TXT</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('chapters','pdf')" title="PDF">PDF</button>
+                    <span class="insights-block-chevron">▾</span>
+                  </span>
                 </div>
                 <div class="insights-block-body"><div id="chaptersContent"></div></div>
               </div>
@@ -556,7 +572,11 @@
               <div class="insights-block" id="topicsBlock" style="display:none">
                 <div class="insights-block-title" onclick="toggleInsightsBlock('topicsBlock')">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="tag" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Themen</span>
-                  <span class="insights-block-chevron">▾</span>
+                  <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('topics','txt')" title="TXT">TXT</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('topics','pdf')" title="PDF">PDF</button>
+                    <span class="insights-block-chevron">▾</span>
+                  </span>
                 </div>
                 <div class="insights-block-body"><div id="topicsContent"></div></div>
               </div>
@@ -564,17 +584,16 @@
               <div class="insights-block" id="block360" style="display:none">
                 <div class="insights-block-title" onclick="toggleInsightsBlock('block360')">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="refresh-cw" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> 360°-Auswertung</span>
-                  <span class="insights-block-chevron">▾</span>
+                  <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('360','txt')" title="TXT">TXT</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('360','pdf')" title="PDF">PDF</button>
+                    <span class="insights-block-chevron">▾</span>
+                  </span>
                 </div>
                 <div class="insights-block-body"><div id="content360"></div></div>
               </div>
               <!-- Eigene Prompts (dynamisch) -->
               <div id="customResultsContainer"></div>
-            </div>
-            <div style="padding:12px 16px 4px; border-top:1px solid var(--border)">
-              <button class="btn btn-ghost" onclick="exportAnalysisMarkdown()" style="font-size:0.8rem; display:inline-flex; align-items:center; gap:6px">
-                <i data-lucide="download" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Als Markdown exportieren
-              </button>
             </div>
           </div>
         </div>
@@ -598,6 +617,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.18 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.18</span>
+          <span class="cl-date">28.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>API-Modal scrollbar</strong> – Modal bekommt max-height + overflow-y:auto; alle Felder (inkl. Whisper-Abschnitt) sind jetzt erreichbar ohne das Browserfenster zu sprengen.</li>
+          <li><strong>Export pro Analyse-Block</strong> – Jeder Analysebereich (Gesprächsanalyse, Arbeitsanalyse, Stimmung, Kapitel, Themen, 360°) hat eigene TXT- und PDF-Buttons im Header. PDF öffnet ein Druckfenster. Kein globaler Markdown-Export mehr.</li>
+        </ul>
+        <div class="cl-tech">styles.css: .modal max-height + overflow-y, .insights-export-btn. index.html: Export-Buttons in insights-block-title. claude.js: exportSection(), _buildSectionText().</div>
+      </div>
 
       <!-- ── v4.17 ── -->
       <div class="cl-entry">
