@@ -129,7 +129,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.5</button>
+        onmouseout="this.style.color='var(--muted)'">v4.6</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -508,6 +508,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.6 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.6</span>
+          <span class="cl-date">27.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Bugfix</span>
+        </div>
+        <ul>
+          <li><strong>Transkript-Limit auf 100.000 Zeichen erhöht</strong> – Alle Analyse-Funktionen (Kapitel, Themen, Arbeits-, Gesprächs-Analyse) haben bisher nur 7.000–9.000 Zeichen des Transkripts an Claude übergeben. Längere Gespräche wurden ab ca. Minute 9 einfach abgeschnitten. Jetzt werden bis zu 100.000 Zeichen verarbeitet (~1–2 Stunden Gespräch).</li>
+        </ul>
+        <div class="cl-tech">Betroffen: js/claude.js (trimTranscript-Aufrufe: 7000/9000 → 100000, betrifft analyseWork, analysePrivate, analyseSentiment, analyseChapters, analyseTopics).</div>
+      </div>
 
       <!-- ── v4.5 ── -->
       <div class="cl-entry">
