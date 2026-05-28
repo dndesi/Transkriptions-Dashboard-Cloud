@@ -96,8 +96,8 @@ function renderTimeline(filter) {
   const tagFilter = document.getElementById('tagFilter')?.value || '';
   const searchVal = filter || document.getElementById('sidebarSearchMain')?.value || '';
   let list = sessions.filter(s => s.status === 'done');
-  if (activeFolderFilter === '__none__') list = list.filter(s => !s.archiveFolder);
-  else if (activeFolderFilter) list = list.filter(s => s.archiveFolder === activeFolderFilter);
+  const folderFilter = document.getElementById('folderFilter')?.value || '';
+  if (folderFilter) list = list.filter(s => s.archiveFolder === folderFilter);
   if (tagFilter) list = list.filter(s => (s.tags||[]).includes(tagFilter));
   if (searchVal.trim()) {
     const q = searchVal.toLowerCase();
