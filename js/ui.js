@@ -60,38 +60,39 @@ function renderBrowser(filter = '') {
       ? `${icon('check-circle',11,'margin-right:3px;color:var(--green)')} Transkribiert`
       : `${icon('x-circle',11,'margin-right:3px;color:var(--red)')} Fehler`;
     const tagsHtml = (s.tags||[]).map(t => `<span class="sc-tag">${escHtml(t)}</span>`).join('');
+    const typeIconMap  = { arbeit: 'briefcase', privat: 'message-circle', gedanken: 'message-square' };
+    const typeLabel    = { arbeit: 'Arbeit', privat: 'Privat', gedanken: 'Gedanken' };
+    const typeCls      = { arbeit: 'sc-type-arbeit', privat: 'sc-type-privat', gedanken: 'sc-type-gedanken' };
+    const t = s.type || 'privat';
     card.innerHTML = `
       <div class="card-checkbox">${selectedIds.has(s.id) ? icon('check',11) : ''}</div>
       <div class="sc-actions" onclick="event.stopPropagation()">
         <button class="sc-btn del" onclick="deleteSession(event,'${s.id}')" style="display:inline-flex;align-items:center;justify-content:center">${icon('trash-2',13)}</button>
       </div>
-      ${(()=>{
-        const typeIcon  = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), gedanken: icon('message-square',12) };
-        const typeLabel = { arbeit: 'Arbeit', privat: 'Privat', gedanken: 'Gedanken' };
-        const typeCls   = { arbeit: 'sc-type-arbeit', privat: 'sc-type-privat', gedanken: 'sc-type-gedanken' };
-        const t = s.type || 'privat';
-        return `<span class="sc-type ${typeCls[t]||'sc-type-privat'}" style="display:inline-flex;align-items:center;gap:4px">${typeIcon[t]||icon('message-circle',12)} ${typeLabel[t]||'Privat'}</span>`;
-      })()}
-      <div class="sc-name">${escHtml(s.label)}</div>
-      ${s.persons?.length ? `<div class="sc-persons" style="display:flex;align-items:center;gap:5px">${icon('users',12,'margin-right:3px')} ${s.persons.map(p=>escHtml(p)).join(' · ')}</div>` : ''}
-      <div class="sc-meta">
-        ${new Date(s.date).toLocaleDateString('de-DE', {day:'numeric',month:'long',year:'numeric'})}<br>
-        ${escHtml(s.filename || '')} · ${dur}
+      <div class="sc-icon">${icon(typeIconMap[t]||'message-circle', 17)}</div>
+      <div class="sc-body">
+        <span class="sc-type ${typeCls[t]||'sc-type-privat'}">${icon(typeIconMap[t]||'message-circle',11)} ${typeLabel[t]||'Privat'}</span>
+        <div class="sc-name">${escHtml(s.label)}</div>
+        ${s.persons?.length ? `<div class="sc-persons" style="display:flex;align-items:center;gap:5px">${icon('users',12,'margin-right:3px')} ${s.persons.map(p=>escHtml(p)).join(' · ')}</div>` : ''}
+        <div class="sc-meta">
+          ${new Date(s.date).toLocaleDateString('de-DE', {day:'numeric',month:'long',year:'numeric'})}<br>
+          ${escHtml(s.filename || '')} · ${dur}
+        </div>
+        <div class="sc-speakers">
+          ${(()=>{
+            const knownSpeakers = [...new Set((s.utterances||[]).map(u=>u.speaker))].sort();
+            if (knownSpeakers.length === 0) knownSpeakers.push('A','B');
+            return knownSpeakers.map(sp => {
+              const nm = getSpeakerName(sp, s);
+              const co = getSpeakerColor(sp);
+              return `<span class="sc-speaker-tag"><span class="sc-dot" style="background:${co}"></span>${escHtml(nm)}</span>`;
+            }).join('');
+          })()}
+        </div>
+        ${s.archiveFolder ? `<div class="sc-folder">${icon('folder',12)} ${escHtml(s.archiveFolder)}</div>` : ''}
+        ${tagsHtml ? `<div class="sc-tags">${tagsHtml}</div>` : ''}
+        <span class="sc-status ${statusClass}">${statusLabel}</span>
       </div>
-      <div class="sc-speakers">
-        ${(()=>{
-          const knownSpeakers = [...new Set((s.utterances||[]).map(u=>u.speaker))].sort();
-          if (knownSpeakers.length === 0) knownSpeakers.push('A','B');
-          return knownSpeakers.map(sp => {
-            const nm = getSpeakerName(sp, s);
-            const co = getSpeakerColor(sp);
-            return `<span class="sc-speaker-tag"><span class="sc-dot" style="background:${co}"></span>${escHtml(nm)}</span>`;
-          }).join('');
-        })()}
-      </div>
-      ${s.archiveFolder ? `<div class="sc-folder" style="display:flex;align-items:center;gap:4px">${icon('folder',12)} ${escHtml(s.archiveFolder)}</div>` : ''}
-      ${tagsHtml ? `<div class="sc-tags">${tagsHtml}</div>` : ''}
-      <span class="sc-status ${statusClass}">${statusLabel}</span>
     `;
     if (selectMode) card.classList.add('select-mode');
     grid.appendChild(card);

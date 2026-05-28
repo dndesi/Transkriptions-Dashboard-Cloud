@@ -136,16 +136,16 @@ function renderTimeline(filter) {
       const typeLabel = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), gedanken: icon('message-square',12) }[s.type || 'privat'] || icon('message-circle',12);
 
       el.className = 'timeline-item';
-      el.style.background = typeGradient;
-      el.style.borderLeftColor = typeBorder;
       el.onclick = () => showTranscript(s);
       const dur = s.duration ? formatDuration(s.duration) : '';
       const tagsHtml = (s.tags||[]).map(t => `<span class="sc-tag">${escHtml(t)}</span>`).join('');
+      const tiIconName = { arbeit: 'briefcase', privat: 'message-circle', gedanken: 'message-square' }[s.type || 'privat'] || 'message-circle';
       el.innerHTML = `
+        <div class="ti-icon">${icon(tiIconName, 15)}</div>
         <div class="ti-date">${new Date(s.date).toLocaleDateString('de-DE',{day:'numeric',month:'short'})}</div>
         <div style="flex:1; min-width:0">
           <div class="ti-name">${escHtml(s.label)}</div>
-          <div class="ti-meta">${typeLabel} ${escHtml(s.speakerA||'A')} &amp; ${escHtml(s.speakerB||'B')}${dur?' · '+dur:''}</div>
+          <div class="ti-meta">${escHtml(s.speakerA||'A')} &amp; ${escHtml(s.speakerB||'B')}${dur?' · '+dur:''}</div>
           ${tagsHtml ? `<div class="sc-tags" style="margin-top:4px">${tagsHtml}</div>` : ''}
         </div>
       `;

@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════
-// PROMPTS.JS – Prompt-Bibliothek v4.11
+// PROMPTS.JS – Prompt-Bibliothek v4.14
 // Eigene Analyse-Prompts erstellen, verwalten, ausführen
-// Bearbeitbare Standard-Prompts (360°, Themen, Kapitel)
+// Bearbeitbare Standard- und Feature-Prompts
 // ═══════════════════════════════════════════════════
 
 const PROMPTS_KEY = 'customPrompts';
@@ -30,16 +30,18 @@ function assemblePromptText(promptObj) {
 }
 
 // ── Such- und Filter-State für Prompt-Bibliothek ──────
-let _promptSearch   = '';
+let _promptSearch    = '';
 let _promptTagFilter = '';
+let _promptTypeFilter = 'all'; // 'all' | 'system' | 'standard' | 'feature' | 'custom'
 
 // ── Bearbeitbare Standard-Prompts ────────────────────
-// Prompts für 360°, Themen, Kapitel – editierbar, mit Reset auf Default
 const EDITABLE_PROMPTS_KEY = 'editablePrompts';
 
 const EDITABLE_PROMPT_DEFAULTS = [
+  // ── Standard-Analysen ──────────────────────────────
   {
     id: 'builtin_360',
+    category: 'standard',
     name: '360°-Auswertung',
     description: 'Vier Perspektiven: Aufgaben · Erwartungen · Emotionen · Strategie',
     icon: 'target',
@@ -71,6 +73,7 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
   },
   {
     id: 'builtin_topics',
+    category: 'standard',
     name: 'Themen',
     description: 'Hauptthemen als kompakte Tags',
     icon: 'tag',
@@ -84,6 +87,7 @@ Antworte NUR mit einem JSON-Array aus kurzen Themen-Tags auf Deutsch (max. 10 Ta
   },
   {
     id: 'builtin_chapters',
+    category: 'standard',
     name: 'Kapitel',
     description: 'Gesprächsstruktur in Kapitel mit Zeitstempeln',
     icon: 'list',
@@ -101,6 +105,194 @@ Antworte NUR mit einem JSON-Array (kein Markdown, keine Erklärungen):
     "timestamp": "MM:SS aus dem Transkript wo das Kapitel beginnt"
   }
 ]`
+  },
+
+  // ── Feature-Prompts ────────────────────────────────
+  {
+    id: 'builtin_private',
+    category: 'feature',
+    name: 'Privat-Analyse',
+    description: 'Tiefenpsychologische Gesprächsanalyse · Dynamik · Zwischen den Zeilen',
+    icon: 'message-circle',
+    prompt: `Du bist ein einfühlsamer, psychologisch geschulter Gesprächsanalyst. Analysiere das folgende private Gespräch auf Deutsch mit echtem Tiefgang – nicht oberflächlich, sondern so wie ein guter Therapeut oder Supervisor zuhören würde.
+Beteiligte: {{speakerA}} und {{speakerB}}. Weitere Personen: {{persons}}.{{relContext}}
+
+Transkript:
+{{transkript}}
+
+Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
+{
+  "agreements": [
+    "Was konkret vereinbart, ausgemacht oder fest geplant wurde – nur echte Vereinbarungen, keine Absichtserklärungen"
+  ],
+  "wishes": [
+    {
+      "person": "Name der Person ({{speakerA}} oder {{speakerB}})",
+      "wish": "Was diese Person sich wünscht, erhofft, braucht oder anstrebt – auch indirekt Geäußertes, auch unerfüllte Bedürfnisse"
+    }
+  ],
+  "openTopics": [
+    "Thema oder Frage die angesprochen aber nicht abgeschlossen oder aufgelöst wurde"
+  ],
+  "dynamics": "2-3 Sätze zur Gesprächsdynamik: Wie war der Ton? Wer hat welche Rolle eingenommen? Gab es Spannungen, Ausweichen, Nähe, Distanz, Missverständnisse?",
+  "zwischenzeilen": "Was wurde NICHT direkt gesagt, aber war spürbar? Welche unausgesprochenen Bedürfnisse, Ängste, Hoffnungen oder Muster schwingen mit? Lies wirklich zwischen den Zeilen.",
+  "keyThoughts": ["Das wirklich Wichtige in diesem Gespräch – emotional und inhaltlich"],
+  "nextSteps": ["Konkreter nächster Schritt der genannt oder angedeutet wurde"],
+  "summary": "Kompakte Zusammenfassung in 2-4 Sätzen: Worum ging es wirklich, was war der emotionale Kern, was bleibt offen?"
+}
+Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`
+  },
+  {
+    id: 'builtin_gedanken',
+    category: 'feature',
+    name: 'Gedanken-Analyse',
+    description: 'Monolog & Selbstreflexion · Innere Muster · Offene Fragen',
+    icon: 'message-square',
+    prompt: `Du bist ein einfühlsamer, psychologisch geschulter Gesprächsanalyst. Analysiere die folgenden eigenen Gedanken und Reflexionen auf Deutsch mit echtem Tiefgang – nicht oberflächlich, sondern so wie ein guter Therapeut oder Supervisor zuhören würde.
+
+Inhalt:
+{{transkript}}
+
+Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
+{
+  "agreements": [],
+  "wishes": [],
+  "openTopics": ["Gedanke oder Frage die noch offen oder unklar geblieben ist – auch wenn sie nur angedeutet wurde"],
+  "dynamics": "",
+  "zwischenzeilen": "Was liegt hinter diesen Gedanken? Welches tieferliegende Bedürfnis, welche Angst oder welcher Wunsch zeigt sich zwischen den Zeilen? Was wird vielleicht vermieden zu denken?",
+  "keyThoughts": ["Kerngedanke 1 – das wirklich Wichtige, nicht nur Erwähntes"],
+  "nextSteps": ["Konkreter nächster Schritt der genannt oder angedeutet wurde"],
+  "summary": "Ehrliche Zusammenfassung in 2-3 Sätzen: Was beschäftigt diese Person wirklich? Was trägt sie mit sich?"
+}
+Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`
+  },
+  {
+    id: 'builtin_work_deep',
+    category: 'feature',
+    name: 'Arbeits-Tiefenanalyse',
+    description: 'Tasks · Entscheidungen · Risiken · Zwischen den Zeilen',
+    icon: 'briefcase',
+    prompt: `Du bist ein erfahrener Business-Coach und Kommunikationsanalyst. Analysiere das folgende Arbeitsgespräch auf Deutsch – präzise, klar und mit Blick für das, was auch zwischen den Zeilen geschieht.
+Beteiligte: {{speakerA}} und {{speakerB}}. Weitere Personen: {{persons}}.
+
+Transkript:
+{{transkript}}
+
+Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
+{
+  "tasks": [
+    {
+      "task": "Kurze Beschreibung der Aufgabe",
+      "person": "Wer ist verantwortlich (Name oder 'offen')",
+      "deadline": "Deadline falls erwähnt, sonst leerer String",
+      "priority": "hoch|mittel|niedrig"
+    }
+  ],
+  "decisions": [
+    "Getroffene Entscheidung – klar und verbindlich formuliert"
+  ],
+  "openQuestions": [
+    "Offene Frage oder ungeklärter Punkt der noch Klärung braucht"
+  ],
+  "risks": [
+    "Mögliches Problem, Risiko oder Konflikpunkt der erwähnt oder angedeutet wurde"
+  ],
+  "zwischenzeilen": "Was wurde nicht direkt angesprochen, aber war spürbar? Ungeklärte Dynamiken, Unsicherheiten, unausgesprochene Erwartungen, Spannungen oder Widerstände im Team.",
+  "summary": "Kompakte Zusammenfassung in 2-4 Sätzen: Was war der Anlass, was wurde besprochen, was ist das Ergebnis?"
+}
+Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`
+  },
+  {
+    id: 'builtin_sentiment',
+    category: 'feature',
+    name: 'Stimmungsanalyse',
+    description: 'Emotionen pro Sprecher · Positiv/Neutral/Negativ · Highlight',
+    icon: 'activity',
+    prompt: `Analysiere die Stimmung der Sprecher in diesem deutschen Gesprächstranskript.
+Sprecher A heißt "{{speakerA}}", Sprecher B heißt "{{speakerB}}".
+
+Transkript:
+{{transkript}}
+
+Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
+{
+  "speakers": [
+    {
+      "speaker": "A",
+      "name": "{{speakerA}}",
+      "overall": "kurze Beschreibung der Grundstimmung (2-4 Wörter, auf Deutsch)",
+      "trend": "positiv|neutral|kritisch",
+      "posP": 0,
+      "neuP": 0,
+      "negP": 0,
+      "highlight": "Ein typischer oder markanter Satz dieser Person (auf Deutsch)"
+    }
+  ],
+  "summary": "1-2 Sätze zur Gesprächsdynamik (auf Deutsch)"
+}`
+  },
+  {
+    id: 'builtin_ask',
+    category: 'feature',
+    name: 'Aufnahme befragen',
+    description: 'Chat-Interface · Fragen zum Transkript · Zeitstempel-Referenzen',
+    icon: 'help-circle',
+    prompt: `Du bist ein Assistent der ausschließlich Fragen zu einem Gesprächstranskript beantwortet.
+Antworte immer auf Deutsch. Zitiere wenn möglich direkt aus dem Transkript und nenne den Zeitstempel [MM:SS].
+Wenn die Antwort nicht im Transkript zu finden ist, sage das klar – erfinde nichts.
+
+TRANSKRIPT ({{sessionLabel}}):
+{{transkript}}`
+  },
+  {
+    id: 'builtin_mindmap',
+    category: 'feature',
+    name: 'Mind Map',
+    description: 'Mermaid.js Mindmap · Max. 3 Ebenen · Max. 20 Knoten',
+    icon: 'git-branch',
+    prompt: `Erstelle eine Mind Map für dieses deutsche Gesprächstranskript im Mermaid.js Format.
+Verwende exakt "mindmap" als ersten Bezeichner. Max. 3 Ebenen, max. 20 Knoten.
+Verwende nur einfache Texte ohne runde Klammern außer für den Root-Knoten. Keine Sonderzeichen in den Knoten.
+
+Transkript:
+{{transkript}}
+
+Antworte NUR mit dem rohen Mermaid-Code, ohne Markdown-Blöcke:
+mindmap
+  root((Hauptthema))
+    Thema 1
+      Detail 1a
+    Thema 2`
+  },
+  {
+    id: 'builtin_person_profile',
+    category: 'feature',
+    name: 'Personen-Profil',
+    description: 'Persönlichkeitsprofil · Muster über Gespräche · Beziehungsdynamik',
+    icon: 'user',
+    prompt: `Du bist ein einfühlsamer, psychologisch geschulter Analyst. Schreibe ein persönliches, tiefgehendes Profil über eine Person, die der Nutzer gut kennt – basierend auf echten Gesprächen.
+
+{{personData}}
+
+Schreibe ein prägnantes, persönliches Profil in 4-6 Sätzen. Was ist diese Person für den Nutzer? Was bewegt sie, was ist ihr wichtig, welche Muster oder Bedürfnisse zeigen sich über die Gespräche hinweg? Was scheint in dieser Beziehung besonders relevant – auch zwischen den Zeilen? Schreibe direkt und persönlich ("{{personName}} scheint…", "In deiner Beziehung zu {{personName}}…", "Du wirst bemerkt haben, dass…"). Keine Aufzählung – nur fließender, ehrlicher Text auf Deutsch.`
+  },
+  {
+    id: 'builtin_search',
+    category: 'feature',
+    name: 'Semantische Suche',
+    description: 'Suche über alle Aufnahmen · Claude versteht den Kontext',
+    icon: 'search',
+    prompt: `Du bist ein Assistent der in persönlichen Gesprächs-Aufzeichnungen sucht.
+Der Nutzer stellt eine Frage oder sucht nach etwas Bestimmtem.
+
+ALLE AUFNAHMEN ({{sessionCount}} Stück):
+{{digest}}
+
+SUCHANFRAGE: {{query}}
+
+Antworte auf Deutsch. Nenne konkret welche Aufnahmen relevant sind (Nummer und Name).
+Fasse kurz zusammen was in den relevanten Aufnahmen dazu steht.
+Falls nichts passt, sage das direkt.`
   }
 ];
 
@@ -108,7 +300,6 @@ function getEditablePrompts() {
   try { return JSON.parse(localStorage.getItem(EDITABLE_PROMPTS_KEY) || '{}'); } catch { return {}; }
 }
 
-// Gibt den (ggf. angepassten) Prompt-Text zurück
 function getEditablePromptText(id) {
   const saved = getEditablePrompts();
   if (saved[id]) return saved[id];
@@ -117,14 +308,12 @@ function getEditablePromptText(id) {
 }
 
 function isEditablePromptModified(id) {
-  const saved = getEditablePrompts();
-  return !!saved[id];
+  return !!getEditablePrompts()[id];
 }
 
 function saveEditablePromptText(id, text) {
   const saved = getEditablePrompts();
   const def = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === id);
-  // Wenn identisch mit Default → nicht speichern (=nicht modifiziert)
   if (def && text.trim() === def.prompt.trim()) {
     delete saved[id];
   } else {
@@ -139,7 +328,7 @@ function resetEditablePrompt(id) {
   localStorage.setItem(EDITABLE_PROMPTS_KEY, JSON.stringify(saved));
 }
 
-// ── System-Prompts (read-only, nicht bearbeitbar) ────
+// ── System-Prompts (read-only) ────────────────────
 const SYSTEM_PROMPTS = [
   {
     id: 'sys_private',
@@ -184,7 +373,7 @@ Transkript:
   }
 ];
 
-// ── View Toggle (analog zu toggleArchView) ───────────
+// ── View Toggle ──────────────────────────────────
 function togglePromptsView() {
   const el = document.getElementById('promptsView');
   if (el.style.display !== 'none') {
@@ -196,17 +385,21 @@ function togglePromptsView() {
   }
 }
 
-// ── Prompt-Liste rendern ─────────────────────────────
+// ── Filter-Funktionen ────────────────────────────
 function filterPromptsView() {
   const searchEl = document.getElementById('promptSearchInput');
-  const q = searchEl ? searchEl.value.toLowerCase() : '';
-  _promptSearch = q;
-  renderPromptsView();
+  if (searchEl) _promptSearch = searchEl.value.toLowerCase();
+  _renderPromptsResults();
+}
+
+function setPromptTypeFilter(val) {
+  _promptTypeFilter = val;
+  _renderPromptsResults();
 }
 
 function setPromptTagFilter(tag) {
   _promptTagFilter = (_promptTagFilter === tag) ? '' : tag;
-  renderPromptsView();
+  _renderPromptsResults();
 }
 
 function _getAllPromptTags() {
@@ -215,156 +408,216 @@ function _getAllPromptTags() {
   return [...tags].sort();
 }
 
+// ── Haupt-Render-Funktion (Toolbar nur einmal erstellen) ──
 function renderPromptsView() {
   const el = document.getElementById('promptsView');
   if (!el) return;
 
-  let prompts = getCustomPrompts();
-
-  // Filtern nach Suche + Tag
-  if (_promptSearch) {
-    const q = _promptSearch;
-    prompts = prompts.filter(p =>
-      (p.name        || '').toLowerCase().includes(q) ||
-      (p.description || '').toLowerCase().includes(q) ||
-      (assemblePromptText(p)).toLowerCase().includes(q) ||
-      (p.tags || []).some(t => t.toLowerCase().includes(q))
-    );
-  }
-  if (_promptTagFilter) {
-    prompts = prompts.filter(p => (p.tags || []).includes(_promptTagFilter));
-  }
-
-  const allTags = _getAllPromptTags();
-
-  el.innerHTML = `
-  <div style="max-width:800px; margin:0 auto; padding:8px 0 40px">
-
-    <!-- Toolbar: Suche + Tag-Filter + Neuer Prompt -->
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
-      <div class="search-box" style="flex:1; min-width:160px;">
-        ${icon('search',14,'color:var(--muted);flex-shrink:0')}
-        <input type="text" id="promptSearchInput" placeholder="Prompts durchsuchen…"
-          value="${escHtml(_promptSearch)}"
-          oninput="filterPromptsView()"
-          style="background:none; border:none; outline:none; color:var(--text); font-size:0.88rem; width:100%;" />
-      </div>
-      <button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;flex-shrink:0">
-        ${icon('plus',14)} Neuer Prompt
-      </button>
-    </div>
-
-    <!-- Tag-Filter-Chips -->
-    ${allTags.length ? `
-    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px;">
-      ${allTags.map(t => `
-        <button onclick="setPromptTagFilter('${escHtml(t)}')"
-          style="padding:3px 10px; font-size:0.75rem; border-radius:12px; border:1px solid ${_promptTagFilter===t ? 'var(--accent)' : 'var(--border)'}; background:${_promptTagFilter===t ? 'var(--accent)' : 'var(--surface2)'}; color:${_promptTagFilter===t ? '#fff' : 'var(--text)'}; cursor:pointer; font-weight:${_promptTagFilter===t ? '700' : '400'}">
-          ${escHtml(t)}
-        </button>`).join('')}
-    </div>` : ''}
-
-
-    <!-- System-Prompts (immer sichtbar, read-only) -->
-    <div style="margin-bottom:20px">
-      <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:10px">
-        System-Prompts ${icon('lock',11,'color:var(--muted);margin-left:4px')}
-      </div>
-      <div class="prompts-grid">
-        ${SYSTEM_PROMPTS.map(p => `
-          <div class="prompt-card" style="opacity:0.85">
-            <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 20, 'color:var(--muted)')}</div>
-            <div class="prompt-card-body">
-              <div class="prompt-card-name">${escHtml(p.name)}</div>
-              ${p.description ? `<div class="prompt-card-desc" style="color:var(--muted)">${escHtml(p.description)}</div>` : ''}
-              <div class="prompt-card-preview">${escHtml(p.prompt.slice(0, 160))}…</div>
-            </div>
-            <div class="prompt-card-actions">
-              <button class="btn btn-ghost" onclick="openSystemPromptView('${p.id}')" style="padding:5px 10px;font-size:0.78rem;gap:4px">
-                ${icon('eye',13)} Ansehen
-              </button>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-
-    <!-- Bearbeitbare Standard-Prompts (360°, Themen, Kapitel) -->
-    <div style="margin-bottom:20px">
-      <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:6px">
-        Standard-Analysen ${icon('edit-2',11,'color:var(--muted)')}
-        <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>
-      </div>
-      <div class="prompts-grid">
-        ${EDITABLE_PROMPT_DEFAULTS.map(p => {
-          const modified = isEditablePromptModified(p.id);
-          const currentText = getEditablePromptText(p.id) || '';
-          return `
-          <div class="prompt-card">
-            <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 20, 'color:var(--accent)')}</div>
-            <div class="prompt-card-body">
-              <div class="prompt-card-name" style="display:flex;align-items:center;gap:6px">
-                ${escHtml(p.name)}
-                ${modified ? `<span style="font-size:0.65rem;background:rgba(108,99,255,0.15);color:var(--accent);padding:1px 6px;border-radius:8px;font-weight:600">angepasst</span>` : ''}
-              </div>
-              ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
-              <div class="prompt-card-preview">${escHtml(currentText.slice(0, 140))}${currentText.length > 140 ? '…' : ''}</div>
-            </div>
-            <div class="prompt-card-actions">
-              <button class="btn btn-ghost" onclick="openEditablePromptEditor('${p.id}')" style="padding:5px 10px;font-size:0.78rem;gap:4px">
-                ${icon('edit-2',13)} Bearbeiten
-              </button>
-              ${modified ? `<button class="btn" onclick="resetEditablePromptAndRefresh('${p.id}')" style="padding:5px 10px;font-size:0.78rem;gap:4px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)">
-                ${icon('refresh-cw',13)} Reset
-              </button>` : ''}
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-
-    <!-- Eigene Prompts -->
-    <div>
-      <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:10px">Eigene Prompts</div>
-      ${prompts.length === 0 ? `
-        <div style="text-align:center; padding:40px 24px; color:var(--muted); border:1px dashed var(--border); border-radius:14px">
-          <div style="margin-bottom:10px; opacity:0.3">${icon('sparkles',28)}</div>
-          <div style="font-size:0.88rem; margin-bottom:6px; font-weight:500">${_promptSearch || _promptTagFilter ? 'Keine Treffer' : 'Noch keine eigenen Prompts'}</div>
-          ${!_promptSearch && !_promptTagFilter ? `<button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;margin-top:8px">${icon('plus',14)} Ersten Prompt erstellen</button>` : ''}
+  // Toolbar nur beim ersten Aufruf erstellen – verhindert Fokus-Verlust beim Tippen
+  if (!el.querySelector('#promptsToolbar')) {
+    el.innerHTML = `
+    <div style="max-width:960px; margin:0 auto; padding:8px 0 48px">
+      <div id="promptsToolbar" style="display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+        <div class="search-box" style="flex:1; min-width:180px;">
+          ${icon('search',14,'color:var(--muted);flex-shrink:0')}
+          <input type="text" id="promptSearchInput" placeholder="Prompts durchsuchen…"
+            oninput="filterPromptsView()"
+            style="background:none; border:none; outline:none; color:var(--text); font-size:0.88rem; width:100%;" />
         </div>
-      ` : `
-        <div class="prompts-grid">
-          ${prompts.map(p => {
-            const preview = assemblePromptText(p);
-            const tags = p.tags || [];
-            return `
-            <div class="prompt-card">
-              <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 20, 'color:var(--accent)')}</div>
-              <div class="prompt-card-body">
-                <div class="prompt-card-name">${escHtml(p.name)}</div>
-                ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
-                ${tags.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;margin-bottom:4px">${tags.map(t=>`<span class="tag-chip">${escHtml(t)}</span>`).join('')}</div>` : ''}
-                <div class="prompt-card-preview">${escHtml(preview.slice(0, 140))}${preview.length > 140 ? '…' : ''}</div>
-              </div>
-              <div class="prompt-card-actions">
-                <button class="btn btn-ghost" onclick="openPromptEditorModal('${p.id}')" style="padding:5px 10px;font-size:0.78rem;gap:4px">
-                  ${icon('edit-2',13)} Bearbeiten
-                </button>
-                <button class="btn" onclick="deletePromptById('${p.id}')" style="padding:5px 10px;font-size:0.78rem;gap:4px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)">
-                  ${icon('trash-2',13)} Löschen
-                </button>
-              </div>
-            </div>`;
-          }).join('')}
-        </div>
-      `}
-    </div>
-  </div>`;
-  if (window.lucide) lucide.createIcons({ nodes: [el] });
+        <select id="promptTypeSelect" onchange="setPromptTypeFilter(this.value)"
+          style="padding:7px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:0.83rem; cursor:pointer; outline:none;">
+          <option value="all">Alle Typen</option>
+          <option value="system">System</option>
+          <option value="standard">Standard</option>
+          <option value="feature">Feature</option>
+          <option value="custom">Eigene</option>
+        </select>
+        <button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;flex-shrink:0">
+          ${icon('plus',14)} Neuer Prompt
+        </button>
+      </div>
+      <div id="promptsResults"></div>
+    </div>`;
+    if (window.lucide) lucide.createIcons({ nodes: [el] });
+  }
+
+  _renderPromptsResults();
 }
 
-// ── Prompt-Editor Modal ──────────────────────────────
-// System-Prompt als read-only im Editor anzeigen
+// ── Nur Ergebnisse neu rendern (Toolbar bleibt stabil) ──
+function _renderPromptsResults() {
+  const container = document.getElementById('promptsResults');
+  if (!container) return;
+
+  const typeFilter = _promptTypeFilter;
+  const q          = _promptSearch;
+  const tagF       = _promptTagFilter;
+
+  const matchesSearch = (texts) => !q || texts.some(t => (t||'').toLowerCase().includes(q));
+
+  // System-Prompts filtern
+  const systemVisible = typeFilter === 'all' || typeFilter === 'system';
+  const filteredSystem = systemVisible
+    ? SYSTEM_PROMPTS.filter(p => matchesSearch([p.name, p.description, p.prompt]))
+    : [];
+
+  // Standard-Prompts filtern
+  const standardVisible = typeFilter === 'all' || typeFilter === 'standard';
+  const filteredStandard = standardVisible
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => p.category === 'standard')
+        .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
+    : [];
+
+  // Feature-Prompts filtern
+  const featureVisible = typeFilter === 'all' || typeFilter === 'feature';
+  const filteredFeature = featureVisible
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => p.category === 'feature')
+        .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
+    : [];
+
+  // Eigene Prompts filtern
+  const customVisible = typeFilter === 'all' || typeFilter === 'custom';
+  let filteredCustom = customVisible ? getCustomPrompts() : [];
+  if (q) filteredCustom = filteredCustom.filter(p =>
+    matchesSearch([p.name, p.description, assemblePromptText(p), ...(p.tags||[])])
+  );
+  if (tagF) filteredCustom = filteredCustom.filter(p => (p.tags||[]).includes(tagF));
+
+  const allTags    = _getAllPromptTags();
+  const hasResults = filteredSystem.length || filteredStandard.length || filteredFeature.length || filteredCustom.length;
+
+  const sectionHead = (label, extra = '') => `
+    <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:6px">
+      ${label} ${extra}
+    </div>`;
+
+  const _cardSystem = (p) => `
+    <div class="prompt-card">
+      <div class="prompt-card-header">
+        <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 18, 'color:var(--muted)')}</div>
+        <div class="prompt-card-name" style="color:var(--text)">${escHtml(p.name)}</div>
+        <div class="prompt-card-actions">
+          <button class="btn btn-ghost" onclick="openSystemPromptView('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap">
+            ${icon('eye',12)} Ansehen
+          </button>
+        </div>
+      </div>
+      ${p.description ? `<div class="prompt-card-desc" style="color:var(--muted)">${escHtml(p.description)}</div>` : ''}
+      <div class="prompt-card-preview">${escHtml(p.prompt.slice(0, 120))}…</div>
+    </div>`;
+
+  const _cardEditable = (p) => {
+    const modified    = isEditablePromptModified(p.id);
+    const currentText = getEditablePromptText(p.id) || '';
+    return `
+    <div class="prompt-card">
+      <div class="prompt-card-header">
+        <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 18, 'color:var(--accent)')}</div>
+        <div class="prompt-card-name">
+          ${escHtml(p.name)}
+          ${modified ? `<span style="font-size:0.62rem;background:rgba(108,99,255,0.15);color:var(--accent);padding:1px 5px;border-radius:8px;font-weight:600;margin-left:4px">angepasst</span>` : ''}
+        </div>
+        <div class="prompt-card-actions">
+          <button class="btn btn-ghost" onclick="openEditablePromptEditor('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap">
+            ${icon('edit-2',12)} Bearbeiten
+          </button>
+          ${modified ? `<button class="btn" onclick="resetEditablePromptAndRefresh('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)">
+            ${icon('refresh-cw',12)} Reset
+          </button>` : ''}
+        </div>
+      </div>
+      ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
+      <div class="prompt-card-preview">${escHtml(currentText.slice(0, 120))}${currentText.length > 120 ? '…' : ''}</div>
+    </div>`;
+  };
+
+  const _cardCustom = (p) => {
+    const preview = assemblePromptText(p);
+    const tags    = p.tags || [];
+    return `
+    <div class="prompt-card">
+      <div class="prompt-card-header">
+        <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 18, 'color:var(--accent)')}</div>
+        <div class="prompt-card-name">${escHtml(p.name)}</div>
+        <div class="prompt-card-actions">
+          <button class="btn btn-ghost" onclick="openPromptEditorModal('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap">
+            ${icon('edit-2',12)} Bearbeiten
+          </button>
+          <button class="btn" onclick="deletePromptById('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)">
+            ${icon('trash-2',12)} Löschen
+          </button>
+        </div>
+      </div>
+      ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
+      ${tags.length ? `<div class="prompt-card-tags">${tags.map(t=>`<span class="tag-chip">${escHtml(t)}</span>`).join('')}</div>` : ''}
+      <div class="prompt-card-preview">${escHtml(preview.slice(0, 120))}${preview.length > 120 ? '…' : ''}</div>
+    </div>`;
+  };
+
+  let html = '';
+
+  // Tag-Filter-Chips (nur für eigene Prompts)
+  if (allTags.length && (typeFilter === 'all' || typeFilter === 'custom')) {
+    html += `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px;">
+      ${allTags.map(t => `
+        <button onclick="setPromptTagFilter('${escHtml(t)}')"
+          style="padding:3px 10px; font-size:0.75rem; border-radius:12px;
+          border:1px solid ${tagF===t ? 'var(--accent)' : 'var(--border)'};
+          background:${tagF===t ? 'var(--accent)' : 'var(--surface2)'};
+          color:${tagF===t ? '#fff' : 'var(--text)'}; cursor:pointer; font-weight:${tagF===t ? '700' : '400'}">
+          ${escHtml(t)}
+        </button>`).join('')}
+    </div>`;
+  }
+
+  if (!hasResults) {
+    html += `<div style="text-align:center; padding:48px 24px; color:var(--muted); border:1px dashed var(--border); border-radius:14px">
+      <div style="margin-bottom:10px; opacity:0.3">${icon('search',28)}</div>
+      <div style="font-size:0.88rem; font-weight:500">Keine Prompts gefunden</div>
+    </div>`;
+    container.innerHTML = html;
+    if (window.lucide) lucide.createIcons({ nodes: [container] });
+    return;
+  }
+
+  if (filteredSystem.length) {
+    html += `<div style="margin-bottom:24px">
+      ${sectionHead('System-Prompts', icon('lock',11,'color:var(--muted);margin-left:2px'))}
+      <div class="prompts-grid">${filteredSystem.map(_cardSystem).join('')}</div>
+    </div>`;
+  }
+
+  if (filteredStandard.length) {
+    html += `<div style="margin-bottom:24px">
+      ${sectionHead('Standard-Analysen', `${icon('edit-2',11,'color:var(--muted);margin-left:2px')} <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>`)}
+      <div class="prompts-grid">${filteredStandard.map(_cardEditable).join('')}</div>
+    </div>`;
+  }
+
+  if (filteredFeature.length) {
+    html += `<div style="margin-bottom:24px">
+      ${sectionHead('Feature-Prompts', `${icon('zap',11,'color:var(--muted);margin-left:2px')} <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>`)}
+      <div class="prompts-grid">${filteredFeature.map(_cardEditable).join('')}</div>
+    </div>`;
+  }
+
+  // Eigene Prompts
+  html += `<div>
+    ${sectionHead('Eigene Prompts')}
+    ${filteredCustom.length === 0 ? `
+      <div style="text-align:center; padding:40px 24px; color:var(--muted); border:1px dashed var(--border); border-radius:14px">
+        <div style="margin-bottom:10px; opacity:0.3">${icon('sparkles',28)}</div>
+        <div style="font-size:0.88rem; margin-bottom:6px; font-weight:500">${q || tagF ? 'Keine Treffer' : 'Noch keine eigenen Prompts'}</div>
+        ${!q && !tagF ? `<button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;margin-top:8px">${icon('plus',14)} Ersten Prompt erstellen</button>` : ''}
+      </div>
+    ` : `<div class="prompts-grid">${filteredCustom.map(_cardCustom).join('')}</div>`}
+  </div>`;
+
+  container.innerHTML = html;
+  if (window.lucide) lucide.createIcons({ nodes: [container] });
+}
+
+// ── Prompt-Editor Modal ──────────────────────────
 function openSystemPromptView(id) {
   const p = SYSTEM_PROMPTS.find(sp => sp.id === id);
   if (!p) return;
@@ -375,12 +628,10 @@ function openSystemPromptView(id) {
   document.getElementById('promptEditorIcon').value = p.icon;
   document.getElementById('promptEditorText').value = p.prompt;
   document.getElementById('promptEditorError').style.display = 'none';
-  // Alle Felder read-only
-  ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorText'].forEach(id => {
-    document.getElementById(id).readOnly = true;
-    document.getElementById(id).style.opacity = '0.6';
+  ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorText'].forEach(fid => {
+    const el2 = document.getElementById(fid);
+    if (el2) { el2.readOnly = true; el2.style.opacity = '0.6'; }
   });
-  // Speichern-Button ausblenden
   const saveBtn = document.getElementById('promptEditorSaveBtn');
   if (saveBtn) saveBtn.style.display = 'none';
   const modal = document.getElementById('promptEditorModal');
@@ -393,27 +644,24 @@ function openPromptEditorModal(id) {
   const existing = id ? prompts.find(p => p.id === id) : null;
 
   document.getElementById('promptEditorTitle').textContent = existing ? 'Prompt bearbeiten' : 'Neuer Prompt';
-  document.getElementById('promptEditorId').value   = existing?.id          || '';
-  document.getElementById('promptEditorName').value = existing?.name        || '';
-  document.getElementById('promptEditorDesc').value = existing?.description || '';
-  document.getElementById('promptEditorIcon').value = existing?.icon        || 'sparkles';
-  // Neue Felder
-  document.getElementById('promptEditorRolle').value      = existing?.rolle      || '';
-  document.getElementById('promptEditorTonalitaet').value = existing?.tonalitaet || '';
-  document.getElementById('promptEditorGrenzen').value    = existing?.grenzen    || '';
-  document.getElementById('promptEditorText').value       = existing?.kontext || existing?.prompt || '';
-  document.getElementById('promptEditorTags').value       = (existing?.tags || []).join(', ');
+  document.getElementById('promptEditorId').value          = existing?.id          || '';
+  document.getElementById('promptEditorName').value        = existing?.name        || '';
+  document.getElementById('promptEditorDesc').value        = existing?.description || '';
+  document.getElementById('promptEditorIcon').value        = existing?.icon        || 'sparkles';
+  document.getElementById('promptEditorRolle').value       = existing?.rolle       || '';
+  document.getElementById('promptEditorTonalitaet').value  = existing?.tonalitaet  || '';
+  document.getElementById('promptEditorGrenzen').value     = existing?.grenzen     || '';
+  document.getElementById('promptEditorText').value        = existing?.kontext || existing?.prompt || '';
+  document.getElementById('promptEditorTags').value        = (existing?.tags || []).join(', ');
   document.getElementById('promptEditorError').style.display = 'none';
 
-  // Alle Felder editierbar
   ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorRolle',
    'promptEditorTonalitaet','promptEditorGrenzen','promptEditorText','promptEditorTags'].forEach(fid => {
-    const el = document.getElementById(fid);
-    if (el) { el.readOnly = false; el.style.opacity = ''; }
+    const el2 = document.getElementById(fid);
+    if (el2) { el2.readOnly = false; el2.style.opacity = ''; }
   });
   const saveBtn = document.getElementById('promptEditorSaveBtn');
   if (saveBtn) { saveBtn.style.display = ''; saveBtn.onclick = savePromptFromEditor; }
-
   const resetBtn = document.getElementById('promptEditorResetBtn');
   if (resetBtn) resetBtn.style.display = 'none';
 
@@ -452,25 +700,22 @@ function savePromptFromEditor() {
   }
   saveCustomPrompts(prompts);
   closePromptEditorModal();
-  renderPromptsView();
+  _renderPromptsResults();
   showToast(id ? 'Prompt aktualisiert' : 'Prompt gespeichert', 'ok');
 }
 
 function deletePromptById(id) {
-  const updated = getCustomPrompts().filter(p => p.id !== id);
-  saveCustomPrompts(updated);
-  renderPromptsView();
+  saveCustomPrompts(getCustomPrompts().filter(p => p.id !== id));
+  _renderPromptsResults();
   showToast('Prompt gelöscht', 'ok');
 }
 
-// ── Custom Prompt ausführen ──────────────────────────
-// Wird von runAnalysisFromModal() aufgerufen
+// ── Custom Prompt ausführen ──────────────────────
 async function runCustomPrompt(session, promptObj, transcript) {
   const { forward, reverse } = buildAnonMap(session);
   const speakerA = session.speakerA || 'Ich';
   const speakerB = session.speakerB || 'Gesprächspartner';
 
-  // Prompt aus Teilen zusammenbauen, dann Platzhalter ersetzen
   let promptText = assemblePromptText(promptObj)
     .replace(/\{\{transkript\}\}/gi,  trimTranscript(transcript, 300000))
     .replace(/\{\{transcript\}\}/gi,  trimTranscript(transcript, 300000))
@@ -479,8 +724,7 @@ async function runCustomPrompt(session, promptObj, transcript) {
     .replace(/\{\{speakerA\}\}/gi,    speakerA)
     .replace(/\{\{speakerB\}\}/gi,    speakerB);
 
-  // Kein {{transkript}} im Prompt → Transkript automatisch anhängen
-  if (!/\{\{transkript\}\}|\{\{transcript\}\}/i.test(promptObj.prompt)) {
+  if (!/\{\{transkript\}\}|\{\{transcript\}\}/i.test(promptObj.prompt || promptObj.kontext || '')) {
     promptText += `\n\nTranskript:\n${trimTranscript(transcript, 300000)}`;
   }
 
@@ -497,43 +741,36 @@ async function runCustomPrompt(session, promptObj, transcript) {
   };
 }
 
-// ── Editable-Prompt Editor öffnen ───────────────────
+// ── Editable-Prompt Editor öffnen ───────────────
 function openEditablePromptEditor(id) {
   const def = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === id);
   if (!def) return;
   const currentText = getEditablePromptText(id) || def.prompt;
 
   document.getElementById('promptEditorTitle').textContent = def.name + ' bearbeiten';
-  document.getElementById('promptEditorId').value   = id;  // Wir recyclen das Feld als editable-ID-Marker
+  document.getElementById('promptEditorId').value   = id;
   document.getElementById('promptEditorName').value = def.name;
   document.getElementById('promptEditorDesc').value = def.description;
   document.getElementById('promptEditorIcon').value = def.icon;
   document.getElementById('promptEditorText').value = currentText;
   document.getElementById('promptEditorError').style.display = 'none';
 
-  // Name/Desc/Icon read-only (nur Prompt-Text editierbar)
   ['promptEditorName','promptEditorDesc','promptEditorIcon'].forEach(fid => {
-    const el = document.getElementById(fid);
-    el.readOnly = true;
-    el.style.opacity = '0.5';
+    const el2 = document.getElementById(fid);
+    el2.readOnly = true; el2.style.opacity = '0.5';
   });
   document.getElementById('promptEditorText').readOnly = false;
   document.getElementById('promptEditorText').style.opacity = '';
 
   const saveBtn = document.getElementById('promptEditorSaveBtn');
-  if (saveBtn) {
-    saveBtn.style.display = '';
-    saveBtn.onclick = () => saveEditablePromptFromEditor(id);
-  }
+  if (saveBtn) { saveBtn.style.display = ''; saveBtn.onclick = () => saveEditablePromptFromEditor(id); }
 
-  // Reset-Button einblenden wenn modifiziert
   const resetBtn = document.getElementById('promptEditorResetBtn');
   if (resetBtn) {
     resetBtn.style.display = isEditablePromptModified(id) ? '' : 'none';
     resetBtn.onclick = () => {
       resetEditablePrompt(id);
-      const def2 = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === id);
-      document.getElementById('promptEditorText').value = def2.prompt;
+      document.getElementById('promptEditorText').value = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === id).prompt;
       resetBtn.style.display = 'none';
       showToast('Prompt zurückgesetzt', 'ok');
     };
@@ -548,29 +785,24 @@ function saveEditablePromptFromEditor(id) {
   const text  = document.getElementById('promptEditorText').value.trim();
   const errEl = document.getElementById('promptEditorError');
   if (!text) { errEl.textContent = 'Bitte einen Prompt-Text eingeben.'; errEl.style.display = 'block'; return; }
-
   saveEditablePromptText(id, text);
   closePromptEditorModal();
-  renderPromptsView();
+  _renderPromptsResults();
   showToast('Prompt gespeichert', 'ok');
 }
 
 function resetEditablePromptAndRefresh(id) {
   resetEditablePrompt(id);
-  renderPromptsView();
+  _renderPromptsResults();
   showToast('Prompt zurückgesetzt', 'ok');
 }
 
-// ── Checkboxen im Analyse-Modal befüllen ─────────────
+// ── Checkboxen im Analyse-Modal befüllen ─────────
 function renderCustomPromptCheckboxes() {
   const container = document.getElementById('customPromptChecks');
   if (!container) return;
   const prompts = getCustomPrompts();
-  if (!prompts.length) {
-    container.innerHTML = '';
-    container.style.display = 'none';
-    return;
-  }
+  if (!prompts.length) { container.innerHTML = ''; container.style.display = 'none'; return; }
   container.style.display = 'block';
   container.innerHTML = `
     <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border)">
@@ -578,16 +810,13 @@ function renderCustomPromptCheckboxes() {
       ${prompts.map(p => `
         <label class="analyse-check-row" style="margin-bottom:8px">
           <input type="checkbox" id="chkCustom_${p.id}" />
-          <span style="display:inline-flex;align-items:center">
-            ${icon(p.icon || 'sparkles', 17, 'stroke:var(--muted);stroke-width:2;fill:none')}
-          </span>
+          <span style="display:inline-flex;align-items:center">${icon(p.icon || 'sparkles', 17, 'stroke:var(--muted);stroke-width:2;fill:none')}</span>
           <span>
             <div style="font-size:0.88rem; font-weight:600">${escHtml(p.name)}</div>
             ${p.description ? `<div style="font-size:0.75rem; color:var(--muted)">${escHtml(p.description)}</div>` : ''}
           </span>
         </label>
       `).join('')}
-    </div>
-  `;
+    </div>`;
   if (window.lucide) lucide.createIcons({ nodes: [container] });
 }

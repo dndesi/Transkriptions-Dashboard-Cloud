@@ -156,14 +156,12 @@ async function sendAskQuestion() {
       .map(h => `${h.role === 'user' ? 'Frage' : 'Antwort'}: ${h.text}`)
       .join('\n');
 
-    const prompt = `Du bist ein Assistent der ausschließlich Fragen zu einem Gesprächstranskript beantwortet.
-Antworte immer auf Deutsch. Zitiere wenn möglich direkt aus dem Transkript und nenne den Zeitstempel [MM:SS].
-Wenn die Antwort nicht im Transkript zu finden ist, sage das klar – erfinde nichts.
-
-TRANSKRIPT (${s.label}):
-${trimTranscript(transcript, 300000)}
-${historyText ? `\nBISHERIGE FRAGEN:\n${historyText}\n` : ''}
-FRAGE: ${question}`;
+    const basePrompt = getEditablePromptText('builtin_ask')
+      .replace(/\{\{sessionLabel\}\}/g, s.label)
+      .replace(/\{\{transkript\}\}/g, trimTranscript(transcript, 300000));
+    const prompt = basePrompt +
+      (historyText ? `\nBISHERIGE FRAGEN:\n${historyText}\n` : '') +
+      `\nFRAGE: ${question}`;
 
     const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
     addTokensToSession(s, inputTokens, outputTokens);
@@ -236,19 +234,8 @@ async function generateAndShowMindMap() {
   try {
     const { forward, reverse } = buildAnonMap(s);
     const transcript = buildTranscriptText(s);
-    const prompt = `Erstelle eine Mind Map für dieses deutsche Gesprächstranskript im Mermaid.js Format.
-Verwende exakt "mindmap" als ersten Bezeichner. Max. 3 Ebenen, max. 20 Knoten.
-Verwende nur einfache Texte ohne runde Klammern außer für den Root-Knoten. Keine Sonderzeichen in den Knoten.
-
-Transkript:
-${trimTranscript(transcript, 300000)}
-
-Antworte NUR mit dem rohen Mermaid-Code, ohne Markdown-Blöcke:
-mindmap
-  root((Hauptthema))
-    Thema 1
-      Detail 1a
-    Thema 2`;
+    const prompt = getEditablePromptText('builtin_mindmap')
+      .replace(/\{\{transkript\}\}/g, trimTranscript(transcript, 300000));
 
     const { text: rawText, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
     const text = deanonymizeText(rawText, reverse);

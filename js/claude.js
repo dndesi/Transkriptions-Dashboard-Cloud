@@ -457,52 +457,16 @@ async function analysePrivate(session, transcript) {
 
   let prompt;
   if (isThoughts) {
-    prompt = `Du bist ein einfühlsamer, psychologisch geschulter Gesprächsanalyst. Analysiere die folgenden eigenen Gedanken und Reflexionen auf Deutsch mit echtem Tiefgang – nicht oberflächlich, sondern so wie ein guter Therapeut oder Supervisor zuhören würde.
-
-Inhalt:
-${trimmed}
-
-Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
-{
-  "agreements": [],
-  "wishes": [],
-  "openTopics": ["Gedanke oder Frage die noch offen oder unklar geblieben ist – auch wenn sie nur angedeutet wurde"],
-  "dynamics": "",
-  "zwischenzeilen": "Was liegt hinter diesen Gedanken? Welches tieferliegende Bedürfnis, welche Angst oder welcher Wunsch zeigt sich zwischen den Zeilen? Was wird vielleicht vermieden zu denken?",
-  "keyThoughts": ["Kerngedanke 1 – das wirklich Wichtige, nicht nur Erwähntes"],
-  "nextSteps": ["Konkreter nächster Schritt der genannt oder angedeutet wurde"],
-  "summary": "Ehrliche Zusammenfassung in 2-3 Sätzen: Was beschäftigt diese Person wirklich? Was trägt sie mit sich?"
-}
-Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`;
+    prompt = getEditablePromptText('builtin_gedanken')
+      .replace(/\{\{transkript\}\}/g, trimmed);
   } else {
     const relLine = relContext ? `\nBeziehungskontext: ${speakerB} ist ${relContext}.` : '';
-    prompt = `Du bist ein einfühlsamer, psychologisch geschulter Gesprächsanalyst. Analysiere das folgende private Gespräch auf Deutsch mit echtem Tiefgang – nicht oberflächlich, sondern so wie ein guter Therapeut oder Supervisor zuhören würde.
-Beteiligte: ${speakerA} und ${speakerB}. Weitere Personen: ${persons}.${relLine}
-
-Transkript:
-${trimmed}
-
-Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
-{
-  "agreements": [
-    "Was konkret vereinbart, ausgemacht oder fest geplant wurde – nur echte Vereinbarungen, keine Absichtserklärungen"
-  ],
-  "wishes": [
-    {
-      "person": "Name der Person (${speakerA} oder ${speakerB})",
-      "wish": "Was diese Person sich wünscht, erhofft, braucht oder anstrebt – auch indirekt Geäußertes, auch unerfüllte Bedürfnisse"
-    }
-  ],
-  "openTopics": [
-    "Thema oder Frage die angesprochen aber nicht abgeschlossen oder aufgelöst wurde"
-  ],
-  "dynamics": "2-3 Sätze zur Gesprächsdynamik: Wie war der Ton? Wer hat welche Rolle eingenommen? Gab es Spannungen, Ausweichen, Nähe, Distanz, Missverständnisse?",
-  "zwischenzeilen": "Was wurde NICHT direkt gesagt, aber war spürbar? Welche unausgesprochenen Bedürfnisse, Ängste, Hoffnungen oder Muster schwingen mit? Lies wirklich zwischen den Zeilen.",
-  "keyThoughts": ["Das wirklich Wichtige in diesem Gespräch – emotional und inhaltlich"],
-  "nextSteps": ["Konkreter nächster Schritt der genannt oder angedeutet wurde"],
-  "summary": "Kompakte Zusammenfassung in 2-4 Sätzen: Worum ging es wirklich, was war der emotionale Kern, was bleibt offen?"
-}
-Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`;
+    prompt = getEditablePromptText('builtin_private')
+      .replace(/\{\{speakerA\}\}/g, speakerA)
+      .replace(/\{\{speakerB\}\}/g, speakerB)
+      .replace(/\{\{persons\}\}/g, persons)
+      .replace(/\{\{relContext\}\}/g, relLine)
+      .replace(/\{\{transkript\}\}/g, trimmed);
   }
 
   const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
@@ -526,35 +490,11 @@ async function analyseWork(session, transcript) {
   const speakerA = session.speakerA || 'Sprecher A';
   const speakerB = session.speakerB || 'Sprecher B';
 
-  const prompt = `Du bist ein erfahrener Business-Coach und Kommunikationsanalyst. Analysiere das folgende Arbeitsgespräch auf Deutsch – präzise, klar und mit Blick für das, was auch zwischen den Zeilen geschieht.
-Beteiligte: ${speakerA} und ${speakerB}. Weitere Personen: ${persons}.
-
-Transkript:
-${trimTranscript(transcript, 300000)}
-
-Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
-{
-  "tasks": [
-    {
-      "task": "Kurze Beschreibung der Aufgabe",
-      "person": "Wer ist verantwortlich (Name oder 'offen')",
-      "deadline": "Deadline falls erwähnt, sonst leerer String",
-      "priority": "hoch|mittel|niedrig"
-    }
-  ],
-  "decisions": [
-    "Getroffene Entscheidung – klar und verbindlich formuliert"
-  ],
-  "openQuestions": [
-    "Offene Frage oder ungeklärter Punkt der noch Klärung braucht"
-  ],
-  "risks": [
-    "Mögliches Problem, Risiko oder Konflikpunkt der erwähnt oder angedeutet wurde"
-  ],
-  "zwischenzeilen": "Was wurde nicht direkt angesprochen, aber war spürbar? Ungeklärte Dynamiken, Unsicherheiten, unausgesprochene Erwartungen, Spannungen oder Widerstände im Team.",
-  "summary": "Kompakte Zusammenfassung in 2-4 Sätzen: Was war der Anlass, was wurde besprochen, was ist das Ergebnis?"
-}
-Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`;
+  const prompt = getEditablePromptText('builtin_work_deep')
+    .replace(/\{\{speakerA\}\}/g, speakerA)
+    .replace(/\{\{speakerB\}\}/g, speakerB)
+    .replace(/\{\{persons\}\}/g, persons)
+    .replace(/\{\{transkript\}\}/g, trimTranscript(transcript, 300000));
 
   const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
   addTokensToSession(session, inputTokens, outputTokens);
@@ -573,28 +513,10 @@ async function analyseSentiment(session, transcript) {
   const { forward, reverse } = buildAnonMap(session);
   const speakerA = session.speakerA || 'Sprecher A';
   const speakerB = session.speakerB || 'Sprecher B';
-  const prompt = `Analysiere die Stimmung der Sprecher in diesem deutschen Gesprächstranskript.
-Sprecher A heißt "${speakerA}", Sprecher B heißt "${speakerB}".
-
-Transkript:
-${trimTranscript(transcript, 300000)}
-
-Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
-{
-  "speakers": [
-    {
-      "speaker": "A",
-      "name": "${speakerA}",
-      "overall": "kurze Beschreibung der Grundstimmung (2-4 Wörter, auf Deutsch)",
-      "trend": "positiv|neutral|kritisch",
-      "posP": 0-100,
-      "neuP": 0-100,
-      "negP": 0-100,
-      "highlight": "Ein typischer oder markanter Satz dieser Person (auf Deutsch)"
-    }
-  ],
-  "summary": "1-2 Sätze zur Gesprächsdynamik (auf Deutsch)"
-}`;
+  const prompt = getEditablePromptText('builtin_sentiment')
+    .replace(/\{\{speakerA\}\}/g, speakerA)
+    .replace(/\{\{speakerB\}\}/g, speakerB)
+    .replace(/\{\{transkript\}\}/g, trimTranscript(transcript, 300000));
   const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
   addTokensToSession(session, inputTokens, outputTokens);
   const json = deanonymizeObject(JSON.parse(extractJSON(text, '{')), reverse);
@@ -1282,66 +1204,6 @@ function buildTranscriptText(session) {
   return lines.join('\n');
 }
 
-function openClaudeModal() {
-  const s = getSession();
-  if (!s) return;
-  const text = `TRANSKRIPT: ${s.label}
-Datum: ${new Date(s.date).toLocaleString('de-DE')}
-Datei: ${s.filename}
-Sprecher A = ${s.speakerA} | Sprecher B = ${s.speakerB}
-
----
-
-${buildTranscriptText(s)}`;
-  document.getElementById('claudePromptText').textContent = text;
-  document.getElementById('claudeModal').classList.add('open');
-}
-function closeClaudeModal() { document.getElementById('claudeModal').classList.remove('open'); }
-function copyClaudeText() {
-  const text = document.getElementById('claudePromptText').textContent;
-  navigator.clipboard.writeText(text).then(() => showToast('Transkript kopiert! ✓', 'success'));
-}
-
-function openAnalysisModal() {
-  const s = getSession();
-  if (!s) return;
-  const prompt = `Du bist ein einfühlsamer Gesprächsanalyst mit Expertise in Kommunikationspsychologie und Paardynamiken. Analysiere das folgende Gesprächstranskript zwischen ${s.speakerA} und ${s.speakerB}.
-
-TRANSKRIPT: ${s.label}
-Datum: ${new Date(s.date).toLocaleString('de-DE')}
----
-
-${buildTranscriptText(s)}
-
----
-
-Bitte analysiere dieses Gespräch anhand folgender Punkte:
-
-1. **Kommunikationsmuster** – Wie kommunizieren die beiden? Gibt es Muster wie Unterbrechungen, aktives Zuhören, Abwehr?
-
-2. **Emotionale Dynamik** – Welche Emotionen werden sichtbar? Gibt es Eskalationen oder de-eskalierende Momente?
-
-3. **Bedürfnisse & Wünsche** – Was möchte jede Person wirklich ausdrücken? Was wird explizit vs. implizit gesagt?
-
-4. **Stärken im Gespräch** – Welche positiven Aspekte zeigen sich in der Kommunikation?
-
-5. **Wachstumsbereiche** – Wo gibt es Verbesserungspotenzial für beide?
-
-6. **Gesamtbewertung** – Kurzes Fazit zur Qualität dieses Gesprächs und dem emotionalen Klima.
-
-Bitte antworte einfühlsam, wertfrei und konstruktiv.`;
-
-  document.getElementById('analysisPromptText').textContent = prompt;
-  document.getElementById('analysisModal').classList.add('open');
-}
-function closeAnalysisModal() { document.getElementById('analysisModal').classList.remove('open'); }
-function copyAnalysisText() {
-  const text = document.getElementById('analysisPromptText').textContent;
-  navigator.clipboard.writeText(text).then(() => showToast('Analyse-Prompt kopiert! ✓', 'success'));
-}
-
-// ═══════════════════════════════════════════════════
-
 // CLAUDE INTEGRATION – DIREKT SENDEN
 // ═══════════════════════════════════════════════════
 const TEMPLATES = {
@@ -1453,11 +1315,4 @@ function manualCopy() {
 function closeSendOverlay() {
   document.getElementById('sendOverlay').classList.remove('open');
 }
-
-// Legacy-Stubs (werden nicht mehr verwendet, aber sicher halten)
-function openClaudeModal() { toggleTemplatePopover('claudeBtnWrap'); }
-function openClaudeModalMulti() { toggleTemplatePopover('multiBtnWrap'); }
-function closeClaudeModal() {}
-function copyClaudeText() {}
-function selectAllText(el) { window.getSelection().selectAllChildren(el); }
 

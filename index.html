@@ -136,7 +136,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.12</button>
+        onmouseout="this.style.color='var(--muted)'">v4.14</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -542,6 +542,42 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.14 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.14</span>
+          <span class="cl-date">28.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <div class="cl-title">Prompt-Bibliothek: Feature-Prompts editierbar · Grid-Layout · Sitzungsdesign vereinheitlicht</div>
+        <ul>
+          <li><strong>9 neue editierbare Prompts</strong> – Alle bisher hardcodierten Analyse-Prompts sind jetzt in der Bibliothek sichtbar und editierbar: Privat-Analyse, Gedanken-Analyse, Arbeits-Tiefenanalyse, Stimmungsanalyse, Aufnahme befragen, Mind Map, Personen-Profil, Semantische Suche.</li>
+          <li><strong>Prompts wirklich angebunden</strong> – Die 7 Analyse-Funktionen (analysePrivate, analyseWork, analyseSentiment, sendAskQuestion, generateAndShowMindMap, synthesizePerson, runClaudeSearch) lesen ihren Prompt jetzt aus der Bibliothek via <code>getEditablePromptText(id)</code> – Änderungen in der Bibliothek greifen sofort.</li>
+          <li><strong>Suche repariert</strong> – Tipp im Suchfeld verlor nicht mehr den Fokus (DOM-Neuaufbau nur noch für Ergebnisse, nicht für Toolbar).</li>
+          <li><strong>Typ-Dropdown</strong> – Filter Alle / System / Standard / Feature / Eigene in der Bibliothek-Toolbar.</li>
+          <li><strong>Grid-Layout</strong> – Prompt-Kacheln in responsivem Grid (mehrere Spalten je nach Fensterbreite), Tags sichtbar auf den Kacheln.</li>
+          <li><strong>Design homogenisiert</strong> – Sitzungs-Archiv-Kacheln und Zeitstrahl-Einträge im gleichen Stil wie die Prompt-Bibliothek (weiße Karten, lila Akzent, Icon-Quadrat links).</li>
+        </ul>
+        <div class="cl-tech">js/prompts.js: EDITABLE_PROMPT_DEFAULTS +9 Feature-Prompts, renderPromptsView/filterPromptsView getrennt, _renderPromptsResults(), Typ-Dropdown. css/styles.css: .prompts-grid → CSS Grid, .prompt-card vertikal, .sc-icon, .ti-icon, Session-Kachel-Borders entfernt. js/ui.js: sc-icon + sc-body Struktur. js/audio.js: ti-icon in Timeline. js/claude.js + features.js + persons.js + search.js: Prompt-Calls auf getEditablePromptText() umgestellt.</div>
+      </div>
+
+      <!-- ── v4.13 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.13</span>
+          <span class="cl-date">28.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Cleanup</span>
+        </div>
+        <div class="cl-title">Dead-Code-Bereinigung</div>
+        <ul>
+          <li><strong>openAnalysisModal entfernt</strong> – Funktion mit hardcodiertem „Paardynamik"-Prompt war seit mehreren Versionen tot (kein passendes Modal mehr in der HTML).</li>
+          <li><strong>Altes #claudeModal entfernt</strong> – Das ursprüngliche „Transkript für Claude kopieren"-Modal wurde durch das Popover-System ersetzt. Modal-HTML, zugehörige JS-Funktionen und CSS-Klasse <code>.claude-prompt-area</code> vollständig entfernt.</li>
+          <li><strong>Legacy-Stubs entfernt</strong> – <code>openClaudeModal</code>, <code>openClaudeModalMulti</code>, <code>closeClaudeModal</code>, <code>copyClaudeText</code>, <code>selectAllText</code> waren tote Überschreibungen ohne Aufrufer.</li>
+        </ul>
+        <div class="cl-tech">claude.js: ~60 Zeilen entfernt (openClaudeModal alt, closeClaudeModal alt, copyClaudeText alt, openAnalysisModal, closeAnalysisModal, copyAnalysisText, Legacy-Stubs-Block). index.html: #claudeModal div entfernt. css/styles.css: .claude-prompt-area entfernt.</div>
+      </div>
 
       <!-- ── v4.12 ── -->
       <div class="cl-entry">
@@ -1582,19 +1618,6 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeDeleteModal()">Abbrechen</button>
       <button class="btn" style="background:var(--red); color:#fff; display:inline-flex;align-items:center;gap:5px" onclick="confirmDelete()"><i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Ja, löschen</button>
-    </div>
-  </div>
-</div>
-
-<!-- ─── MODAL: Für Claude kopieren ──────────────── -->
-<div class="modal-backdrop" id="claudeModal">
-  <div class="modal" style="width: 600px;">
-    <h3 style="display:flex;align-items:center;gap:8px"><i data-lucide="clipboard" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"></i> Transkript für Claude</h3>
-    <p>Kopiere diesen Text und füge ihn in ein neues Claude-Gespräch ein. Danach kannst du deine Analyse-Frage stellen.</p>
-    <div class="claude-prompt-area" id="claudePromptText" onclick="this.select()"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeClaudeModal()">Schließen</button>
-      <button class="btn btn-primary" onclick="copyClaudeText()" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="clipboard" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Kopieren</button>
     </div>
   </div>
 </div>
