@@ -274,8 +274,9 @@ function setView(v) {
   document.getElementById('costsView').style.display = 'none';
   document.getElementById('personsView').style.display = 'none';
   document.getElementById('archView').style.display = 'none';
+  const _pv = document.getElementById('promptsView'); if (_pv) _pv.style.display = 'none';
   // Overlay-Buttons zurücksetzen
-  ['headerCostsBtn', 'headerPersonsBtn', 'headerArchBtn'].forEach(id => {
+  ['headerCostsBtn', 'headerPersonsBtn', 'headerArchBtn', 'headerPromptsBtn'].forEach(id => {
     const btn = document.getElementById(id);
     if (btn) { btn.classList.remove('active'); btn.style.borderColor='var(--border)'; btn.style.color='var(--muted)'; btn.style.background='none'; }
   });
@@ -294,10 +295,11 @@ function _setHeaderBtn(id, active) {
 
 function _showOverlay(viewId, btnId, renderFn) {
   // Alle anderen Overlay-Views schließen
-  ['costsView','personsView','archView'].forEach(id => {
-    if (id !== viewId) document.getElementById(id).style.display = 'none';
+  ['costsView','personsView','archView','promptsView'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && id !== viewId) el.style.display = 'none';
   });
-  ['headerCostsBtn','headerPersonsBtn','headerArchBtn'].forEach(id => {
+  ['headerCostsBtn','headerPersonsBtn','headerArchBtn','headerPromptsBtn'].forEach(id => {
     if (id !== btnId) _setHeaderBtn(id, false);
   });
   document.getElementById('browserView').classList.add('visible');

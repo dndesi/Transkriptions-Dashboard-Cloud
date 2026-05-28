@@ -136,7 +136,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.9</button>
+        onmouseout="this.style.color='var(--muted)'">v4.10</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -374,8 +374,27 @@
               </div>
             </div>
           </div>
-          <!-- Analysieren-Button → öffnet Modal -->
-          <button class="btn btn-primary" onclick="openAnalyseModal()" id="analyseBtn" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="search" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Analysieren</button>
+          <!-- Analyse-Dropdown + Start-Button -->
+          <div style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap">
+            <select id="analyseTypeSelect" onchange="updateAnalyseStartBtn()" style="
+              background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+              color:var(--text); padding:7px 10px; font-size:0.82rem; outline:none; cursor:pointer;
+              max-width:190px;">
+              <option value="">Analyse wählen…</option>
+              <optgroup label="Standard" id="stdPromptsOptgroup">
+                <option value="private" id="analyseOptPrivate">Gesprächs-Analyse</option>
+                <option value="work"    id="analyseOptWork" style="display:none">Arbeits-Analyse</option>
+                <option value="360">360°-Auswertung</option>
+                <option value="topics">Themen</option>
+                <option value="chapters">Kapitel</option>
+              </optgroup>
+              <optgroup label="Eigene Prompts" id="customPromptsOptgroup" style="display:none"></optgroup>
+            </select>
+            <button class="btn btn-primary" onclick="startSelectedAnalysis()" id="analyseDropdownStartBtn"
+              disabled style="display:inline-flex;align-items:center;gap:5px;padding:7px 13px">
+              <i data-lucide="play" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Starten
+            </button>
+          </div>
           <button class="btn" style="background:rgba(248,113,113,0.12); border:1px solid var(--red); color:var(--red); display:inline-flex;align-items:center;justify-content:center;padding:7px 10px" onclick="openDeleteModal(currentSessionId)"><i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i></button>
         </div>
       </div>
@@ -518,6 +537,22 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.10 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.10</span>
+          <span class="cl-date">28.05.2026</span>
+        </div>
+        <ul>
+          <li><strong>Navigation-Bug behoben</strong> – Prompt-Bibliothek hat sich bisher an die Timeline angefügt statt sie zu ersetzen. setView() und _showOverlay() kennen jetzt promptsView und headerPromptsBtn korrekt.</li>
+          <li><strong>Icons repariert</strong> – sparkles, edit-2, plus, play, star, brain zu icons.js hinzugefügt. Prompt-Kacheln zeigen jetzt das gewählte Icon korrekt.</li>
+          <li><strong>System-Prompts in Bibliothek</strong> – Gesprächs-Analyse und Arbeits-Analyse erscheinen als gesperrte System-Prompt-Karten. Mit "Ansehen" kann der vollständige Prompt-Text eingesehen, aber nicht bearbeitet werden.</li>
+          <li><strong>Analyse-Dropdown statt Modal</strong> – Der "Analysieren"-Button wurde ersetzt durch ein Dropdown (Analyse wählen) + "Starten"-Button. Analyse-Typ wird direkt ausgewählt, kein Zwischen-Modal mehr nötig. Eigene Prompts erscheinen als eigene Optgroup im Dropdown.</li>
+          <li><strong>Icon-Feld erklärt</strong> – Editor-Modal zeigt jetzt konkrete Beispiel-Iconnames (sparkles, brain, target, zap, star, heart).</li>
+        </ul>
+        <div class="cl-tech">ui.js: setView + _showOverlay um promptsView/headerPromptsBtn erweitert. icons.js: sparkles, edit-2, plus, play, star, brain hinzugefügt. claude.js: runSingleAnalysis(), startSelectedAnalysis(), updateAnalyseDropdown(), updateAnalyseStartBtn() neu. showTranscript() ruft updateAnalyseDropdown(). index.html: analyseBtn → Dropdown+Starten, Analyse-Modal vereinfacht (kein analyseChecks mehr). prompts.js: SYSTEM_PROMPTS-Konstante, openSystemPromptView(), read-only-Modus im Editor.</div>
+      </div>
 
       <!-- ── v4.9 ── -->
       <div class="cl-entry">
@@ -1379,54 +1414,12 @@
   </div>
 </div>
 
-<!-- ─── MODAL: Claude Analyse ────────────────────── -->
+<!-- ─── MODAL: Claude Analyse (Lade-Zustand) ─────── -->
 <div class="modal-backdrop" id="analyseModal">
   <div class="modal" style="max-width:400px">
-    <h3 style="display:flex;align-items:center;gap:8px"><i data-lucide="search" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"></i> Claude-Analyse</h3>
-    <!-- Auswahl-Bereich (normal) -->
-    <div id="analyseChecks">
-      <p style="font-size:0.82rem; color:var(--muted); margin-bottom:16px">Wähle was analysiert werden soll:</p>
-
-      <!-- Arbeit-spezifisch -->
-      <div id="workChecks" style="display:none">
-        <label class="analyse-check-row" style="margin-bottom:8px">
-          <input type="checkbox" id="chkWork" />
-          <span style="display:inline-flex;align-items:center"><i data-lucide="briefcase" style="width:17px;height:17px;stroke:var(--muted);stroke-width:2;fill:none"></i></span>
-          <span><div style="font-size:0.88rem; font-weight:600">Arbeits-Analyse</div><div style="font-size:0.75rem; color:var(--muted)">Aufgaben · Entscheidungen · Risiken · Zusammenfassung</div></span>
-        </label>
-      </div>
-
-      <!-- Privat/Gedanken-spezifisch -->
-      <div id="privateChecks">
-        <label class="analyse-check-row" style="margin-bottom:8px">
-          <input type="checkbox" id="chkPrivate" />
-          <span style="display:inline-flex;align-items:center"><i data-lucide="message-circle" style="width:17px;height:17px;stroke:var(--muted);stroke-width:2;fill:none"></i></span>
-          <span><div style="font-size:0.88rem; font-weight:600">Gesprächs-Analyse</div><div style="font-size:0.75rem; color:var(--muted)">Vereinbarungen · Wünsche · Offene Themen · Dynamik</div></span>
-        </label>
-      </div>
-
-      <!-- Immer sichtbar -->
-      <label class="analyse-check-row" style="margin-bottom:8px">
-        <input type="checkbox" id="chkChapters" />
-        <span style="display:inline-flex;align-items:center"><i data-lucide="book-open" style="width:17px;height:17px;stroke:var(--muted);stroke-width:2;fill:none"></i></span>
-        <span><div style="font-size:0.88rem; font-weight:600">Kapitel</div><div style="font-size:0.75rem; color:var(--muted)">Automatische Gliederung mit Zeitstempeln</div></span>
-      </label>
-      <label class="analyse-check-row" style="margin-bottom:8px">
-        <input type="checkbox" id="chkTopics" />
-        <span style="display:inline-flex;align-items:center"><i data-lucide="tag" style="width:17px;height:17px;stroke:var(--muted);stroke-width:2;fill:none"></i></span>
-        <span><div style="font-size:0.88rem; font-weight:600">Themen</div><div style="font-size:0.75rem; color:var(--muted)">Themengebiete als Tags erkennen</div></span>
-      </label>
-      <label class="analyse-check-row" style="margin-bottom:8px">
-        <input type="checkbox" id="chk360" />
-        <span style="display:inline-flex;align-items:center"><i data-lucide="refresh-cw" style="width:17px;height:17px;stroke:var(--muted);stroke-width:2;fill:none"></i></span>
-        <span><div style="font-size:0.88rem; font-weight:600">360°-Auswertung</div><div style="font-size:0.75rem; color:var(--muted)">4 Perspektiven: Meine Aufgaben · Erwartungen · Emotional · Strategie</div></span>
-      </label>
-
-      <!-- Eigene Prompts (wird dynamisch befüllt) -->
-      <div id="customPromptChecks" style="display:none"></div>
-    </div>
-    <!-- Lade-Bereich (während Analyse läuft) -->
-    <div id="analyseLoadingArea" style="display:none; text-align:center; padding:24px 0 16px">
+    <h3 style="display:flex;align-items:center;gap:8px"><i data-lucide="sparkles" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"></i> Claude-Analyse</h3>
+    <!-- Lade-Bereich -->
+    <div id="analyseLoadingArea" style="text-align:center; padding:24px 0 16px">
       <div class="analyse-spin">✦</div>
       <div id="analyseLoadingText" style="font-size:0.88rem; color:var(--muted); margin-top:10px">Analyse wird gestartet…</div>
       <div id="analyseLoadingSteps" style="margin-top:14px; font-size:0.78rem; color:var(--muted); line-height:1.9"></div>
@@ -1434,7 +1427,6 @@
     <div id="analyseModalError" style="display:none; margin-top:10px; padding:9px 12px; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); border-radius:8px; font-size:0.82rem; color:var(--red);"></div>
     <div class="modal-actions" style="margin-top:16px">
       <button class="btn btn-ghost" id="analyseCancelBtn" onclick="closeAnalyseModal()">Abbrechen</button>
-      <button class="btn btn-primary" id="analyseStartBtn" onclick="runAnalysisFromModal()">✦ Starten</button>
     </div>
   </div>
 </div>
@@ -1480,8 +1472,11 @@
     </div>
 
     <div class="field" style="margin-bottom:12px">
-      <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Lucide Icon-Name</label>
+      <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Icon-Name (optional)</label>
       <input type="text" id="promptEditorIcon" placeholder="sparkles" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none;" />
+      <p style="font-size:0.72rem; color:var(--muted); margin-top:4px; line-height:1.5">
+        Bestimmt das Symbol der Kachel. Beispiele: <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">sparkles</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">brain</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">target</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">zap</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">star</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">heart</code>
+      </p>
     </div>
 
     <div class="field" style="margin-bottom:16px">
@@ -1497,7 +1492,7 @@
 
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closePromptEditorModal()">Abbrechen</button>
-      <button class="btn btn-primary" onclick="savePromptFromEditor()" style="gap:6px">
+      <button id="promptEditorSaveBtn" class="btn btn-primary" onclick="savePromptFromEditor()" style="gap:6px">
         <i data-lucide="save" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i> Speichern
       </button>
     </div>

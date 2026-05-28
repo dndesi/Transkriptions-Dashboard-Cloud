@@ -156,6 +156,110 @@ function updateSpeakerStatus() {
 }
 // ────────────────────────────────────────────────────
 
+// ── Dropdown-Helfer ──────────────────────────────────
+function updateAnalyseStartBtn() {
+  const sel = document.getElementById('analyseTypeSelect');
+  const btn = document.getElementById('analyseDropdownStartBtn');
+  if (btn) btn.disabled = !sel?.value;
+}
+
+function updateAnalyseDropdown() {
+  const s      = document.getElementById('analyseTypeSelect');
+  if (!s) return;
+  const isWork = getSession()?.type === 'arbeit';
+  const optPrivate = document.getElementById('analyseOptPrivate');
+  const optWork    = document.getElementById('analyseOptWork');
+  if (optPrivate) optPrivate.style.display = isWork ? 'none' : '';
+  if (optWork)    optWork.style.display    = isWork ? ''     : 'none';
+
+  // Custom Prompts
+  const grp = document.getElementById('customPromptsOptgroup');
+  if (!grp) return;
+  if (typeof getCustomPrompts === 'function') {
+    const prompts = getCustomPrompts();
+    grp.innerHTML = '';
+    if (prompts.length) {
+      grp.style.display = '';
+      prompts.forEach(p => {
+        const o = document.createElement('option');
+        o.value = 'custom:' + p.id;
+        o.textContent = p.name;
+        grp.appendChild(o);
+      });
+    } else {
+      grp.style.display = 'none';
+    }
+  }
+}
+
+async function startSelectedAnalysis() {
+  const type = document.getElementById('analyseTypeSelect')?.value;
+  if (!type) return;
+  await runSingleAnalysis(type);
+}
+
+async function runSingleAnalysis(type) {
+  const s = getSession();
+  if (!s) { showToast('Kein Transkript aktiv.', 'warning'); return; }
+
+  // Pflichtpfad-Guard
+  if (s?.utterances?.length && !checkSpeakersNamed()) {
+    const isGedanken = s.type === 'gedanken';
+    const elA = document.getElementById('editSpeakerA');
+    const elB = document.getElementById('editSpeakerB');
+    if (!s.speakerA && elA) { elA.classList.add('input-required'); setTimeout(() => elA.scrollIntoView({ behavior:'smooth', block:'center' }), 50); }
+    if (!isGedanken && !s.speakerB && elB) elB.classList.add('input-required');
+    showToast('Bitte erst die Sprecher benennen.', 'warning');
+    return;
+  }
+  if (!anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'warning'); return; }
+  if (!s.utterances?.length) { showToast('Keine Sprecherabschnitte vorhanden.', 'warning'); return; }
+
+  // Analyse-Modal im Lade-Zustand öffnen
+  document.getElementById('analyseModalError').style.display = 'none';
+  document.getElementById('analyseLoadingArea').style.display = 'block';
+  document.getElementById('analyseCancelBtn').disabled = true;
+  document.getElementById('analyseModal').classList.add('open');
+
+  const typeNames = {
+    work: 'Arbeits-Analyse', private: 'Gesprächs-Analyse',
+    sentiment: 'Stimmungsanalyse', chapters: 'Kapitel',
+    topics: 'Themen', '360': '360°-Auswertung'
+  };
+  let label = typeNames[type];
+  if (!label && type.startsWith('custom:') && typeof getCustomPrompts === 'function') {
+    label = getCustomPrompts().find(p => p.id === type.slice(7))?.name || 'Eigener Prompt';
+  }
+  document.getElementById('analyseLoadingText').textContent = (label || type) + ' wird analysiert…';
+  document.getElementById('analyseLoadingSteps').innerHTML = '';
+
+  try {
+    const transcript = buildTranscriptText(s);
+    if (type === 'work')           await analyseWork(s, transcript);
+    if (type === 'private')        await analysePrivate(s, transcript);
+    if (type === 'sentiment')      await analyseSentiment(s, transcript);
+    if (type === 'chapters')       await analyseChapters(s, transcript);
+    if (type === 'topics')         await analyseTopics(s, transcript);
+    if (type === '360')            await analyse360(s, transcript);
+    if (type.startsWith('custom:') && typeof runCustomPrompt === 'function') {
+      const promptObj = getCustomPrompts().find(p => p.id === type.slice(7));
+      if (promptObj) await runCustomPrompt(s, promptObj, transcript);
+    }
+    saveSessions();
+    await saveToArchive(s);
+    renderInsights(s);
+    if (typeof render360Block === 'function') render360Block(s);
+    closeAnalyseModal();
+    showToast('Analyse abgeschlossen', 'success');
+  } catch (e) {
+    console.error('Analyse-Fehler:', e);
+    document.getElementById('analyseLoadingArea').style.display = 'none';
+    document.getElementById('analyseCancelBtn').disabled = false;
+    showAnalyseError(e.message || 'Unbekannter Fehler bei der Analyse.');
+  }
+}
+// ────────────────────────────────────────────────────
+
 function openAnalyseModal() {
   const s = getSession();
 
@@ -1024,6 +1128,7 @@ function showTranscript(session) {
   document.getElementById('editSpeakerA').value = session.speakerA || 'Sprecher A';
   document.getElementById('editSpeakerB').value = session.speakerB || 'Sprecher B';
   updateSpeakerStatus();
+  updateAnalyseDropdown();
 
   // Tags & Notizen
   renderTagChips(session);
