@@ -381,11 +381,9 @@ async function synthesizePerson(name) {
   if (data.agreements.length)  lines.push(`Vereinbarungen:\n${data.agreements.slice(0,6).map(a=>'- '+a.text).join('\n')}`);
   if (data.openTopics.length)  lines.push(`Offene Themen:\n${data.openTopics.slice(0,6).map(t=>'- '+t.text).join('\n')}`);
 
-  const prompt = `Du bist ein einfühlsamer, psychologisch geschulter Analyst. Schreibe ein persönliches, tiefgehendes Profil über eine Person, die der Nutzer gut kennt – basierend auf echten Gesprächen.
-
-${lines.join('\n\n')}
-
-Schreibe ein prägnantes, persönliches Profil in 4-6 Sätzen. Was ist diese Person für den Nutzer? Was bewegt sie, was ist ihr wichtig, welche Muster oder Bedürfnisse zeigen sich über die Gespräche hinweg? Was scheint in dieser Beziehung besonders relevant – auch zwischen den Zeilen? Schreibe direkt und persönlich ("${name} scheint…", "In deiner Beziehung zu ${name}…", "Du wirst bemerkt haben, dass…"). Keine Aufzählung – nur fließender, ehrlicher Text auf Deutsch.`;
+  const prompt = getEditablePromptText('builtin_person_profile')
+    .replace(/\{\{personData\}\}/g, lines.join('\n\n'))
+    .replace(/\{\{personName\}\}/g, name);
 
   try {
     const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);

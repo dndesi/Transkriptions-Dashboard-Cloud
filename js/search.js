@@ -206,17 +206,10 @@ async function runClaudeSearch() {
         (tasks    ? `  Aufgaben: ${tasks}\n` : '');
     }).join('\n');
 
-    const prompt = `Du bist ein Assistent der in persönlichen Gesprächs-Aufzeichnungen sucht.
-Der Nutzer stellt eine Frage oder sucht nach etwas Bestimmtem.
-
-ALLE AUFNAHMEN (${allSessions.length} Stück):
-${digest.slice(0, 12000)}
-
-SUCHANFRAGE: ${query}
-
-Antworte auf Deutsch. Nenne konkret welche Aufnahmen relevant sind (Nummer und Name).
-Fasse kurz zusammen was in den relevanten Aufnahmen dazu steht.
-Falls nichts passt, sage das direkt.`;
+    const prompt = getEditablePromptText('builtin_search')
+      .replace(/\{\{sessionCount\}\}/g, allSessions.length)
+      .replace(/\{\{digest\}\}/g, digest.slice(0, 12000))
+      .replace(/\{\{query\}\}/g, query);
 
     const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
 
