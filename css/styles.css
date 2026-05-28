@@ -651,6 +651,75 @@
       border-left: 3px solid var(--accent);
       font-size: 0.82rem; line-height: 1.6;
     }
+    /* ── Prompt-Bibliothek ── */
+    .prompts-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .prompt-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      transition: border-color 0.2s;
+    }
+    .prompt-card:hover { border-color: var(--accent); }
+    .prompt-card-icon {
+      flex-shrink: 0;
+      width: 36px; height: 36px;
+      background: rgba(108,99,255,0.1);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .prompt-card-body {
+      flex: 1;
+      min-width: 0;
+    }
+    .prompt-card-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .prompt-card-desc {
+      font-size: 0.78rem;
+      color: var(--accent);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .prompt-card-preview {
+      font-size: 0.76rem;
+      color: var(--muted);
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .prompt-card-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 600px) {
+      .prompt-card { flex-wrap: wrap; }
+      .prompt-card-actions { flex-direction: row; width: 100%; }
+    }
+    /* Custom Result Block */
+    .custom-result-text {
+      font-size: 0.84rem;
+      line-height: 1.7;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
     /* Themen-Chips */
     .topic-chip {
       display: inline-flex;

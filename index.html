@@ -102,6 +102,13 @@
       <i data-lucide="bar-chart-2" class="hdr-icon"></i>
     </button>
 
+    <!-- Prompt-Bibliothek -->
+    <button id="headerPromptsBtn" onclick="togglePromptsView()" title="Prompt-Bibliothek" class="hdr-btn"
+      onmouseover="if(!this.classList.contains('active'))this.classList.add('hdr-btn-hover')"
+      onmouseout="this.classList.remove('hdr-btn-hover')">
+      <i data-lucide="sparkles" class="hdr-icon"></i>
+    </button>
+
     <!-- Systemarchitektur -->
     <button id="headerArchBtn" onclick="toggleArchView()" title="Systemarchitektur" class="hdr-btn"
       onmouseover="if(!this.classList.contains('active'))this.classList.add('hdr-btn-hover')"
@@ -129,7 +136,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.8</button>
+        onmouseout="this.style.color='var(--muted)'">v4.9</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -316,6 +323,7 @@
       <div id="costsView" style="display:none; padding-bottom:40px"></div>
       <div id="personsView" style="display:none; padding-bottom:40px"></div>
       <div id="archView" style="display:none; padding-bottom:40px"></div>
+      <div id="promptsView" style="display:none; padding-bottom:40px"></div>
     </div>
 
     <!-- Transkript -->
@@ -457,6 +465,8 @@
             <div id="content360"></div>
           </div>
         </div>
+        <!-- Eigene Prompts (dynamisch gerendert) -->
+        <div id="customResultsContainer"></div>
       </div>
       <!-- Tags -->
       <div style="margin-bottom:16px">
@@ -508,6 +518,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.9 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.9</span>
+          <span class="cl-date">28.05.2026</span>
+        </div>
+        <ul>
+          <li><strong>Prompt-Bibliothek (#44)</strong> – Neuer Bereich im Dashboard (Sparkles-Icon im Header) zum Erstellen, Bearbeiten und Löschen eigener Analyse-Prompts. Prompts werden lokal in localStorage gespeichert. Felder: Name, Kurzbeschreibung, Icon (Lucide), Prompt-Text mit Platzhaltern.</li>
+          <li><strong>Custom Prompts im Analyse-Modal (#45)</strong> – Eigene Prompts erscheinen im Analyse-Modal als Checkboxen unter „Eigene Prompts". Können parallel zu den Standard-Analysen ausgeführt werden. Ergebnisse werden als eigene aufklappbare Blöcke in den Insights angezeigt.</li>
+          <li><strong>Platzhalter</strong> – <code>{{transkript}}</code>, <code>{{speakerA}}</code>, <code>{{speakerB}}</code> werden vor dem Claude-Call ersetzt. Fehlt <code>{{transkript}}</code>, wird das Transkript automatisch angehängt. Anonymisierung greift wie gewohnt.</li>
+        </ul>
+        <div class="cl-tech">Neu: js/prompts.js (getCustomPrompts, saveCustomPrompts, togglePromptsView, renderPromptsView, openPromptEditorModal, savePromptFromEditor, deletePromptById, runCustomPrompt, renderCustomPromptCheckboxes). index.html: headerPromptsBtn, promptsView, promptEditorModal, customPromptChecks, customResultsContainer. claude.js: openAnalyseModal ruft renderCustomPromptCheckboxes, runAnalysisFromModal sammelt custom:-Typen + führt aus, renderInsights rendert customResultsContainer. css/styles.css: .prompts-grid, .prompt-card, .custom-result-text.</div>
+      </div>
 
       <!-- ── v4.8 ── -->
       <div class="cl-entry">
@@ -1397,6 +1421,9 @@
         <span style="display:inline-flex;align-items:center"><i data-lucide="refresh-cw" style="width:17px;height:17px;stroke:var(--muted);stroke-width:2;fill:none"></i></span>
         <span><div style="font-size:0.88rem; font-weight:600">360°-Auswertung</div><div style="font-size:0.75rem; color:var(--muted)">4 Perspektiven: Meine Aufgaben · Erwartungen · Emotional · Strategie</div></span>
       </label>
+
+      <!-- Eigene Prompts (wird dynamisch befüllt) -->
+      <div id="customPromptChecks" style="display:none"></div>
     </div>
     <!-- Lade-Bereich (während Analyse läuft) -->
     <div id="analyseLoadingArea" style="display:none; text-align:center; padding:24px 0 16px">
@@ -1430,6 +1457,49 @@
       <button class="btn btn-ghost" onclick="closeCleanupModal()">Schließen</button>
       <button class="btn btn-ghost" onclick="openSettingsFromCleanup()" id="cleanupProxyBtn" style="display:none; font-size:0.8rem; gap:5px"><i data-lucide="settings" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Proxy einrichten</button>
       <button class="btn btn-primary" id="cleanupDeleteAllBtn" onclick="runCleanup()" style="display:none; background:var(--red); gap:5px"><i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Alle löschen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: Prompt Editor ─────────────────────── -->
+<div class="modal-backdrop" id="promptEditorModal" style="display:none">
+  <div class="modal" style="max-width:520px; width:95%">
+    <h3 id="promptEditorTitle" style="display:flex;align-items:center;gap:8px">
+      <i data-lucide="sparkles" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"></i> Neuer Prompt
+    </h3>
+    <input type="hidden" id="promptEditorId" />
+
+    <div class="field" style="margin-bottom:12px">
+      <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Name *</label>
+      <input type="text" id="promptEditorName" placeholder="z.B. Coaching-Reflexion" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none;" />
+    </div>
+
+    <div class="field" style="margin-bottom:12px">
+      <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Kurzbeschreibung</label>
+      <input type="text" id="promptEditorDesc" placeholder="z.B. Tiefe Coaching-Fragen extrahieren" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none;" />
+    </div>
+
+    <div class="field" style="margin-bottom:12px">
+      <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Lucide Icon-Name</label>
+      <input type="text" id="promptEditorIcon" placeholder="sparkles" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none;" />
+    </div>
+
+    <div class="field" style="margin-bottom:16px">
+      <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Prompt-Text *</label>
+      <textarea id="promptEditorText" rows="8" placeholder="Schreibe deinen Prompt hier. Nutze {{transkript}} für das Transkript, {{speakerA}} und {{speakerB}} für die Sprechernamen." style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.85rem; outline:none; resize:vertical; font-family:inherit; line-height:1.5;"></textarea>
+      <p style="font-size:0.72rem; color:var(--muted); margin-top:5px; line-height:1.5">
+        Platzhalter: <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{transkript}}</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{speakerA}}</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{speakerB}}</code><br>
+        Fehlt <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{transkript}}</code>, wird das Transkript automatisch am Ende angehängt.
+      </p>
+    </div>
+
+    <div id="promptEditorError" style="display:none; margin-bottom:12px; padding:9px 12px; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); border-radius:8px; font-size:0.82rem; color:var(--red);"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closePromptEditorModal()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="savePromptFromEditor()" style="gap:6px">
+        <i data-lucide="save" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i> Speichern
+      </button>
     </div>
   </div>
 </div>
@@ -1530,6 +1600,7 @@
 <script src="js/features.js"></script>
 <script src="js/search.js"></script>
 <script src="js/calendar.js"></script>
+<script src="js/prompts.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>if(window.mermaid) mermaid.initialize({ startOnLoad: false });</script>
 
