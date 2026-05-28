@@ -49,10 +49,26 @@ function seekAudio(startMs) {
   player.play();
 }
 
+function stopAudio() {
+  const player = document.getElementById('audioPlayer');
+  if (!player) return;
+  player.pause();
+  player.currentTime = 0;
+  _updateAudioStopBtn(false);
+}
+
+function _updateAudioStopBtn(playing) {
+  const btn = document.getElementById('audioStopBtn');
+  if (btn) btn.style.display = playing ? 'inline-flex' : 'none';
+}
+
 // Sync: aktuelle Utterance beim Abspielen hervorheben
 function setupAudioSync() {
   const player = document.getElementById('audioPlayer');
   if (!player) return;
+  player.addEventListener('play',  () => _updateAudioStopBtn(true));
+  player.addEventListener('pause', () => _updateAudioStopBtn(false));
+  player.addEventListener('ended', () => _updateAudioStopBtn(false));
   player.addEventListener('timeupdate', () => {
     const currentMs = player.currentTime * 1000;
     let activeEl = null;

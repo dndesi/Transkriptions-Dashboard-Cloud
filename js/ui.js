@@ -275,6 +275,8 @@ function setView(v) {
   document.getElementById('personsView').style.display = 'none';
   document.getElementById('archView').style.display = 'none';
   const _pv = document.getElementById('promptsView'); if (_pv) _pv.style.display = 'none';
+  // Browser-Toolbar wieder einblenden (war ggf. für Prompt-Bibliothek ausgeblendet)
+  const bt = document.getElementById('browserToolbar'); if (bt) bt.style.display = '';
   // Overlay-Buttons zurücksetzen
   ['headerCostsBtn', 'headerPersonsBtn', 'headerArchBtn', 'headerPromptsBtn'].forEach(id => {
     const btn = document.getElementById(id);
@@ -309,6 +311,9 @@ function _showOverlay(viewId, btnId, renderFn) {
   document.getElementById(viewId).style.display = '';
   _setHeaderBtn(btnId, true);
   currentView = viewId.replace('View','');
+  // Browser-Toolbar tauschen: Prompt-Bibliothek hat eigene Suche
+  const bt = document.getElementById('browserToolbar');
+  if (bt) bt.style.display = viewId === 'promptsView' ? 'none' : '';
   if (renderFn) renderFn();
 }
 
