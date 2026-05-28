@@ -13,7 +13,7 @@ async function callClaudeAPI(prompt) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
+      max_tokens: 8192,
       messages: [{ role: 'user', content: prompt }]
     })
   });
@@ -329,7 +329,7 @@ async function analysePrivate(session, transcript) {
   const speakerB   = session.speakerB || 'Gesprächspartner';
   const persons    = (session.persons || []).join(', ') || 'nicht angegeben';
   const relContext = speakerB && speakerB !== 'Gesprächspartner' ? getRelationship(speakerB) : '';
-  const trimmed    = trimTranscript(transcript, 100000);
+  const trimmed    = trimTranscript(transcript, 300000);
 
   let prompt;
   if (isThoughts) {
@@ -406,7 +406,7 @@ async function analyseWork(session, transcript) {
 Beteiligte: ${speakerA} und ${speakerB}. Weitere Personen: ${persons}.
 
 Transkript:
-${trimTranscript(transcript, 100000)}
+${trimTranscript(transcript, 300000)}
 
 Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 {
@@ -453,7 +453,7 @@ async function analyseSentiment(session, transcript) {
 Sprecher A heißt "${speakerA}", Sprecher B heißt "${speakerB}".
 
 Transkript:
-${trimTranscript(transcript, 100000)}
+${trimTranscript(transcript, 300000)}
 
 Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 {
@@ -483,7 +483,7 @@ async function analyseChapters(session, transcript) {
 Die Zeitangaben im Format [MM:SS] stehen am Anfang jeder Zeile.
 
 Transkript:
-${trimTranscript(transcript, 100000)}
+${trimTranscript(transcript, 300000)}
 
 Antworte NUR mit einem JSON-Array (kein Markdown, keine Erklärungen):
 [
@@ -604,7 +604,7 @@ Fasse in 4–6 Sätzen zusammen: Was war der rote Faden? Was waren die wichtigst
 
 async function analyseTopics(session, transcript) {
   const { forward, reverse } = buildAnonMap(session);
-  const trimmed = trimTranscript(transcript, 100000);
+  const trimmed = trimTranscript(transcript, 300000);
   const prompt = `Erkenne die Hauptthemen in diesem deutschen Gesprächstranskript.
 
 Transkript:
