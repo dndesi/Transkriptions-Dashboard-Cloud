@@ -613,14 +613,44 @@
     .chapter-item {
       padding: 8px 0;
       border-bottom: 1px solid var(--border);
-      cursor: pointer;
       transition: opacity 0.15s;
     }
-    .chapter-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .chapter-item:hover .chapter-headline { color: var(--accent); }
+    .chapter-item:last-child { border-bottom: none; }
+    .chapter-header-row { display: flex; align-items: flex-start; gap: 8px; }
+    .chapter-check {
+      width: 15px; height: 15px;
+      accent-color: var(--accent);
+      cursor: pointer; flex-shrink: 0; margin-top: 3px;
+    }
+    .chapter-main { flex: 1; min-width: 0; cursor: pointer; }
+    .chapter-main:hover .chapter-headline { color: var(--accent); }
+    .chapter-excluded { opacity: 0.4; }
+    .chapter-excluded .chapter-headline { text-decoration: line-through; }
+    .chapter-delete-btn {
+      flex-shrink: 0; background: none; border: none;
+      color: var(--muted); cursor: pointer; padding: 2px 4px;
+      border-radius: 4px; transition: color 0.15s; line-height: 1;
+    }
+    .chapter-delete-btn:hover { color: var(--red); }
     .chapter-headline { font-size: 0.88rem; font-weight: 600; margin-bottom: 3px; transition: color 0.15s; }
     .chapter-summary { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
     .chapter-time { font-size: 0.72rem; color: var(--accent2); margin-top: 4px; }
+    .chapter-deep-result {
+      margin-top: 8px; padding: 8px 10px;
+      background: var(--bg); border-radius: 6px;
+      font-size: 0.78rem; line-height: 1.55; color: var(--text);
+      border-left: 3px solid var(--accent);
+    }
+    .chapter-actions {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0 2px; border-top: 1px solid var(--border); margin-top: 8px;
+    }
+    .chapter-synthesis-box {
+      margin-top: 10px; padding: 10px 12px;
+      background: rgba(108,99,255,0.07); border-radius: 8px;
+      border-left: 3px solid var(--accent);
+      font-size: 0.82rem; line-height: 1.6;
+    }
     /* Themen-Chips */
     .topic-chip {
       display: inline-flex;

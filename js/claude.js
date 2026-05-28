@@ -499,6 +499,109 @@ Antworte NUR mit einem JSON-Array (kein Markdown, keine Erklärungen):
   session.claudeChapters = json;
 }
 
+// ── Kapitel-Auswahl & Tiefenanalyse ─────────────────
+function toggleChapterExclusion(sessionId, idx, checked) {
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s?.claudeChapters?.[idx]) return;
+  s.claudeChapters[idx].excluded = !checked;
+  saveSessions();
+  renderInsights(s);
+}
+
+function deleteChapter(sessionId, idx) {
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s?.claudeChapters) return;
+  s.claudeChapters.splice(idx, 1);
+  saveSessions();
+  renderInsights(s);
+}
+
+function tsToMs(ts) {
+  if (!ts) return 0;
+  const parts = ts.split(':').map(Number);
+  return parts.length === 2 ? (parts[0]*60+parts[1])*1000
+       : parts.length === 3 ? (parts[0]*3600+parts[1]*60+parts[2])*1000 : 0;
+}
+
+function extractChapterUtterances(session, idx) {
+  const chapters = session.claudeChapters || [];
+  const ch = chapters[idx];
+  if (!ch || !session.utterances?.length) return [];
+  const startMs = tsToMs(ch.timestamp);
+  const nextCh  = chapters[idx + 1];
+  const endMs   = nextCh ? tsToMs(nextCh.timestamp) : Infinity;
+  return session.utterances.filter(u => u.start >= startMs && u.start < endMs);
+}
+
+async function startChaptersDeepAnalysis(sessionId) {
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s?.claudeChapters?.length) return;
+  if (!anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'error'); return; }
+
+  const btn = document.getElementById(`chapDeepBtn-${sessionId}`);
+  if (btn) { btn.disabled = true; btn.innerHTML = icon('loader',12,'margin-right:5px') + ' Analysiere…'; }
+
+  const { forward, reverse } = buildAnonMap(s);
+  const selected = s.claudeChapters.map((ch, i) => ({ ch, i })).filter(({ ch }) => !ch.excluded);
+
+  try {
+    let prevSummaries = '';
+
+    for (const { ch, i } of selected) {
+      // Utterances für dieses Kapitel extrahieren
+      const utterances = extractChapterUtterances(s, i);
+      const chTranscript = utterances.length
+        ? utterances.map(u => `[${formatMs(u.start)}] ${getSpeakerName(u.speaker, s)}: ${u.text}`).join('\n')
+        : ch.summary; // Fallback wenn keine passenden Utterances
+
+      const prompt = `Du analysierst das Kapitel "${ch.title}" aus einem deutschen Gesprächstranskript.
+${prevSummaries ? `\nKONTEXT – vorherige Kapitel:\n${prevSummaries}\n` : ''}
+KAPITEL-TRANSKRIPT:
+${chTranscript}
+
+Analysiere dieses Kapitel in 3–5 Sätzen. Fokus:
+- Was wurde besprochen oder entschieden?
+- Welche Kernaussagen oder Erkenntnisse entstanden?
+- Welche Stimmung oder Dynamik herrschte?
+
+Antworte direkt auf Deutsch, ohne Überschriften oder Listen.`;
+
+      const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
+      addTokensToSession(s, inputTokens, outputTokens);
+      ch.deepAnalysis = deanonymizeObject(text, reverse);
+      prevSummaries += `[${ch.title}]: ${ch.deepAnalysis}\n`;
+      saveSessions();
+      renderInsights(s);
+    }
+
+    // Synthese-Call
+    if (selected.length > 1) {
+      const allSummaries = selected
+        .map(({ ch }) => `[${ch.title}]:\n${ch.deepAnalysis}`)
+        .join('\n\n');
+
+      const synthPrompt = `Du hast ein Gespräch kapitelweise analysiert. Erstelle ein abschließendes Gesamtbild.
+
+KAPITEL-ANALYSEN:
+${allSummaries}
+
+Fasse in 4–6 Sätzen zusammen: Was war der rote Faden? Was waren die wichtigsten Erkenntnisse? Welche Themen dominierten? Antworte direkt auf Deutsch.`;
+
+      const { text: synthText, inputTokens: sIn, outputTokens: sOut } = await callClaudeAPI(anonymizeText(synthPrompt, forward));
+      addTokensToSession(s, sIn, sOut);
+      s.claudeChapterSynthesis = deanonymizeObject(synthText, reverse);
+      saveSessions();
+      renderInsights(s);
+    }
+
+    showToast('Kapitel-Tiefenanalyse abgeschlossen ✓', 'success');
+  } catch(e) {
+    showToast('Fehler: ' + e.message, 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = icon('search',12,'margin-right:5px') + ' Tiefenanalyse'; }
+  }
+}
+// ────────────────────────────────────────────────────
+
 async function analyseTopics(session, transcript) {
   const { forward, reverse } = buildAnonMap(session);
   const trimmed = trimTranscript(transcript, 7000);
@@ -780,19 +883,43 @@ function renderInsights(session) {
   const chapters = session.claudeChapters || [];
 
   if (chapters.length > 0) {
-    chapContent.innerHTML = chapters.map(ch => {
+    const sid = session.id;
+    chapContent.innerHTML = chapters.map((ch, i) => {
       const tsMs = ch.timestamp ? (() => {
         const parts = ch.timestamp.split(':').map(Number);
         return parts.length === 2 ? (parts[0]*60 + parts[1]) * 1000
              : parts.length === 3 ? (parts[0]*3600 + parts[1]*60 + parts[2]) * 1000 : 0;
       })() : 0;
+      const excluded = !!ch.excluded;
       return `
-        <div class="chapter-item" onclick="seekAudio(${tsMs})">
-          <div class="chapter-headline">${escHtml(ch.title || '')}</div>
-          <div class="chapter-summary">${escHtml(ch.summary || '')}</div>
-          ${ch.timestamp ? `<div class="chapter-time">▶ ${escHtml(ch.timestamp)}</div>` : ''}
+        <div class="chapter-item ${excluded ? 'chapter-excluded' : ''}" id="chap-${sid}-${i}">
+          <div class="chapter-header-row">
+            <input type="checkbox" class="chapter-check" ${excluded ? '' : 'checked'}
+              onchange="toggleChapterExclusion('${sid}',${i},this.checked)" title="Für Tiefenanalyse auswählen">
+            <div class="chapter-main" onclick="seekAudio(${tsMs})">
+              <div class="chapter-headline">${escHtml(ch.title || '')}</div>
+              <div class="chapter-summary">${escHtml(ch.summary || '')}</div>
+              ${ch.timestamp ? `<div class="chapter-time">${icon('play',10,'margin-right:3px')} ${escHtml(ch.timestamp)}</div>` : ''}
+            </div>
+            <button class="chapter-delete-btn" onclick="deleteChapter('${sid}',${i})" title="Kapitel entfernen">${icon('x',12)}</button>
+          </div>
+          ${ch.deepAnalysis ? `<div class="chapter-deep-result">${ch.deepAnalysis.replace(/\n/g,'<br>')}</div>` : ''}
         </div>`;
     }).join('');
+
+    // Aktions-Leiste
+    const active = chapters.filter(c => !c.excluded).length;
+    const hasSynthesis = !!session.claudeChapterSynthesis;
+    chapContent.innerHTML += `
+      <div class="chapter-actions">
+        <span style="font-size:0.74rem; color:var(--muted)">${active} von ${chapters.length} ausgewählt</span>
+        <button class="btn" style="padding:5px 12px; font-size:0.78rem; display:inline-flex; align-items:center; gap:5px"
+          onclick="startChaptersDeepAnalysis('${sid}')" ${active === 0 ? 'disabled' : ''} id="chapDeepBtn-${sid}">
+          ${icon('search',12)} Tiefenanalyse
+        </button>
+      </div>
+      ${hasSynthesis ? `<div class="chapter-synthesis-box"><strong style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted)">Gesamtbild</strong><br><br>${session.claudeChapterSynthesis.replace(/\n/g,'<br>')}</div>` : ''}`;
+
     showInsightsBlock(chapBlock);
     anyVisible = true;
   } else {
