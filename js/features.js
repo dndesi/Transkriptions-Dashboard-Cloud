@@ -13,21 +13,22 @@ async function analyse360(session, transcript) {
   const speakerA = session.speakerA || 'Ich';
   const speakerB = session.speakerB || 'Gesprächspartner';
 
-  const prompt = `Du bist ein erfahrener Kommunikations- und Konfliktanalyst. Analysiere dieses Gespräch aus vier verschiedenen Perspektiven. Gehe dabei wirklich in die Tiefe – nicht nur Oberfläche.
-Sprecher A = "${speakerA}", Sprecher B = "${speakerB}".
+  // Editierbaren Prompt aus Bibliothek holen (oder Default)
+  const defaultPrompt = `Du bist ein erfahrener Kommunikations- und Konfliktanalyst. Analysiere dieses Gespräch aus vier verschiedenen Perspektiven. Gehe dabei wirklich in die Tiefe – nicht nur Oberfläche.
+Sprecher A = "{{speakerA}}", Sprecher B = "{{speakerB}}".
 
 Transkript:
-${trimTranscript(transcript, 300000)}
+{{transkript}}
 
 Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 {
   "meineAufgaben": {
-    "titel": "Perspektive: ${speakerA}",
-    "punkte": ["Was ${speakerA} konkret tun, klären oder entscheiden muss – auch implizit Erwähntes"]
+    "titel": "Perspektive: {{speakerA}}",
+    "punkte": ["Was {{speakerA}} konkret tun, klären oder entscheiden muss – auch implizit Erwähntes"]
   },
   "andereErwartungen": {
-    "titel": "Perspektive: ${speakerB}",
-    "punkte": ["Was ${speakerB} erwartet, erhofft oder braucht – auch unausgesprochen"]
+    "titel": "Perspektive: {{speakerB}}",
+    "punkte": ["Was {{speakerB}} erwartet, erhofft oder braucht – auch unausgesprochen"]
   },
   "emotionaleEbene": {
     "titel": "Emotionale Ebene",
@@ -38,6 +39,17 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
     "punkte": ["Was langfristig wichtig ist, welche Muster sichtbar werden, was strukturell zu klären bleibt"]
   }
 }`;
+
+  let prompt = (typeof getEditablePromptText === 'function' && getEditablePromptText('builtin_360')) || defaultPrompt;
+
+  prompt = prompt
+    .replace(/\{\{transkript\}\}/gi, trimTranscript(transcript, 300000))
+    .replace(/\{\{transcript\}\}/gi,  trimTranscript(transcript, 300000))
+    .replace(/\{\{speakerA\}\}/gi,    speakerA)
+    .replace(/\{\{speakerB\}\}/gi,    speakerB);
+  if (!/\{\{transkript\}\}|\{\{transcript\}\}/i.test(prompt) && !prompt.includes(trimTranscript(transcript, 300000).slice(0, 20))) {
+    prompt += `\n\nTranskript:\n${trimTranscript(transcript, 300000)}`;
+  }
 
   const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
   addTokensToSession(session, inputTokens, outputTokens);

@@ -603,11 +603,16 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
 
 async function analyseChapters(session, transcript) {
   const { forward, reverse } = buildAnonMap(session);
-  const prompt = `Erstelle eine Kapitelübersicht für dieses deutsche Gesprächstranskript.
+  const speakerA = session.speakerA || 'Ich';
+  const speakerB = session.speakerB || 'Gesprächspartner';
+
+  // Editierbaren Prompt aus Bibliothek holen (oder Default)
+  let promptText = (typeof getEditablePromptText === 'function' && getEditablePromptText('builtin_chapters'))
+    || `Erstelle eine Kapitelübersicht für dieses deutsche Gesprächstranskript.
 Die Zeitangaben im Format [MM:SS] stehen am Anfang jeder Zeile.
 
 Transkript:
-${trimTranscript(transcript, 300000)}
+{{transkript}}
 
 Antworte NUR mit einem JSON-Array (kein Markdown, keine Erklärungen):
 [
@@ -617,7 +622,19 @@ Antworte NUR mit einem JSON-Array (kein Markdown, keine Erklärungen):
     "timestamp": "MM:SS aus dem Transkript wo das Kapitel beginnt"
   }
 ]`;
-  const { text: chapText, inputTokens: chapIn, outputTokens: chapOut } = await callClaudeAPI(anonymizeText(prompt, forward));
+
+  promptText = promptText
+    .replace(/\{\{transkript\}\}/gi, trimTranscript(transcript, 300000))
+    .replace(/\{\{transcript\}\}/gi,  trimTranscript(transcript, 300000))
+    .replace(/\{\{sprecher_a\}\}/gi,  speakerA)
+    .replace(/\{\{sprecher_b\}\}/gi,  speakerB)
+    .replace(/\{\{speakerA\}\}/gi,    speakerA)
+    .replace(/\{\{speakerB\}\}/gi,    speakerB);
+  if (!/\{\{transkript\}\}|\{\{transcript\}\}/i.test(promptText) && !promptText.includes(trimTranscript(transcript, 300000).slice(0, 20))) {
+    promptText += `\n\nTranskript:\n${trimTranscript(transcript, 300000)}`;
+  }
+
+  const { text: chapText, inputTokens: chapIn, outputTokens: chapOut } = await callClaudeAPI(anonymizeText(promptText, forward));
   addTokensToSession(session, chapIn, chapOut);
   const json = deanonymizeObject(JSON.parse(extractJSON(chapText, '[')), reverse);
   session.claudeChapters = json;
@@ -728,15 +745,29 @@ Fasse in 4–6 Sätzen zusammen: Was war der rote Faden? Was waren die wichtigst
 
 async function analyseTopics(session, transcript) {
   const { forward, reverse } = buildAnonMap(session);
-  const trimmed = trimTranscript(transcript, 300000);
-  const prompt = `Erkenne die Hauptthemen in diesem deutschen Gesprächstranskript.
+  const speakerA = session.speakerA || 'Ich';
+  const speakerB = session.speakerB || 'Gesprächspartner';
+
+  // Editierbaren Prompt aus Bibliothek holen (oder Default)
+  let promptText = (typeof getEditablePromptText === 'function' && getEditablePromptText('builtin_topics'))
+    || `Erkenne die Hauptthemen in diesem deutschen Gesprächstranskript.
 
 Transkript:
-${trimmed}
+{{transkript}}
 
 Antworte NUR mit einem JSON-Array aus kurzen Themen-Tags auf Deutsch (max. 10 Tags):
 ["Thema 1", "Thema 2", ...]`;
-  const { text: topText, inputTokens: topIn, outputTokens: topOut } = await callClaudeAPI(anonymizeText(prompt, forward));
+
+  promptText = promptText
+    .replace(/\{\{transkript\}\}/gi, trimTranscript(transcript, 300000))
+    .replace(/\{\{transcript\}\}/gi,  trimTranscript(transcript, 300000))
+    .replace(/\{\{speakerA\}\}/gi,    speakerA)
+    .replace(/\{\{speakerB\}\}/gi,    speakerB);
+  if (!/\{\{transkript\}\}|\{\{transcript\}\}/i.test(promptText) && !promptText.includes(trimTranscript(transcript, 300000).slice(0, 20))) {
+    promptText += `\n\nTranskript:\n${trimTranscript(transcript, 300000)}`;
+  }
+
+  const { text: topText, inputTokens: topIn, outputTokens: topOut } = await callClaudeAPI(anonymizeText(promptText, forward));
   addTokensToSession(session, topIn, topOut);
   const json = JSON.parse(extractJSON(topText, '['));
   session.claudeTopics = Array.isArray(json)
