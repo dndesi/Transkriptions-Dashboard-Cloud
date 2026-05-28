@@ -129,7 +129,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.4</button>
+        onmouseout="this.style.color='var(--muted)'">v4.5</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -508,6 +508,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.5 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.5</span>
+          <span class="cl-date">27.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul>
+          <li><strong>Kapitel-Tiefenanalyse</strong> – Jedes Kapitel bekommt eine Checkbox (aus-/abwählen) und einen Löschen-Button. „Tiefenanalyse"-Button startet pro ausgewähltem Kapitel einen eigenen Claude-Call mit Kontext-Brücke: jede Analyse kennt die Ergebnisse der vorherigen Kapitel. Danach folgt automatisch ein Synthese-Call, der alle Kapitel zu einem Gesamtbild zusammenfasst.</li>
+        </ul>
+        <div class="cl-tech">Betroffen: js/claude.js (renderInsights Kapitel-Sektion, toggleChapterExclusion, deleteChapter, extractChapterUtterances, startChaptersDeepAnalysis, tsToMs), css/styles.css (chapter-header-row, chapter-check, chapter-excluded, chapter-deep-result, chapter-actions, chapter-synthesis-box).</div>
+      </div>
 
       <!-- ── v4.4 ── -->
       <div class="cl-entry">
