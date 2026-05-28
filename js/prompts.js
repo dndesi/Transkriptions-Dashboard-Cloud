@@ -18,6 +18,21 @@ function genPromptId() {
   return 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
 }
 
+// ── Aus den 4 Teilen einen vollständigen Prompt zusammenbauen ──
+function assemblePromptText(promptObj) {
+  const parts = [];
+  if (promptObj.rolle?.trim())      parts.push(`Du bist ${promptObj.rolle.trim()}.`);
+  if (promptObj.tonalitaet?.trim()) parts.push(`Tonalität: ${promptObj.tonalitaet.trim()}.`);
+  if (promptObj.grenzen?.trim())    parts.push(`Was du NICHT tun sollst: ${promptObj.grenzen.trim()}.`);
+  const kontext = (promptObj.kontext || promptObj.prompt || '').trim();
+  if (kontext) parts.push(kontext);
+  return parts.join('\n\n');
+}
+
+// ── Such- und Filter-State für Prompt-Bibliothek ──────
+let _promptSearch   = '';
+let _promptTagFilter = '';
+
 // ── Bearbeitbare Standard-Prompts ────────────────────
 // Prompts für 360°, Themen, Kapitel – editierbar, mit Reset auf Default
 const EDITABLE_PROMPTS_KEY = 'editablePrompts';
@@ -182,27 +197,73 @@ function togglePromptsView() {
 }
 
 // ── Prompt-Liste rendern ─────────────────────────────
+function filterPromptsView() {
+  const searchEl = document.getElementById('promptSearchInput');
+  const q = searchEl ? searchEl.value.toLowerCase() : '';
+  _promptSearch = q;
+  renderPromptsView();
+}
+
+function setPromptTagFilter(tag) {
+  _promptTagFilter = (_promptTagFilter === tag) ? '' : tag;
+  renderPromptsView();
+}
+
+function _getAllPromptTags() {
+  const tags = new Set();
+  getCustomPrompts().forEach(p => (p.tags || []).forEach(t => tags.add(t)));
+  return [...tags].sort();
+}
+
 function renderPromptsView() {
   const el = document.getElementById('promptsView');
   if (!el) return;
-  const prompts = getCustomPrompts();
+
+  let prompts = getCustomPrompts();
+
+  // Filtern nach Suche + Tag
+  if (_promptSearch) {
+    const q = _promptSearch;
+    prompts = prompts.filter(p =>
+      (p.name        || '').toLowerCase().includes(q) ||
+      (p.description || '').toLowerCase().includes(q) ||
+      (assemblePromptText(p)).toLowerCase().includes(q) ||
+      (p.tags || []).some(t => t.toLowerCase().includes(q))
+    );
+  }
+  if (_promptTagFilter) {
+    prompts = prompts.filter(p => (p.tags || []).includes(_promptTagFilter));
+  }
+
+  const allTags = _getAllPromptTags();
+
   el.innerHTML = `
   <div style="max-width:800px; margin:0 auto; padding:8px 0 40px">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px">
-      <div>
-        <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">
-          ${icon('sparkles',18)} Prompt-Bibliothek
-        </h2>
-        <p style="font-size:0.82rem; color:var(--muted); margin:0">
-          Eigene Analyse-Prompts erstellen und im Analyse-Modal verwenden.
-          Nutze <code style="background:var(--surface2);border-radius:4px;padding:1px 5px;font-size:0.78rem">{{transkript}}</code>
-          als Platzhalter – wird durch das Transkript ersetzt.
-        </p>
+
+    <!-- Toolbar: Suche + Tag-Filter + Neuer Prompt -->
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+      <div class="search-box" style="flex:1; min-width:160px;">
+        ${icon('search',14,'color:var(--muted);flex-shrink:0')}
+        <input type="text" id="promptSearchInput" placeholder="Prompts durchsuchen…"
+          value="${escHtml(_promptSearch)}"
+          oninput="filterPromptsView()"
+          style="background:none; border:none; outline:none; color:var(--text); font-size:0.88rem; width:100%;" />
       </div>
       <button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;flex-shrink:0">
         ${icon('plus',14)} Neuer Prompt
       </button>
     </div>
+
+    <!-- Tag-Filter-Chips -->
+    ${allTags.length ? `
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px;">
+      ${allTags.map(t => `
+        <button onclick="setPromptTagFilter('${escHtml(t)}')"
+          style="padding:3px 10px; font-size:0.75rem; border-radius:12px; border:1px solid ${_promptTagFilter===t ? 'var(--accent)' : 'var(--border)'}; background:${_promptTagFilter===t ? 'var(--accent)' : 'var(--surface2)'}; color:${_promptTagFilter===t ? '#fff' : 'var(--text)'}; cursor:pointer; font-weight:${_promptTagFilter===t ? '700' : '400'}">
+          ${escHtml(t)}
+        </button>`).join('')}
+    </div>` : ''}
+
 
     <!-- System-Prompts (immer sichtbar, read-only) -->
     <div style="margin-bottom:20px">
@@ -268,19 +329,22 @@ function renderPromptsView() {
       ${prompts.length === 0 ? `
         <div style="text-align:center; padding:40px 24px; color:var(--muted); border:1px dashed var(--border); border-radius:14px">
           <div style="margin-bottom:10px; opacity:0.3">${icon('sparkles',28)}</div>
-          <div style="font-size:0.88rem; margin-bottom:6px; font-weight:500">Noch keine eigenen Prompts</div>
-          <div style="font-size:0.78rem; margin-bottom:16px">Erstelle deinen ersten Prompt. Nutze <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{transkript}}</code> als Platzhalter.</div>
-          <button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px">${icon('plus',14)} Ersten Prompt erstellen</button>
+          <div style="font-size:0.88rem; margin-bottom:6px; font-weight:500">${_promptSearch || _promptTagFilter ? 'Keine Treffer' : 'Noch keine eigenen Prompts'}</div>
+          ${!_promptSearch && !_promptTagFilter ? `<button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;margin-top:8px">${icon('plus',14)} Ersten Prompt erstellen</button>` : ''}
         </div>
       ` : `
         <div class="prompts-grid">
-          ${prompts.map(p => `
+          ${prompts.map(p => {
+            const preview = assemblePromptText(p);
+            const tags = p.tags || [];
+            return `
             <div class="prompt-card">
               <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 20, 'color:var(--accent)')}</div>
               <div class="prompt-card-body">
                 <div class="prompt-card-name">${escHtml(p.name)}</div>
                 ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
-                <div class="prompt-card-preview">${escHtml(p.prompt.slice(0, 140))}${p.prompt.length > 140 ? '…' : ''}</div>
+                ${tags.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;margin-bottom:4px">${tags.map(t=>`<span class="tag-chip">${escHtml(t)}</span>`).join('')}</div>` : ''}
+                <div class="prompt-card-preview">${escHtml(preview.slice(0, 140))}${preview.length > 140 ? '…' : ''}</div>
               </div>
               <div class="prompt-card-actions">
                 <button class="btn btn-ghost" onclick="openPromptEditorModal('${p.id}')" style="padding:5px 10px;font-size:0.78rem;gap:4px">
@@ -290,8 +354,8 @@ function renderPromptsView() {
                   ${icon('trash-2',13)} Löschen
                 </button>
               </div>
-            </div>
-          `).join('')}
+            </div>`;
+          }).join('')}
         </div>
       `}
     </div>
@@ -329,22 +393,27 @@ function openPromptEditorModal(id) {
   const existing = id ? prompts.find(p => p.id === id) : null;
 
   document.getElementById('promptEditorTitle').textContent = existing ? 'Prompt bearbeiten' : 'Neuer Prompt';
-  document.getElementById('promptEditorId').value          = existing?.id          || '';
-  document.getElementById('promptEditorName').value        = existing?.name        || '';
-  document.getElementById('promptEditorDesc').value        = existing?.description || '';
-  document.getElementById('promptEditorIcon').value        = existing?.icon        || 'sparkles';
-  document.getElementById('promptEditorText').value        = existing?.prompt      || '';
+  document.getElementById('promptEditorId').value   = existing?.id          || '';
+  document.getElementById('promptEditorName').value = existing?.name        || '';
+  document.getElementById('promptEditorDesc').value = existing?.description || '';
+  document.getElementById('promptEditorIcon').value = existing?.icon        || 'sparkles';
+  // Neue Felder
+  document.getElementById('promptEditorRolle').value      = existing?.rolle      || '';
+  document.getElementById('promptEditorTonalitaet').value = existing?.tonalitaet || '';
+  document.getElementById('promptEditorGrenzen').value    = existing?.grenzen    || '';
+  document.getElementById('promptEditorText').value       = existing?.kontext || existing?.prompt || '';
+  document.getElementById('promptEditorTags').value       = (existing?.tags || []).join(', ');
   document.getElementById('promptEditorError').style.display = 'none';
-  // Felder wieder editierbar machen (falls vorher System-Prompt angezeigt)
-  ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorText'].forEach(fid => {
+
+  // Alle Felder editierbar
+  ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorRolle',
+   'promptEditorTonalitaet','promptEditorGrenzen','promptEditorText','promptEditorTags'].forEach(fid => {
     const el = document.getElementById(fid);
-    el.readOnly = false;
-    el.style.opacity = '';
+    if (el) { el.readOnly = false; el.style.opacity = ''; }
   });
   const saveBtn = document.getElementById('promptEditorSaveBtn');
   if (saveBtn) { saveBtn.style.display = ''; saveBtn.onclick = savePromptFromEditor; }
 
-  // Reset-Button ausblenden (nur für editable prompts relevant)
   const resetBtn = document.getElementById('promptEditorResetBtn');
   if (resetBtn) resetBtn.style.display = 'none';
 
@@ -358,22 +427,28 @@ function closePromptEditorModal() {
 }
 
 function savePromptFromEditor() {
-  const id       = document.getElementById('promptEditorId').value;
-  const name     = document.getElementById('promptEditorName').value.trim();
-  const desc     = document.getElementById('promptEditorDesc').value.trim();
-  const iconName = document.getElementById('promptEditorIcon').value.trim() || 'sparkles';
-  const prompt   = document.getElementById('promptEditorText').value.trim();
-  const errEl    = document.getElementById('promptEditorError');
+  const id         = document.getElementById('promptEditorId').value;
+  const name       = document.getElementById('promptEditorName').value.trim();
+  const desc       = document.getElementById('promptEditorDesc').value.trim();
+  const iconName   = document.getElementById('promptEditorIcon').value.trim() || 'sparkles';
+  const rolle      = document.getElementById('promptEditorRolle').value.trim();
+  const tonalitaet = document.getElementById('promptEditorTonalitaet').value.trim();
+  const grenzen    = document.getElementById('promptEditorGrenzen').value.trim();
+  const kontext    = document.getElementById('promptEditorText').value.trim();
+  const tagsRaw    = document.getElementById('promptEditorTags').value.trim();
+  const tags       = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const errEl      = document.getElementById('promptEditorError');
 
-  if (!name)   { errEl.textContent = 'Bitte einen Namen eingeben.';        errEl.style.display = 'block'; return; }
-  if (!prompt) { errEl.textContent = 'Bitte einen Prompt-Text eingeben.';  errEl.style.display = 'block'; return; }
+  if (!name)    { errEl.textContent = 'Bitte einen Namen eingeben.';   errEl.style.display = 'block'; return; }
+  if (!kontext) { errEl.textContent = 'Bitte einen Kontext eingeben.'; errEl.style.display = 'block'; return; }
 
+  const obj = { name, description: desc, icon: iconName, rolle, tonalitaet, grenzen, kontext, tags };
   const prompts = getCustomPrompts();
   if (id) {
     const idx = prompts.findIndex(p => p.id === id);
-    if (idx >= 0) prompts[idx] = { id, name, description: desc, icon: iconName, prompt };
+    if (idx >= 0) prompts[idx] = { ...prompts[idx], ...obj };
   } else {
-    prompts.push({ id: genPromptId(), name, description: desc, icon: iconName, prompt });
+    prompts.push({ id: genPromptId(), ...obj });
   }
   saveCustomPrompts(prompts);
   closePromptEditorModal();
@@ -395,8 +470,8 @@ async function runCustomPrompt(session, promptObj, transcript) {
   const speakerA = session.speakerA || 'Ich';
   const speakerB = session.speakerB || 'Gesprächspartner';
 
-  // Platzhalter ersetzen
-  let promptText = promptObj.prompt
+  // Prompt aus Teilen zusammenbauen, dann Platzhalter ersetzen
+  let promptText = assemblePromptText(promptObj)
     .replace(/\{\{transkript\}\}/gi,  trimTranscript(transcript, 300000))
     .replace(/\{\{transcript\}\}/gi,  trimTranscript(transcript, 300000))
     .replace(/\{\{sprecher_a\}\}/gi,  speakerA)

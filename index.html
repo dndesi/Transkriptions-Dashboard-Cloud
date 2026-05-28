@@ -136,7 +136,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.11</button>
+        onmouseout="this.style.color='var(--muted)'">v4.12</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -298,7 +298,7 @@
 
     <!-- Session-Browser -->
     <div class="browser-view visible" id="browserView">
-      <div class="browser-toolbar">
+      <div class="browser-toolbar" id="browserToolbar">
         <h2 style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="folder" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Sitzungs-Archiv</h2>
         <select id="folderFilter" onchange="filterBrowser()">
           <option value="">Alle Ordner</option>
@@ -505,7 +505,12 @@
       <!-- Audio-Player -->
       <div class="audio-player-bar" id="audioPlayerBar" style="display:none">
         <div class="audio-player-label">🎵 Aufnahme &nbsp;<span id="audioPlayerFilename"></span></div>
-        <audio id="audioPlayer" controls></audio>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <audio id="audioPlayer" controls style="flex:1; min-width:200px;"></audio>
+          <button id="audioStopBtn" onclick="stopAudio()" title="Stop" style="display:none; align-items:center; justify-content:center; gap:5px; padding:6px 12px; font-size:0.82rem; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); color:var(--red); border-radius:8px; cursor:pointer;">
+            ⏹ Stop
+          </button>
+        </div>
         <div class="audio-no-file" id="audioNoFile" style="display:none">⚠️ Audiodatei nicht im aktiven Archiv-Ordner gefunden</div>
       </div>
       <!-- Transkript als Accordion -->
@@ -537,6 +542,26 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.12 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.12</span>
+          <span class="cl-date">28.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <div class="cl-title">Erweiterter Prompt-Editor · Tags · Suche · Icon-Fix · Stop-Button</div>
+        <ul>
+          <li><strong>Strukturierter Prompt-Editor</strong> – 4 neue Felder: „Rolle klar definieren", „Tonalität festlegen", „Grenzen setzen", „Kontext geben" (= bisheriges Prompt-Textfeld). Felder werden automatisch in dieser Reihenfolge zum fertigen Prompt zusammengesetzt. Alte Prompts bleiben rückwärtskompatibel.</li>
+          <li><strong>Tags</strong> – Eigene Prompts können mit Freitext-Tags (kommagetrennt) versehen werden. Tags erscheinen als Chips auf den Kacheln in der Bibliothek.</li>
+          <li><strong>Prompt-Suche &amp; Tag-Filter</strong> – In der Prompt-Bibliothek gibt es eine Suche (nach Name, Beschreibung, Inhalt, Tags) sowie klickbare Tag-Filter-Chips. Browser-Toolbar blendet sich beim Öffnen der Bibliothek aus und erscheint beim Schließen wieder.</li>
+          <li><strong>Stop-Button im Audio-Player</strong> – Beim Klick auf einen Zeitstempel im Transkript erscheint neben dem Audio-Player ein roter Stop-Button (⏹). Hebt die aktive Utterance hervor und scrollt zu ihr.</li>
+          <li><strong>Icon-Bug behoben</strong> – Header-Icons (Lucide) wurden nach Page-Load erst nach Theme-Toggle sichtbar. Fix: <code>lucide.createIcons()</code> wird jetzt direkt nach dem CDN-Script-Tag ausgeführt.</li>
+          <li><strong>Mobile-Fix Transcript-Actions</strong> – Kalender- und Löschen-Button waren auf Smartphones nicht sichtbar. <code>.transcript-actions</code> hat jetzt global <code>flex-wrap: wrap</code>.</li>
+        </ul>
+        <div class="cl-tech">prompts.js: assemblePromptText(), filterPromptsView(), setPromptTagFilter(), _getAllPromptTags(), Felder rolle/tonalitaet/grenzen/kontext/tags in savePromptFromEditor/openPromptEditorModal. index.html: Prompt-Editor-Modal komplett neu (4 Felder + Tags), audioStopBtn, Lucide-Fix, browserToolbar id. ui.js: _showOverlay/setView schalten browserToolbar. audio.js: stopAudio(), _updateAudioStopBtn(), play/pause/ended-Events. css/styles.css: .tag-chip, transcript-actions flex-wrap global.</div>
+      </div>
 
       <!-- ── v4.11 ── -->
       <div class="cl-entry">
@@ -1472,37 +1497,67 @@
 
 <!-- ─── MODAL: Prompt Editor ─────────────────────── -->
 <div class="modal-backdrop" id="promptEditorModal" style="display:none">
-  <div class="modal" style="max-width:520px; width:95%">
-    <h3 id="promptEditorTitle" style="display:flex;align-items:center;gap:8px">
+  <div class="modal" style="max-width:580px; width:95%; max-height:90vh; overflow-y:auto;">
+    <h3 id="promptEditorTitle" style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
       <i data-lucide="sparkles" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"></i> Neuer Prompt
     </h3>
     <input type="hidden" id="promptEditorId" />
 
-    <div class="field" style="margin-bottom:12px">
-      <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Name *</label>
-      <input type="text" id="promptEditorName" placeholder="z.B. Coaching-Reflexion" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none;" />
+    <!-- Zeile: Name + Icon -->
+    <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+      <div style="flex:2; min-width:160px;">
+        <label style="font-size:0.72rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;">Name *</label>
+        <input type="text" id="promptEditorName" placeholder="z.B. Coaching-Reflexion" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none; box-sizing:border-box;" />
+      </div>
+      <div style="flex:1; min-width:100px;">
+        <label style="font-size:0.72rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;">Icon</label>
+        <input type="text" id="promptEditorIcon" placeholder="sparkles" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none; box-sizing:border-box;" />
+      </div>
     </div>
 
-    <div class="field" style="margin-bottom:12px">
-      <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Kurzbeschreibung</label>
-      <input type="text" id="promptEditorDesc" placeholder="z.B. Tiefe Coaching-Fragen extrahieren" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none;" />
+    <div style="margin-bottom:12px;">
+      <label style="font-size:0.72rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;">Kurzbeschreibung</label>
+      <input type="text" id="promptEditorDesc" placeholder="z.B. Tiefe Coaching-Fragen extrahieren" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none; box-sizing:border-box;" />
     </div>
 
-    <div class="field" style="margin-bottom:12px">
-      <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Icon-Name (optional)</label>
-      <input type="text" id="promptEditorIcon" placeholder="sparkles" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none;" />
-      <p style="font-size:0.72rem; color:var(--muted); margin-top:4px; line-height:1.5">
-        Bestimmt das Symbol der Kachel. Beispiele: <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">sparkles</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">brain</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">target</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">zap</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">star</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">heart</code>
-      </p>
+    <!-- Trennlinie -->
+    <div style="border-top:1px solid var(--border); margin:16px 0 14px; position:relative;">
+      <span style="position:absolute; top:-9px; left:12px; background:var(--surface); padding:0 8px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--muted);">Prompt aufbauen</span>
     </div>
 
-    <div class="field" style="margin-bottom:16px">
-      <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Prompt-Text *</label>
-      <textarea id="promptEditorText" rows="8" placeholder="Schreibe deinen Prompt hier. Nutze {{transkript}} für das Transkript, {{speakerA}} und {{speakerB}} für die Sprechernamen." style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.85rem; outline:none; resize:vertical; font-family:inherit; line-height:1.5;"></textarea>
-      <p style="font-size:0.72rem; color:var(--muted); margin-top:5px; line-height:1.5">
-        Platzhalter: <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{transkript}}</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{speakerA}}</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{speakerB}}</code><br>
-        Fehlt <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{transkript}}</code>, wird das Transkript automatisch am Ende angehängt.
-      </p>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:0.72rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;">Rolle klar definieren</label>
+      <textarea id="promptEditorRolle" rows="2" placeholder="z.B. ein erfahrener Business-Coach der auf Klarheit und Handlungsfähigkeit fokussiert ist" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.85rem; outline:none; resize:vertical; font-family:inherit; line-height:1.5; box-sizing:border-box;"></textarea>
+      <p style="font-size:0.7rem; color:var(--muted); margin-top:3px;">→ Wird zu: „Du bist [Rolle]."</p>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label style="font-size:0.72rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;">Tonalität festlegen</label>
+      <input type="text" id="promptEditorTonalitaet" placeholder="z.B. direkt, warm, professionell" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.85rem; outline:none; box-sizing:border-box;" />
+      <p style="font-size:0.7rem; color:var(--muted); margin-top:3px;">→ Wird zu: „Tonalität: [Wert]."</p>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label style="font-size:0.72rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;">Grenzen setzen</label>
+      <textarea id="promptEditorGrenzen" rows="2" placeholder="z.B. Keine Diagnosen stellen. Nur aus dem Transkript ableiten, nichts erfinden." style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.85rem; outline:none; resize:vertical; font-family:inherit; line-height:1.5; box-sizing:border-box;"></textarea>
+      <p style="font-size:0.7rem; color:var(--muted); margin-top:3px;">→ Wird zu: „Was du NICHT tun sollst: [Grenzen]."</p>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <label style="font-size:0.72rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;">Kontext geben *</label>
+      <textarea id="promptEditorText" rows="5" placeholder="Was soll analysiert werden? Welches Format soll das Ergebnis haben?&#10;&#10;Platzhalter: {{transkript}}, {{speakerA}}, {{speakerB}}" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.85rem; outline:none; resize:vertical; font-family:inherit; line-height:1.5; box-sizing:border-box;"></textarea>
+      <p style="font-size:0.7rem; color:var(--muted); margin-top:3px; line-height:1.5;">Platzhalter: <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{transkript}}</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{speakerA}}</code> · <code style="background:var(--surface2);border-radius:3px;padding:1px 4px">{{speakerB}}</code> — fehlt {{transkript}}, wird es automatisch angehängt.</p>
+    </div>
+
+    <!-- Trennlinie -->
+    <div style="border-top:1px solid var(--border); margin:0 0 14px; position:relative;">
+      <span style="position:absolute; top:-9px; left:12px; background:var(--surface); padding:0 8px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--muted);">Organisation</span>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <label style="font-size:0.72rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;">Tags</label>
+      <input type="text" id="promptEditorTags" placeholder="z.B. coaching, reflektion, arbeit" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.85rem; outline:none; box-sizing:border-box;" />
+      <p style="font-size:0.7rem; color:var(--muted); margin-top:3px;">Kommagetrennt – für Suche und Filterung in der Bibliothek.</p>
     </div>
 
     <div id="promptEditorError" style="display:none; margin-bottom:12px; padding:9px 12px; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); border-radius:8px; font-size:0.82rem; color:var(--red);"></div>
@@ -1612,6 +1667,7 @@
 <script src="js/recorder.js"></script>
 <script src="js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>if (window.lucide) lucide.createIcons();</script>
 <script src="js/features.js"></script>
 <script src="js/search.js"></script>
 <script src="js/calendar.js"></script>
