@@ -520,7 +520,7 @@
           <li><strong>Input-Limit auf 300.000 Zeichen erhöht</strong> – Deckt ~5 Stunden Gesprächszeit ab (vorher ~1,5h bei 100k Zeichen).</li>
           <li><strong>Output-Limit auf 8.192 Tokens erhöht</strong> – Verhindert abgeschnittene JSON-Antworten bei langen Aufnahmen mit vielen Kapiteln (vorher 4.096 Tokens).</li>
         </ul>
-        <div class="cl-tech">Betroffen: js/claude.js (trimTranscript 100000→300000, max_tokens 4096→8192).</div>
+        <div class="cl-tech">Betroffen: js/claude.js (trimTranscript 100000→300000, max_tokens 4096→8192), js/features.js (analyse360, sendAskQuestion, generateMindMap: 6000/8000/9000→300000 — wurden beim vorherigen Fix übersehen).</div>
       </div>
 
       <!-- ── v4.6 ── -->
