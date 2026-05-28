@@ -136,7 +136,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.14</button>
+        onmouseout="this.style.color='var(--muted)'">v4.15</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -326,206 +326,244 @@
       <div id="promptsView" style="display:none; padding-bottom:40px"></div>
     </div>
 
-    <!-- Transkript -->
+    <!-- Transkript / Sitzungsdetail -->
     <div class="transcript-card" id="transcriptCard">
-      <div style="margin-bottom:12px">
-        <button class="back-btn" onclick="showBrowser()">← Zurück zum Archiv</button>
-      </div>
-      <div class="transcript-header">
-        <div class="transcript-info" style="flex:1; min-width:0">
-          <div class="title-rename-wrap" id="titleDisplay">
-            <h2 id="transcriptTitle" style="font-size:1.15rem; font-weight:700"></h2>
-            <button class="btn-icon" title="Umbenennen" onclick="startRename()" style="display:inline-flex;align-items:center;justify-content:center"><i data-lucide="pencil" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i></button>
-          </div>
-          <div id="titleEdit" style="display:none; margin-bottom:6px">
-            <input class="title-rename-input" id="titleInput"
-              onkeydown="if(event.key==='Enter') commitRename(); if(event.key==='Escape') cancelRename()" />
-            <div style="display:flex; gap:8px; margin-top:6px">
-              <button class="btn btn-primary" style="padding:6px 14px; font-size:0.8rem" onclick="commitRename()">✓ Speichern</button>
-              <button class="btn btn-ghost" style="padding:6px 14px; font-size:0.8rem" onclick="cancelRename()">Abbrechen</button>
-            </div>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px; margin-top:4px; flex-wrap:wrap">
-            <p id="transcriptMeta" style="font-size:0.82rem; color:var(--muted)"></p>
-            <button class="btn-icon" title="Datum ändern" onclick="openDateEdit()" style="font-size:0.75rem; padding:2px 6px; border-radius:6px; background:var(--surface2); border:1px solid var(--border); color:var(--muted); cursor:pointer; display:inline-flex;align-items:center;justify-content:center"><i data-lucide="calendar" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i></button>
-          </div>
-          <div id="dateEditRow" style="display:none; margin-top:6px; display:none">
-            <input type="datetime-local" id="sessionDateEdit" style="background:var(--surface2); border:1px solid var(--accent); border-radius:8px; color:var(--text); padding:7px 10px; font-size:0.85rem; outline:none;" />
-            <button class="btn btn-primary" style="padding:5px 12px; font-size:0.8rem; margin-left:6px" onclick="commitDateEdit()">✓</button>
-            <button class="btn btn-ghost" style="padding:5px 12px; font-size:0.8rem; margin-left:4px" onclick="closeDateEdit()">✕</button>
-          </div>
-        </div>
-        <div class="transcript-actions" style="flex-shrink:0">
-          <button class="btn btn-ghost" onclick="exportTxt()" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="download" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> TXT</button>
-          <button class="btn btn-ghost" onclick="swapAllSpeakers()" title="Alle Sprecher A↔B tauschen" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="repeat" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Tauschen</button>
-          <button class="btn btn-ghost" onclick="openAskModal()" title="Aufnahme befragen" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="message-circle" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Fragen</button>
-          <button class="btn btn-ghost" id="mindmapBtn" onclick="generateAndShowMindMap()" title="Mind Map generieren" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="git-branch" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Mind Map</button>
-          <button class="btn btn-ghost" onclick="openCalendarModal()" title="Termine aus Transkript ableiten" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="calendar" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Kalender</button>
-          <button class="btn btn-ghost" onclick="openGmailModal()" title="E-Mail-Entwürfe erstellen" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="mail" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mails</button>
-          <div class="claude-btn-wrap" id="claudeBtnWrap">
-            <button class="btn btn-primary" onclick="toggleTemplatePopover('claudeBtnWrap')">✦ Senden an Claude ▾</button>
-            <div class="template-popover" id="claudePopover">
-              <div class="popover-title">Vorlage wählen & senden</div>
-              <button class="tpl-row" onclick="sendToClaude('free')"><span class="tpl-icon" style="display:inline-flex;align-items:center"><i data-lucide="file-text" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i></span><span class="tpl-text"><div class="tpl-name">Nur Transkript</div><div class="tpl-desc">Rohtext, eigene Fragen stellen</div></span></button>
-              <button class="tpl-row" onclick="sendToClaude('communication')"><span class="tpl-icon" style="display:inline-flex;align-items:center"><i data-lucide="message-circle" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i></span><span class="tpl-text"><div class="tpl-name">Kommunikation</div><div class="tpl-desc">Muster, Zuhören, Unterbrechungen</div></span></button>
-              <div class="custom-tpl-slot"></div>
-              <div style="border-top:1px solid var(--border); margin-top:6px; padding-top:6px">
-                <button class="tpl-row" onclick="document.querySelectorAll('.template-popover').forEach(p=>p.classList.remove('open')); openTemplatesModal()"><span class="tpl-icon" style="display:inline-flex;align-items:center"><i data-lucide="settings" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i></span><span class="tpl-text"><div class="tpl-name">Vorlagen verwalten</div><div class="tpl-desc">Eigene Vorlagen anlegen</div></span></button>
+
+      <!-- ── SESSION DETAIL HEADER ── -->
+      <div class="sdh">
+        <!-- Zeile 1: Zurück + Aktions-Buttons -->
+        <div class="sdh-top">
+          <button class="back-btn" onclick="showBrowser()">← Zurück zum Archiv</button>
+          <div class="sdh-actions">
+            <button class="btn btn-ghost sdh-btn" onclick="exportTxt()" title="TXT exportieren"><i data-lucide="download" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> TXT</button>
+            <button class="btn btn-ghost sdh-btn" onclick="openAskModal()" title="Aufnahme befragen"><i data-lucide="message-circle" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Fragen</button>
+            <button class="btn btn-ghost sdh-btn" id="mindmapBtn" onclick="generateAndShowMindMap()" title="Mind Map"><i data-lucide="git-branch" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Mind Map</button>
+            <button class="btn btn-ghost sdh-btn" onclick="openCalendarModal()" title="Kalender"><i data-lucide="calendar" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Kalender</button>
+            <button class="btn btn-ghost sdh-btn" onclick="openGmailModal()" title="E-Mails"><i data-lucide="mail" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mails</button>
+            <!-- Senden an Claude: versteckt, aber im DOM aktiv -->
+            <div class="claude-btn-wrap" id="claudeBtnWrap" style="display:none">
+              <button class="btn btn-primary" onclick="toggleTemplatePopover('claudeBtnWrap')">✦ Senden an Claude ▾</button>
+              <div class="template-popover" id="claudePopover">
+                <div class="popover-title">Vorlage wählen &amp; senden</div>
+                <button class="tpl-row" onclick="sendToClaude('free')"><span class="tpl-icon" style="display:inline-flex;align-items:center"><i data-lucide="file-text" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i></span><span class="tpl-text"><div class="tpl-name">Nur Transkript</div><div class="tpl-desc">Rohtext, eigene Fragen stellen</div></span></button>
+                <button class="tpl-row" onclick="sendToClaude('communication')"><span class="tpl-icon" style="display:inline-flex;align-items:center"><i data-lucide="message-circle" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i></span><span class="tpl-text"><div class="tpl-name">Kommunikation</div><div class="tpl-desc">Muster, Zuhören, Unterbrechungen</div></span></button>
+                <div class="custom-tpl-slot"></div>
+                <div style="border-top:1px solid var(--border); margin-top:6px; padding-top:6px">
+                  <button class="tpl-row" onclick="document.querySelectorAll('.template-popover').forEach(p=>p.classList.remove('open')); openTemplatesModal()"><span class="tpl-icon" style="display:inline-flex;align-items:center"><i data-lucide="settings" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i></span><span class="tpl-text"><div class="tpl-name">Vorlagen verwalten</div><div class="tpl-desc">Eigene Vorlagen anlegen</div></span></button>
+                </div>
               </div>
             </div>
           </div>
-          <!-- Analyse-Dropdown + Start-Button -->
-          <div style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap">
-            <select id="analyseTypeSelect" onchange="updateAnalyseStartBtn()" style="
-              background:var(--surface2); border:1px solid var(--border); border-radius:8px;
-              color:var(--text); padding:7px 10px; font-size:0.82rem; outline:none; cursor:pointer;
-              max-width:190px;">
-              <option value="">Analyse wählen…</option>
-              <optgroup label="Standard" id="stdPromptsOptgroup">
-                <option value="private" id="analyseOptPrivate">Gesprächs-Analyse</option>
-                <option value="work"    id="analyseOptWork" style="display:none">Arbeits-Analyse</option>
-                <option value="360">360°-Auswertung</option>
-                <option value="topics">Themen</option>
-                <option value="chapters">Kapitel</option>
-              </optgroup>
-              <optgroup label="Eigene Prompts" id="customPromptsOptgroup" style="display:none"></optgroup>
-            </select>
-            <button class="btn btn-primary" onclick="startSelectedAnalysis()" id="analyseDropdownStartBtn"
-              disabled style="display:inline-flex;align-items:center;gap:5px;padding:7px 13px">
-              <i data-lucide="play" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Starten
-            </button>
+        </div>
+
+        <!-- Zeile 2: Titel + Umbenennen -->
+        <div class="title-rename-wrap" id="titleDisplay" style="margin-top:10px">
+          <h2 id="transcriptTitle" style="font-size:1.2rem; font-weight:700; color:#fff"></h2>
+          <button class="btn-icon" title="Umbenennen" onclick="startRename()" style="display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);color:#fff"><i data-lucide="pencil" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i></button>
+        </div>
+        <div id="titleEdit" style="display:none; margin-top:8px">
+          <input class="title-rename-input" id="titleInput"
+            onkeydown="if(event.key==='Enter') commitRename(); if(event.key==='Escape') cancelRename()" />
+          <div style="display:flex; gap:8px; margin-top:6px">
+            <button class="btn btn-primary" style="padding:6px 14px; font-size:0.8rem" onclick="commitRename()">✓ Speichern</button>
+            <button class="btn btn-ghost" style="padding:6px 14px; font-size:0.8rem; background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2); color:#fff" onclick="cancelRename()">Abbrechen</button>
           </div>
-          <button class="btn" style="background:rgba(248,113,113,0.12); border:1px solid var(--red); color:var(--red); display:inline-flex;align-items:center;justify-content:center;padding:7px 10px" onclick="openDeleteModal(currentSessionId)"><i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i></button>
+        </div>
+
+        <!-- Zeile 3: Meta + Datum-Button -->
+        <div style="display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap">
+          <p id="transcriptMeta" style="font-size:0.82rem; color:rgba(255,255,255,0.7)"></p>
+          <button class="btn-icon" title="Datum ändern" onclick="openDateEdit()" style="padding:2px 6px; border-radius:6px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.8); cursor:pointer; display:inline-flex;align-items:center;justify-content:center"><i data-lucide="calendar" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i></button>
+        </div>
+        <div id="dateEditRow" style="display:none; margin-top:6px">
+          <input type="datetime-local" id="sessionDateEdit" style="background:var(--surface2); border:1px solid var(--accent); border-radius:8px; color:var(--text); padding:7px 10px; font-size:0.85rem; outline:none;" />
+          <button class="btn btn-primary" style="padding:5px 12px; font-size:0.8rem; margin-left:6px" onclick="commitDateEdit()">✓</button>
+          <button class="btn btn-ghost" style="padding:5px 12px; font-size:0.8rem; margin-left:4px" onclick="closeDateEdit()">✕</button>
+        </div>
+
+        <!-- Zeile 4: Analyse-Leiste (visuell abgesetzt) -->
+        <div class="sdh-analyse-bar">
+          <select id="analyseTypeSelect" onchange="updateAnalyseStartBtn()" class="sdh-analyse-select">
+            <option value="">Analyse wählen…</option>
+            <optgroup label="Standard" id="stdPromptsOptgroup">
+              <option value="private" id="analyseOptPrivate">Gesprächsanalyse</option>
+              <option value="work"    id="analyseOptWork">Arbeitsanalyse</option>
+              <option value="360">360°-Auswertung</option>
+              <option value="topics">Themen</option>
+              <option value="chapters">Kapitel</option>
+            </optgroup>
+            <optgroup label="Eigene Prompts" id="customPromptsOptgroup" style="display:none"></optgroup>
+          </select>
+          <button class="btn btn-primary" onclick="startSelectedAnalysis()" id="analyseDropdownStartBtn"
+            disabled style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;font-size:0.85rem">
+            <i data-lucide="play" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Starten
+          </button>
+          <button class="btn sdh-delete-btn" onclick="openDeleteModal(currentSessionId)" title="Sitzung löschen">
+            <i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
+          </button>
         </div>
       </div>
-      <!-- Sprecher-Namen editieren -->
-      <div class="speaker-editor">
-        <span class="speaker-editor-label">Namen:</span>
-        <div class="speaker-name-field">
-          <span class="speaker-name-dot" style="background:var(--speaker-a)"></span>
-          <input class="speaker-name-input speaker-a" id="editSpeakerA"
-            placeholder="Sprecher A"
-            onchange="renameSpeaker('A', this.value)"
-            onkeydown="if(event.key==='Enter') this.blur()" />
-        </div>
-        <div class="speaker-name-field">
-          <span class="speaker-name-dot" style="background:var(--speaker-b)"></span>
-          <input class="speaker-name-input speaker-b" id="editSpeakerB"
-            placeholder="Sprecher B"
-            onchange="renameSpeaker('B', this.value)"
-            onkeydown="if(event.key==='Enter') this.blur()" />
-        </div>
-      </div>
-      <!-- Pflichtpfad: Sprecher-Hinweis -->
-      <div id="speakerHint">
+      <!-- /sdh -->
+
+      <!-- Sprecher-Hinweis außerhalb Akkordeon -->
+      <div id="speakerHint" style="margin:0 0 0 0">
         <i data-lucide="alert-circle" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
         Sprecher benennen, um die Analyse freizuschalten.
       </div>
 
-      <!-- ─── INSIGHTS (Stimmung / Kapitel / Themen) ─── -->
-      <div class="insights-section" id="insightsSection" style="display:none">
-        <!-- Private-Analyse -->
-        <div class="insights-block" id="privateBlock" style="display:none">
-          <div class="insights-block-title" onclick="toggleInsightsBlock('privateBlock')">
-            <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="message-circle" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Gesprächs-Analyse</span>
-            <span class="insights-block-chevron">▾</span>
-          </div>
-          <div class="insights-block-body">
-            <div id="privateContent"></div>
-          </div>
-        </div>
-        <!-- Arbeits-Analyse -->
-        <div class="insights-block" id="workBlock" style="display:none">
-          <div class="insights-block-title" onclick="toggleInsightsBlock('workBlock')">
-            <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="briefcase" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Arbeits-Analyse</span>
-            <span class="insights-block-chevron">▾</span>
-          </div>
-          <div class="insights-block-body">
-            <div id="workContent"></div>
-          </div>
-        </div>
-        <!-- Stimmungsanalyse -->
-        <div class="insights-block" id="sentimentBlock" style="display:none">
-          <div class="insights-block-title" onclick="toggleInsightsBlock('sentimentBlock')">
-            <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="activity" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Stimmungsanalyse</span>
-            <span class="insights-block-chevron">▾</span>
-          </div>
-          <div class="insights-block-body">
-            <div id="sentimentContent"></div>
-          </div>
-        </div>
-        <!-- Kapitel -->
-        <div class="insights-block" id="chaptersBlock" style="display:none">
-          <div class="insights-block-title" onclick="toggleInsightsBlock('chaptersBlock')">
-            <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="book-open" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Kapitel</span>
-            <span class="insights-block-chevron">▾</span>
-          </div>
-          <div class="insights-block-body">
-            <div id="chaptersContent"></div>
-          </div>
-        </div>
-        <!-- Themen -->
-        <div class="insights-block" id="topicsBlock" style="display:none">
-          <div class="insights-block-title" onclick="toggleInsightsBlock('topicsBlock')">
-            <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="tag" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Themen</span>
-            <span class="insights-block-chevron">▾</span>
-          </div>
-          <div class="insights-block-body">
-            <div id="topicsContent"></div>
-          </div>
-        </div>
-        <!-- 360°-Analyse -->
-        <div class="insights-block" id="block360" style="display:none">
-          <div class="insights-block-title" onclick="toggleInsightsBlock('block360')">
-            <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="refresh-cw" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> 360°-Auswertung</span>
-            <span class="insights-block-chevron">▾</span>
-          </div>
-          <div class="insights-block-body">
-            <div id="content360"></div>
-          </div>
-        </div>
-        <!-- Eigene Prompts (dynamisch gerendert) -->
-        <div id="customResultsContainer"></div>
-      </div>
-      <!-- Tags -->
-      <div style="margin-bottom:16px">
-        <div style="font-size:0.75rem; color:var(--muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Tags</div>
-        <div class="tag-input-wrap" id="tagInputWrap">
-          <div id="tagChips"></div>
-          <input class="tag-text-input" id="tagTextInput" placeholder="Tag eingeben + Enter…"
-            onkeydown="handleTagInput(event)" />
-        </div>
-      </div>
-      <!-- Notizen -->
-      <div style="margin-bottom:20px">
-        <div style="font-size:0.75rem; color:var(--muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Notizen</div>
-        <textarea class="notes-area" id="notesArea" placeholder="Persönliche Eindrücke, Kontext, Beobachtungen…"
-          oninput="saveNotes()"></textarea>
-      </div>
-      <!-- Audio-Player -->
-      <div class="audio-player-bar" id="audioPlayerBar" style="display:none">
-        <div class="audio-player-label">🎵 Aufnahme &nbsp;<span id="audioPlayerFilename"></span></div>
-        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-          <audio id="audioPlayer" controls style="flex:1; min-width:200px;"></audio>
-          <button id="audioStopBtn" onclick="stopAudio()" title="Stop" style="display:none; align-items:center; justify-content:center; gap:5px; padding:6px 12px; font-size:0.82rem; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); color:var(--red); border-radius:8px; cursor:pointer;">
-            ⏹ Stop
+      <!-- ── AKKORDEON ── -->
+      <div class="session-accordion">
+
+        <!-- Panel: Aufnahme -->
+        <div class="acc-panel" id="accAudio">
+          <button class="acc-panel-header" onclick="toggleAccPanel('accAudio')">
+            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="music" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Aufnahme</span>
+            <span class="acc-chevron">▾</span>
           </button>
+          <div class="acc-panel-body">
+            <div class="audio-player-bar" id="audioPlayerBar">
+              <div class="audio-player-label"><span id="audioPlayerFilename"></span></div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:6px">
+                <audio id="audioPlayer" controls style="flex:1; min-width:200px;"></audio>
+                <button id="audioStopBtn" onclick="stopAudio()" title="Stop" style="display:none; align-items:center; justify-content:center; gap:5px; padding:6px 12px; font-size:0.82rem; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); color:var(--red); border-radius:8px; cursor:pointer;">⏹ Stop</button>
+              </div>
+              <div class="audio-no-file" id="audioNoFile" style="display:none">⚠️ Audiodatei nicht verknüpft oder Drive nicht verbunden</div>
+            </div>
+          </div>
         </div>
-        <div class="audio-no-file" id="audioNoFile" style="display:none">⚠️ Audiodatei nicht im aktiven Archiv-Ordner gefunden</div>
+
+        <!-- Panel: Namen -->
+        <div class="acc-panel" id="accNamen">
+          <button class="acc-panel-header" onclick="toggleAccPanel('accNamen')">
+            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="users" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Namen</span>
+            <span class="acc-chevron">▾</span>
+          </button>
+          <div class="acc-panel-body">
+            <div class="acc-namen-row">
+              <div class="speaker-name-field">
+                <span class="speaker-name-dot" style="background:var(--speaker-a)"></span>
+                <input class="speaker-name-input speaker-a" id="editSpeakerA"
+                  placeholder="Sprecher A"
+                  onchange="renameSpeaker('A', this.value)"
+                  onkeydown="if(event.key==='Enter') this.blur()" />
+              </div>
+              <button class="btn btn-ghost" onclick="swapAllSpeakers()" title="Sprecher A↔B tauschen" style="display:inline-flex;align-items:center;gap:4px;padding:6px 10px;flex-shrink:0">
+                <i data-lucide="repeat" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Tauschen
+              </button>
+              <div class="speaker-name-field">
+                <span class="speaker-name-dot" style="background:var(--speaker-b)"></span>
+                <input class="speaker-name-input speaker-b" id="editSpeakerB"
+                  placeholder="Sprecher B"
+                  onchange="renameSpeaker('B', this.value)"
+                  onkeydown="if(event.key==='Enter') this.blur()" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel: Transkript -->
+        <div class="acc-panel" id="accTranskript">
+          <button class="acc-panel-header" onclick="toggleAccPanel('accTranskript')">
+            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="align-left" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Transkript</span>
+            <span class="acc-chevron">▾</span>
+          </button>
+          <div class="acc-panel-body">
+            <div class="utterances" id="utterancesContainer"></div>
+          </div>
+        </div>
+
+        <!-- Panel: Tags -->
+        <div class="acc-panel" id="accTags">
+          <button class="acc-panel-header" onclick="toggleAccPanel('accTags')">
+            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="tag" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Tags</span>
+            <span class="acc-chevron">▾</span>
+          </button>
+          <div class="acc-panel-body">
+            <div class="tag-input-wrap" id="tagInputWrap">
+              <div id="tagChips"></div>
+              <input class="tag-text-input" id="tagTextInput" placeholder="Tag eingeben + Enter…"
+                onkeydown="handleTagInput(event)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel: Notizen -->
+        <div class="acc-panel" id="accNotizen">
+          <button class="acc-panel-header" onclick="toggleAccPanel('accNotizen')">
+            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="file-text" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Notizen</span>
+            <span class="acc-chevron">▾</span>
+          </button>
+          <div class="acc-panel-body">
+            <textarea class="notes-area" id="notesArea" placeholder="Persönliche Eindrücke, Kontext, Beobachtungen…"
+              oninput="saveNotes()" style="margin:0"></textarea>
+          </div>
+        </div>
+
+        <!-- Panel: Analysen -->
+        <div class="acc-panel" id="accAnalysen">
+          <button class="acc-panel-header" onclick="toggleAccPanel('accAnalysen')">
+            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="bar-chart-2" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Analysen</span>
+            <span class="acc-chevron">▾</span>
+          </button>
+          <div class="acc-panel-body">
+            <div class="insights-section" id="insightsSection">
+              <!-- Gesprächsanalyse -->
+              <div class="insights-block" id="privateBlock" style="display:none">
+                <div class="insights-block-title" onclick="toggleInsightsBlock('privateBlock')">
+                  <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="message-circle" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Gesprächsanalyse</span>
+                  <span class="insights-block-chevron">▾</span>
+                </div>
+                <div class="insights-block-body"><div id="privateContent"></div></div>
+              </div>
+              <!-- Arbeitsanalyse -->
+              <div class="insights-block" id="workBlock" style="display:none">
+                <div class="insights-block-title" onclick="toggleInsightsBlock('workBlock')">
+                  <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="briefcase" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Arbeitsanalyse</span>
+                  <span class="insights-block-chevron">▾</span>
+                </div>
+                <div class="insights-block-body"><div id="workContent"></div></div>
+              </div>
+              <!-- Stimmungsanalyse -->
+              <div class="insights-block" id="sentimentBlock" style="display:none">
+                <div class="insights-block-title" onclick="toggleInsightsBlock('sentimentBlock')">
+                  <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="activity" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Stimmungsanalyse</span>
+                  <span class="insights-block-chevron">▾</span>
+                </div>
+                <div class="insights-block-body"><div id="sentimentContent"></div></div>
+              </div>
+              <!-- Kapitel -->
+              <div class="insights-block" id="chaptersBlock" style="display:none">
+                <div class="insights-block-title" onclick="toggleInsightsBlock('chaptersBlock')">
+                  <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="book-open" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Kapitel</span>
+                  <span class="insights-block-chevron">▾</span>
+                </div>
+                <div class="insights-block-body"><div id="chaptersContent"></div></div>
+              </div>
+              <!-- Themen -->
+              <div class="insights-block" id="topicsBlock" style="display:none">
+                <div class="insights-block-title" onclick="toggleInsightsBlock('topicsBlock')">
+                  <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="tag" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Themen</span>
+                  <span class="insights-block-chevron">▾</span>
+                </div>
+                <div class="insights-block-body"><div id="topicsContent"></div></div>
+              </div>
+              <!-- 360°-Auswertung -->
+              <div class="insights-block" id="block360" style="display:none">
+                <div class="insights-block-title" onclick="toggleInsightsBlock('block360')">
+                  <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="refresh-cw" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> 360°-Auswertung</span>
+                  <span class="insights-block-chevron">▾</span>
+                </div>
+                <div class="insights-block-body"><div id="content360"></div></div>
+              </div>
+              <!-- Eigene Prompts (dynamisch) -->
+              <div id="customResultsContainer"></div>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <!-- Transkript als Accordion -->
-      <div class="insights-block collapsed" id="transcriptBlock">
-        <div class="insights-block-title" onclick="toggleInsightsBlock('transcriptBlock')">
-          <span style="display:inline-flex;align-items:center;gap:6px">
-            <i data-lucide="align-left" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-            Transkript
-          </span>
-          <span class="insights-block-chevron">▾</span>
-        </div>
-        <div class="insights-block-body" style="padding:10px 14px 14px">
-          <div class="utterances" id="utterancesContainer"></div>
-        </div>
-      </div>
+      <!-- /session-accordion -->
+
     </div>
 
     <!-- Fortschritt oben halten, Leer-Zustand weg -->
@@ -542,6 +580,26 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.15 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.15</span>
+          <span class="cl-date">28.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <div class="cl-title">Akkordeon-Layout · Lila Header · Sticky Audio-Stop · Analyse frei wählbar</div>
+        <ul>
+          <li><strong>Akkordeon-Sitzungsdetail</strong> – Die gesamte Detailansicht ist jetzt als Akkordeon strukturiert: Aufnahme → Namen → Transkript → Tags → Notizen → Analysen. Alle Panels starten zugeklappt.</li>
+          <li><strong>Lila Header</strong> – Der Kopfbereich der Sitzungsdetailansicht hat einen lila Farbverlauf erhalten. Titel, Meta-Info und Aktionsbuttons sind klar voneinander getrennt. Analyse-Leiste ist visuell abgesetzt (Trennlinie).</li>
+          <li><strong>Tauschen-Button zwischen Namen</strong> – Der „Tauschen"-Button sitzt jetzt direkt zwischen den beiden Namensfeldern im Namen-Panel.</li>
+          <li><strong>Senden an Claude versteckt</strong> – Button bleibt im DOM (leicht reaktivierbar), ist aber nicht mehr sichtbar.</li>
+          <li><strong>Sticky Audio-Stop</strong> – Wenn Audio läuft und der Player nicht sichtbar ist, erscheint ein roter „Audio stoppen"-Button fest am rechten unteren Bildschirmrand.</li>
+          <li><strong>Analyse frei wählbar</strong> – Gesprächsanalyse und Arbeitsanalyse sind jetzt für alle Sitzungstypen (Arbeit, Privat, Gedanken) im Dropdown verfügbar – nicht mehr automatisch per Typ gefiltert.</li>
+        </ul>
+        <div class="cl-tech">index.html: transcript-card komplett umgebaut (sdh-Header + session-accordion), floating audioStopBtnFloat ergänzt. css/styles.css: .sdh, .acc-panel, .acc-panel-header, .acc-panel-body, .acc-namen-row, #speakerHint. js/claude.js: toggleAccPanel(), updateAnalyseDropdown() – kein Type-Filter mehr. js/audio.js: _updateAudioStopBtn steuert auch #audioStopBtnFloat.</div>
+      </div>
 
       <!-- ── v4.14 ── -->
       <div class="cl-entry">
@@ -1846,6 +1904,17 @@
     </div>
   </div>
 </div>
+
+<!-- Floating Audio-Stop-Button (immer sichtbar wenn Audio läuft) -->
+<button id="audioStopBtnFloat" onclick="stopAudio()" title="Audio stoppen"
+  style="display:none; position:fixed; bottom:24px; right:24px; z-index:9999;
+    align-items:center; justify-content:center; gap:6px;
+    padding:10px 18px; font-size:0.85rem; font-weight:600;
+    background:var(--red); color:#fff;
+    border:none; border-radius:50px; cursor:pointer;
+    box-shadow:0 4px 16px rgba(248,113,113,0.45);">
+  ⏹ Audio stoppen
+</button>
 
 </body>
 </html>

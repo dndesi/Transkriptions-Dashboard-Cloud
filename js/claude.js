@@ -164,13 +164,13 @@ function updateAnalyseStartBtn() {
 }
 
 function updateAnalyseDropdown() {
-  const s      = document.getElementById('analyseTypeSelect');
+  const s = document.getElementById('analyseTypeSelect');
   if (!s) return;
-  const isWork = getSession()?.type === 'arbeit';
+  // Beide Analyse-Optionen immer sichtbar – unabhängig vom Gesprächstyp
   const optPrivate = document.getElementById('analyseOptPrivate');
   const optWork    = document.getElementById('analyseOptWork');
-  if (optPrivate) optPrivate.style.display = isWork ? 'none' : '';
-  if (optWork)    optWork.style.display    = isWork ? ''     : 'none';
+  if (optPrivate) optPrivate.style.display = '';
+  if (optWork)    optWork.style.display    = '';
 
   // Custom Prompts
   const grp = document.getElementById('customPromptsOptgroup');
@@ -738,6 +738,12 @@ function trimTranscript(transcript, maxChars) {
 function toggleInsightsBlock(blockId) {
   const block = document.getElementById(blockId);
   if (block) block.classList.toggle('collapsed');
+}
+
+// Akkordeon-Panels in der Sitzungsdetailansicht öffnen/schließen
+function toggleAccPanel(panelId) {
+  const panel = document.getElementById(panelId);
+  if (panel) panel.classList.toggle('open');
 }
 
 // Block einblenden – beim ersten Mal zugeklappt, danach aktuellen Zustand behalten
