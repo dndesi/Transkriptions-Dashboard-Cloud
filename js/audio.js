@@ -93,11 +93,11 @@ function setupAudioSync() {
 function renderTimeline(filter) {
   const tl = document.getElementById('timelineView');
   if (!tl) return;
-  const folderFilter = document.getElementById('folderFilter')?.value || '';
   const tagFilter = document.getElementById('tagFilter')?.value || '';
   const searchVal = filter || document.getElementById('sidebarSearchMain')?.value || '';
   let list = sessions.filter(s => s.status === 'done');
-  if (folderFilter) list = list.filter(s => s.archiveFolder === folderFilter);
+  if (activeFolderFilter === '__none__') list = list.filter(s => !s.archiveFolder);
+  else if (activeFolderFilter) list = list.filter(s => s.archiveFolder === activeFolderFilter);
   if (tagFilter) list = list.filter(s => (s.tags||[]).includes(tagFilter));
   if (searchVal.trim()) {
     const q = searchVal.toLowerCase();
