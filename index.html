@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.29</button>
+        onmouseout="this.style.color='var(--muted)'">v4.30</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -668,6 +668,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.30 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.30</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Mindmap: horizontales Layout</strong> – Radiales Layout durch links-nach-rechts Baumdarstellung ersetzt. Root links, Äste und Knoten fächern nach rechts auf – alles sauber lesbar.</li>
+          <li><strong>Labels korrekt in Pills</strong> – Text der Ebene-1-Knoten sitzt jetzt mittig innerhalb der abgerundeten Pill-Form statt außerhalb.</li>
+        </ul>
+        <div class="cl-tech">features.js: _renderD3Mindmap() komplett neu – d3.tree().nodeSize() + d3.linkHorizontal() statt Radial-Layout. textW() Hilfsfunktion für variable Pill-Breite.</div>
+      </div>
 
       <!-- ── v4.29 ── -->
       <div class="cl-entry">

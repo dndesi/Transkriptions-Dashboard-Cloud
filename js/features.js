@@ -326,24 +326,10 @@ function _renderD3Mindmap(container, data) {
 
   const branchColors = [clrAccent, clrAccent2, '#34d399', '#f59e0b', '#f472b6', '#60a5fa', '#fb923c'];
 
-  const W = Math.max(container.clientWidth || 700, 500);
-  const H = Math.max(Math.round(W * 0.72), 440);
-  const cx = W / 2, cy = H / 2;
-  const radius = Math.min(cx, cy) * 0.86;
-
-  const svg = d3.select(container).append('svg')
-    .attr('width', '100%').attr('height', H)
-    .attr('viewBox', `0 0 ${W} ${H}`)
-    .style('font-family', 'inherit').style('display', 'block');
-
-  const g = svg.append('g').attr('transform', `translate(${cx},${cy})`);
-
-  svg.call(d3.zoom().scaleExtent([0.25, 4])
-    .on('zoom', e => g.attr('transform', e.transform.translate(cx, cy))));
+  // Hilfsfunktion: Textbreite schätzen
+  const textW = (label, fs) => label.length * (fs === 11 ? 6.6 : 6) + 28;
 
   const root = d3.hierarchy(data);
-  d3.tree().size([2 * Math.PI, radius])
-    .separation((a, b) => (a.parent === b.parent ? 1 : 1.5) / a.depth)(root);
 
   // Branch-Farbe vererben
   root._color = clrAccent;
@@ -352,66 +338,107 @@ function _renderD3Mindmap(container, data) {
     c.descendants().forEach(d => { if (!d._color) d._color = c._color; });
   });
 
-  // Verbindungslinien
-  g.append('g').attr('fill', 'none')
-    .selectAll('path').data(root.links()).join('path')
-    .attr('d', d3.linkRadial().angle(d => d.x).radius(d => d.y))
-    .attr('stroke', d => d.target._color || clrBorder)
-    .attr('stroke-width', d => d.target.depth === 1 ? 2.5 : 1.5)
-    .attr('stroke-opacity', d => d.target.depth === 1 ? 0.65 : 0.4)
-    .attr('stroke-linecap', 'round');
+  // Horizontaler Baum: nodeSize [zeilenabstand, spaltenabstand]
+  const rowGap  = 30;   // vertikaler Abstand zwischen Blättern
+  const colGap  = 200;  // horizontaler Abstand zwischen Ebenen
 
-  // Knoten
-  const node = g.append('g').selectAll('g').data(root.descendants()).join('g')
-    .attr('transform', d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`);
+  d3.tree().nodeSize([rowGap, colGap])(root);
 
-  // Root: Kreis mit Glow
-  node.filter(d => d.depth === 0)
-    .call(sel => {
-      sel.append('circle').attr('r', 32).attr('fill', clrAccent).attr('fill-opacity', 0.12)
-        .attr('stroke', clrAccent).attr('stroke-width', 2);
-    });
-
-  // Ebene 1: abgerundete Pill
-  node.filter(d => d.depth === 1).each(function(d) {
-    const el = d3.select(this);
-    const flip = d.x > Math.PI;
-    const w = 96, h = 28;
-    el.append('rect')
-      .attr('x', flip ? -(w + 6) : 6).attr('y', -h / 2)
-      .attr('width', w).attr('height', h).attr('rx', 10)
-      .attr('fill', d._color).attr('fill-opacity', 0.14)
-      .attr('stroke', d._color).attr('stroke-width', 1.8);
+  // Bounding Box berechnen
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  root.each(d => {
+    if (d.x < minX) minX = d.x;
+    if (d.x > maxX) maxX = d.x;
+    if (d.y < minY) minY = d.y;
+    if (d.y > maxY) maxY = d.y;
   });
 
-  // Ebene 2: kleiner farbiger Punkt
-  node.filter(d => d.depth === 2).append('circle')
-    .attr('r', 5.5).attr('fill', d => d._color).attr('fill-opacity', 0.75);
+  const padH = 48, padV = 32;
+  const svgW = Math.max(container.clientWidth || 800, (maxY - minY) + 360);
+  const svgH = Math.max((maxX - minX) + padV * 2, 460);
 
-  // Ebene 3+: Mini-Punkt
-  node.filter(d => d.depth >= 3).append('circle')
-    .attr('r', 3).attr('fill', clrMuted).attr('fill-opacity', 0.6);
+  // Offset: Root linksbündig, Baum vertikal zentriert
+  const offX = padH - minY + 30;
+  const offY = padV - minX;
 
-  // Labels
-  node.append('text')
-    .attr('transform', d => d.depth > 0 ? `rotate(${d.x > Math.PI ? 180 : 0})` : 'rotate(0)')
-    .attr('dy', '0.32em')
-    .attr('x', d => {
-      if (d.depth === 0) return 0;
-      const flip = d.x > Math.PI;
-      if (d.depth === 1) return flip ? -108 : 108;
-      return flip ? -12 : 12;
-    })
-    .attr('text-anchor', d => {
-      if (d.depth === 0) return 'middle';
-      if (d.depth === 1) return 'middle';
-      return d.x > Math.PI ? 'end' : 'start';
-    })
-    .attr('font-size', d => d.depth === 0 ? '13px' : d.depth === 1 ? '11px' : '9.5px')
-    .attr('font-weight', d => d.depth <= 1 ? '700' : '400')
-    .attr('fill', d => d.depth === 0 ? clrAccent : d.depth === 1 ? d._color : clrText)
-    .attr('fill-opacity', d => d.depth >= 2 ? 0.88 : 1)
-    .text(d => d.data.label);
+  const svg = d3.select(container).append('svg')
+    .attr('width', '100%').attr('height', svgH)
+    .style('display', 'block').style('font-family', 'inherit');
+
+  const g = svg.append('g').attr('transform', `translate(${offX},${offY})`);
+
+  // Zoom & Pan
+  svg.call(d3.zoom().scaleExtent([0.2, 4]).on('zoom', e => {
+    g.attr('transform', `translate(${e.transform.x + offX},${e.transform.y + offY}) scale(${e.transform.k})`);
+  }));
+
+  // Verbindungslinien (horizontal)
+  g.append('g').attr('fill', 'none')
+    .selectAll('path').data(root.links()).join('path')
+    .attr('d', d3.linkHorizontal().x(d => d.y).y(d => d.x))
+    .attr('stroke', d => d.target._color || clrBorder)
+    .attr('stroke-width', d => d.target.depth === 1 ? 2.2 : 1.4)
+    .attr('stroke-opacity', d => d.target.depth === 1 ? 0.6 : 0.38)
+    .attr('stroke-linecap', 'round');
+
+  // Knoten (x = vertikal, y = horizontal im horizontalen Baum)
+  const node = g.append('g')
+    .selectAll('g').data(root.descendants()).join('g')
+    .attr('transform', d => `translate(${d.y},${d.x})`);
+
+  // Root-Knoten: Kreis mit Label
+  node.filter(d => d.depth === 0).call(sel => {
+    sel.append('circle').attr('r', 28)
+      .attr('fill', clrAccent).attr('fill-opacity', 0.14)
+      .attr('stroke', clrAccent).attr('stroke-width', 2);
+    sel.append('text')
+      .attr('text-anchor', 'middle').attr('dy', '0.35em')
+      .attr('font-size', '12px').attr('font-weight', '700')
+      .attr('fill', clrAccent)
+      .text(d => d.data.label);
+  });
+
+  // Ebene 1: Pill mit Label innen
+  node.filter(d => d.depth === 1).each(function(d) {
+    const el  = d3.select(this);
+    const lbl = d.data.label;
+    const w   = textW(lbl, 11);
+    const h   = 27;
+    const rx  = 9;
+    // Pill startet 8px rechts vom Verbindungspunkt
+    el.append('rect')
+      .attr('x', 8).attr('y', -h / 2)
+      .attr('width', w).attr('height', h).attr('rx', rx)
+      .attr('fill', d._color).attr('fill-opacity', 0.14)
+      .attr('stroke', d._color).attr('stroke-width', 1.8);
+    el.append('text')
+      .attr('x', 8 + w / 2).attr('dy', '0.35em')
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '11px').attr('font-weight', '700')
+      .attr('fill', d._color)
+      .text(lbl);
+  });
+
+  // Ebene 2: Punkt + Label rechts
+  node.filter(d => d.depth === 2).call(sel => {
+    sel.append('circle').attr('r', 5)
+      .attr('fill', d => d._color).attr('fill-opacity', 0.8);
+    sel.append('text')
+      .attr('x', 12).attr('dy', '0.35em')
+      .attr('font-size', '10.5px').attr('font-weight', '400')
+      .attr('fill', clrText).attr('fill-opacity', 0.9)
+      .text(d => d.data.label);
+  });
+
+  // Ebene 3+: Mini-Punkt + Label rechts
+  node.filter(d => d.depth >= 3).call(sel => {
+    sel.append('circle').attr('r', 3)
+      .attr('fill', clrMuted).attr('fill-opacity', 0.6);
+    sel.append('text')
+      .attr('x', 9).attr('dy', '0.35em')
+      .attr('font-size', '9.5px').attr('fill', clrText).attr('fill-opacity', 0.78)
+      .text(d => d.data.label);
+  });
 }
 
 // Export SVG
