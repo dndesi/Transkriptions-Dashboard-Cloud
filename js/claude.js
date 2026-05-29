@@ -740,7 +740,7 @@ function toggleAccPanel(panelId) {
 
 function _saveAccState() {
   if (!currentSessionId) return;
-  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen','accMindmap','accFolgegespraech'];
+  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen','accMindmap','accFolgegespraech','accCanva'];
   const open = panels.filter(id => {
     const el = document.getElementById(id);
     return el && el.classList.contains('open');
@@ -749,7 +749,7 @@ function _saveAccState() {
 }
 
 function _restoreAccState(sessionId) {
-  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen','accMindmap','accFolgegespraech'];
+  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen','accMindmap','accFolgegespraech','accCanva'];
   // Alle schließen
   panels.forEach(id => {
     const el = document.getElementById(id);
@@ -1129,6 +1129,20 @@ function showTranscript(session) {
   }
   // Folgegespräch-Panel befüllen
   renderFollowUpMessages(session);
+  // Präsentations-Vorschau laden falls vorhanden
+  const preview = document.getElementById('canvaPreview');
+  const exportBtn = document.getElementById('canvaExportBtn');
+  if (preview) {
+    if (session.claudePresentation?.data) {
+      _renderPresentationPreview(session.claudePresentation.data, preview);
+      if (exportBtn) exportBtn.style.display = 'inline-flex';
+      const sel = document.getElementById('canvaPromptSelect');
+      if (sel && session.claudePresentation.promptId) sel.value = session.claudePresentation.promptId;
+    } else {
+      preview.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">Wähle einen Typ und klicke auf „Generieren" – Claude strukturiert den Inhalt aus deinen Analysen.</span>';
+      if (exportBtn) exportBtn.style.display = 'none';
+    }
+  }
   _restoreAccState(session.id);
 }
 
@@ -1398,6 +1412,138 @@ function clearFollowUp() {
   saveToArchive(session);
   renderFollowUpMessages(session);
   showToast('Folgegespräch gelöscht', 'ok');
+}
+
+// ── Präsentation erstellen (Canva / pptx) ─────────────────────────────────
+
+async function generatePresentation() {
+  const session = getSession(currentSessionId);
+  if (!session) { showToast('Keine aktive Sitzung.', 'warning'); return; }
+  if (!anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'warning'); return; }
+
+  const promptId = document.getElementById('canvaPromptSelect')?.value || 'builtin_canva_presentation';
+  const btn      = document.getElementById('canvaGenerateBtn');
+  const preview  = document.getElementById('canvaPreview');
+  const exportBtn = document.getElementById('canvaExportBtn');
+
+  const analysisContext = _buildFollowUpContext(session);
+  if (!analysisContext) {
+    showToast('Noch keine Analysen vorhanden – bitte erst Analysen durchführen.', 'warning');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = icon('loader', 13, 'margin-right:5px') + ' Generiere…';
+  preview.innerHTML = `<div style="color:var(--muted);font-size:0.85rem;padding:8px 0">Claude strukturiert die Inhalte…</div>`;
+  if (exportBtn) exportBtn.style.display = 'none';
+
+  const { forward, reverse } = buildAnonMap(session);
+  const transcript = buildTranscriptText(session);
+  const dateStr = session.date ? new Date(session.date).toLocaleDateString('de-DE') : new Date().toLocaleDateString('de-DE');
+
+  const prompt = getEditablePromptText(promptId)
+    .replace(/\{\{analyseContext\}\}/g, analysisContext)
+    .replace(/\{\{transcript\}\}/g, trimTranscript(transcript, 80000))
+    .replace(/\{\{date\}\}/g, dateStr);
+
+  try {
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
+    addTokensToSession(session, inputTokens, outputTokens);
+    const raw = deanonymizeObject(text, reverse);
+    const json = JSON.parse(extractJSON(raw, '{'));
+
+    session.claudePresentation = { promptId, data: json, ts: new Date().toISOString() };
+    saveSessions();
+    await saveToArchive(session);
+
+    _renderPresentationPreview(json, preview);
+    if (exportBtn) { exportBtn.style.display = 'inline-flex'; }
+    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [preview] });
+    showToast('Präsentation erstellt', 'success');
+  } catch (e) {
+    preview.innerHTML = `<div style="color:var(--red);font-size:0.85rem">${escHtml(e.message || 'Fehler')}</div>`;
+    showToast('Fehler: ' + (e.message || 'Unbekannt'), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = icon('sparkles', 13, 'margin-right:5px') + ' Generieren';
+  }
+}
+
+function _renderPresentationPreview(json, container) {
+  if (!json?.slides?.length) { container.innerHTML = '<div style="color:var(--muted)">Keine Folien generiert.</div>'; return; }
+  const slides = json.slides.map((s, i) => `
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+      <div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px">Folie ${i + 1}</div>
+      <div style="font-size:0.9rem;font-weight:700;color:var(--accent);margin-bottom:8px">${escHtml(s.heading || '')}</div>
+      ${(s.bullets||[]).map(b => `<div style="font-size:0.83rem;color:var(--text);padding:2px 0;display:flex;gap:7px"><span style="color:var(--muted);flex-shrink:0">·</span>${escHtml(b)}</div>`).join('')}
+      ${s.note ? `<div style="font-size:0.75rem;color:var(--muted);margin-top:8px;font-style:italic">📝 ${escHtml(s.note)}</div>` : ''}
+    </div>`).join('');
+  container.innerHTML = `
+    <div style="padding:4px 0 8px">
+      <div style="font-size:1rem;font-weight:700;margin-bottom:2px">${escHtml(json.title || '')}</div>
+      ${json.subtitle ? `<div style="font-size:0.8rem;color:var(--muted);margin-bottom:14px">${escHtml(json.subtitle)}</div>` : '<div style="margin-bottom:14px"></div>'}
+      ${slides}
+    </div>`;
+}
+
+async function exportPresentationPptx() {
+  const session = getSession(currentSessionId);
+  if (!session?.claudePresentation?.data) { showToast('Erst Präsentation generieren.', 'warning'); return; }
+  if (typeof PptxGenJS === 'undefined') { showToast('PptxGenJS wird noch geladen…', 'warning'); return; }
+
+  const json  = session.claudePresentation.data;
+  const pptx  = new PptxGenJS();
+
+  // Basis-Layout
+  pptx.layout = 'LAYOUT_WIDE';
+  pptx.title  = json.title || 'Präsentation';
+
+  // Titelfolie
+  const titleSlide = pptx.addSlide();
+  titleSlide.background = { color: '0F0E17' };
+  titleSlide.addText(json.title || '', {
+    x: 0.8, y: 1.8, w: '85%', h: 1.2,
+    fontSize: 36, bold: true, color: '6C63FF', fontFace: 'Calibri'
+  });
+  if (json.subtitle) {
+    titleSlide.addText(json.subtitle, {
+      x: 0.8, y: 3.2, w: '85%', h: 0.5,
+      fontSize: 16, color: '94A3B8', fontFace: 'Calibri'
+    });
+  }
+
+  // Inhaltsfolien
+  const accentColors = ['6C63FF', 'A78BFA', '34D399', 'F59E0B', 'F472B6', '60A5FA', 'FB923C'];
+  (json.slides || []).forEach((s, i) => {
+    const slide = pptx.addSlide();
+    slide.background = { color: '0F0E17' };
+    const col = accentColors[i % accentColors.length];
+
+    // Überschrift
+    slide.addText(s.heading || '', {
+      x: 0.6, y: 0.4, w: '90%', h: 0.7,
+      fontSize: 24, bold: true, color: col, fontFace: 'Calibri'
+    });
+    // Trennlinie
+    slide.addShape(pptx.ShapeType.line, {
+      x: 0.6, y: 1.15, w: 8.8, h: 0,
+      line: { color: col, width: 1.5, transparency: 60 }
+    });
+    // Bullet Points
+    const bullets = (s.bullets || []).map(b => ({ text: b, options: { bullet: { code: '2022' }, color: 'E2E8F0', fontSize: 14 } }));
+    if (bullets.length) {
+      slide.addText(bullets, {
+        x: 0.6, y: 1.35, w: '90%', h: 4.5,
+        fontFace: 'Calibri', lineSpacingMultiple: 1.4
+      });
+    }
+    // Sprechernotiz
+    if (s.note) slide.addNotes(s.note);
+  });
+
+  const slug = (session.label || 'praesentation').replace(/[^a-z0-9äöüß\s]/gi, '').trim().replace(/\s+/g, '-');
+  await pptx.writeFile({ fileName: `${slug}.pptx` });
+  showToast('.pptx heruntergeladen', 'success');
 }
 
 function renderUtterances(session) {

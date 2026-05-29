@@ -355,7 +355,7 @@ function toggleArchView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v4.31';
+  const title = 'Distill Voice – Systemarchitektur v4.32';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }
@@ -439,6 +439,7 @@ function renderArchView() {
       ${flowCard('drive.js', 'Cloud Storage', 'Google Drive OAuth, Ordner anlegen, Sessions als JSON speichern/laden/löschen', '#34d399')}
       ${flowCard('features.js', 'Erweiterte Features', '360°-Analyse, Aufnahme befragen (Chat), Mind Map (D3.js v7, JSON-Format, horizontal LTR, Zoom/Pan, SVG/PDF-Export)', '#f59e0b')}
       ${flowCard('claude.js (Follow-Up)', 'Folgegespräch', 'Analyse-Kontext aufbauen (_buildFollowUpContext), Folgefragen stellen (askFollowUp), Verlauf in session.claudeFollowUp[] speichern', '#06b6d4')}
+      ${flowCard('claude.js (Präsentation)', 'Präsentation erstellen', 'generatePresentation(), _renderPresentationPreview(), exportPresentationPptx() via PptxGenJS. 3 Prompt-Typen wählbar. session.claudePresentation[] speichert Ergebnis', '#f43f5e')}
       ${flowCard('prompts.js', 'Prompt-Bibliothek', 'System/Standard/Feature-Prompts, editierbare Overrides in localStorage, eigene Prompts', '#a78bfa')}
       ${flowCard('search.js', 'Globale Suche', 'Instant-Textsuche über alle Felder + Claude-Semantiksuche', '#6ee7b7')}
       ${flowCard('calendar.js', 'Kalender & Mail', 'Termine via Claude extrahieren → Google Calendar API · E-Mail-Entwürfe → Gmail API', '#f472b6')}
@@ -476,6 +477,7 @@ function renderArchView() {
         ${techRow('E-Mail', 'Gmail API v1 · RFC 2822 · Base64url · Entwurfsmodus')}
         ${techRow('Mind Map', 'D3.js v7 (CDN) · horizontales LTR-Layout · JSON-Baumformat · gecacht in session.claudeMindmap · Zoom/Pan · SVG/PDF-Export · Mermaid-Fallback für Altdaten')}
         ${techRow('Folgegespräch', 'builtin_followup in Prompt-Bibliothek · Platzhalter: analyseContext/transcript/question · session.claudeFollowUp[] · DSGVO-Anonymisierung aktiv')}
+        ${techRow('Präsentation', 'PptxGenJS v3.12 (CDN) · 3 Prompt-Typen (builtin_canva_*) · .pptx-Export mit dunklem Layout · Canva-importierbar · session.claudePresentation')}
         ${techRow('Prompt-System', 'Editierbare Prompts in localStorage · System/Standard/Feature/Eigene · usedIn-Badge zeigt Verwendungsort · assemblePromptText() aus Rolle/Tonalität/Grenzen/Kontext')}
         ${techRow('Akkordeon', 'Sitzungsdetail als Akkordeon · Zustand in localStorage pro Session')}
         ${techRow('OAuth Scopes', 'drive.file · userinfo.profile · calendar.events · gmail.compose')}

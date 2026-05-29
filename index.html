@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.31</button>
+        onmouseout="this.style.color='var(--muted)'">v4.32</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -649,6 +649,35 @@
           </div>
         </div>
 
+        <!-- ── Präsentation erstellen ──────────────────── -->
+        <div class="acc-panel" id="accCanva">
+          <button class="acc-panel-header" onclick="toggleAccPanel('accCanva')">
+            <span style="display:flex;align-items:center;gap:8px">
+              <i data-lucide="layout" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i>
+              Präsentation erstellen
+            </span>
+            <span class="acc-chevron">▾</span>
+          </button>
+          <div class="acc-panel-body">
+            <div style="padding:12px 16px 10px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap">
+              <select id="canvaPromptSelect" style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 10px;font-size:0.83rem;outline:none;cursor:pointer">
+                <option value="builtin_canva_presentation">Präsentation (Folien)</option>
+                <option value="builtin_canva_summary">1-Pager Zusammenfassung</option>
+                <option value="builtin_canva_action">Aktionsplan</option>
+              </select>
+              <button id="canvaGenerateBtn" onclick="generatePresentation()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
+                <i data-lucide="sparkles" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Generieren
+              </button>
+              <button id="canvaExportBtn" onclick="exportPresentationPptx()" style="display:none;background:none;border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.83rem;color:var(--text);cursor:pointer;display:none;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
+                <i data-lucide="download" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> .pptx herunterladen
+              </button>
+            </div>
+            <div id="canvaPreview" style="padding:16px;min-height:60px">
+              <span style="color:var(--muted);font-size:0.85rem">Wähle einen Typ und klicke auf „Generieren" – Claude strukturiert den Inhalt aus deinen Analysen.</span>
+            </div>
+          </div>
+        </div>
+
       </div>
       <!-- /session-accordion -->
 
@@ -668,6 +697,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.32 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.32</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Präsentation erstellen</strong> – Neues Akkordeon-Panel in der Sitzungsansicht. Dropdown-Auswahl zwischen drei Typen: Präsentation (Folien), 1-Pager Zusammenfassung, Aktionsplan. Claude strukturiert den Inhalt aus allen vorhandenen Analysen.</li>
+          <li><strong>.pptx-Export</strong> – Die generierte Präsentation kann direkt als PowerPoint-Datei heruntergeladen werden (via PptxGenJS). Dunkles CI-Basis-Layout mit Akzentfarben. Folien mit Überschrift, Bullet Points und Sprechernotizen. In Canva importierbar.</li>
+          <li><strong>3 Canva-Prompts in der Bibliothek</strong> – Alle drei Typen sind als editierbare Feature-Prompts hinterlegt und können individuell angepasst werden.</li>
+        </ul>
+        <div class="cl-tech">prompts.js: builtin_canva_presentation, builtin_canva_summary, builtin_canva_action. claude.js: generatePresentation(), _renderPresentationPreview(), exportPresentationPptx(), accCanva in _restoreAccState(). index.html: accCanva-Panel, PptxGenJS CDN. session.claudePresentation speichert Ergebnis.</div>
+      </div>
 
       <!-- ── v4.31 ── -->
       <div class="cl-entry">
@@ -2102,6 +2146,7 @@
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>if(window.mermaid) mermaid.initialize({ startOnLoad: false });</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 
 <!-- ─── MODAL: Globale Suche ─────────────────────── -->
 <div class="modal-backdrop" id="searchModal">

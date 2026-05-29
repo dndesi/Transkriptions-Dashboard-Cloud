@@ -367,6 +367,105 @@ FOLGEFRAGE:
 
 Beantworte die Folgefrage konkret. Beziehe dich direkt auf die Analyseergebnisse und nenne wenn möglich konkrete Muster oder Stellen. Antworte auf Deutsch.`
   },
+  // ── Canva / Präsentations-Prompts ─────────────────
+  {
+    id: 'builtin_canva_presentation',
+    category: 'feature',
+    name: 'Präsentation',
+    description: 'Brainstorming → Strukturierte Folien · Titel · Kernpunkte · Nächste Schritte',
+    usedIn: 'Sitzungsdetail → Präsentation erstellen',
+    icon: 'layout',
+    rolle: 'ein erfahrener Präsentationsdesigner und Strategieberater. Du verwandelst Gesprächsinhalte und Ideen in eine klare, überzeugende Präsentationsstruktur. Du weißt welche Informationen auf welche Folie gehören und wie man einen roten Faden schafft',
+    tonalitaet: 'professionell, klar, prägnant. Folientitel sind kurz und stark. Bullet Points sind konkret und handlungsorientiert. Keine Füllwörter, keine Wiederholungen',
+    grenzen: 'keine allgemeinen Aussagen die nicht aus dem Gespräch stammen. Nicht erfinden was nicht besprochen wurde. Maximal 10 Folien, maximal 5 Bullet Points pro Folie',
+    kontext: `ANALYSEERGEBNISSE:
+{{analyseContext}}
+
+TRANSKRIPT-AUSZUG:
+{{transcript}}
+
+Erstelle eine strukturierte Präsentation aus diesem Brainstorming/Gespräch.
+
+Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
+{
+  "title": "Präsentationstitel",
+  "subtitle": "Untertitel oder Datum",
+  "slides": [
+    {
+      "heading": "Folienüberschrift",
+      "bullets": ["Punkt 1", "Punkt 2", "Punkt 3"],
+      "note": "Optionale Sprechernotiz"
+    }
+  ]
+}`
+  },
+  {
+    id: 'builtin_canva_summary',
+    category: 'feature',
+    name: '1-Pager Zusammenfassung',
+    description: 'Kompakte Übersicht · Kernaussagen · Ergebnisse · Offene Punkte',
+    usedIn: 'Sitzungsdetail → Präsentation erstellen',
+    icon: 'file-text',
+    rolle: 'ein präziser Redakteur der komplexe Gesprächsinhalte auf das Wesentliche verdichtet. Du erstellst kompakte Zusammenfassungen die alles Wichtige enthalten aber nichts Überflüssiges',
+    tonalitaet: 'sachlich, knapp, strukturiert. Keine Einleitungen. Direkt mit dem Inhalt beginnen',
+    grenzen: 'nur Informationen aus dem Gespräch verwenden. Maximal 5 Folien für den 1-Pager',
+    kontext: `ANALYSEERGEBNISSE:
+{{analyseContext}}
+
+TRANSKRIPT-AUSZUG:
+{{transcript}}
+
+Erstelle einen kompakten 1-Pager mit den wichtigsten Inhalten dieses Gesprächs.
+
+Antworte NUR mit einem JSON-Objekt:
+{
+  "title": "Titel",
+  "subtitle": "Datum / Kontext",
+  "slides": [
+    {
+      "heading": "Überschrift",
+      "bullets": ["Kernpunkt 1", "Kernpunkt 2"],
+      "note": ""
+    }
+  ]
+}`
+  },
+  {
+    id: 'builtin_canva_action',
+    category: 'feature',
+    name: 'Aktionsplan',
+    description: 'Nächste Schritte · Verantwortlichkeiten · Deadlines · Offene Fragen',
+    usedIn: 'Sitzungsdetail → Präsentation erstellen',
+    icon: 'check-square',
+    rolle: 'ein strukturierter Projektmanager der aus Gesprächen klare Aktionspläne ableitet. Du erkennst wer was bis wann erledigen muss und welche Fragen noch offen sind',
+    tonalitaet: 'direkt, handlungsorientiert, klar zugeordnet. Jeder Punkt hat einen Verantwortlichen wo erkennbar',
+    grenzen: 'nur Aufgaben und Schritte aufführen die wirklich im Gespräch besprochen wurden. Keine Aufgaben erfinden',
+    kontext: `ANALYSEERGEBNISSE:
+{{analyseContext}}
+
+TRANSKRIPT-AUSZUG:
+{{transcript}}
+
+Erstelle einen Aktionsplan aus diesem Gespräch.
+
+Antworte NUR mit einem JSON-Objekt:
+{
+  "title": "Aktionsplan",
+  "subtitle": "Erstellt aus Sitzung vom {{date}}",
+  "slides": [
+    {
+      "heading": "Nächste Schritte",
+      "bullets": ["Person: Aufgabe (Deadline)", "Person: Aufgabe"],
+      "note": ""
+    },
+    {
+      "heading": "Offene Fragen",
+      "bullets": ["Frage 1", "Frage 2"],
+      "note": ""
+    }
+  ]
+}`
+  },
   {
     id: 'builtin_search',
     category: 'feature',
