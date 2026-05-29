@@ -44,6 +44,7 @@ const EDITABLE_PROMPT_DEFAULTS = [
     category: 'standard',
     name: '360°-Auswertung',
     description: 'Vier Perspektiven: Aufgaben · Erwartungen · Emotionen · Strategie',
+    usedIn: 'Sitzungsdetail → Analysen → 360°',
     icon: 'target',
     prompt: `Du bist ein erfahrener Kommunikations- und Konfliktanalyst. Analysiere dieses Gespräch aus vier verschiedenen Perspektiven. Gehe dabei wirklich in die Tiefe – nicht nur Oberfläche.
 Sprecher A = "{{speakerA}}", Sprecher B = "{{speakerB}}".
@@ -76,6 +77,7 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
     category: 'standard',
     name: 'Themen',
     description: 'Hauptthemen als kompakte Tags',
+    usedIn: 'Sitzungsdetail → Analysen → Themen',
     icon: 'tag',
     prompt: `Erkenne die Hauptthemen in diesem deutschen Gesprächstranskript.
 
@@ -90,6 +92,7 @@ Antworte NUR mit einem JSON-Array aus kurzen Themen-Tags auf Deutsch (max. 10 Ta
     category: 'standard',
     name: 'Kapitel',
     description: 'Gesprächsstruktur in Kapitel mit Zeitstempeln',
+    usedIn: 'Sitzungsdetail → Analysen → Kapitel',
     icon: 'list',
     prompt: `Erstelle eine Kapitelübersicht für dieses deutsche Gesprächstranskript.
 Die Zeitangaben im Format [MM:SS] stehen am Anfang jeder Zeile.
@@ -113,6 +116,7 @@ Antworte NUR mit einem JSON-Array (kein Markdown, keine Erklärungen):
     category: 'feature',
     name: 'Privat-Analyse',
     description: 'Tiefenpsychologische Gesprächsanalyse · Dynamik · Zwischen den Zeilen',
+    usedIn: 'Sitzungsdetail → Analysen → Gesprächsanalyse',
     icon: 'message-circle',
     prompt: `Du bist ein einfühlsamer, psychologisch geschulter Gesprächsanalyst. Analysiere das folgende private Gespräch auf Deutsch mit echtem Tiefgang – nicht oberflächlich, sondern so wie ein guter Therapeut oder Supervisor zuhören würde.
 Beteiligte: {{speakerA}} und {{speakerB}}. Weitere Personen: {{persons}}.{{relContext}}
@@ -147,6 +151,7 @@ Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurüc
     category: 'feature',
     name: 'Gedanken-Analyse',
     description: 'Monolog & Selbstreflexion · Innere Muster · Offene Fragen',
+    usedIn: 'Sitzungsdetail → Analysen → Gesprächsanalyse (Gedanken-Typ)',
     icon: 'message-square',
     prompt: `Du bist ein einfühlsamer, psychologisch geschulter Gesprächsanalyst. Analysiere die folgenden eigenen Gedanken und Reflexionen auf Deutsch mit echtem Tiefgang – nicht oberflächlich, sondern so wie ein guter Therapeut oder Supervisor zuhören würde.
 
@@ -171,6 +176,7 @@ Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurüc
     category: 'feature',
     name: 'Arbeits-Tiefenanalyse',
     description: 'Tasks · Entscheidungen · Risiken · Zwischen den Zeilen',
+    usedIn: 'Sitzungsdetail → Analysen → Arbeitsanalyse',
     icon: 'briefcase',
     prompt: `Du bist ein erfahrener Business-Coach und Kommunikationsanalyst. Analysiere das folgende Arbeitsgespräch auf Deutsch – präzise, klar und mit Blick für das, was auch zwischen den Zeilen geschieht.
 Beteiligte: {{speakerA}} und {{speakerB}}. Weitere Personen: {{persons}}.
@@ -207,6 +213,7 @@ Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurüc
     category: 'feature',
     name: 'Stimmungsanalyse',
     description: 'Emotionen pro Sprecher · Positiv/Neutral/Negativ · Highlight',
+    usedIn: 'Sitzungsdetail → Analysen → Stimmungsanalyse',
     icon: 'activity',
     prompt: `Analysiere die Stimmung der Sprecher in diesem deutschen Gesprächstranskript.
 Sprecher A heißt "{{speakerA}}", Sprecher B heißt "{{speakerB}}".
@@ -236,6 +243,7 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
     category: 'feature',
     name: 'Aufnahme befragen',
     description: 'Chat-Interface · Fragen zum Transkript · Zeitstempel-Referenzen',
+    usedIn: 'Sitzungsdetail → Analysen → Aufnahme befragen',
     icon: 'asterisk',
     prompt: `Du bist ein Assistent der ausschließlich Fragen zu einem Gesprächstranskript beantwortet.
 Antworte immer auf Deutsch. Zitiere wenn möglich direkt aus dem Transkript und nenne den Zeitstempel [MM:SS].
@@ -249,6 +257,7 @@ TRANSKRIPT ({{sessionLabel}}):
     category: 'feature',
     name: 'Mind Map',
     description: 'Mermaid.js Mindmap · Max. 3 Ebenen · Max. 20 Knoten',
+    usedIn: 'Sitzungsdetail → Mind Map',
     icon: 'git-branch',
     prompt: `Erstelle eine Mind Map für dieses deutsche Gesprächstranskript im Mermaid.js Format.
 Verwende exakt "mindmap" als ersten Bezeichner. Max. 3 Ebenen, max. 20 Knoten.
@@ -269,6 +278,7 @@ mindmap
     category: 'feature',
     name: 'Personen-Profil',
     description: 'Persönlichkeitsprofil · Muster über Gespräche · Beziehungsdynamik',
+    usedIn: 'Personen-Profile → Profil-Synthese',
     icon: 'user',
     prompt: `Du bist ein einfühlsamer, psychologisch geschulter Analyst. Schreibe ein persönliches, tiefgehendes Profil über eine Person, die der Nutzer gut kennt – basierend auf echten Gesprächen.
 
@@ -281,6 +291,7 @@ Schreibe ein prägnantes, persönliches Profil in 4-6 Sätzen. Was ist diese Per
     category: 'feature',
     name: 'Selbst-Synthese',
     description: 'Persönliche Selbstreflexion · Eigene Muster & Werte · Offene Themen',
+    usedIn: 'Personen-Profile → Mein Profil → Selbst-Synthese',
     icon: 'person-standing',
     prompt: `Du schreibst eine persönliche Selbstreflexion für einen Nutzer, basierend auf seinen Gesprächen und Gedanken.
 
@@ -293,6 +304,7 @@ Schreibe eine ehrliche, direkte Selbstreflexion in 4-6 Sätzen. Was beschäftigt
     category: 'feature',
     name: 'Kapitel-Tiefenanalyse',
     description: 'Analyse eines einzelnen Kapitels · Entscheidungen · Stimmung · Kernaussagen',
+    usedIn: 'Sitzungsdetail → Analysen → Kapitel → Tiefenanalyse',
     icon: 'layers',
     prompt: `Du analysierst das Kapitel "{{chapterTitle}}" aus einem deutschen Gesprächstranskript.
 {{prevContext}}
@@ -311,6 +323,7 @@ Antworte direkt auf Deutsch, ohne Überschriften oder Listen.`
     category: 'feature',
     name: 'Kapitel-Synthese',
     description: 'Gesamtbild nach Tiefenanalyse · Roter Faden · Wichtigste Erkenntnisse',
+    usedIn: 'Sitzungsdetail → Analysen → Kapitel → Gesamtbild',
     icon: 'git-merge',
     prompt: `Du hast ein Gespräch kapitelweise analysiert. Erstelle ein abschließendes Gesamtbild.
 
@@ -324,6 +337,7 @@ Fasse in 4–6 Sätzen zusammen: Was war der rote Faden? Was waren die wichtigst
     category: 'feature',
     name: 'Folgegespräch',
     description: 'Reflektierender Begleiter · Analyse als Kontext · Konkrete nächste Schritte',
+    usedIn: 'Sitzungsdetail → Folgegespräch',
     icon: 'message-circle',
     rolle: 'ein reflektierender Gesprächsbegleiter. Du kombinierst die Klarheit eines erfahrenen Coaches mit der Tiefe eines aufmerksamen Zuhörers. Du sprichst die Person direkt an, benennst Muster ehrlich und hilfst ihr, aus Erkenntnissen konkrete Handlungen abzuleiten',
     tonalitaet: 'warm, direkt, in Du-Form. Keine Floskeln, keine langen Einleitungen. Kurze präzise Sätze. Wenn etwas wichtig ist, sagst du es deutlich. Wenn etwas unklar ist, fragst du gezielt nach',
@@ -344,6 +358,7 @@ Beantworte die Folgefrage konkret. Beziehe dich direkt auf die Analyseergebnisse
     category: 'feature',
     name: 'Semantische Suche',
     description: 'Suche über alle Aufnahmen · Claude versteht den Kontext',
+    usedIn: 'Suche → Claude-Suche',
     icon: 'search',
     prompt: `Du bist ein Assistent der in persönlichen Gesprächs-Aufzeichnungen sucht.
 Der Nutzer stellt eine Frage oder sucht nach etwas Bestimmtem.
@@ -402,6 +417,7 @@ const SYSTEM_PROMPTS = [
     id: 'sys_private',
     name: 'Gesprächs-Analyse',
     description: 'Vereinbarungen · Wünsche · Offene Themen · Dynamik · Zwischen den Zeilen',
+    usedIn: 'Sitzungsdetail → Analysen (Basis-Prompt)',
     icon: 'message-circle',
     prompt: `Analysiere das folgende Gesprächstranskript und antworte ausschließlich mit einem JSON-Objekt.
 
@@ -424,6 +440,7 @@ Transkript:
     id: 'sys_work',
     name: 'Arbeits-Analyse',
     description: 'Aufgaben · Entscheidungen · Offene Fragen · Risiken · Zusammenfassung',
+    usedIn: 'Sitzungsdetail → Analysen (Basis-Prompt)',
     icon: 'briefcase',
     prompt: `Analysiere das folgende Arbeitsgespräch-Transkript und antworte ausschließlich mit einem JSON-Objekt.
 
@@ -559,6 +576,13 @@ function _renderPromptsResults() {
       ${label} ${extra}
     </div>`;
 
+  const _usedInChip = (usedIn) => usedIn
+    ? `<div style="margin-top:6px;display:flex;align-items:center;gap:4px">
+        <span style="font-size:0.68rem;color:var(--muted);display:inline-flex;align-items:center;gap:3px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:2px 8px;white-space:nowrap">
+          ${icon('map-pin',10,'color:var(--accent);flex-shrink:0')} ${escHtml(usedIn)}
+        </span>
+      </div>` : '';
+
   const _cardSystem = (p) => `
     <div class="prompt-card">
       <div class="prompt-card-header">
@@ -571,6 +595,7 @@ function _renderPromptsResults() {
         </div>
       </div>
       ${p.description ? `<div class="prompt-card-desc" style="color:var(--muted)">${escHtml(p.description)}</div>` : ''}
+      ${_usedInChip(p.usedIn)}
       <div class="prompt-card-preview">${escHtml(p.prompt.slice(0, 120))}…</div>
     </div>`;
 
@@ -595,6 +620,7 @@ function _renderPromptsResults() {
         </div>
       </div>
       ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
+      ${_usedInChip(p.usedIn)}
       <div class="prompt-card-preview">${escHtml(currentText.slice(0, 120))}${currentText.length > 120 ? '…' : ''}</div>
     </div>`;
   };
@@ -617,6 +643,7 @@ function _renderPromptsResults() {
         </div>
       </div>
       ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
+      ${_usedInChip('Sitzungsdetail → Analysen → Eigene Prompts')}
       ${tags.length ? `<div class="prompt-card-tags">${tags.map(t=>`<span class="tag-chip">${escHtml(t)}</span>`).join('')}</div>` : ''}
       <div class="prompt-card-preview">${escHtml(preview.slice(0, 120))}${preview.length > 120 ? '…' : ''}</div>
     </div>`;
