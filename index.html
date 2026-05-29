@@ -54,14 +54,8 @@
     </div>
   </div>
 
-  <!-- Immer sichtbare Aktionen (Desktop + Mobile) -->
+  <!-- Header rechts: Suche + Hamburger (Mobile) + User -->
   <div style="display:flex; align-items:center; gap:6px; margin-left:auto">
-
-    <!-- Home / Archiv — als erstes -->
-    <button onclick="setView('timeline'); showBrowser();" title="Zur Projektübersicht (Home)" class="hdr-btn"
-      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')">
-      <i data-lucide="home" class="hdr-icon"></i>
-    </button>
 
     <!-- Suche -->
     <button onclick="openSearchModal()" title="Globale Suche (⌘K)" class="hdr-btn"
@@ -71,62 +65,12 @@
       <span class="search-shortcut" style="opacity:0.45; font-size:0.65rem; font-family:monospace">⌘K</span>
     </button>
 
-    <!-- Sidebar-Toggle: nur Mobile sichtbar (via CSS) -->
-    <button id="sidebarToggleBtn" onclick="toggleSidebar()" title="Sitzungen" class="hdr-btn mobile-only"
-      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')">
-      <i data-lucide="panel-left" class="hdr-icon"></i>
-    </button>
-
-    <!-- Hamburger: nur Mobile -->
-    <button id="hamburgerBtn" class="hdr-btn" onclick="toggleMobileMenu()" title="Menü"
+    <!-- Hamburger: nur Mobile — öffnet Sidenav -->
+    <button id="hamburgerBtn" class="hdr-btn" onclick="toggleSidenav()" title="Navigation"
       onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
-      aria-label="Menü öffnen" aria-expanded="false">
-      <i data-lucide="menu" class="hdr-icon" id="hamburgerIcon"></i>
+      aria-label="Navigation öffnen">
+      <i data-lucide="menu" class="hdr-icon"></i>
     </button>
-  </div>
-
-  <!-- Nav-Dropdown (Desktop: flex-row, Mobile: aufklappbar) -->
-  <div id="hdrNav">
-
-    <!-- Theme Toggle -->
-    <button id="themeToggleBtn" onclick="toggleTheme()" title="Hell/Dunkel wechseln" class="hdr-btn"
-      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')">
-      <i data-lucide="moon" class="hdr-icon" id="themeIcon"></i>
-    </button>
-
-    <!-- Personen -->
-    <button id="headerPersonsBtn" onclick="togglePersonsView()" title="Personen-Profile" class="hdr-btn"
-      onmouseover="if(!this.classList.contains('active'))this.classList.add('hdr-btn-hover')"
-      onmouseout="this.classList.remove('hdr-btn-hover')">
-      <i data-lucide="users" class="hdr-icon"></i>
-    </button>
-
-    <!-- Kosten -->
-    <button id="headerCostsBtn" onclick="toggleCostsView()" title="Kostenübersicht" class="hdr-btn"
-      onmouseover="if(!this.classList.contains('active'))this.classList.add('hdr-btn-hover')"
-      onmouseout="this.classList.remove('hdr-btn-hover')">
-      <i data-lucide="bar-chart-2" class="hdr-icon"></i>
-    </button>
-
-    <!-- Prompt-Bibliothek -->
-    <button id="headerPromptsBtn" onclick="togglePromptsView()" title="Prompt-Bibliothek" class="hdr-btn"
-      onmouseover="if(!this.classList.contains('active'))this.classList.add('hdr-btn-hover')"
-      onmouseout="this.classList.remove('hdr-btn-hover')">
-      <i data-lucide="sparkles" class="hdr-icon"></i>
-    </button>
-
-    <!-- Systemarchitektur -->
-    <button id="headerArchBtn" onclick="toggleArchView()" title="Systemarchitektur" class="hdr-btn"
-      onmouseover="if(!this.classList.contains('active'))this.classList.add('hdr-btn-hover')"
-      onmouseout="this.classList.remove('hdr-btn-hover')">
-      <i data-lucide="layers" class="hdr-icon"></i>
-    </button>
-
-    <!-- API-Key -->
-    <div class="api-badge" onclick="openApiModal()">
-      <span class="dot" id="apiBadgeDot"></span>
-      <span id="apiBadgeText">API-Key</span>
-    </div>
 
     <!-- User Badge: Avatar + Version -->
     <div id="userBadge" title="Abmelden" style="
@@ -142,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.35</button>
+        onmouseout="this.style.color='var(--muted)'">v4.36</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -157,23 +101,17 @@
   </div>
 </header>
 
-<!-- Overlay für Mobile-Sidebar (schließt Sidebar bei Klick) -->
-<div id="sidebarOverlay" onclick="closeSidebar()"></div>
+<!-- Overlay für Upload-Panel und Mobile-Sidenav -->
+<div id="uploadOverlay" class="upload-overlay" onclick="closeUploadPanel()"></div>
+<div id="sidenavOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:199" onclick="closeSidenav()"></div>
 
-<!-- ─── LAYOUT ───────────────────────────────────── -->
-<div class="layout">
-
-  <!-- ─── SIDEBAR ────────────────────────────────── -->
-  <aside>
-
-    <!-- Mobile: Schließen-Button (via CSS eingeblendet) -->
-    <div class="sidebar-close-bar" style="display:none">
-      <button onclick="closeSidebar()" class="hdr-btn"
-        style="margin-left:auto; display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--muted)">
-        <i data-lucide="x" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"></i>
-        Schließen
-      </button>
-    </div>
+<!-- ─── UPLOAD SLIDE-IN PANEL ─────────────────────── -->
+<div class="upload-panel" id="uploadPanel">
+  <div class="upload-panel-head">
+    <h3><i data-lucide="upload" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Neue Aufnahme</h3>
+    <button class="upload-panel-close" onclick="closeUploadPanel()">×</button>
+  </div>
+  <div class="upload-panel-body">
 
     <!-- Schritt 1: API-Key -->
     <div class="step-block" id="step1">
@@ -199,8 +137,7 @@
       </div>
       <div class="step-body">
         <div class="field" style="margin-bottom:10px">
-          <input type="text" id="sessionLabel" placeholder="z.B. Gespräch 21. Mai 2026"
-            oninput="checkUploadReady()" />
+          <input type="text" id="sessionLabel" placeholder="z.B. Gespräch 21. Mai 2026" oninput="checkUploadReady()" />
         </div>
         <div class="field" style="margin-bottom:10px">
           <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Aufnahmedatum</label>
@@ -235,15 +172,12 @@
         <span class="step-check" id="step3Check"></span>
       </div>
       <div class="step-body">
-        <!-- Drive-Verbindungsstatus -->
         <div id="driveStatusRow" style="margin-bottom:10px">
           <div style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; font-size:0.82rem;">
             <span id="driveStatusDot" style="width:8px; height:8px; border-radius:50%; background:var(--red); flex-shrink:0"></span>
             <span id="driveStatusText" style="color:var(--muted)">Nicht verbunden</span>
           </div>
         </div>
-
-        <!-- Unterordner-Auswahl (nur sichtbar wenn Drive verbunden) -->
         <div id="driveSubfolderSection" style="display:none">
           <p style="font-size:0.72rem; color:var(--muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Archiv-Unterordner wählen:</p>
           <div id="driveSubfolderList" style="margin-bottom:8px"></div>
@@ -252,10 +186,7 @@
             <span class="archive-label">Neuen Unterordner anlegen…</span>
           </button>
         </div>
-
-        <p style="font-size:0.72rem; color:var(--muted); margin-top:8px; line-height:1.5">
-          Jede Sitzung wird mit Audio in dem gewählten Unterordner in Google Drive gespeichert.
-        </p>
+        <p style="font-size:0.72rem; color:var(--muted); margin-top:8px; line-height:1.5">Jede Sitzung wird mit Audio in dem gewählten Unterordner in Google Drive gespeichert.</p>
         <button onclick="openCleanupModal()" style="margin-top:10px; width:100%; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.4); color:var(--red); border-radius:8px; padding:8px 12px; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:6px;">
           <i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> AssemblyAI bereinigen…
         </button>
@@ -269,11 +200,7 @@
         <span class="step-title">Aufnahme hochladen</span>
       </div>
       <div class="step-body">
-        <!-- Sprecher-Vorschau (automatisch aus Schritt 2) -->
-        <div id="speakerSummary" style="
-          display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;
-          padding:8px 12px; background:var(--surface2); border:1px solid var(--border);
-          border-radius:8px; font-size:0.82rem; color:var(--muted);">
+        <div id="speakerSummary" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; font-size:0.82rem; color:var(--muted);">
           <span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)">Ich</strong></span>
           <span style="color:var(--border)">·</span>
           <span><span style="color:var(--speaker-b)">●</span> <strong style="color:var(--text)" id="speakerBPreview">Gesprächspartner</strong></span>
@@ -292,8 +219,69 @@
       </div>
     </div>
 
+  </div>
+</div>
 
-  </aside>
+<!-- ─── LAYOUT ───────────────────────────────────── -->
+<div class="layout">
+
+  <!-- ─── LINKE NAVIGATION ─────────────────────── -->
+  <nav class="sidenav" id="sidenav">
+
+    <!-- + Neue Aufnahme -->
+    <button class="sidenav-new" onclick="openUploadPanel()">
+      <i data-lucide="plus" style="width:15px;height:15px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0"></i>
+      Neue Aufnahme
+    </button>
+
+    <div class="sidenav-label">Archiv</div>
+    <button class="sidenav-item active" id="navGrid" onclick="setView('grid'); showBrowser(); setSidenavActive(this)">
+      <i data-lucide="layout-grid" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Kacheln
+    </button>
+    <button class="sidenav-item" id="navTimeline" onclick="setView('timeline'); showBrowser(); setSidenavActive(this)">
+      <i data-lucide="list" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Zeitstrahl
+    </button>
+
+    <div class="sidenav-sep"></div>
+    <div class="sidenav-label">Analyse</div>
+    <button class="sidenav-item" id="navPersons" id="headerPersonsBtn" onclick="togglePersonsView(); setSidenavActive(this)">
+      <i data-lucide="users" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Personen
+    </button>
+    <button class="sidenav-item" id="navCosts" id="headerCostsBtn" onclick="toggleCostsView(); setSidenavActive(this)">
+      <i data-lucide="bar-chart-2" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Kosten
+    </button>
+    <button class="sidenav-item" id="navPrompts" id="headerPromptsBtn" onclick="togglePromptsView(); setSidenavActive(this)">
+      <i data-lucide="sparkles" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Prompts
+    </button>
+
+    <div class="sidenav-sep"></div>
+    <div class="sidenav-bottom">
+      <div class="sidenav-label">System</div>
+      <a class="sidenav-item" href="help.html" target="_blank">
+        <i data-lucide="help-circle" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        Hilfe
+      </a>
+      <button class="sidenav-item" onclick="openApiModal()">
+        <i data-lucide="key" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        API-Keys
+        <span class="dot" id="apiBadgeDot" style="width:7px;height:7px;border-radius:50%;background:var(--red);margin-left:auto;flex-shrink:0"></span>
+      </button>
+      <button class="sidenav-item" id="navArch" id="headerArchBtn" onclick="toggleArchView(); setSidenavActive(this)">
+        <i data-lucide="layers" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        Architektur
+      </button>
+      <button class="sidenav-item" id="themeToggleBtn" onclick="toggleTheme()">
+        <i data-lucide="moon" class="hdr-icon" id="themeIcon" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        <span id="themeLabel">Dunkel</span>
+      </button>
+    </div>
+
+  </nav>
 
   <!-- ─── MAIN ──────────────────────────────────── -->
   <main id="mainContent">
@@ -732,6 +720,22 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.36 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.36</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Neue linke Navigation</strong> – Die Upload-Sidebar (340px) wurde durch eine schlanke linke Sidenav (200px) ersetzt. Alle Header-Buttons (Personen, Kosten, Prompts, Architektur, Theme, API-Keys, Hilfe) sind jetzt in der Sidenav mit Text-Labels sichtbar.</li>
+          <li><strong>„Neue Aufnahme" als Slide-In Panel</strong> – Der komplette Upload-Workflow öffnet sich per Klick als Slide-In Panel von rechts, mit Overlay-Hintergrund. Panel schließt sich über × oder Klick außerhalb.</li>
+          <li><strong>Mehr Platz für Inhalte</strong> – Hauptinhalt nutzt den gewonnenen Platz, bleibt aber max-width-begrenzt (kein unkontrolliertes Full-Width-Strecken).</li>
+          <li><strong>Responsive / Mobile</strong> – Auf Smartphones öffnet der Hamburger-Button die Sidenav als Overlay. Das Upload-Panel nimmt auf Mobile die volle Breite ein.</li>
+        </ul>
+        <div class="cl-tech">css/styles.css: .sidenav, .upload-panel, .upload-overlay neu. index.html: nav.sidenav + upload-panel ersetzen aside. js/ui.js: openUploadPanel(), closeUploadPanel(), toggleSidenav(), closeSidenav(), setSidenavActive(). js/app.js: applyTheme() + themeLabel. js/config.js: updateApiIndicator() ohne apiBadgeText.</div>
+      </div>
 
       <!-- ── v4.35 ── -->
       <div class="cl-entry">

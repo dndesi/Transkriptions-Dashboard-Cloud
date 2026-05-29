@@ -149,13 +149,8 @@ function saveSessions() {
 // ═══════════════════════════════════════════════════
 function updateApiIndicator() {
   const dot = document.getElementById('apiBadgeDot');
-  const text = document.getElementById('apiBadgeText');
-  if (apiKey) {
-    dot.classList.add('ok');
-    text.innerHTML = 'API-Key gesetzt ' + icon('check',11,'color:var(--green)');
-  } else {
-    dot.classList.remove('ok');
-    text.textContent = 'API-Key eingeben';
+  if (dot) {
+    dot.style.background = apiKey ? 'var(--green)' : 'var(--red)';
   }
   checkUploadReady();
 }

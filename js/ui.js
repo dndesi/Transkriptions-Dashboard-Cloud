@@ -1,3 +1,43 @@
+// ── Upload-Panel (Neue Aufnahme Slide-In) ─────────────────────────────────
+function openUploadPanel() {
+  document.getElementById('uploadPanel')?.classList.add('open');
+  document.getElementById('uploadOverlay')?.classList.add('open');
+  // Sidenav auf Mobile schließen
+  closeSidenav();
+}
+function closeUploadPanel() {
+  document.getElementById('uploadPanel')?.classList.remove('open');
+  document.getElementById('uploadOverlay')?.classList.remove('open');
+}
+
+// ── Sidenav Mobile Toggle ──────────────────────────────────────────────────
+function toggleSidenav() {
+  const nav = document.getElementById('sidenav');
+  const overlay = document.getElementById('sidenavOverlay');
+  if (!nav) return;
+  const isOpen = nav.classList.contains('mobile-open');
+  if (isOpen) {
+    nav.classList.remove('mobile-open');
+    if (overlay) overlay.style.display = 'none';
+  } else {
+    nav.classList.add('mobile-open');
+    if (overlay) overlay.style.display = 'block';
+  }
+}
+function closeSidenav() {
+  document.getElementById('sidenav')?.classList.remove('mobile-open');
+  const overlay = document.getElementById('sidenavOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+// ── Aktiven Nav-Link setzen ────────────────────────────────────────────────
+function setSidenavActive(el) {
+  document.querySelectorAll('.sidenav-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+  // Auf Mobile Sidenav schließen nach Klick
+  if (window.innerWidth <= 768) closeSidenav();
+}
+
 // TRANSCRIPT RENDERING
 // ═══════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════
@@ -355,7 +395,7 @@ function toggleArchView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v4.35';
+  const title = 'Distill Voice – Systemarchitektur v4.36';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }
@@ -439,6 +479,7 @@ function renderArchView() {
       ${flowCard('drive.js', 'Cloud Storage', 'Google Drive OAuth, Ordner anlegen, Sessions als JSON speichern/laden/löschen', '#34d399')}
       ${flowCard('features.js', 'Erweiterte Features', '360°-Analyse, Aufnahme befragen (Chat), Mind Map (D3.js v7, JSON-Format, horizontal LTR, Zoom/Pan, SVG/PDF-Export)', '#f59e0b')}
       ${flowCard('claude.js (Follow-Up)', 'Folgegespräch', 'Analyse-Kontext aufbauen (_buildFollowUpContext), Folgefragen stellen (askFollowUp), Verlauf in session.claudeFollowUp[] speichern', '#06b6d4')}
+      ${flowCard('ui.js (Navigation)', 'Sidenav', 'openUploadPanel/closeUploadPanel, toggleSidenav/closeSidenav, setSidenavActive – neue linke Navigation ersetzt 340px Upload-Sidebar', '#8b5cf6')}
       ${flowCard('claude.js (Präsentation)', 'Präsentation erstellen', 'generatePresentation(), _renderPresentationPreview(), exportPresentationPptx() via PptxGenJS. 3 Prompt-Typen wählbar. session.claudePresentation[] speichert Ergebnis', '#f43f5e')}
       ${flowCard('prompts.js', 'Prompt-Bibliothek', 'System/Standard/Feature-Prompts, editierbare Overrides in localStorage, eigene Prompts', '#a78bfa')}
       ${flowCard('search.js', 'Globale Suche', 'Instant-Textsuche über alle Felder + Claude-Semantiksuche', '#6ee7b7')}

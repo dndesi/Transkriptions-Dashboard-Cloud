@@ -89,9 +89,11 @@ function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   const icon = document.getElementById('themeIcon');
   if (icon) {
-    icon.setAttribute('data-lucide', theme === 'light' ? 'moon' : 'sun');
-    if (window.lucide) lucide.createIcons({ nodes: [icon] });
+    icon.setAttribute('data-lucide', theme === 'light' ? 'sun' : 'moon');
+    if (window.lucide) lucide.createIcons({ nodes: [icon.parentElement || icon] });
   }
+  const label = document.getElementById('themeLabel');
+  if (label) label.textContent = theme === 'light' ? 'Hell' : 'Dunkel';
   localStorage.setItem('dashboardTheme', theme);
 }
 function toggleTheme() {
