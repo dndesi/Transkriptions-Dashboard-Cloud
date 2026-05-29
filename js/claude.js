@@ -740,7 +740,7 @@ function toggleAccPanel(panelId) {
 
 function _saveAccState() {
   if (!currentSessionId) return;
-  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen','accMindmap'];
+  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen','accMindmap','accFolgegespraech'];
   const open = panels.filter(id => {
     const el = document.getElementById(id);
     return el && el.classList.contains('open');
@@ -749,7 +749,7 @@ function _saveAccState() {
 }
 
 function _restoreAccState(sessionId) {
-  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen','accMindmap'];
+  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen','accMindmap','accFolgegespraech'];
   // Alle schließen
   panels.forEach(id => {
     const el = document.getElementById(id);
@@ -1128,6 +1128,8 @@ function showTranscript(session) {
     const mp = document.getElementById('mindmapPanelRender');
     if (mp) mp.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">Noch keine Mind Map generiert – klicke oben auf „Mind Map" oder „Neu generieren".</span>';
   }
+  // Folgegespräch-Panel befüllen
+  renderFollowUpMessages(session);
   _restoreAccState(session.id);
 }
 
@@ -1235,6 +1237,164 @@ function changeSessionType(newType) {
   saveSessions();
   saveToArchive(session);
   updateAnalyseDropdown();
+}
+
+// ── Folgegespräch (Analyse als Kontext) ───────────────────────────────────
+
+// Baut alle vorhandenen Analyse-Ergebnisse als lesbaren Text zusammen
+function _buildFollowUpContext(session) {
+  const lines = [];
+
+  if (session.privateAnalysis) {
+    const p = session.privateAnalysis;
+    lines.push('=== GESPRÄCHSANALYSE ===');
+    if (p.summary)        lines.push('Zusammenfassung: ' + p.summary);
+    if (p.dynamics)       lines.push('Dynamik: ' + p.dynamics);
+    if (p.zwischenzeilen) lines.push('Zwischen den Zeilen: ' + p.zwischenzeilen);
+    if (p.agreements?.length)  lines.push('Vereinbarungen:\n' + p.agreements.map(x => '- ' + x).join('\n'));
+    if (p.wishes?.length)      lines.push('Wünsche/Bedürfnisse:\n' + p.wishes.map(x => '- ' + x).join('\n'));
+    if (p.openTopics?.length)  lines.push('Offene Themen:\n' + p.openTopics.map(x => '- ' + x).join('\n'));
+    if (p.keyThoughts?.length) lines.push('Kerngedanken:\n' + p.keyThoughts.map(x => '- ' + x).join('\n'));
+    if (p.nextSteps?.length)   lines.push('Nächste Schritte:\n' + p.nextSteps.map(x => '- ' + x).join('\n'));
+    lines.push('');
+  }
+
+  if (session.workAnalysis) {
+    const w = session.workAnalysis;
+    lines.push('=== ARBEITSANALYSE ===');
+    if (w.summary)        lines.push('Zusammenfassung: ' + w.summary);
+    if (w.zwischenzeilen) lines.push('Zwischen den Zeilen: ' + w.zwischenzeilen);
+    if (w.tasks?.length)         lines.push('Aufgaben:\n' + w.tasks.map(x => '- ' + (x.text || x)).join('\n'));
+    if (w.decisions?.length)     lines.push('Entscheidungen:\n' + w.decisions.map(x => '- ' + (x.text || x)).join('\n'));
+    if (w.openQuestions?.length) lines.push('Offene Fragen:\n' + w.openQuestions.map(x => '- ' + (x.text || x)).join('\n'));
+    if (w.risks?.length)         lines.push('Risiken:\n' + w.risks.map(x => '- ' + (x.text || x)).join('\n'));
+    lines.push('');
+  }
+
+  if (session.claudeSentiment) {
+    const s = session.claudeSentiment;
+    lines.push('=== STIMMUNGSANALYSE ===');
+    if (s.overall)  lines.push('Gesamt: ' + s.overall);
+    if (s.speakerA) lines.push((session.speakerA || 'A') + ': ' + s.speakerA);
+    if (s.speakerB) lines.push((session.speakerB || 'B') + ': ' + s.speakerB);
+    lines.push('');
+  }
+
+  if (session.claudeTopics?.length) {
+    lines.push('=== THEMEN ===');
+    session.claudeTopics.forEach(t => lines.push('- ' + (typeof t === 'string' ? t : t.text)));
+    lines.push('');
+  }
+
+  if (session.claudeChapters?.length) {
+    lines.push('=== KAPITEL ===');
+    session.claudeChapters.forEach(c => lines.push(`${formatMs(c.start)}  ${c.title}`));
+    if (session.claudeChapterSynthesis) lines.push('\nGesamtbild:\n' + session.claudeChapterSynthesis);
+    lines.push('');
+  }
+
+  if (session.claude360) {
+    lines.push('=== 360°-AUSWERTUNG ===');
+    lines.push(typeof session.claude360 === 'string' ? session.claude360 : JSON.stringify(session.claude360, null, 2));
+    lines.push('');
+  }
+
+  if (session.customResults) {
+    Object.entries(session.customResults).forEach(([id, entry]) => {
+      lines.push(`=== ${entry.name || id} ===`);
+      lines.push(entry.result || '');
+      lines.push('');
+    });
+  }
+
+  return lines.join('\n').trim();
+}
+
+// Rendert alle gespeicherten Follow-Up-Nachrichten ins Panel
+function renderFollowUpMessages(session) {
+  const container = document.getElementById('followUpMessages');
+  if (!container) return;
+  const msgs = session?.claudeFollowUp || [];
+  if (!msgs.length) {
+    container.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">Noch keine Fragen gestellt – tippe unten eine Folgefrage ein.</span>';
+    return;
+  }
+  container.innerHTML = msgs.map(m => `
+    <div style="margin-bottom:16px">
+      <div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">Deine Frage</div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:0.9rem">${escHtml(m.question)}</div>
+    </div>
+    <div style="margin-bottom:24px">
+      <div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">Claude</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:0.9rem;white-space:pre-wrap;line-height:1.6">${escHtml(m.answer)}</div>
+    </div>
+  `).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+async function askFollowUp() {
+  const session = getSession(currentSessionId);
+  if (!session) { showToast('Keine aktive Sitzung.', 'warning'); return; }
+
+  const input = document.getElementById('followUpInput');
+  const btn   = document.getElementById('followUpSendBtn');
+  const question = input?.value?.trim();
+  if (!question) { showToast('Bitte erst eine Frage eingeben.', 'warning'); return; }
+  if (!anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'warning'); return; }
+
+  const analysisContext = _buildFollowUpContext(session);
+  if (!analysisContext) { showToast('Noch keine Analysen vorhanden – bitte erst Analysen durchführen.', 'warning'); return; }
+
+  // UI: Lade-Zustand
+  btn.disabled = true;
+  btn.innerHTML = icon('loader', 13, 'margin-right:5px') + ' Analysiere…';
+
+  const { forward, reverse } = buildAnonMap(session);
+  const transcript = buildTranscriptText(session);
+
+  const prompt = `Du hast folgendes Gespräch analysiert und diese Ergebnisse erstellt:
+
+ANALYSEERGEBNISSE:
+${analysisContext}
+
+ORIGINAL-TRANSKRIPT (Auszug):
+${trimTranscript(transcript, 100000)}
+
+Jetzt stellt der Nutzer eine Folgefrage zu deinen Analysen:
+
+FRAGE: ${question}
+
+Beantworte die Frage präzise und beziehe dich konkret auf die oben stehenden Analyseergebnisse. Antworte auf Deutsch.`;
+
+  try {
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
+    addTokensToSession(session, inputTokens, outputTokens);
+    const answer = deanonymizeObject(text, reverse);
+
+    if (!session.claudeFollowUp) session.claudeFollowUp = [];
+    session.claudeFollowUp.push({ question, answer, ts: new Date().toISOString() });
+
+    saveSessions();
+    await saveToArchive(session);
+    renderFollowUpMessages(session);
+    if (input) input.value = '';
+  } catch (e) {
+    showToast('Fehler: ' + (e.message || 'Unbekannt'), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = icon('send', 13, 'margin-right:5px') + ' Senden';
+  }
+}
+
+function clearFollowUp() {
+  const session = getSession(currentSessionId);
+  if (!session) return;
+  if (!session.claudeFollowUp?.length) return;
+  session.claudeFollowUp = [];
+  saveSessions();
+  saveToArchive(session);
+  renderFollowUpMessages(session);
+  showToast('Folgegespräch gelöscht', 'ok');
 }
 
 function renderUtterances(session) {

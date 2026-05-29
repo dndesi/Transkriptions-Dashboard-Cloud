@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.24</button>
+        onmouseout="this.style.color='var(--muted)'">v4.25</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -617,6 +617,32 @@
           </div>
         </div>
 
+        <!-- ── Folgegespräch ─────────────────────────────── -->
+        <div class="acc-panel" id="accFolgegespraech">
+          <button class="acc-panel-header" onclick="toggleAccPanel('accFolgegespraech')">
+            <span style="display:flex;align-items:center;gap:8px">
+              <i data-lucide="message-circle" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i>
+              Folgegespräch
+            </span>
+            <span class="acc-chevron">▾</span>
+          </button>
+          <div class="acc-panel-body">
+            <div style="padding:10px 16px 8px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--border)">
+              <span style="font-size:0.8rem;color:var(--muted);flex:1">Stelle Folgefragen zu den erstellten Analysen – Claude kennt alle Ergebnisse als Kontext.</span>
+              <button onclick="clearFollowUp()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer">Löschen</button>
+            </div>
+            <div id="followUpMessages" style="padding:16px;max-height:400px;overflow-y:auto;min-height:60px">
+              <span style="color:var(--muted);font-size:0.85rem">Noch keine Fragen gestellt – tippe unten eine Folgefrage ein.</span>
+            </div>
+            <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end">
+              <textarea id="followUpInput" rows="2" placeholder="z.B. Was wäre ein guter nächster Schritt für mich?" style="flex:1;resize:vertical;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.88rem;font-family:inherit;line-height:1.5" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){askFollowUp()}"></textarea>
+              <button id="followUpSendBtn" onclick="askFollowUp()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
+                <i data-lucide="send" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Senden
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
       <!-- /session-accordion -->
 
@@ -636,6 +662,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.25 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.25</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Folgegespräch</strong> – Neues Akkordeon-Panel in der Sitzungsansicht. Stelle Folgefragen zu den bereits erstellten Analysen – Claude bekommt alle Analyse-Ergebnisse (Gesprächsanalyse, Arbeitsanalyse, Stimmung, Kapitel, Themen, 360°, eigene Prompts) als Kontext mitgegeben.</li>
+          <li><strong>Mehrere Fragen möglich</strong> – Alle Fragen und Antworten werden untereinander gespeichert und sind nach dem Neuladen der Sitzung weiterhin sichtbar.</li>
+          <li><strong>Tastenkürzel</strong> – Strg+Enter (Mac: ⌘+Enter) sendet die Frage direkt ab.</li>
+        </ul>
+        <div class="cl-tech">claude.js: _buildFollowUpContext(), renderFollowUpMessages(), askFollowUp(), clearFollowUp(). index.html: accFolgegespraech-Panel. session.claudeFollowUp[] speichert alle Fragen/Antworten mit Zeitstempel.</div>
+      </div>
 
       <!-- ── v4.24 ── -->
       <div class="cl-entry">
