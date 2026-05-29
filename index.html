@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.25</button>
+        onmouseout="this.style.color='var(--muted)'">v4.26</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -662,6 +662,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.26 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.26</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Folgegespräch-Prompt in Bibliothek</strong> – Der Prompt hinter dem Folgegespräch-Panel ist jetzt als editierbarer Eintrag „Folgegespräch" in der Prompt-Bibliothek hinterlegt (Kategorie: Feature). Rolle, Tonalität, Grenzen und Kernaufgabe sind vollständig ausgefüllt und individuell anpassbar.</li>
+          <li><strong>Rolle: Reflektierender Begleiter</strong> – Claude agiert als einfühlsamer Coach-Begleiter: direkt, wertschätzend, in Du-Form, ohne klinische Diagnosen oder moralische Urteile.</li>
+          <li><strong>Platzhalter</strong> – <code>{{analyseContext}}</code>, <code>{{transcript}}</code>, <code>{{question}}</code> werden beim Absenden automatisch befüllt.</li>
+        </ul>
+        <div class="cl-tech">prompts.js: builtin_followup mit rolle/tonalitaet/grenzen/prompt. claude.js: askFollowUp() nutzt getEditablePromptText('builtin_followup') statt hardcodiertem Prompt.</div>
+      </div>
 
       <!-- ── v4.25 ── -->
       <div class="cl-entry">

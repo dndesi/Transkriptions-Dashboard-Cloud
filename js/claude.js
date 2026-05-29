@@ -1352,19 +1352,10 @@ async function askFollowUp() {
   const { forward, reverse } = buildAnonMap(session);
   const transcript = buildTranscriptText(session);
 
-  const prompt = `Du hast folgendes Gespräch analysiert und diese Ergebnisse erstellt:
-
-ANALYSEERGEBNISSE:
-${analysisContext}
-
-ORIGINAL-TRANSKRIPT (Auszug):
-${trimTranscript(transcript, 100000)}
-
-Jetzt stellt der Nutzer eine Folgefrage zu deinen Analysen:
-
-FRAGE: ${question}
-
-Beantworte die Frage präzise und beziehe dich konkret auf die oben stehenden Analyseergebnisse. Antworte auf Deutsch.`;
+  const prompt = getEditablePromptText('builtin_followup')
+    .replace(/\{\{analyseContext\}\}/g, analysisContext)
+    .replace(/\{\{transcript\}\}/g, trimTranscript(transcript, 100000))
+    .replace(/\{\{question\}\}/g, question);
 
   try {
     const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));

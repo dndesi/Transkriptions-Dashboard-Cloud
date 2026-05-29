@@ -353,7 +353,7 @@ function toggleArchView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v4.25';
+  const title = 'Distill Voice – Systemarchitektur v4.26';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }
@@ -473,7 +473,7 @@ function renderArchView() {
         ${techRow('Kalender', 'Google Calendar API v3 · Europe/Berlin Zeitzone')}
         ${techRow('E-Mail', 'Gmail API v1 · RFC 2822 · Base64url · Entwurfsmodus')}
         ${techRow('Mind Map', 'Mermaid.js v10 (CDN) · gecacht in session.claudeMindmap · SVG/PDF-Export')}
-        ${techRow('Folgegespräch', 'Alle Analyse-Ergebnisse als Kontext · session.claudeFollowUp[] · DSGVO-Anonymisierung aktiv')}
+        ${techRow('Folgegespräch', 'builtin_followup in Prompt-Bibliothek · Platzhalter: analyseContext/transcript/question · session.claudeFollowUp[] · DSGVO-Anonymisierung aktiv')}
         ${techRow('Prompt-System', 'Editierbare Prompts in localStorage · System/Standard/Feature/Eigene')}
         ${techRow('Akkordeon', 'Sitzungsdetail als Akkordeon · Zustand in localStorage pro Session')}
         ${techRow('OAuth Scopes', 'drive.file · userinfo.profile · calendar.events · gmail.compose')}
