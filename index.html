@@ -57,6 +57,14 @@
   <!-- Header rechts: Suche + Hamburger (Mobile) + User -->
   <div style="display:flex; align-items:center; gap:6px; margin-left:auto">
 
+    <!-- Suche -->
+    <button onclick="openSearchModal()" title="Globale Suche (⌘K)" class="hdr-btn"
+      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
+      style="display:flex;align-items:center;gap:5px">
+      <i data-lucide="search" class="hdr-icon"></i>
+      <span class="search-shortcut" style="opacity:0.45; font-size:0.65rem; font-family:monospace">⌘K</span>
+    </button>
+
     <!-- Hamburger: nur Mobile — öffnet Sidenav -->
     <button id="hamburgerBtn" class="hdr-btn" onclick="toggleSidenav()" title="Navigation"
       onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
@@ -78,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.37</button>
+        onmouseout="this.style.color='var(--muted)'">v4.38</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -93,126 +101,10 @@
   </div>
 </header>
 
-<!-- Overlay für Upload-Panel und Mobile-Sidenav -->
-<div id="uploadOverlay" class="upload-overlay" onclick="closeUploadPanel()"></div>
+<!-- Overlay für Mobile-Sidenav -->
 <div id="sidenavOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:199" onclick="closeSidenav()"></div>
 
 <!-- ─── UPLOAD SLIDE-IN PANEL ─────────────────────── -->
-<div class="upload-panel" id="uploadPanel">
-  <div class="upload-panel-head">
-    <h3><i data-lucide="upload" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Neue Aufnahme</h3>
-    <button class="upload-panel-close" onclick="closeUploadPanel()">×</button>
-  </div>
-  <div class="upload-panel-body">
-
-    <!-- Schritt 1: API-Key -->
-    <div class="step-block" id="step1">
-      <div class="step-header" style="cursor:pointer" onclick="openApiModal()">
-        <span class="step-number">1</span>
-        <span class="step-title">API-Key</span>
-        <span class="step-check" id="step1Check"></span>
-      </div>
-      <div class="step-body" id="step1Body" style="display:none">
-        <p style="font-size:0.78rem; color:var(--muted); line-height:1.5">
-          AssemblyAI-Key unter <strong style="color:var(--text)">app.assemblyai.com → API Key</strong> finden und oben rechts eingeben.
-        </p>
-        <button class="btn btn-primary" style="width:100%; margin-top:10px; justify-content:center; gap:6px; display:flex; align-items:center" onclick="openApiModal()"><i data-lucide="key" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Key eingeben</button>
-      </div>
-    </div>
-
-    <!-- Schritt 2: Sitzungsname -->
-    <div class="step-block locked" id="step2">
-      <div class="step-header">
-        <span class="step-number">2</span>
-        <span class="step-title">Sitzungsname</span>
-        <span class="step-check" id="step2Check"></span>
-      </div>
-      <div class="step-body">
-        <div class="field" style="margin-bottom:10px">
-          <input type="text" id="sessionLabel" placeholder="z.B. Gespräch 21. Mai 2026" oninput="checkUploadReady()" />
-        </div>
-        <div class="field" style="margin-bottom:10px">
-          <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Aufnahmedatum</label>
-          <input type="datetime-local" id="sessionDate" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none;" />
-        </div>
-        <div class="field" style="margin-bottom:10px">
-          <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Gesprächstyp</label>
-          <select id="sessionType" onchange="onSessionTypeChange()" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.88rem; outline:none; cursor:pointer;">
-            <option value="privat">Privat</option>
-            <option value="arbeit">Arbeit</option>
-            <option value="gedanken">Eigene Gedanken</option>
-          </select>
-        </div>
-        <div class="field" style="margin-bottom:0; position:relative">
-          <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Beteiligte Personen</label>
-          <input type="text" id="sessionPersons" placeholder="z.B. Eva, Markus (kommagetrennt)"
-            oninput="updateSpeakerSummary(); showPersonsAutocomplete(this)"
-            onkeydown="handlePersonsKey(event)"
-            onblur="setTimeout(()=>hidePersonsAutocomplete(),200)"
-            autocomplete="off"
-            style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.88rem; outline:none;" />
-          <div id="personsAutocomplete" class="persons-autocomplete" style="display:none"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Schritt 3: Google Drive -->
-    <div class="step-block locked" id="step3">
-      <div class="step-header">
-        <span class="step-number">3</span>
-        <span class="step-title">Google Drive</span>
-        <span class="step-check" id="step3Check"></span>
-      </div>
-      <div class="step-body">
-        <div id="driveStatusRow" style="margin-bottom:10px">
-          <div style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; font-size:0.82rem;">
-            <span id="driveStatusDot" style="width:8px; height:8px; border-radius:50%; background:var(--red); flex-shrink:0"></span>
-            <span id="driveStatusText" style="color:var(--muted)">Nicht verbunden</span>
-          </div>
-        </div>
-        <div id="driveSubfolderSection" style="display:none">
-          <p style="font-size:0.72rem; color:var(--muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Archiv-Unterordner wählen:</p>
-          <div id="driveSubfolderList" style="margin-bottom:8px"></div>
-          <button onclick="createDriveSubfolder()" class="archive-btn" style="margin-top:4px">
-            <span class="archive-icon"><i data-lucide="plus" style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none"></i></span>
-            <span class="archive-label">Neuen Unterordner anlegen…</span>
-          </button>
-        </div>
-        <p style="font-size:0.72rem; color:var(--muted); margin-top:8px; line-height:1.5">Jede Sitzung wird mit Audio in dem gewählten Unterordner in Google Drive gespeichert.</p>
-        <button onclick="openCleanupModal()" style="margin-top:10px; width:100%; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.4); color:var(--red); border-radius:8px; padding:8px 12px; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:6px;">
-          <i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> AssemblyAI bereinigen…
-        </button>
-      </div>
-    </div>
-
-    <!-- Schritt 4: Datei hochladen -->
-    <div class="step-block locked" id="step4">
-      <div class="step-header">
-        <span class="step-number">4</span>
-        <span class="step-title">Aufnahme hochladen</span>
-      </div>
-      <div class="step-body">
-        <div id="speakerSummary" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; font-size:0.82rem; color:var(--muted);">
-          <span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)">Ich</strong></span>
-          <span style="color:var(--border)">·</span>
-          <span><span style="color:var(--speaker-b)">●</span> <strong style="color:var(--text)" id="speakerBPreview">Gesprächspartner</strong></span>
-        </div>
-        <div class="upload-zone disabled" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-          <div class="upload-icon"><i data-lucide="mic" style="width:32px;height:32px;stroke:var(--muted);stroke-width:1.5;fill:none"></i></div>
-          <p><span>Datei auswählen</span> oder hier ablegen</p>
-          <p style="font-size:0.75rem; margin-top:6px; color:var(--muted)">MP3, WAV, M4A, OGG · max. 2 GB</p>
-        </div>
-        <div class="upload-hint" id="uploadHint"></div>
-        <input type="file" id="fileInput" accept="audio/*,video/*" onchange="handleFileSelect(event)" />
-        <button class="record-btn disabled" id="recordBtn" onclick="toggleRecording()" style="pointer-events:none;opacity:0.4">
-          <span class="record-dot" id="recordDot"></span>
-          <span id="recordBtnLabel" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="mic" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i> Direkt aufnehmen</span>
-        </button>
-      </div>
-    </div>
-
-  </div>
-</div>
 
 <!-- ─── LAYOUT ───────────────────────────────────── -->
 <div class="layout">
@@ -226,14 +118,6 @@
       Neue Aufnahme
     </button>
 
-    <!-- Suche -->
-    <button class="sidenav-item" onclick="openSearchModal()" style="margin-bottom:4px">
-      <i data-lucide="search" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-      Suche
-      <span style="margin-left:auto;font-size:0.68rem;opacity:0.45;font-family:monospace">⌘K</span>
-    </button>
-
-    <div class="sidenav-sep"></div>
     <div class="sidenav-label">Archiv</div>
     <button class="sidenav-item active" id="navGrid" onclick="setView('grid'); showBrowser(); setSidenavActive(this)">
       <i data-lucide="layout-grid" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
@@ -282,6 +166,123 @@
     </div>
 
   </nav>
+
+
+  <div class="upload-panel" id="uploadPanel">
+    <div class="upload-panel-head">
+      <h3><i data-lucide="upload" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Neue Aufnahme</h3>
+      <button class="upload-panel-close" onclick="closeUploadPanel()">×</button>
+    </div>
+    <div class="upload-panel-body">
+
+      <!-- Schritt 1: API-Key -->
+      <div class="step-block" id="step1">
+        <div class="step-header" style="cursor:pointer" onclick="openApiModal()">
+          <span class="step-number">1</span>
+          <span class="step-title">API-Key</span>
+          <span class="step-check" id="step1Check"></span>
+        </div>
+        <div class="step-body" id="step1Body" style="display:none">
+          <p style="font-size:0.78rem; color:var(--muted); line-height:1.5">
+            AssemblyAI-Key unter <strong style="color:var(--text)">app.assemblyai.com → API Key</strong> finden und oben rechts eingeben.
+          </p>
+          <button class="btn btn-primary" style="width:100%; margin-top:10px; justify-content:center; gap:6px; display:flex; align-items:center" onclick="openApiModal()"><i data-lucide="key" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Key eingeben</button>
+        </div>
+      </div>
+
+      <!-- Schritt 2: Sitzungsname -->
+      <div class="step-block locked" id="step2">
+        <div class="step-header">
+          <span class="step-number">2</span>
+          <span class="step-title">Sitzungsname</span>
+          <span class="step-check" id="step2Check"></span>
+        </div>
+        <div class="step-body">
+          <div class="field" style="margin-bottom:10px">
+            <input type="text" id="sessionLabel" placeholder="z.B. Gespräch 21. Mai 2026" oninput="checkUploadReady()" />
+          </div>
+          <div class="field" style="margin-bottom:10px">
+            <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Aufnahmedatum</label>
+            <input type="datetime-local" id="sessionDate" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.9rem; outline:none;" />
+          </div>
+          <div class="field" style="margin-bottom:10px">
+            <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Gesprächstyp</label>
+            <select id="sessionType" onchange="onSessionTypeChange()" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.88rem; outline:none; cursor:pointer;">
+              <option value="privat">Privat</option>
+              <option value="arbeit">Arbeit</option>
+              <option value="gedanken">Eigene Gedanken</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0; position:relative">
+            <label style="font-size:0.75rem; color:var(--muted); margin-bottom:4px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Beteiligte Personen</label>
+            <input type="text" id="sessionPersons" placeholder="z.B. Eva, Markus (kommagetrennt)"
+              oninput="updateSpeakerSummary(); showPersonsAutocomplete(this)"
+              onkeydown="handlePersonsKey(event)"
+              onblur="setTimeout(()=>hidePersonsAutocomplete(),200)"
+              autocomplete="off"
+              style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:9px 12px; font-size:0.88rem; outline:none;" />
+            <div id="personsAutocomplete" class="persons-autocomplete" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schritt 3: Google Drive -->
+      <div class="step-block locked" id="step3">
+        <div class="step-header">
+          <span class="step-number">3</span>
+          <span class="step-title">Google Drive</span>
+          <span class="step-check" id="step3Check"></span>
+        </div>
+        <div class="step-body">
+          <div id="driveStatusRow" style="margin-bottom:10px">
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; font-size:0.82rem;">
+              <span id="driveStatusDot" style="width:8px; height:8px; border-radius:50%; background:var(--red); flex-shrink:0"></span>
+              <span id="driveStatusText" style="color:var(--muted)">Nicht verbunden</span>
+            </div>
+          </div>
+          <div id="driveSubfolderSection" style="display:none">
+            <p style="font-size:0.72rem; color:var(--muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Archiv-Unterordner wählen:</p>
+            <div id="driveSubfolderList" style="margin-bottom:8px"></div>
+            <button onclick="createDriveSubfolder()" class="archive-btn" style="margin-top:4px">
+              <span class="archive-icon"><i data-lucide="plus" style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none"></i></span>
+              <span class="archive-label">Neuen Unterordner anlegen…</span>
+            </button>
+          </div>
+          <p style="font-size:0.72rem; color:var(--muted); margin-top:8px; line-height:1.5">Jede Sitzung wird mit Audio in dem gewählten Unterordner in Google Drive gespeichert.</p>
+          <button onclick="openCleanupModal()" style="margin-top:10px; width:100%; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.4); color:var(--red); border-radius:8px; padding:8px 12px; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> AssemblyAI bereinigen…
+          </button>
+        </div>
+      </div>
+
+      <!-- Schritt 4: Datei hochladen -->
+      <div class="step-block locked" id="step4">
+        <div class="step-header">
+          <span class="step-number">4</span>
+          <span class="step-title">Aufnahme hochladen</span>
+        </div>
+        <div class="step-body">
+          <div id="speakerSummary" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; font-size:0.82rem; color:var(--muted);">
+            <span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)">Ich</strong></span>
+            <span style="color:var(--border)">·</span>
+            <span><span style="color:var(--speaker-b)">●</span> <strong style="color:var(--text)" id="speakerBPreview">Gesprächspartner</strong></span>
+          </div>
+          <div class="upload-zone disabled" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon"><i data-lucide="mic" style="width:32px;height:32px;stroke:var(--muted);stroke-width:1.5;fill:none"></i></div>
+            <p><span>Datei auswählen</span> oder hier ablegen</p>
+            <p style="font-size:0.75rem; margin-top:6px; color:var(--muted)">MP3, WAV, M4A, OGG · max. 2 GB</p>
+          </div>
+          <div class="upload-hint" id="uploadHint"></div>
+          <input type="file" id="fileInput" accept="audio/*,video/*" onchange="handleFileSelect(event)" />
+          <button class="record-btn disabled" id="recordBtn" onclick="toggleRecording()" style="pointer-events:none;opacity:0.4">
+            <span class="record-dot" id="recordDot"></span>
+            <span id="recordBtnLabel" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="mic" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i> Direkt aufnehmen</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- ─── MAIN ──────────────────────────────────── -->
   <main id="mainContent">
@@ -721,10 +722,23 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
+      <!-- ── v4.38 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.38</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Upload-Panel Overlap fix</strong> – Panel war als fixed-Element positioniert und hat die Sidenav überdeckt. Neuer Ansatz: Panel ist jetzt dritte Grid-Column (240px → 340px → 1fr). Sidenav bleibt immer sichtbar, Panel öffnet sich nahtlos rechts daneben.</li>
+        </ul>
+        <div class="cl-tech">css/styles.css: layout grid-template-columns 240px 0px 1fr → panel-open: 240px 340px 1fr. upload-panel position:sticky statt fixed. js/ui.js: openUploadPanel() setzt .panel-open auf .layout.</div>
+      </div>
+
       <!-- ── v4.37 ── -->
       <div class="cl-entry">
         <div class="cl-header">
-          <span class="cl-version">v4.37</span>
+          <span class="cl-version">v4.36</span>
           <span class="cl-date">29.05.2026</span>
           <span class="cl-tag cl-tag-fix">Fix</span>
         </div>

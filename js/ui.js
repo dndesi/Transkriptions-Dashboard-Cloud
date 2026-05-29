@@ -1,13 +1,10 @@
-// ── Upload-Panel (Neue Aufnahme Slide-In) ─────────────────────────────────
+// ── Upload-Panel (Neue Aufnahme – Grid-Column) ────────────────────────────
 function openUploadPanel() {
-  document.getElementById('uploadPanel')?.classList.add('open');
-  document.getElementById('uploadOverlay')?.classList.add('open');
-  // Sidenav auf Mobile schließen
+  document.querySelector('.layout')?.classList.add('panel-open');
   closeSidenav();
 }
 function closeUploadPanel() {
-  document.getElementById('uploadPanel')?.classList.remove('open');
-  document.getElementById('uploadOverlay')?.classList.remove('open');
+  document.querySelector('.layout')?.classList.remove('panel-open');
 }
 
 // ── Sidenav Mobile Toggle ──────────────────────────────────────────────────
@@ -395,7 +392,7 @@ function toggleArchView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v4.37';
+  const title = 'Distill Voice – Systemarchitektur v4.38';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }

@@ -52,11 +52,23 @@
     /* ── Neue Sidenav im Light Mode ── */
     [data-theme="light"] .sidenav {
       background: #ffffff;
-      border-right-color: #d0d4ea;
+      border-left-color: #d0d4ea;
     }
     [data-theme="light"] .upload-panel {
-      background: #ffffff;
-      border-right-color: #d0d4ea;
+      position: fixed;
+      top: 53px;
+      right: 0;
+      bottom: 0;
+      width: 340px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      border-right: none;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      z-index: 150;
+      overflow-y: auto;
     }
 
     /* ── Alte Sidebar: Anthrazit (nur noch Upload-Panel) ── */
@@ -256,11 +268,14 @@
     .dot.ok { background: var(--green); }
 
     /* ─── LAYOUT ─────────────────────────────────── */
-    /* ─── LAYOUT: Sidenav + Content ─────────────── */
+    /* ─── LAYOUT: Sidenav + Upload-Panel + Content ── */
     .layout {
       display: grid;
-      grid-template-columns: 240px 1fr;
+      grid-template-columns: 240px 0px 1fr;
       min-height: calc(100vh - 53px);
+      transition: grid-template-columns 0.25s ease;
+    }
+    .layout.panel-open {
     }
 
     /* ─── LINKE SIDENAV ──────────────────────────── */
@@ -335,25 +350,24 @@
 
     .sidenav-bottom { margin-top: auto; }
 
-    /* ─── UPLOAD SLIDE-IN PANEL (von links, nach Sidenav) ── */
+    /* ─── UPLOAD SLIDE-IN PANEL (Grid-Column, kein Overlap) ── */
     .upload-panel {
-      position: fixed;
+      position: sticky;
       top: 53px;
-      left: 240px;
-      bottom: 0;
-      width: 340px;
+      height: calc(100vh - 53px);
       background: var(--surface);
       border-right: 1px solid var(--border);
-      border-left: none;
       display: flex;
       flex-direction: column;
-      transform: translateX(-100%);
-      transition: transform 0.25s ease;
-      z-index: 150;
       overflow-y: auto;
-      box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+      overflow-x: hidden;
+      /* Inhalt unsichtbar wenn Column 0px */
+      min-width: 0;
+      transition: box-shadow 0.25s;
     }
-    .upload-panel.open { transform: translateX(0); }
+    .upload-panel.open {
+      box-shadow: 4px 0 20px rgba(0,0,0,0.12);
+    }
 
     .upload-panel-head {
       display: flex;
@@ -1981,11 +1995,20 @@
       }
       .sidenav.mobile-open { left: 0; }
 
-      /* Upload-Panel auf Mobile: full width, von links */
+      /* Upload-Panel auf Mobile: im Grid, volle Breite als eigene Zeile */
+      .layout.panel-open {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+      }
+      .layout.panel-open .sidenav {
+        display: none;
+      }
       .upload-panel {
-        width: 100vw;
-        left: 0;
-        top: 53px;
+        position: relative;
+        top: 0;
+        height: auto;
+        max-height: 80vh;
+        overflow-y: auto;
       }
 
       /* Overlay bei voller Breite nicht nötig */
