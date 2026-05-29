@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.26</button>
+        onmouseout="this.style.color='var(--muted)'">v4.27</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -381,11 +381,17 @@
         <div style="display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap">
           <p id="transcriptMeta" style="font-size:0.82rem; color:rgba(255,255,255,0.7)"></p>
           <button class="btn-icon" title="Datum ändern" onclick="openDateEdit()" style="padding:2px 6px; border-radius:6px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.8); cursor:pointer; display:inline-flex;align-items:center;justify-content:center"><i data-lucide="calendar" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i></button>
-          <select id="sessionTypeSelect" onchange="changeSessionType(this.value)" title="Sitzungstyp ändern" style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:6px; color:rgba(255,255,255,0.9); padding:2px 8px; font-size:0.78rem; cursor:pointer; outline:none; appearance:auto">
-            <option value="arbeit">💼 Arbeit</option>
-            <option value="privat">💬 Privat</option>
-            <option value="gedanken">🧠 Gedanken</option>
-          </select>
+          <div id="sessionTypeSelect" style="display:inline-flex;border:1px solid rgba(255,255,255,0.2);border-radius:7px;overflow:hidden;font-size:0.75rem">
+            <button onclick="changeSessionType('arbeit')" data-type="arbeit" title="Arbeit" style="background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.75);padding:3px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background 0.15s">
+              <i data-lucide="briefcase" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Arbeit
+            </button>
+            <button onclick="changeSessionType('privat')" data-type="privat" title="Privat" style="background:rgba(255,255,255,0.08);border:none;border-left:1px solid rgba(255,255,255,0.15);border-right:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.75);padding:3px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background 0.15s">
+              <i data-lucide="message-circle" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Privat
+            </button>
+            <button onclick="changeSessionType('gedanken')" data-type="gedanken" title="Gedanken" style="background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.75);padding:3px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background 0.15s">
+              <i data-lucide="message-square" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Gedanken
+            </button>
+          </div>
         </div>
         <div id="dateEditRow" style="display:none; margin-top:6px">
           <input type="datetime-local" id="sessionDateEdit" style="background:var(--surface2); border:1px solid var(--accent); border-radius:8px; color:var(--text); padding:7px 10px; font-size:0.85rem; outline:none;" />
@@ -662,6 +668,23 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.27 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.27</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Folgegespräch-Prompt korrekt strukturiert</strong> – Felder Rolle, Tonalität, Grenzen und Kontext sind jetzt sauber getrennt. <code>getEditablePromptText()</code> nutzt <code>assemblePromptText()</code> wenn diese Felder vorhanden sind.</li>
+          <li><strong>Personen löschen repariert</strong> – Fehlende schließende Klammer im onclick-Handler von <code>deletePersonPermanently()</code> behoben.</li>
+          <li><strong>Ausgeblendete Personen einblenden</strong> – Neuer Toggle „X ausgeblendet" in der Personen-Übersicht. Zeigt ausgeblendete Profile und ermöglicht das Wiederherstellen per „Einblenden"-Button.</li>
+          <li><strong>Tag-Suche im Archiv repariert</strong> – <code>renderBrowser()</code> wendete den Tag-Filter nicht an. Jetzt korrigiert.</li>
+          <li><strong>Sitzungstyp-Icons erneuert</strong> – Emoji-Icons (💼💬🧠) durch Lucide-Icon-Buttons (briefcase / message-circle / message-square) ersetzt. Aktiver Typ wird visuell hervorgehoben.</li>
+        </ul>
+        <div class="cl-tech">persons.js: deletePersonPermanently() Fix, toggleHiddenPersons(), unhidePerson(), renderPersonsView() mit Hidden-Toggle. ui.js: renderBrowser() + tagFilter. prompts.js: builtin_followup kontext-Feld, getEditablePromptText() assemblePromptText-Logik. index.html: Typ-Button-Gruppe. claude.js: _updateTypeButtons(), changeSessionType() angepasst.</div>
+      </div>
 
       <!-- ── v4.26 ── -->
       <div class="cl-entry">

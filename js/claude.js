@@ -1103,9 +1103,8 @@ function showTranscript(session) {
   document.getElementById('transcriptMeta').textContent =
     `${session.filename}${dur} · ${new Date(session.date).toLocaleString('de-DE')}`;
 
-  // Typ-Selector setzen
-  const typeSelect = document.getElementById('sessionTypeSelect');
-  if (typeSelect) typeSelect.value = session.type || 'arbeit';
+  // Typ-Buttons aktualisieren
+  _updateTypeButtons(session.type || 'privat');
 
   // Namensfelder befüllen
   document.getElementById('editSpeakerA').value = session.speakerA || 'Sprecher A';
@@ -1230,13 +1229,26 @@ function exportSection(type, format) {
   }
 }
 
+function _updateTypeButtons(activeType) {
+  const wrap = document.getElementById('sessionTypeSelect');
+  if (!wrap) return;
+  wrap.querySelectorAll('button[data-type]').forEach(btn => {
+    const isActive = btn.dataset.type === activeType;
+    btn.style.background = isActive ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.08)';
+    btn.style.color       = isActive ? '#fff'                   : 'rgba(255,255,255,0.65)';
+    btn.style.fontWeight  = isActive ? '600'                    : '400';
+  });
+}
+
 function changeSessionType(newType) {
   const session = getSession(currentSessionId);
   if (!session) return;
   session.type = newType;
   saveSessions();
   saveToArchive(session);
+  _updateTypeButtons(newType);
   updateAnalyseDropdown();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // ── Folgegespräch (Analyse als Kontext) ───────────────────────────────────

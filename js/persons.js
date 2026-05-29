@@ -124,10 +124,18 @@ function renderPersonsView() {
       <div class="person-card-topics">${meinTopics.map(t=>`<span class="person-topic-chip">${escHtml(t)}</span>`).join('')}</div>
     </div>`;
 
+  const hidden = getHiddenPersons();
+  const showHidden = el.dataset.showHidden === '1';
+
   el.innerHTML = `<div style="max-width:900px; margin:0 auto; padding:4px 0 32px">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px">
       <h2 style="font-size:1.1rem; font-weight:700; display:flex;align-items:center;gap:7px">${icon('users',16)} Personen-Profile</h2>
-      <span style="font-size:0.78rem; color:var(--muted)">${persons.length} Person${persons.length!==1?'en':''} + du</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        ${hidden.length ? `<button onclick="toggleHiddenPersons()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:0.78rem;color:var(--muted);cursor:pointer">
+          ${showHidden ? 'Ausgeblendete verbergen' : `${hidden.length} ausgeblendet`}
+        </button>` : ''}
+        <span style="font-size:0.78rem; color:var(--muted)">${persons.length} Person${persons.length!==1?'en':''} + du</span>
+      </div>
     </div>
     <div class="person-grid">
       ${meinCard}
@@ -145,6 +153,25 @@ function renderPersonsView() {
     </div>
     ${persons.length === 0 ? `<div style="font-size:0.8rem; color:var(--muted); margin-top:16px; text-align:center">
       Trage bei neuen Sitzungen im Feld "Beteiligte Personen" ein, mit wem du gesprochen hast.
+    </div>` : ''}
+
+    ${showHidden && hidden.length ? `
+    <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--border)">
+      <div style="font-size:0.78rem; color:var(--muted); margin-bottom:12px; display:flex;align-items:center;gap:6px">
+        ${icon('eye-off',13)} Ausgeblendete Personen
+      </div>
+      <div class="person-grid">
+        ${hidden.map(name => `
+          <div class="person-card" style="opacity:0.5;border-style:dashed">
+            <div class="person-card-name">${escHtml(name)}</div>
+            <div class="person-card-meta" style="margin-top:8px">
+              <button onclick="unhidePerson('${escHtml(name).replace(/'/g,"\\'")}'); event.stopPropagation()"
+                style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:0.75rem;color:var(--text);cursor:pointer">
+                Einblenden
+              </button>
+            </div>
+          </div>`).join('')}
+      </div>
     </div>` : ''}
   </div>`;
 }
@@ -313,7 +340,8 @@ function renderPersonProfile(name) {
         <button class="btn btn-ghost" title="Person ausblenden (reversibel)"
           onclick="deletePerson('${escHtml(name).replace(/'/g,"\\'")}')">Ausblenden</button>
         <button class="btn btn-ghost" title="Person endgültig löschen" style="color:var(--red); border-color:rgba(239,68,68,0.3); display:inline-flex;align-items:center;gap:5px"
-          onclick="deletePersonPermanently('${escHtml(name).replace(/'/g,"\\'")}'">${icon('trash-2',12)} Löschen</button>
+          onclick="deletePersonPermanently('${escHtml(name).replace(/'/g,"\\'")}')">
+          ${icon('trash-2',12)} Löschen</button>
       </div>
     </div>
 
@@ -570,6 +598,20 @@ function costCard(title, model, amount, pricing, source) {
       <a href="${source}" target="_blank" style="color:var(--accent)">Preisseite →</a>
     </div>
   </div>`;
+}
+
+function toggleHiddenPersons() {
+  const el = document.getElementById('personsView');
+  if (!el) return;
+  el.dataset.showHidden = el.dataset.showHidden === '1' ? '0' : '1';
+  renderPersonsView();
+}
+
+function unhidePerson(name) {
+  const hidden = getHiddenPersons().filter(h => h.toLowerCase().trim() !== name.toLowerCase().trim());
+  localStorage.setItem('hiddenPersons', JSON.stringify(hidden));
+  renderPersonsView();
+  showToast(`"${name}" wieder eingeblendet`, 'ok');
 }
 
 // ═══════════════════════════════════════════════════

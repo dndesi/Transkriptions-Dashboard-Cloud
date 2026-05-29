@@ -325,19 +325,19 @@ Fasse in 4–6 Sätzen zusammen: Was war der rote Faden? Was waren die wichtigst
     name: 'Folgegespräch',
     description: 'Reflektierender Begleiter · Analyse als Kontext · Konkrete nächste Schritte',
     icon: 'message-circle',
-    rolle: 'ein reflektierender Gesprächsbegleiter. Du kombinierst die Klarheit eines guten Coaches mit der Tiefe eines aufmerksamen Zuhörers. Du analysierst nicht abstrakt – du sprichst die Person direkt an, benennst Muster ehrlich und hilfst dabei, aus Erkenntnissen konkrete Handlungen abzuleiten',
-    tonalitaet: 'warm, direkt und klar – Du-Form, keine Floskeln. Kurze präzise Sätze statt langer Abhandlungen. Wenn etwas wichtig ist, sagst du es deutlich. Wenn etwas unklar ist, fragst du nach statt zu spekulieren',
-    grenzen: 'keine klinischen Diagnosen stellen, keine medizinischen oder rechtlichen Ratschläge geben, keine moralischen Urteile über anwesende Personen fällen. Nicht über mehr spekulieren als im Transkript und in den Analysen steht',
-    prompt: `ANALYSEERGEBNISSE dieser Sitzung:
+    rolle: 'ein reflektierender Gesprächsbegleiter. Du kombinierst die Klarheit eines erfahrenen Coaches mit der Tiefe eines aufmerksamen Zuhörers. Du sprichst die Person direkt an, benennst Muster ehrlich und hilfst ihr, aus Erkenntnissen konkrete Handlungen abzuleiten',
+    tonalitaet: 'warm, direkt, in Du-Form. Keine Floskeln, keine langen Einleitungen. Kurze präzise Sätze. Wenn etwas wichtig ist, sagst du es deutlich. Wenn etwas unklar ist, fragst du gezielt nach',
+    grenzen: 'keine klinischen Diagnosen, keine medizinischen oder rechtlichen Ratschläge, keine moralischen Urteile über beteiligte Personen. Nur auf Basis des Transkripts und der vorliegenden Analysen antworten – nicht spekulieren was nicht drinsteht',
+    kontext: `ANALYSEERGEBNISSE dieser Sitzung:
 {{analyseContext}}
 
 TRANSKRIPT-AUSZUG:
 {{transcript}}
 
-FOLGEFRAGE des Nutzers:
+FOLGEFRAGE:
 {{question}}
 
-Beantworte die Folgefrage konkret und beziehe dich direkt auf die oben stehenden Analyseergebnisse. Nenne wenn möglich konkrete Stellen oder Muster aus der Analyse. Antworte auf Deutsch.`
+Beantworte die Folgefrage konkret. Beziehe dich direkt auf die Analyseergebnisse und nenne wenn möglich konkrete Muster oder Stellen. Antworte auf Deutsch.`
   },
   {
     id: 'builtin_search',
@@ -367,7 +367,12 @@ function getEditablePromptText(id) {
   const saved = getEditablePrompts();
   if (saved[id]) return saved[id];
   const def = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === id);
-  return def ? def.prompt : null;
+  if (!def) return null;
+  // Wenn strukturierte Felder vorhanden → assemblePromptText nutzen
+  if (def.rolle || def.tonalitaet || def.grenzen || def.kontext) {
+    return assemblePromptText(def);
+  }
+  return def.prompt;
 }
 
 function isEditablePromptModified(id) {

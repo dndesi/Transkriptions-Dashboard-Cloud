@@ -12,6 +12,7 @@ function showBrowser() {
 
 function renderBrowser(filter = '') {
   const folderFilter = document.getElementById('folderFilter')?.value || '';
+  const tagFilter    = document.getElementById('tagFilter')?.value || '';
   const searchVal = filter || document.getElementById('sidebarSearchMain')?.value || '';
   const grid = document.getElementById('sessionGrid');
   if (!grid) return;
@@ -26,6 +27,7 @@ function renderBrowser(filter = '') {
   );
 
   if (folderFilter) list = list.filter(s => s.archiveFolder === folderFilter);
+  if (tagFilter)    list = list.filter(s => (s.tags || []).includes(tagFilter));
 
   if (searchVal.trim()) {
     const q = searchVal.toLowerCase();
@@ -353,7 +355,7 @@ function toggleArchView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v4.26';
+  const title = 'Distill Voice – Systemarchitektur v4.27';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }
