@@ -5,19 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Distill Voice – Hilfe</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c63ff' stroke-width='2'><path d='M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z'/><path d='M19 10v2a7 7 0 0 1-14 0v-2'/><line x1='12' y1='19' x2='12' y2='23'/><line x1='8' y1='23' x2='16' y2='23'/></svg>" />
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     :root {
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --surface2: #20243a;
-      --border: #2e3250;
-      --accent: #6c63ff;
-      --accent2: #a78bfa;
-      --green: #34d399;
-      --yellow: #f59e0b;
-      --red: #f87171;
-      --text: #e2e8f0;
-      --muted: #6b7280;
+      --bg: #f0f2f9;
+      --surface: #ffffff;
+      --surface2: #f5f6fc;
+      --border: #d0d4ea;
+      --accent: #5148d4;
+      --accent2: #7c3aed;
+      --green: #059669;
+      --yellow: #d97706;
+      --red: #dc2626;
+      --text: #1a1d2e;
+      --muted: #5a6280;
       --radius: 12px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -325,7 +326,7 @@
   </a>
   <div class="help-header-right">
     <div class="help-header-search">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <i data-lucide="search" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i>
       Hilfe durchsuchen… <span style="margin-left:auto;font-size:0.72rem;opacity:0.5">bald verfügbar</span>
     </div>
     <a class="help-header-back" href="index.html">← Zurück zum Dashboard</a>
@@ -341,69 +342,69 @@
     <div class="nav-group">
       <div class="nav-group-title">Einstieg</div>
       <a class="nav-link" href="#start" onclick="setActive(this)">
-        <span class="nav-icon">🚀</span> Erste Schritte
+        <span class="nav-icon"><i data-lucide="zap" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Erste Schritte
       </a>
       <a class="nav-link" href="#upload" onclick="setActive(this)">
-        <span class="nav-icon">📁</span> Aufnahme hochladen
+        <span class="nav-icon"><i data-lucide="upload" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Aufnahme hochladen
       </a>
       <a class="nav-link" href="#sprecher" onclick="setActive(this)">
-        <span class="nav-icon">🎙</span> Sprecher benennen
+        <span class="nav-icon"><i data-lucide="mic" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Sprecher benennen
       </a>
     </div>
 
     <div class="nav-group">
       <div class="nav-group-title">Analysen</div>
       <a class="nav-link active" href="#analyse" onclick="setActive(this)">
-        <span class="nav-icon">✦</span> Sitzung analysieren
+        <span class="nav-icon"><i data-lucide="sparkles" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Sitzung analysieren
         <span class="nav-badge">Neu</span>
       </a>
       <a class="nav-link" href="#mindmap" onclick="setActive(this)">
-        <span class="nav-icon">🗺</span> Mind Map
+        <span class="nav-icon"><i data-lucide="git-branch" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Mind Map
       </a>
       <a class="nav-link" href="#folgegespräch" onclick="setActive(this)">
-        <span class="nav-icon">💬</span> Folgegespräch
+        <span class="nav-icon"><i data-lucide="message-circle" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Folgegespräch
       </a>
       <a class="nav-link" href="#kapitel" onclick="setActive(this)">
-        <span class="nav-icon">📑</span> Kapitel-Analyse
+        <span class="nav-icon"><i data-lucide="book-open" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Kapitel-Analyse
       </a>
     </div>
 
     <div class="nav-group">
       <div class="nav-group-title">Design & Export</div>
       <a class="nav-link" href="#praesentation" onclick="setActive(this)">
-        <span class="nav-icon">🎨</span> Präsentation erstellen
+        <span class="nav-icon"><i data-lucide="layout" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Präsentation erstellen
       </a>
       <a class="nav-link" href="#claudedesign" onclick="setActive(this)">
-        <span class="nav-icon">✦</span> Claude Design
+        <span class="nav-icon"><i data-lucide="sparkles" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Claude Design
       </a>
       <a class="nav-link" href="#export" onclick="setActive(this)">
-        <span class="nav-icon">⬇</span> Exportieren
+        <span class="nav-icon"><i data-lucide="download" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Exportieren
       </a>
     </div>
 
     <div class="nav-group">
       <div class="nav-group-title">Personen & Archiv</div>
       <a class="nav-link" href="#personen" onclick="setActive(this)">
-        <span class="nav-icon">👤</span> Personen-Profile
+        <span class="nav-icon"><i data-lucide="users" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Personen-Profile
       </a>
       <a class="nav-link" href="#archiv" onclick="setActive(this)">
-        <span class="nav-icon">🗂</span> Archiv & Tags
+        <span class="nav-icon"><i data-lucide="archive" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Archiv & Tags
       </a>
       <a class="nav-link" href="#suche" onclick="setActive(this)">
-        <span class="nav-icon">🔍</span> Suche
+        <span class="nav-icon"><i data-lucide="search" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Suche
       </a>
     </div>
 
     <div class="nav-group">
       <div class="nav-group-title">Einstellungen</div>
       <a class="nav-link" href="#apikeys" onclick="setActive(this)">
-        <span class="nav-icon">🔑</span> API-Keys einrichten
+        <span class="nav-icon"><i data-lucide="key" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> API-Keys einrichten
       </a>
       <a class="nav-link" href="#prompts" onclick="setActive(this)">
-        <span class="nav-icon">📝</span> Prompt-Bibliothek
+        <span class="nav-icon"><i data-lucide="edit-2" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Prompt-Bibliothek
       </a>
       <a class="nav-link" href="#drive" onclick="setActive(this)">
-        <span class="nav-icon">☁</span> Google Drive
+        <span class="nav-icon"><i data-lucide="cloud" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i></span> Google Drive
       </a>
     </div>
 
@@ -420,22 +421,22 @@
 
       <div class="quicklinks">
         <a class="quicklink" href="#analyse" onclick="setActive(document.querySelector('[href=\'#analyse\']'))">
-          <div class="quicklink-icon">✦</div>
+          <div class="quicklink-icon"><i data-lucide="sparkles" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
           <h4>Erste Analyse starten</h4>
           <p>So analysierst du dein erstes Gespräch</p>
         </a>
         <a class="quicklink" href="#apikeys" onclick="setActive(document.querySelector('[href=\'#apikeys\']'))">
-          <div class="quicklink-icon">🔑</div>
+          <div class="quicklink-icon"><i data-lucide="key" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
           <h4>API-Key einrichten</h4>
           <p>Voraussetzung für alle KI-Funktionen</p>
         </a>
         <a class="quicklink" href="#praesentation" onclick="setActive(document.querySelector('[href=\'#praesentation\']'))">
-          <div class="quicklink-icon">🎨</div>
+          <div class="quicklink-icon"><i data-lucide="layout" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
           <h4>Präsentation erstellen</h4>
           <p>Aus Analysen direkt ein Design machen</p>
         </a>
         <a class="quicklink" href="#personen" onclick="setActive(document.querySelector('[href=\'#personen\']'))">
-          <div class="quicklink-icon">👤</div>
+          <div class="quicklink-icon"><i data-lucide="users" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
           <h4>Personen-Profile</h4>
           <p>Profile über Gesprächspartner aufbauen</p>
         </a>
@@ -447,14 +448,14 @@
     <!-- Erste Schritte -->
     <section class="help-section" id="start">
       <div class="section-header">
-        <div class="section-icon">🚀</div>
+        <div class="section-icon"><i data-lucide="zap" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div>
           <h2>Erste Schritte</h2>
           <div class="section-meta">Einstieg · Überblick · Voraussetzungen</div>
         </div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">🚀</div>
+        <div class="ph-icon"><i data-lucide="zap" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Erste Schritte mit Distill Voice</h3>
         <p>Überblick über das Dashboard, Login mit Google, was du brauchst um loszulegen.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -464,14 +465,14 @@
     <!-- Aufnahme hochladen -->
     <section class="help-section" id="upload">
       <div class="section-header">
-        <div class="section-icon">📁</div>
+        <div class="section-icon"><i data-lucide="upload" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div>
           <h2>Aufnahme hochladen</h2>
           <div class="section-meta">Dateiformate · Drag &amp; Drop · Direktaufnahme</div>
         </div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">📁</div>
+        <div class="ph-icon"><i data-lucide="upload" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Aufnahme hochladen</h3>
         <p>Welche Formate unterstützt werden, wie Drag &amp; Drop funktioniert und wie du direkt im Browser aufnehmen kannst.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -481,14 +482,14 @@
     <!-- Sprecher benennen -->
     <section class="help-section" id="sprecher">
       <div class="section-header">
-        <div class="section-icon">🎙</div>
+        <div class="section-icon"><i data-lucide="mic" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div>
           <h2>Sprecher benennen</h2>
           <div class="section-meta">Pflichtfeld · Datenschutz · Mehrere Sprecher</div>
         </div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">🎙</div>
+        <div class="ph-icon"><i data-lucide="mic" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Sprecher benennen</h3>
         <p>Warum Sprecher-Namen pflicht sind, wie die DSGVO-Anonymisierung funktioniert und was bei mehreren Sprechern zu tun ist.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -500,7 +501,7 @@
     <!-- SITZUNG ANALYSIEREN — vollständig ausgearbeitet -->
     <section class="help-section" id="analyse">
       <div class="section-header">
-        <div class="section-icon">✦</div>
+        <div class="section-icon"><i data-lucide="sparkles" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div>
           <h2>Sitzung analysieren</h2>
           <div class="section-meta">Kernfunktion · Claude KI · Mehrere Analyse-Typen</div>
@@ -602,12 +603,12 @@
 
         <h3>Welche Analyse passt wann?</h3>
         <div class="type-grid">
-          <div class="type-card"><div class="type-card-ico">💬</div><h4>Gesprächs-Analyse</h4><p>Für private Gespräche, Coaching, Therapie. Vereinbarungen, Wünsche, Dynamik.</p></div>
-          <div class="type-card"><div class="type-card-ico">💼</div><h4>Arbeits-Analyse</h4><p>Für Meetings und Kundengespräche. Aufgaben mit Verantwortlichen, Entscheidungen, Risiken.</p></div>
-          <div class="type-card"><div class="type-card-ico">📊</div><h4>Stimmungsanalyse</h4><p>Emotionaler Verlauf beider Sprecher. Hilfreich um Gesprächsqualität zu verstehen.</p></div>
-          <div class="type-card"><div class="type-card-ico">📑</div><h4>Kapitel</h4><p>Unterteilt das Gespräch in Abschnitte mit Zeitstempeln. Gut für lange Aufnahmen.</p></div>
-          <div class="type-card"><div class="type-card-ico">🎯</div><h4>360°-Auswertung</h4><p>Vier Perspektiven: eigene Aufgaben, Erwartungen, Emotionen, Strategie.</p></div>
-          <div class="type-card"><div class="type-card-ico">💡</div><h4>Themen</h4><p>Kompakte Tag-Liste der Hauptthemen. Ideal für schnellen Überblick.</p></div>
+          <div class="type-card"><div class="type-card-ico"><i data-lucide="message-circle" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div><h4>Gesprächs-Analyse</h4><p>Für private Gespräche, Coaching, Therapie. Vereinbarungen, Wünsche, Dynamik.</p></div>
+          <div class="type-card"><div class="type-card-ico"><i data-lucide="briefcase" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div><h4>Arbeits-Analyse</h4><p>Für Meetings und Kundengespräche. Aufgaben mit Verantwortlichen, Entscheidungen, Risiken.</p></div>
+          <div class="type-card"><div class="type-card-ico"><i data-lucide="bar-chart-2" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div><h4>Stimmungsanalyse</h4><p>Emotionaler Verlauf beider Sprecher. Hilfreich um Gesprächsqualität zu verstehen.</p></div>
+          <div class="type-card"><div class="type-card-ico"><i data-lucide="book-open" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div><h4>Kapitel</h4><p>Unterteilt das Gespräch in Abschnitte mit Zeitstempeln. Gut für lange Aufnahmen.</p></div>
+          <div class="type-card"><div class="type-card-ico"><i data-lucide="target" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div><h4>360°-Auswertung</h4><p>Vier Perspektiven: eigene Aufgaben, Erwartungen, Emotionen, Strategie.</p></div>
+          <div class="type-card"><div class="type-card-ico"><i data-lucide="tag" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div><h4>Themen</h4><p>Kompakte Tag-Liste der Hauptthemen. Ideal für schnellen Überblick.</p></div>
         </div>
 
         <div class="example">
@@ -634,11 +635,11 @@
     <!-- Mind Map -->
     <section class="help-section" id="mindmap">
       <div class="section-header">
-        <div class="section-icon">🗺</div>
+        <div class="section-icon"><i data-lucide="git-branch" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div><h2>Mind Map</h2><div class="section-meta">Visuelle Übersicht · D3.js · Zoom & Pan · SVG/PDF-Export</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">🗺</div>
+        <div class="ph-icon"><i data-lucide="git-branch" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Mind Map generieren</h3>
         <p>Wie die Mind Map aus dem Transkript erstellt wird, wie man sie bedient (Zoom, Pan) und wie der Export funktioniert.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -648,11 +649,11 @@
     <!-- Folgegespräch -->
     <section class="help-section" id="folgegespräch">
       <div class="section-header">
-        <div class="section-icon">💬</div>
+        <div class="section-icon"><i data-lucide="message-circle" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div><h2>Folgegespräch</h2><div class="section-meta">Folgefragen · Analysen als Kontext · Mehrere Runden</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">💬</div>
+        <div class="ph-icon"><i data-lucide="message-circle" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Folgegespräch führen</h3>
         <p>Wie du nach einer Analyse konkrete Folgefragen stellen kannst — Claude kennt dabei alle Analyseergebnisse als Kontext.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -662,11 +663,11 @@
     <!-- Kapitel -->
     <section class="help-section" id="kapitel">
       <div class="section-header">
-        <div class="section-icon">📑</div>
+        <div class="section-icon"><i data-lucide="book-open" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div><h2>Kapitel-Analyse</h2><div class="section-meta">Tiefenanalyse · Gesamtbild · Zeitstempel</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">📑</div>
+        <div class="ph-icon"><i data-lucide="book-open" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Kapitel-Tiefenanalyse</h3>
         <p>Wie das Gespräch in Kapitel unterteilt wird und wie die Tiefenanalyse pro Kapitel sowie das Gesamtbild funktionieren.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -678,11 +679,11 @@
     <!-- Präsentation -->
     <section class="help-section" id="praesentation">
       <div class="section-header">
-        <div class="section-icon">🎨</div>
+        <div class="section-icon"><i data-lucide="layout" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div><h2>Präsentation erstellen</h2><div class="section-meta">6 Formate · Claude Design · .pptx-Export</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">🎨</div>
+        <div class="ph-icon"><i data-lucide="layout" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Präsentation aus Analyse erstellen</h3>
         <p>Wie du aus deinen Analysen direkt eine Präsentation, einen Flyer, OnePager oder Social Media Post generierst und über Claude Design fertigstellst.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -696,7 +697,7 @@
         <div><h2>Claude Design</h2><div class="section-meta">claude.ai/design · Brand Kit · CI einrichten</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">✦</div>
+        <div class="ph-icon"><i data-lucide="sparkles" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Mit Claude Design arbeiten</h3>
         <p>Wie du dein Brand Kit in Claude Design einrichtest und Inhalte aus Distill Voice direkt in polierte Designs verwandelst.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -706,11 +707,11 @@
     <!-- Export -->
     <section class="help-section" id="export">
       <div class="section-header">
-        <div class="section-icon">⬇</div>
+        <div class="section-icon"><i data-lucide="download" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div><h2>Exportieren</h2><div class="section-meta">TXT · PDF · PPTX · Markdown</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">⬇</div>
+        <div class="ph-icon"><i data-lucide="download" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Ergebnisse exportieren</h3>
         <p>Alle Export-Optionen im Überblick — von einzelnen Analyse-Abschnitten bis zur vollständigen Sitzung als Markdown.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -722,11 +723,11 @@
     <!-- Personen-Profile -->
     <section class="help-section" id="personen">
       <div class="section-header">
-        <div class="section-icon">👤</div>
+        <div class="section-icon"><i data-lucide="users" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div><h2>Personen-Profile</h2><div class="section-meta">Profil-Synthese · Beziehungskontext · Mein Profil</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">👤</div>
+        <div class="ph-icon"><i data-lucide="users" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Personen-Profile nutzen</h3>
         <p>Wie sich über mehrere Gespräche hinweg automatisch Profile aufbauen und wie die KI-Profil-Synthese funktioniert.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -736,11 +737,11 @@
     <!-- Archiv & Tags -->
     <section class="help-section" id="archiv">
       <div class="section-header">
-        <div class="section-icon">🗂</div>
+        <div class="section-icon"><i data-lucide="archive" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div><h2>Archiv &amp; Tags</h2><div class="section-meta">Filter · Ordner · Tag-Suche</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">🗂</div>
+        <div class="ph-icon"><i data-lucide="archive" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Archiv organisieren</h3>
         <p>Sitzungen mit Tags versehen, in Ordner sortieren und gezielt filtern — so behältst du auch bei vielen Aufnahmen den Überblick.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -750,11 +751,11 @@
     <!-- Suche -->
     <section class="help-section" id="suche">
       <div class="section-header">
-        <div class="section-icon">🔍</div>
+        <div class="section-icon"><i data-lucide="search" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div><h2>Suche</h2><div class="section-meta">Volltextsuche · Semantische Suche · Tags</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">🔍</div>
+        <div class="ph-icon"><i data-lucide="search" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Im Archiv suchen</h3>
         <p>Textsuche über alle Sitzungen, semantische Claude-Suche nach Themen und die Unterschiede zwischen beiden.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -766,11 +767,11 @@
     <!-- API-Keys -->
     <section class="help-section" id="apikeys">
       <div class="section-header">
-        <div class="section-icon">🔑</div>
+        <div class="section-icon"><i data-lucide="key" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div><h2>API-Keys einrichten</h2><div class="section-meta">Anthropic · AssemblyAI · Sicherheit</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">🔑</div>
+        <div class="ph-icon"><i data-lucide="key" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>API-Keys einrichten</h3>
         <p>Wo du die Keys herbekommst, wie du sie einträgst und warum sie sicher in deinem Browser bleiben — nie auf einem Server.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -780,11 +781,11 @@
     <!-- Prompt-Bibliothek -->
     <section class="help-section" id="prompts">
       <div class="section-header">
-        <div class="section-icon">📝</div>
+        <div class="section-icon"><i data-lucide="edit-2" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div><h2>Prompt-Bibliothek</h2><div class="section-meta">Eigene Prompts · Anpassen · Zurücksetzen</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">📝</div>
+        <div class="ph-icon"><i data-lucide="edit-2" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Prompts anpassen</h3>
         <p>Wie du bestehende Analyse-Prompts bearbeitest, eigene erstellst und wie sich Änderungen auf die Analysen auswirken.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -794,11 +795,11 @@
     <!-- Google Drive -->
     <section class="help-section" id="drive">
       <div class="section-header">
-        <div class="section-icon">☁</div>
+        <div class="section-icon"><i data-lucide="cloud" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <div><h2>Google Drive</h2><div class="section-meta">Sync · Backup · Zugriff von mehreren Geräten</div></div>
       </div>
       <div class="placeholder-section">
-        <div class="ph-icon">☁</div>
+        <div class="ph-icon"><i data-lucide="cloud" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none"></i></div>
         <h3>Google Drive verbinden</h3>
         <p>Wie die automatische Synchronisation mit Google Drive funktioniert und wie du auf deine Sitzungen von verschiedenen Geräten zugreifst.</p>
         <div class="ph-badge">Wird in Kürze ergänzt</div>
@@ -838,6 +839,9 @@
   }, { rootMargin: '-20% 0px -70% 0px' });
 
   sections.forEach(s => observer.observe(s));
+
+  // Lucide Icons initialisieren
+  if (window.lucide) lucide.createIcons();
 </script>
 
 </body>

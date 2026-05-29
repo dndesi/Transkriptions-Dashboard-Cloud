@@ -57,7 +57,13 @@
   <!-- Immer sichtbare Aktionen (Desktop + Mobile) -->
   <div style="display:flex; align-items:center; gap:6px; margin-left:auto">
 
-    <!-- Suche: immer sichtbar -->
+    <!-- Home / Archiv — als erstes -->
+    <button onclick="setView('timeline'); showBrowser();" title="Zur Projektübersicht (Home)" class="hdr-btn"
+      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')">
+      <i data-lucide="home" class="hdr-icon"></i>
+    </button>
+
+    <!-- Suche -->
     <button onclick="openSearchModal()" title="Globale Suche (⌘K)" class="hdr-btn"
       onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
       style="display:flex;align-items:center;gap:5px">
@@ -86,12 +92,6 @@
     <button id="themeToggleBtn" onclick="toggleTheme()" title="Hell/Dunkel wechseln" class="hdr-btn"
       onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')">
       <i data-lucide="moon" class="hdr-icon" id="themeIcon"></i>
-    </button>
-
-    <!-- Home / Archiv -->
-    <button onclick="showBrowser()" title="Sitzungs-Archiv" class="hdr-btn"
-      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')">
-      <i data-lucide="home" class="hdr-icon"></i>
     </button>
 
     <!-- Personen -->
