@@ -326,8 +326,8 @@ function _renderD3Mindmap(container, data) {
 
   const branchColors = [clrAccent, clrAccent2, '#34d399', '#f59e0b', '#f472b6', '#60a5fa', '#fb923c'];
 
-  // Hilfsfunktion: Textbreite schätzen
-  const textW = (label, fs) => label.length * (fs === 11 ? 6.6 : 6) + 28;
+  // Hilfsfunktion: Textbreite schätzen (großzügiger für deutsche Umlaute & lange Wörter)
+  const textW = (label) => Math.max(label.length * 8 + 36, 80);
 
   const root = d3.hierarchy(data);
 
@@ -338,9 +338,12 @@ function _renderD3Mindmap(container, data) {
     c.descendants().forEach(d => { if (!d._color) d._color = c._color; });
   });
 
-  // Horizontaler Baum: nodeSize [zeilenabstand, spaltenabstand]
-  const rowGap  = 30;   // vertikaler Abstand zwischen Blättern
-  const colGap  = 200;  // horizontaler Abstand zwischen Ebenen
+  // Spaltenabstand dynamisch: breiteste Ebene-1-Pill + Puffer
+  const maxPillW = root.children
+    ? Math.max(...root.children.map(c => textW(c.data.label)))
+    : 140;
+  const rowGap  = 32;
+  const colGap  = Math.max(maxPillW + 60, 260);
 
   d3.tree().nodeSize([rowGap, colGap])(root);
 
@@ -402,7 +405,7 @@ function _renderD3Mindmap(container, data) {
   node.filter(d => d.depth === 1).each(function(d) {
     const el  = d3.select(this);
     const lbl = d.data.label;
-    const w   = textW(lbl, 11);
+    const w   = textW(lbl);
     const h   = 27;
     const rx  = 9;
     // Pill startet 8px rechts vom Verbindungspunkt
@@ -416,7 +419,9 @@ function _renderD3Mindmap(container, data) {
       .attr('text-anchor', 'middle')
       .attr('font-size', '11px').attr('font-weight', '700')
       .attr('fill', d._color)
+      .attr('clip-path', null)
       .text(lbl);
+
   });
 
   // Ebene 2: Punkt + Label rechts

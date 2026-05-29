@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.30</button>
+        onmouseout="this.style.color='var(--muted)'">v4.31</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -668,6 +668,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.31 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.31</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Mindmap: Pill-Breite korrigiert</strong> – Text lief rechts aus den Pill-Formen heraus. Zeichenbreite großzügiger kalkuliert (8px statt 6.6px + Puffer für Umlaute). Spaltenabstand passt sich jetzt dynamisch an die breiteste Ebene-1-Pill an.</li>
+        </ul>
+        <div class="cl-tech">features.js: textW() neu, colGap dynamisch aus maxPillW + 60. Pill-Breite immer mindestens 80px.</div>
+      </div>
 
       <!-- ── v4.30 ── -->
       <div class="cl-entry">
