@@ -57,14 +57,6 @@
   <!-- Header rechts: Suche + Hamburger (Mobile) + User -->
   <div style="display:flex; align-items:center; gap:6px; margin-left:auto">
 
-    <!-- Suche -->
-    <button onclick="openSearchModal()" title="Globale Suche (⌘K)" class="hdr-btn"
-      onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
-      style="display:flex;align-items:center;gap:5px">
-      <i data-lucide="search" class="hdr-icon"></i>
-      <span class="search-shortcut" style="opacity:0.45; font-size:0.65rem; font-family:monospace">⌘K</span>
-    </button>
-
     <!-- Hamburger: nur Mobile — öffnet Sidenav -->
     <button id="hamburgerBtn" class="hdr-btn" onclick="toggleSidenav()" title="Navigation"
       onmouseover="this.classList.add('hdr-btn-hover')" onmouseout="this.classList.remove('hdr-btn-hover')"
@@ -86,7 +78,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.36</button>
+        onmouseout="this.style.color='var(--muted)'">v4.37</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -234,6 +226,14 @@
       Neue Aufnahme
     </button>
 
+    <!-- Suche -->
+    <button class="sidenav-item" onclick="openSearchModal()" style="margin-bottom:4px">
+      <i data-lucide="search" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Suche
+      <span style="margin-left:auto;font-size:0.68rem;opacity:0.45;font-family:monospace">⌘K</span>
+    </button>
+
+    <div class="sidenav-sep"></div>
     <div class="sidenav-label">Archiv</div>
     <button class="sidenav-item active" id="navGrid" onclick="setView('grid'); showBrowser(); setSidenavActive(this)">
       <i data-lucide="layout-grid" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
@@ -720,6 +720,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.37 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.37</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Sidenav breiter</strong> – Von 200px auf 240px verbreitert.</li>
+          <li><strong>Suche in Sidenav</strong> – Lupe aus dem Header in die Sidenav als Menüpunkt verschoben (direkt unter „Neue Aufnahme").</li>
+          <li><strong>Upload-Panel von links</strong> – Slide-In Panel fährt jetzt von links ein, direkt ab der Sidenav-Kante (left: 240px). Kürzerer Weg, logischere Position.</li>
+        </ul>
+        <div class="cl-tech">css/styles.css: grid-template-columns 240px, upload-panel left:240px + transform links. index.html: Suche aus Header entfernt, in sidenav eingefügt.</div>
+      </div>
 
       <!-- ── v4.36 ── -->
       <div class="cl-entry">
