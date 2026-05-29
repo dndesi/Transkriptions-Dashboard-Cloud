@@ -236,7 +236,7 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
     category: 'feature',
     name: 'Aufnahme befragen',
     description: 'Chat-Interface · Fragen zum Transkript · Zeitstempel-Referenzen',
-    icon: 'help-circle',
+    icon: 'asterisk',
     prompt: `Du bist ein Assistent der ausschließlich Fragen zu einem Gesprächstranskript beantwortet.
 Antworte immer auf Deutsch. Zitiere wenn möglich direkt aus dem Transkript und nenne den Zeitstempel [MM:SS].
 Wenn die Antwort nicht im Transkript zu finden ist, sage das klar – erfinde nichts.
@@ -281,12 +281,43 @@ Schreibe ein prägnantes, persönliches Profil in 4-6 Sätzen. Was ist diese Per
     category: 'feature',
     name: 'Selbst-Synthese',
     description: 'Persönliche Selbstreflexion · Eigene Muster & Werte · Offene Themen',
-    icon: 'user-check',
+    icon: 'person-standing',
     prompt: `Du schreibst eine persönliche Selbstreflexion für einen Nutzer, basierend auf seinen Gesprächen und Gedanken.
 
 {{personData}}
 
 Schreibe eine ehrliche, direkte Selbstreflexion in 4-6 Sätzen. Was beschäftigt diese Person? Was sind ihre Prioritäten und Werte, die sich durch die Gespräche ziehen? Was trägt sie mit sich, was bleibt offen? Schreibe in der zweiten Person ("Du…"). Keine Aufzählung – nur fließender, persönlicher Text auf Deutsch.`
+  },
+  {
+    id: 'builtin_chapter_deep',
+    category: 'feature',
+    name: 'Kapitel-Tiefenanalyse',
+    description: 'Analyse eines einzelnen Kapitels · Entscheidungen · Stimmung · Kernaussagen',
+    icon: 'layers',
+    prompt: `Du analysierst das Kapitel "{{chapterTitle}}" aus einem deutschen Gesprächstranskript.
+{{prevContext}}
+KAPITEL-TRANSKRIPT:
+{{chapterTranscript}}
+
+Analysiere dieses Kapitel in 3–5 Sätzen. Fokus:
+- Was wurde besprochen oder entschieden?
+- Welche Kernaussagen oder Erkenntnisse entstanden?
+- Welche Stimmung oder Dynamik herrschte?
+
+Antworte direkt auf Deutsch, ohne Überschriften oder Listen.`
+  },
+  {
+    id: 'builtin_chapter_synthesis',
+    category: 'feature',
+    name: 'Kapitel-Synthese',
+    description: 'Gesamtbild nach Tiefenanalyse · Roter Faden · Wichtigste Erkenntnisse',
+    icon: 'git-merge',
+    prompt: `Du hast ein Gespräch kapitelweise analysiert. Erstelle ein abschließendes Gesamtbild.
+
+KAPITEL-ANALYSEN:
+{{allSummaries}}
+
+Fasse in 4–6 Sätzen zusammen: Was war der rote Faden? Was waren die wichtigsten Erkenntnisse? Welche Themen dominierten? Antworte direkt auf Deutsch.`
   },
   {
     id: 'builtin_search',

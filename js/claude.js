@@ -617,17 +617,11 @@ async function startChaptersDeepAnalysis(sessionId) {
         ? utterances.map(u => `[${formatMs(u.start)}] ${getSpeakerName(u.speaker, s)}: ${u.text}`).join('\n')
         : ch.summary; // Fallback wenn keine passenden Utterances
 
-      const prompt = `Du analysierst das Kapitel "${ch.title}" aus einem deutschen Gesprächstranskript.
-${prevSummaries ? `\nKONTEXT – vorherige Kapitel:\n${prevSummaries}\n` : ''}
-KAPITEL-TRANSKRIPT:
-${chTranscript}
-
-Analysiere dieses Kapitel in 3–5 Sätzen. Fokus:
-- Was wurde besprochen oder entschieden?
-- Welche Kernaussagen oder Erkenntnisse entstanden?
-- Welche Stimmung oder Dynamik herrschte?
-
-Antworte direkt auf Deutsch, ohne Überschriften oder Listen.`;
+      const prevContext = prevSummaries ? `\nKONTEXT – vorherige Kapitel:\n${prevSummaries}\n` : '';
+      const prompt = getEditablePromptText('builtin_chapter_deep')
+        .replace(/\{\{chapterTitle\}\}/g, ch.title)
+        .replace(/\{\{prevContext\}\}/g, prevContext)
+        .replace(/\{\{chapterTranscript\}\}/g, chTranscript);
 
       const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
       addTokensToSession(s, inputTokens, outputTokens);
@@ -643,12 +637,8 @@ Antworte direkt auf Deutsch, ohne Überschriften oder Listen.`;
         .map(({ ch }) => `[${ch.title}]:\n${ch.deepAnalysis}`)
         .join('\n\n');
 
-      const synthPrompt = `Du hast ein Gespräch kapitelweise analysiert. Erstelle ein abschließendes Gesamtbild.
-
-KAPITEL-ANALYSEN:
-${allSummaries}
-
-Fasse in 4–6 Sätzen zusammen: Was war der rote Faden? Was waren die wichtigsten Erkenntnisse? Welche Themen dominierten? Antworte direkt auf Deutsch.`;
+      const synthPrompt = getEditablePromptText('builtin_chapter_synthesis')
+        .replace(/\{\{allSummaries\}\}/g, allSummaries);
 
       const { text: synthText, inputTokens: sIn, outputTokens: sOut } = await callClaudeAPI(anonymizeText(synthPrompt, forward));
       addTokensToSession(s, sIn, sOut);

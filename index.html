@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.22</button>
+        onmouseout="this.style.color='var(--muted)'">v4.23</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -636,6 +636,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.23 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.23</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Kapitel-Tiefenanalyse in Bibliothek</strong> – Der Prompt für die Kapitel-Tiefenanalyse ist jetzt als <code>builtin_chapter_deep</code> editierbar. Platzhalter: <code>{{chapterTitle}}</code>, <code>{{prevContext}}</code>, <code>{{chapterTranscript}}</code>.</li>
+          <li><strong>Kapitel-Synthese in Bibliothek</strong> – Der abschließende Synthese-Prompt ist als <code>builtin_chapter_synthesis</code> editierbar. Platzhalter: <code>{{allSummaries}}</code>.</li>
+        </ul>
+        <div class="cl-tech">prompts.js: builtin_chapter_deep, builtin_chapter_synthesis. claude.js: deepChapterAnalysis() auf getEditablePromptText umgestellt.</div>
+      </div>
 
       <!-- ── v4.22 ── -->
       <div class="cl-entry">
