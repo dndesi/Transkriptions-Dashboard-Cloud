@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.21</button>
+        onmouseout="this.style.color='var(--muted)'">v4.22</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -636,6 +636,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.22 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.22</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Selbst-Synthese in Prompt-Bibliothek</strong> – Der Prompt hinter „Selbst-Synthese" (Mein Profil) ist jetzt als <code>builtin_self_synthesis</code> in der Bibliothek sichtbar und editierbar.</li>
+          <li><strong>persons.js angebunden</strong> – <code>synthesizeMeinProfil()</code> liest den Prompt jetzt via <code>getEditablePromptText('builtin_self_synthesis')</code> – Änderungen in der Bibliothek greifen sofort.</li>
+        </ul>
+        <div class="cl-tech">prompts.js: builtin_self_synthesis. persons.js: synthesizeMeinProfil() auf getEditablePromptText umgestellt.</div>
+      </div>
 
       <!-- ── v4.21 ── -->
       <div class="cl-entry">

@@ -277,6 +277,18 @@ mindmap
 Schreibe ein prägnantes, persönliches Profil in 4-6 Sätzen. Was ist diese Person für den Nutzer? Was bewegt sie, was ist ihr wichtig, welche Muster oder Bedürfnisse zeigen sich über die Gespräche hinweg? Was scheint in dieser Beziehung besonders relevant – auch zwischen den Zeilen? Schreibe direkt und persönlich ("{{personName}} scheint…", "In deiner Beziehung zu {{personName}}…", "Du wirst bemerkt haben, dass…"). Keine Aufzählung – nur fließender, ehrlicher Text auf Deutsch.`
   },
   {
+    id: 'builtin_self_synthesis',
+    category: 'feature',
+    name: 'Selbst-Synthese',
+    description: 'Persönliche Selbstreflexion · Eigene Muster & Werte · Offene Themen',
+    icon: 'user-check',
+    prompt: `Du schreibst eine persönliche Selbstreflexion für einen Nutzer, basierend auf seinen Gesprächen und Gedanken.
+
+{{personData}}
+
+Schreibe eine ehrliche, direkte Selbstreflexion in 4-6 Sätzen. Was beschäftigt diese Person? Was sind ihre Prioritäten und Werte, die sich durch die Gespräche ziehen? Was trägt sie mit sich, was bleibt offen? Schreibe in der zweiten Person ("Du…"). Keine Aufzählung – nur fließender, persönlicher Text auf Deutsch.`
+  },
+  {
     id: 'builtin_search',
     category: 'feature',
     name: 'Semantische Suche',

@@ -245,11 +245,8 @@ async function synthesizeMeinProfil() {
   if (data.keyThoughts.length)  lines.push(`Kerngedanken aus Reflexionen:\n${data.keyThoughts.slice(0,6).map(t=>'- '+t.text).join('\n')}`);
   if (data.openTopics.length)   lines.push(`Offene Themen:\n${data.openTopics.slice(0,6).map(t=>'- '+t.text).join('\n')}`);
 
-  const prompt = `Du schreibst eine persönliche Selbstreflexion für einen Nutzer, basierend auf seinen Gesprächen und Gedanken.
-
-${lines.join('\n\n')}
-
-Schreibe eine ehrliche, direkte Selbstreflexion in 4-6 Sätzen. Was beschäftigt diese Person? Was sind ihre Prioritäten und Werte, die sich durch die Gespräche ziehen? Was trägt sie mit sich, was bleibt offen? Schreibe in der zweiten Person ("Du…"). Keine Aufzählung – nur fließender, persönlicher Text auf Deutsch.`;
+  const prompt = getEditablePromptText('builtin_self_synthesis')
+    .replace(/\{\{personData\}\}/g, lines.join('\n\n'));
 
   try {
     const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
