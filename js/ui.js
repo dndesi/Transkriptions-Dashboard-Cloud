@@ -1,9 +1,18 @@
 // ── Upload-Panel (Neue Aufnahme – Grid-Column) ────────────────────────────
 function openUploadPanel() {
+  document.getElementById('uploadPanel')?.classList.add('open');
+  document.getElementById('uploadOverlay')?.classList.add('open');
+  closeSidenav();
+}
+function _openUploadPanel_unused() {
   document.querySelector('.layout')?.classList.add('panel-open');
   closeSidenav();
 }
 function closeUploadPanel() {
+  document.getElementById('uploadPanel')?.classList.remove('open');
+  document.getElementById('uploadOverlay')?.classList.remove('open');
+}
+function _closeUploadPanel_unused() {
   document.querySelector('.layout')?.classList.remove('panel-open');
 }
 

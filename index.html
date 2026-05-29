@@ -106,69 +106,11 @@
 
 <!-- ─── UPLOAD SLIDE-IN PANEL ─────────────────────── -->
 
-<!-- ─── LAYOUT ───────────────────────────────────── -->
-<div class="layout">
-
-  <!-- ─── LINKE NAVIGATION ─────────────────────── -->
-  <nav class="sidenav" id="sidenav">
-
-    <!-- + Neue Aufnahme -->
-    <button class="sidenav-new" onclick="openUploadPanel()">
-      <i data-lucide="plus" style="width:15px;height:15px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0"></i>
-      Neue Aufnahme
-    </button>
-
-    <div class="sidenav-label">Archiv</div>
-    <button class="sidenav-item active" id="navGrid" onclick="setView('grid'); showBrowser(); setSidenavActive(this)">
-      <i data-lucide="layout-grid" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-      Kacheln
-    </button>
-    <button class="sidenav-item" id="navTimeline" onclick="setView('timeline'); showBrowser(); setSidenavActive(this)">
-      <i data-lucide="list" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-      Zeitstrahl
-    </button>
-
-    <div class="sidenav-sep"></div>
-    <div class="sidenav-label">Analyse</div>
-    <button class="sidenav-item" id="navPersons" id="headerPersonsBtn" onclick="togglePersonsView(); setSidenavActive(this)">
-      <i data-lucide="users" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-      Personen
-    </button>
-    <button class="sidenav-item" id="navCosts" id="headerCostsBtn" onclick="toggleCostsView(); setSidenavActive(this)">
-      <i data-lucide="bar-chart-2" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-      Kosten
-    </button>
-    <button class="sidenav-item" id="navPrompts" id="headerPromptsBtn" onclick="togglePromptsView(); setSidenavActive(this)">
-      <i data-lucide="sparkles" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-      Prompts
-    </button>
-
-    <div class="sidenav-sep"></div>
-    <div class="sidenav-bottom">
-      <div class="sidenav-label">System</div>
-      <a class="sidenav-item" href="help.html" target="_blank">
-        <i data-lucide="help-circle" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-        Hilfe
-      </a>
-      <button class="sidenav-item" onclick="openApiModal()">
-        <i data-lucide="key" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-        API-Keys
-        <span class="dot" id="apiBadgeDot" style="width:7px;height:7px;border-radius:50%;background:var(--red);margin-left:auto;flex-shrink:0"></span>
-      </button>
-      <button class="sidenav-item" id="navArch" id="headerArchBtn" onclick="toggleArchView(); setSidenavActive(this)">
-        <i data-lucide="layers" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-        Architektur
-      </button>
-      <button class="sidenav-item" id="themeToggleBtn" onclick="toggleTheme()">
-        <i data-lucide="moon" class="hdr-icon" id="themeIcon" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-        <span id="themeLabel">Dunkel</span>
-      </button>
-    </div>
-
-  </nav>
 
 
-  <div class="upload-panel" id="uploadPanel">
+<!-- Upload-Overlay -->
+<div id="uploadOverlay" class="upload-overlay" onclick="closeUploadPanel()"></div>
+<div class="upload-panel" id="uploadPanel">
     <div class="upload-panel-head">
       <h3><i data-lucide="upload" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Neue Aufnahme</h3>
       <button class="upload-panel-close" onclick="closeUploadPanel()">×</button>
@@ -283,6 +225,68 @@
 
     </div>
   </div>
+
+<!-- ─── LAYOUT ───────────────────────────────────── -->
+<div class="layout">
+
+  <!-- ─── LINKE NAVIGATION ─────────────────────── -->
+  <nav class="sidenav" id="sidenav">
+
+    <!-- + Neue Aufnahme -->
+    <button class="sidenav-new" onclick="openUploadPanel()">
+      <i data-lucide="plus" style="width:15px;height:15px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0"></i>
+      Neue Aufnahme
+    </button>
+
+    <div class="sidenav-label">Archiv</div>
+    <button class="sidenav-item active" id="navGrid" onclick="setView('grid'); showBrowser(); setSidenavActive(this)">
+      <i data-lucide="layout-grid" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Kacheln
+    </button>
+    <button class="sidenav-item" id="navTimeline" onclick="setView('timeline'); showBrowser(); setSidenavActive(this)">
+      <i data-lucide="list" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Zeitstrahl
+    </button>
+
+    <div class="sidenav-sep"></div>
+    <div class="sidenav-label">Analyse</div>
+    <button class="sidenav-item" id="navPersons" id="headerPersonsBtn" onclick="togglePersonsView(); setSidenavActive(this)">
+      <i data-lucide="users" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Personen
+    </button>
+    <button class="sidenav-item" id="navCosts" id="headerCostsBtn" onclick="toggleCostsView(); setSidenavActive(this)">
+      <i data-lucide="bar-chart-2" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Kosten
+    </button>
+    <button class="sidenav-item" id="navPrompts" id="headerPromptsBtn" onclick="togglePromptsView(); setSidenavActive(this)">
+      <i data-lucide="sparkles" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Prompts
+    </button>
+
+    <div class="sidenav-sep"></div>
+    <div class="sidenav-bottom">
+      <div class="sidenav-label">System</div>
+      <a class="sidenav-item" href="help.html" target="_blank">
+        <i data-lucide="help-circle" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        Hilfe
+      </a>
+      <button class="sidenav-item" onclick="openApiModal()">
+        <i data-lucide="key" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        API-Keys
+        <span class="dot" id="apiBadgeDot" style="width:7px;height:7px;border-radius:50%;background:var(--red);margin-left:auto;flex-shrink:0"></span>
+      </button>
+      <button class="sidenav-item" id="navArch" id="headerArchBtn" onclick="toggleArchView(); setSidenavActive(this)">
+        <i data-lucide="layers" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        Architektur
+      </button>
+      <button class="sidenav-item" id="themeToggleBtn" onclick="toggleTheme()">
+        <i data-lucide="moon" class="hdr-icon" id="themeIcon" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        <span id="themeLabel">Dunkel</span>
+      </button>
+    </div>
+
+  </nav>
+
 
   <!-- ─── MAIN ──────────────────────────────────── -->
   <main id="mainContent">
