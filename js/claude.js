@@ -1145,6 +1145,7 @@ function showTranscript(session) {
       if (exportBtn)   exportBtn.style.display   = 'none';
       if (transferBtn) transferBtn.style.display  = 'none';
     }
+    renderDesignLinks(session);
   }
   _restoreAccState(session.id);
 }
@@ -1406,70 +1407,117 @@ async function askFollowUp() {
   }
 }
 
-async function exportToCanva() {
+function exportToClaudeDesign() {
   const session = getSession(currentSessionId);
   if (!session?.claudePresentation?.data) {
     showToast('Erst Design generieren.', 'warning');
     return;
   }
-  if (!driveToken) {
-    showToast('Bitte zuerst Google Drive verbinden (oben rechts).', 'warning');
-    return;
-  }
 
-  const btn = document.getElementById('canvaTransferBtn');
-  if (btn) { btn.disabled = true; btn.innerHTML = icon('loader',13,'margin-right:5px') + ' Speichere…'; }
+  const json      = session.claudePresentation.data;
+  const promptId  = session.claudePresentation.promptId || 'builtin_canva_presentation';
+  const promptDef = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === promptId);
+  const typeLabel = {
+    builtin_canva_presentation: 'Präsentation',
+    builtin_canva_summary:      'OnePager',
+    builtin_canva_action:       'Aktionsplan',
+    builtin_canva_flyer:        'Flyer',
+    builtin_canva_poster:       'Poster',
+    builtin_canva_social:       'Social Media Post'
+  }[promptId] || 'Design';
 
-  const json       = session.claudePresentation.data;
-  const promptId   = session.claudePresentation.promptId || 'builtin_canva_presentation';
-  const promptDef  = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === promptId);
-  const canvaType  = promptDef?.canvaDesignType || 'presentation';
+  // Prompt für Claude Design aufbauen
+  const lines = [];
+  lines.push(`Erstelle eine ${typeLabel} mit folgendem Inhalt. Verwende mein Brand Kit / CI für Farben, Schriften und Logo.`);
+  lines.push('');
+  lines.push(`Titel: ${json.title || ''}`);
+  if (json.subtitle) lines.push(`Untertitel: ${json.subtitle}`);
+  lines.push('');
+  (json.slides || []).forEach((s, i) => {
+    lines.push(`## ${s.heading || 'Abschnitt ' + (i + 1)}`);
+    (s.bullets || []).forEach(b => lines.push(`- ${b}`));
+    if (s.note) lines.push(`*(Notiz: ${s.note})*`);
+    lines.push('');
+  });
 
-  const exportData = {
-    version:        '1.0',
-    exportedAt:     new Date().toISOString(),
-    sessionId:      session.id,
-    sessionLabel:   session.label || '',
-    sessionDate:    session.date  || '',
-    promptId,
-    canvaDesignType: canvaType,
-    content:         json
-  };
+  const prompt = lines.join('\n');
 
-  try {
-    await ensureDriveFolder();
-    // Vorhandene Export-Datei suchen und überschreiben
-    const search = await driveGet('/files', {
-      q: `name='distill-canva-export.json' and '${driveFolderId}' in parents and trashed=false`,
-      fields: 'files(id)'
-    });
-    const existingId = search.files?.[0]?.id || null;
-    await driveUploadJSON('distill-canva-export.json', exportData, existingId, driveFolderId);
+  navigator.clipboard.writeText(prompt).then(() => {
+    // claude.ai/design in neuem Tab öffnen
+    window.open('https://claude.ai/design', '_blank');
 
-    showToast('In Google Drive gespeichert ✓', 'success');
+    showToast('Prompt kopiert — in Claude Design einfügen (⌘V)', 'success');
 
-    // Hinweis-Box
+    // Hinweis-Box aktualisieren
     const preview = document.getElementById('canvaPreview');
     if (preview) {
-      const old = preview.querySelector('.canva-hint');
+      const old = preview.querySelector('.design-hint');
       if (old) old.remove();
       const hint = document.createElement('div');
-      hint.className = 'canva-hint';
-      hint.style.cssText = 'margin-top:14px;padding:14px 16px;background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.3);border-radius:10px;font-size:0.83rem;line-height:1.7';
-      const typeLabel = { presentation:'Präsentation', doc:'OnePager', report:'Report', flyer:'Flyer', poster:'Poster', instagram_post:'Social Media Post' }[canvaType] || canvaType;
-      hint.innerHTML = `<strong style="color:var(--accent)">✓ In Google Drive gespeichert</strong><br>
-        Wechsle jetzt zu <strong>Cowork</strong> und schreibe:<br>
-        <code style="background:var(--surface2);padding:3px 8px;border-radius:5px;font-size:0.82rem;display:inline-block;margin-top:4px">
-          Erstelle Canva-${typeLabel} aus meiner letzten Distill-Voice-Übergabe
-        </code>`;
+      hint.className = 'design-hint';
+      hint.style.cssText = 'margin-top:14px;padding:14px 16px;background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.3);border-radius:10px;font-size:0.83rem;line-height:1.8';
+      hint.innerHTML = `<strong style="color:var(--accent)">✓ claude.ai/design wurde geöffnet</strong><br>
+        Füge den kopierten Prompt ein <strong>(⌘V / Strg+V)</strong>.<br>
+        Nach der Erstellung: Share-Link kopieren und unten einfügen ↓`;
       preview.appendChild(hint);
+      if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [hint] });
     }
-  } catch(e) {
-    showToast('Fehler: ' + (e.message || 'Drive nicht erreichbar'), 'error');
-  } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = icon('send',13,'margin-right:5px') + ' In Canva übergeben'; }
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }).catch(() => {
+    window.open('https://claude.ai/design', '_blank');
+    showToast('Clipboard-Zugriff verweigert — Prompt manuell kopieren.', 'warning');
+  });
+}
+
+// Share-Link vom Nutzer speichern
+function saveDesignLink() {
+  const session = getSession(currentSessionId);
+  if (!session) return;
+  const input = document.getElementById('designLinkInput');
+  const url   = input?.value?.trim();
+  if (!url) { showToast('Bitte Link eingeben.', 'warning'); return; }
+  if (!url.startsWith('http')) { showToast('Kein gültiger Link.', 'warning'); return; }
+
+  if (!session.claudeDesignLinks) session.claudeDesignLinks = [];
+  const label = session.claudePresentation?.data?.title || new Date().toLocaleDateString('de-DE');
+  session.claudeDesignLinks.unshift({ url, label, ts: new Date().toISOString() });
+  saveSessions();
+  saveToArchive(session);
+  if (input) input.value = '';
+  renderDesignLinks(session);
+  showToast('Design-Link gespeichert ✓', 'success');
+}
+
+// Gespeicherte Links rendern
+function renderDesignLinks(session) {
+  const container = document.getElementById('designLinksContainer');
+  if (!container) return;
+  const links = session?.claudeDesignLinks || [];
+  if (!links.length) {
+    container.innerHTML = '<span style="color:var(--muted);font-size:0.8rem">Noch kein Design-Link gespeichert.</span>';
+    return;
   }
+  container.innerHTML = links.map((l, i) => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <a href="${escHtml(l.url)}" target="_blank" rel="noopener"
+         style="flex:1;font-size:0.83rem;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:6px;
+                background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">
+        ${icon('external-link',12,'flex-shrink:0')} ${escHtml(l.label)}
+        <span style="color:var(--muted);font-size:0.72rem;margin-left:auto;flex-shrink:0">${new Date(l.ts).toLocaleDateString('de-DE')}</span>
+      </a>
+      <button onclick="removeDesignLink(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0" title="Entfernen">
+        ${icon('x',13)}
+      </button>
+    </div>`).join('');
+  if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [container] });
+}
+
+function removeDesignLink(idx) {
+  const session = getSession(currentSessionId);
+  if (!session?.claudeDesignLinks) return;
+  session.claudeDesignLinks.splice(idx, 1);
+  saveSessions();
+  saveToArchive(session);
+  renderDesignLinks(session);
 }
 
 function clearFollowUp() {
@@ -1529,6 +1577,7 @@ async function generatePresentation() {
     if (exportBtn) exportBtn.style.display = 'inline-flex';
     const transferBtn2 = document.getElementById('canvaTransferBtn');
     if (transferBtn2) transferBtn2.style.display = 'inline-flex';
+    renderDesignLinks(session);
     if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [preview] });
     showToast('Präsentation erstellt', 'success');
   } catch (e) {

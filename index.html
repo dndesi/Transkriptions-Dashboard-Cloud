@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.34</button>
+        onmouseout="this.style.color='var(--muted)'">v4.35</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -678,12 +678,29 @@
               <button id="canvaExportBtn" onclick="exportPresentationPptx()" style="display:none;background:none;border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.83rem;color:var(--text);cursor:pointer;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
                 <i data-lucide="download" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> .pptx
               </button>
-              <button id="canvaTransferBtn" onclick="exportToCanva()" style="display:none;background:none;border:1px solid rgba(108,99,255,0.5);border-radius:8px;padding:8px 14px;font-size:0.83rem;color:var(--accent);cursor:pointer;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
-                <i data-lucide="send" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> In Canva übergeben
+              <button id="canvaTransferBtn" onclick="exportToClaudeDesign()" style="display:none;background:none;border:1px solid rgba(108,99,255,0.5);border-radius:8px;padding:8px 14px;font-size:0.83rem;color:var(--accent);cursor:pointer;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
+                <i data-lucide="sparkles" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> In Claude Design öffnen
               </button>
             </div>
             <div id="canvaPreview" style="padding:16px;min-height:60px">
               <span style="color:var(--muted);font-size:0.85rem">Wähle einen Typ und klicke auf „Generieren" – Claude strukturiert den Inhalt aus deinen Analysen.</span>
+            </div>
+            <!-- Gespeicherte Design-Links -->
+            <div style="padding:0 16px 12px;border-top:1px solid var(--border)">
+              <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin:12px 0 8px;display:flex;align-items:center;gap:5px">
+                <i data-lucide="link" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none"></i> Gespeicherte Designs
+              </div>
+              <div id="designLinksContainer" style="margin-bottom:10px">
+                <span style="color:var(--muted);font-size:0.8rem">Noch kein Design-Link gespeichert.</span>
+              </div>
+              <div style="display:flex;gap:8px">
+                <input id="designLinkInput" type="url" placeholder="Claude Design Share-Link hier einfügen…"
+                  style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:0.82rem;outline:none"
+                  onkeydown="if(event.key==='Enter') saveDesignLink()" />
+                <button onclick="saveDesignLink()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:0.82rem;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px">
+                  <i data-lucide="plus" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Speichern
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -707,6 +724,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.35 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.35</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Claude Design Integration</strong> – „In Canva übergeben" wurde durch „In Claude Design öffnen" ersetzt. Klick öffnet claude.ai/design in einem neuen Tab und kopiert den fertigen Prompt inkl. aller Inhalte automatisch in die Zwischenablage (⌘V einzufügen).</li>
+          <li><strong>Design-Links direkt im Dashboard</strong> – Nach der Erstellung in Claude Design kannst du den Share-Link direkt ins Panel einfügen. Er wird in der Sitzung gespeichert und ist jederzeit per Klick aufrufbar — mehrere Designs pro Sitzung möglich.</li>
+          <li><strong>CI über Claude Design</strong> – Claude Design unterstützt eigene Brand Kits (Logo, Farben, Schriften) — einmalig einrichten, danach in jedem Design automatisch aktiv.</li>
+        </ul>
+        <div class="cl-tech">claude.js: exportToClaudeDesign(), saveDesignLink(), renderDesignLinks(), removeDesignLink(). session.claudeDesignLinks[] speichert URLs. index.html: Claude Design Button + designLinkInput + designLinksContainer.</div>
+      </div>
 
       <!-- ── v4.34 ── -->
       <div class="cl-entry">
