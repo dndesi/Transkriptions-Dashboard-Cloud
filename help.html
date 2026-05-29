@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Distill Voice – Hilfe</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c63ff' stroke-width='2'><path d='M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z'/><path d='M19 10v2a7 7 0 0 1-14 0v-2'/><line x1='12' y1='19' x2='12' y2='23'/><line x1='8' y1='23' x2='16' y2='23'/></svg>" />
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #20243a;
+      --border: #2e3250;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --green: #34d399;
+      --yellow: #f59e0b;
+      --red: #f87171;
+      --text: #e2e8f0;
+      --muted: #6b7280;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.6; font-size: 15px;
+    }
+
+    /* ── Header ── */
+    .help-header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 32px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .help-header-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .help-header-right { display: flex; align-items: center; gap: 12px; }
+    .help-header-search {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 14px;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.83rem; color: var(--muted);
+      width: 220px;
+    }
+    .help-header-back {
+      font-size: 0.83rem; color: var(--muted); text-decoration: none;
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .help-header-back:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Layout ── */
+    .help-layout {
+      display: flex; max-width: 1140px; margin: 0 auto;
+      padding: 40px 24px; gap: 48px;
+    }
+
+    /* ── Sidebar ── */
+    .help-nav {
+      width: 230px; flex-shrink: 0;
+      position: sticky; top: 76px; height: fit-content;
+      max-height: calc(100vh - 96px); overflow-y: auto;
+    }
+    .help-nav::-webkit-scrollbar { width: 4px; }
+    .help-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .nav-group { margin-bottom: 24px; }
+    .nav-group-title {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted);
+      padding: 0 10px; margin-bottom: 6px;
+    }
+    .nav-link {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: 8px;
+      font-size: 0.84rem; color: var(--muted);
+      text-decoration: none; margin-bottom: 1px;
+      transition: background 0.12s, color 0.12s;
+      cursor: pointer;
+    }
+    .nav-link:hover { background: var(--surface2); color: var(--text); }
+    .nav-link.active { background: rgba(108,99,255,0.12); color: var(--accent); font-weight: 600; }
+    .nav-link .nav-icon { font-size: 0.9rem; width: 16px; text-align: center; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto; font-size: 0.65rem; font-weight: 700;
+      background: rgba(108,99,255,0.15); color: var(--accent);
+      padding: 1px 6px; border-radius: 6px; text-transform: uppercase;
+    }
+    .nav-badge.soon {
+      background: rgba(107,114,128,0.15); color: var(--muted);
+    }
+
+    /* ── Content ── */
+    .help-content { flex: 1; min-width: 0; }
+
+    /* ── Hero ── */
+    .help-hero {
+      background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(167,139,250,0.05));
+      border: 1px solid rgba(108,99,255,0.2);
+      border-radius: 16px; padding: 32px; margin-bottom: 40px;
+    }
+    .help-hero h1 {
+      font-size: 1.6rem; font-weight: 800; margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .help-hero p { color: var(--muted); font-size: 0.92rem; line-height: 1.7; }
+
+    /* Quick-Links Grid */
+    .quicklinks {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px; margin-top: 20px;
+    }
+    .quicklink {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px;
+      text-decoration: none; color: var(--text);
+      transition: border-color 0.15s, transform 0.15s;
+      cursor: pointer;
+    }
+    .quicklink:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .quicklink-icon { font-size: 1.3rem; margin-bottom: 6px; }
+    .quicklink h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 2px; }
+    .quicklink p { font-size: 0.75rem; color: var(--muted); }
+
+    /* ── Sektion ── */
+    .help-section { margin-bottom: 64px; scroll-margin-top: 80px; }
+    .section-header {
+      display: flex; align-items: center; gap: 12px;
+      padding-bottom: 14px; border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .section-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(108,99,255,0.12); border: 1px solid rgba(108,99,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .section-header h2 { font-size: 1.2rem; font-weight: 700; }
+    .section-header .section-meta { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
+
+    /* ── Artikel ── */
+    .help-article p { color: var(--muted); margin-bottom: 14px; font-size: 0.91rem; }
+    .help-article p strong { color: var(--text); }
+    .help-article h3 { font-size: 0.98rem; font-weight: 700; margin: 24px 0 10px; }
+
+    /* ── Schritte ── */
+    .steps { margin: 20px 0; }
+    .step { display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start; }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-weight: 700; font-size: 0.82rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .step-body h4 { font-size: 0.92rem; font-weight: 700; margin-bottom: 3px; }
+    .step-body p { font-size: 0.85rem; color: var(--muted); margin: 0; }
+    .step-body p strong { color: var(--text); }
+
+    /* ── Mock-UI ── */
+    .mock-ui {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; margin: 14px 0 20px;
+      font-size: 0.82rem;
+    }
+    .mock-ui.indented { margin-left: 44px; }
+    .mock-bar {
+      background: var(--surface2); padding: 8px 14px;
+      display: flex; align-items: center; gap: 6px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.73rem; color: var(--muted);
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .mock-body { padding: 16px; }
+
+    /* Checkboxen */
+    .mock-check-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 0; font-size: 0.83rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .mock-check-row:last-of-type { border: none; }
+    .chk {
+      width: 15px; height: 15px; border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; flex-shrink: 0;
+    }
+    .chk.on  { background: var(--accent); color: #fff; }
+    .chk.off { background: transparent; border: 1.5px solid var(--border); }
+
+    /* Buttons */
+    .mock-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+    }
+    .mock-btn.primary { background: var(--accent); color: #fff; }
+    .mock-btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+    /* Sitzungskachel */
+    .mock-card {
+      background: linear-gradient(135deg,rgba(108,99,255,0.08),rgba(167,139,250,0.04));
+      border: 1px solid rgba(108,99,255,0.2); border-radius: 10px; padding: 14px;
+    }
+    .mock-card-title { font-weight: 700; font-size: 0.87rem; margin-bottom: 4px; }
+    .mock-card-meta { font-size: 0.74rem; color: var(--muted); margin-bottom: 8px; }
+    .mock-status-ok {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3);
+      border-radius: 6px; padding: 2px 8px; font-size: 0.72rem; color: var(--green);
+    }
+
+    /* Akkordeon */
+    .mock-acc {
+      border: 1px solid var(--border); border-radius: 9px;
+      overflow: hidden; margin-bottom: 6px;
+    }
+    .mock-acc-head {
+      background: var(--surface2); padding: 10px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.84rem; font-weight: 600;
+    }
+    .mock-acc-body {
+      padding: 10px 14px; font-size: 0.81rem;
+      color: var(--muted); border-top: 1px solid var(--border);
+    }
+    .mock-bullet-row {
+      display: flex; gap: 7px; padding: 3px 0;
+    }
+    .mock-bullet-dot { color: var(--accent); flex-shrink: 0; font-size: 0.75rem; margin-top: 1px; }
+
+    /* ── Hinweis-Boxen ── */
+    .tip  { background: rgba(52,211,153,0.07); border: 1px solid rgba(52,211,153,0.25); border-radius: 10px; padding: 13px 16px; margin: 14px 0; }
+    .warn { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 13px 16px; margin: 14px 0; }
+    .info { background: rgba(108,99,255,0.07); border: 1px solid rgba(108,99,255,0.2);  border-radius: 10px; padding: 13px 16px; margin: 14px 0; }
+    .tip-title  { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--green);  margin-bottom: 4px; }
+    .warn-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--yellow); margin-bottom: 4px; }
+    .info-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 4px; }
+    .tip p, .warn p, .info p { font-size: 0.85rem; color: var(--muted); margin: 0; }
+    .tip p strong, .warn p strong, .info p strong { color: var(--text); }
+
+    /* ── Beispiel ── */
+    .example {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 10px; padding: 16px; margin: 16px 0;
+    }
+    .example-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 8px; }
+    .example p { font-size: 0.85rem; color: var(--muted); margin: 0 0 5px; }
+    .example p:last-child { margin: 0; }
+
+    /* ── Analyse-Typ-Grid ── */
+    .type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 10px; margin: 14px 0; }
+    .type-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .type-card-ico { font-size: 1.3rem; margin-bottom: 6px; }
+    .type-card h4 { font-size: 0.87rem; font-weight: 700; margin-bottom: 3px; }
+    .type-card p { font-size: 0.78rem; color: var(--muted); margin: 0; }
+
+    /* ── Platzhalter ── */
+    .placeholder-section {
+      background: var(--surface); border: 1px dashed var(--border);
+      border-radius: 14px; padding: 40px 32px; text-align: center;
+      color: var(--muted);
+    }
+    .placeholder-section .ph-icon { font-size: 2rem; margin-bottom: 12px; opacity: 0.4; }
+    .placeholder-section h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .placeholder-section p { font-size: 0.85rem; max-width: 320px; margin: 0 auto; }
+    .ph-badge {
+      display: inline-block; margin-top: 14px;
+      background: rgba(108,99,255,0.1); border: 1px solid rgba(108,99,255,0.2);
+      border-radius: 8px; padding: 4px 12px;
+      font-size: 0.75rem; color: var(--accent); font-weight: 600;
+    }
+
+    /* ── Code ── */
+    code {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 5px; padding: 2px 7px;
+      font-size: 0.81rem; font-family: 'SF Mono', 'Fira Code', monospace;
+      color: var(--accent2);
+    }
+
+    /* ── Footer ── */
+    .help-footer {
+      text-align: center; padding: 36px 24px;
+      color: var(--muted); font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+    .help-footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .help-nav { display: none; }
+      .help-layout { padding: 24px 16px; gap: 0; }
+      .quicklinks { grid-template-columns: 1fr 1fr; }
+      .help-header-search { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="help-header">
+  <a class="help-header-logo" href="index.html">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+         stroke="url(#hg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <defs><linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#6c63ff"/>
+        <stop offset="100%" stop-color="#a78bfa"/>
+      </linearGradient></defs>
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+      <line x1="12" y1="19" x2="12" y2="23"/>
+      <line x1="8" y1="23" x2="16" y2="23"/>
+    </svg>
+    Distill Voice – Hilfe
+  </a>
+  <div class="help-header-right">
+    <div class="help-header-search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Hilfe durchsuchen… <span style="margin-left:auto;font-size:0.72rem;opacity:0.5">bald verfügbar</span>
+    </div>
+    <a class="help-header-back" href="index.html">← Zurück zum Dashboard</a>
+  </div>
+</header>
+
+<!-- ── Layout ── -->
+<div class="help-layout">
+
+  <!-- ── Sidebar-Navigation ── -->
+  <nav class="help-nav">
+
+    <div class="nav-group">
+      <div class="nav-group-title">Einstieg</div>
+      <a class="nav-link" href="#start" onclick="setActive(this)">
+        <span class="nav-icon">🚀</span> Erste Schritte
+      </a>
+      <a class="nav-link" href="#upload" onclick="setActive(this)">
+        <span class="nav-icon">📁</span> Aufnahme hochladen
+      </a>
+      <a class="nav-link" href="#sprecher" onclick="setActive(this)">
+        <span class="nav-icon">🎙</span> Sprecher benennen
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Analysen</div>
+      <a class="nav-link active" href="#analyse" onclick="setActive(this)">
+        <span class="nav-icon">✦</span> Sitzung analysieren
+        <span class="nav-badge">Neu</span>
+      </a>
+      <a class="nav-link" href="#mindmap" onclick="setActive(this)">
+        <span class="nav-icon">🗺</span> Mind Map
+      </a>
+      <a class="nav-link" href="#folgegespräch" onclick="setActive(this)">
+        <span class="nav-icon">💬</span> Folgegespräch
+      </a>
+      <a class="nav-link" href="#kapitel" onclick="setActive(this)">
+        <span class="nav-icon">📑</span> Kapitel-Analyse
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Design & Export</div>
+      <a class="nav-link" href="#praesentation" onclick="setActive(this)">
+        <span class="nav-icon">🎨</span> Präsentation erstellen
+      </a>
+      <a class="nav-link" href="#claudedesign" onclick="setActive(this)">
+        <span class="nav-icon">✦</span> Claude Design
+      </a>
+      <a class="nav-link" href="#export" onclick="setActive(this)">
+        <span class="nav-icon">⬇</span> Exportieren
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Personen & Archiv</div>
+      <a class="nav-link" href="#personen" onclick="setActive(this)">
+        <span class="nav-icon">👤</span> Personen-Profile
+      </a>
+      <a class="nav-link" href="#archiv" onclick="setActive(this)">
+        <span class="nav-icon">🗂</span> Archiv & Tags
+      </a>
+      <a class="nav-link" href="#suche" onclick="setActive(this)">
+        <span class="nav-icon">🔍</span> Suche
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Einstellungen</div>
+      <a class="nav-link" href="#apikeys" onclick="setActive(this)">
+        <span class="nav-icon">🔑</span> API-Keys einrichten
+      </a>
+      <a class="nav-link" href="#prompts" onclick="setActive(this)">
+        <span class="nav-icon">📝</span> Prompt-Bibliothek
+      </a>
+      <a class="nav-link" href="#drive" onclick="setActive(this)">
+        <span class="nav-icon">☁</span> Google Drive
+      </a>
+    </div>
+
+  </nav>
+
+  <!-- ── Hauptinhalt ── -->
+  <main class="help-content">
+
+    <!-- Hero -->
+    <div class="help-hero">
+      <h1>Hilfe &amp; Dokumentation</h1>
+      <p>Alles was du brauchst um Distill Voice optimal zu nutzen.<br>
+        Schritt-für-Schritt-Anleitungen, Beispiele und Tipps für jeden Bereich.</p>
+
+      <div class="quicklinks">
+        <a class="quicklink" href="#analyse" onclick="setActive(document.querySelector('[href=\'#analyse\']'))">
+          <div class="quicklink-icon">✦</div>
+          <h4>Erste Analyse starten</h4>
+          <p>So analysierst du dein erstes Gespräch</p>
+        </a>
+        <a class="quicklink" href="#apikeys" onclick="setActive(document.querySelector('[href=\'#apikeys\']'))">
+          <div class="quicklink-icon">🔑</div>
+          <h4>API-Key einrichten</h4>
+          <p>Voraussetzung für alle KI-Funktionen</p>
+        </a>
+        <a class="quicklink" href="#praesentation" onclick="setActive(document.querySelector('[href=\'#praesentation\']'))">
+          <div class="quicklink-icon">🎨</div>
+          <h4>Präsentation erstellen</h4>
+          <p>Aus Analysen direkt ein Design machen</p>
+        </a>
+        <a class="quicklink" href="#personen" onclick="setActive(document.querySelector('[href=\'#personen\']'))">
+          <div class="quicklink-icon">👤</div>
+          <h4>Personen-Profile</h4>
+          <p>Profile über Gesprächspartner aufbauen</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══ EINSTIEG ═══════════════════════════════════════ -->
+
+    <!-- Erste Schritte -->
+    <section class="help-section" id="start">
+      <div class="section-header">
+        <div class="section-icon">🚀</div>
+        <div>
+          <h2>Erste Schritte</h2>
+          <div class="section-meta">Einstieg · Überblick · Voraussetzungen</div>
+        </div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">🚀</div>
+        <h3>Erste Schritte mit Distill Voice</h3>
+        <p>Überblick über das Dashboard, Login mit Google, was du brauchst um loszulegen.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- Aufnahme hochladen -->
+    <section class="help-section" id="upload">
+      <div class="section-header">
+        <div class="section-icon">📁</div>
+        <div>
+          <h2>Aufnahme hochladen</h2>
+          <div class="section-meta">Dateiformate · Drag &amp; Drop · Direktaufnahme</div>
+        </div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">📁</div>
+        <h3>Aufnahme hochladen</h3>
+        <p>Welche Formate unterstützt werden, wie Drag &amp; Drop funktioniert und wie du direkt im Browser aufnehmen kannst.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- Sprecher benennen -->
+    <section class="help-section" id="sprecher">
+      <div class="section-header">
+        <div class="section-icon">🎙</div>
+        <div>
+          <h2>Sprecher benennen</h2>
+          <div class="section-meta">Pflichtfeld · Datenschutz · Mehrere Sprecher</div>
+        </div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">🎙</div>
+        <h3>Sprecher benennen</h3>
+        <p>Warum Sprecher-Namen pflicht sind, wie die DSGVO-Anonymisierung funktioniert und was bei mehreren Sprechern zu tun ist.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- ═══ ANALYSEN ══════════════════════════════════════ -->
+
+    <!-- SITZUNG ANALYSIEREN — vollständig ausgearbeitet -->
+    <section class="help-section" id="analyse">
+      <div class="section-header">
+        <div class="section-icon">✦</div>
+        <div>
+          <h2>Sitzung analysieren</h2>
+          <div class="section-meta">Kernfunktion · Claude KI · Mehrere Analyse-Typen</div>
+        </div>
+      </div>
+
+      <div class="help-article">
+
+        <p>Die Analyse ist das <strong>Herzstück von Distill Voice</strong>. Claude liest dein Transkript und
+        destilliert daraus das Wesentliche — Vereinbarungen, Aufgaben, offene Themen, Stimmungen und mehr.
+        Du sparst dir das manuelle Nacharbeiten nach jedem Gespräch.</p>
+
+        <div class="warn">
+          <div class="warn-title">⚠ Voraussetzung</div>
+          <p>Du brauchst einen <strong>Anthropic API-Key</strong>. Trage ihn einmalig unter <code>🔑 API-Keys</code>
+          (oben rechts im Dashboard) ein. Einen kostenlosen Key gibt es auf <strong>console.anthropic.com</strong>.</p>
+        </div>
+
+        <h3>Schritt für Schritt</h3>
+        <div class="steps">
+
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h4>Transkribierte Sitzung öffnen</h4>
+              <p>Klicke im Archiv auf eine Sitzung mit dem grünen Status <strong>„Transkribiert"</strong>.</p>
+            </div>
+          </div>
+          <div class="mock-ui indented" style="max-width:320px">
+            <div class="mock-bar"><div class="dot" style="background:#f87171"></div><div class="dot" style="background:#f59e0b"></div><div class="dot" style="background:#34d399"></div><span style="margin-left:6px">Archiv</span></div>
+            <div class="mock-body">
+              <div class="mock-card">
+                <div class="mock-card-title">Projektgespräch Bodenverlegung</div>
+                <div class="mock-card-meta">29. Mai 2026 · 23 Min.</div>
+                <div class="mock-status-ok">✓ Transkribiert</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h4>Sprecher benennen</h4>
+              <p>Im Bereich <strong>„Namen"</strong> trägst du ein wer Sprecher A und Sprecher B ist.
+                Ohne Namen lässt sich die Analyse nicht starten.<br>
+                Beispiel: <code>Sprecher A = Daniel</code> · <code>Sprecher B = Atice</code></p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h4>Analysen auswählen und starten</h4>
+              <p>Klicke auf <strong>„Analysieren"</strong> in der Analyse-Leiste. Wähle eine oder mehrere
+                Analyse-Typen an und bestätige.</p>
+            </div>
+          </div>
+          <div class="mock-ui indented" style="max-width:360px">
+            <div class="mock-bar"><div class="dot" style="background:#f87171"></div><div class="dot" style="background:#f59e0b"></div><div class="dot" style="background:#34d399"></div><span style="margin-left:6px">Analyse starten</span></div>
+            <div class="mock-body">
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px">
+                <div style="font-weight:700;font-size:0.88rem;margin-bottom:12px;display:flex;align-items:center;gap:6px"><span>✦</span> Welche Analysen sollen laufen?</div>
+                <div class="mock-check-row"><div class="chk on">✓</div> Gesprächs-Analyse</div>
+                <div class="mock-check-row"><div class="chk on">✓</div> Stimmungsanalyse</div>
+                <div class="mock-check-row"><div class="chk off"></div> Kapitel</div>
+                <div class="mock-check-row"><div class="chk off"></div> 360°-Auswertung</div>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <div class="mock-btn primary">✦ Analysieren</div>
+                  <div class="mock-btn ghost">Abbrechen</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <h4>Ergebnisse lesen</h4>
+              <p>Die Ergebnisse erscheinen im Akkordeon-Bereich <strong>„Analysen"</strong> — aufgeteilt in
+                Vereinbarungen, offene Themen, nächste Schritte und mehr.</p>
+            </div>
+          </div>
+          <div class="mock-ui indented">
+            <div class="mock-bar"><div class="dot" style="background:#f87171"></div><div class="dot" style="background:#f59e0b"></div><div class="dot" style="background:#34d399"></div><span style="margin-left:6px">Analyseergebnisse</span></div>
+            <div class="mock-body" style="display:flex;flex-direction:column;gap:6px">
+              <div class="mock-acc">
+                <div class="mock-acc-head"><span>✓ Vereinbarungen</span><span style="color:var(--muted)">▾</span></div>
+                <div class="mock-acc-body">
+                  <div class="mock-bullet-row"><span class="mock-bullet-dot">·</span><span>Angebot wird bis 30. Mai erstellt, sobald Quadratmeter vorliegen</span></div>
+                  <div class="mock-bullet-row"><span class="mock-bullet-dot">·</span><span>Folgetermin am 27. Juni für Beratung vereinbart</span></div>
+                </div>
+              </div>
+              <div class="mock-acc"><div class="mock-acc-head"><span>○ Offene Themen</span><span style="color:var(--muted)">▸</span></div></div>
+              <div class="mock-acc"><div class="mock-acc-head"><span>→ Nächste Schritte</span><span style="color:var(--muted)">▸</span></div></div>
+            </div>
+          </div>
+
+        </div><!-- /steps -->
+
+        <h3>Welche Analyse passt wann?</h3>
+        <div class="type-grid">
+          <div class="type-card"><div class="type-card-ico">💬</div><h4>Gesprächs-Analyse</h4><p>Für private Gespräche, Coaching, Therapie. Vereinbarungen, Wünsche, Dynamik.</p></div>
+          <div class="type-card"><div class="type-card-ico">💼</div><h4>Arbeits-Analyse</h4><p>Für Meetings und Kundengespräche. Aufgaben mit Verantwortlichen, Entscheidungen, Risiken.</p></div>
+          <div class="type-card"><div class="type-card-ico">📊</div><h4>Stimmungsanalyse</h4><p>Emotionaler Verlauf beider Sprecher. Hilfreich um Gesprächsqualität zu verstehen.</p></div>
+          <div class="type-card"><div class="type-card-ico">📑</div><h4>Kapitel</h4><p>Unterteilt das Gespräch in Abschnitte mit Zeitstempeln. Gut für lange Aufnahmen.</p></div>
+          <div class="type-card"><div class="type-card-ico">🎯</div><h4>360°-Auswertung</h4><p>Vier Perspektiven: eigene Aufgaben, Erwartungen, Emotionen, Strategie.</p></div>
+          <div class="type-card"><div class="type-card-ico">💡</div><h4>Themen</h4><p>Kompakte Tag-Liste der Hauptthemen. Ideal für schnellen Überblick.</p></div>
+        </div>
+
+        <div class="example">
+          <div class="example-label">Praxisbeispiel</div>
+          <p><strong>Situation:</strong> 30-minütiges Kundengespräch über ein Renovierungsprojekt.</p>
+          <p><strong>Empfohlen:</strong> Arbeits-Analyse + Stimmungsanalyse</p>
+          <p><strong>Ergebnis:</strong> Aufgabenliste mit Verantwortlichen, offene Fragen, Einschätzung ob die Kundin sicher oder noch unsicher wirkte.</p>
+          <p><strong>Dauer:</strong> ca. 20–40 Sekunden je nach Gesprächslänge.</p>
+        </div>
+
+        <div class="tip">
+          <div class="tip-title">💡 Tipp: Datenschutz</div>
+          <p>Echte Namen werden <strong>nie an Claude gesendet</strong>. Distill Voice ersetzt sie automatisch durch neutrale Bezeichnungen und setzt sie im Ergebnis wieder ein.</p>
+        </div>
+
+        <div class="tip">
+          <div class="tip-title">💡 Tipp: Mehrfach analysieren</div>
+          <p>Du kannst jederzeit weitere Analysen ergänzen — z.B. erst die Gesprächs-Analyse, später die 360°. Die Ergebnisse werden ergänzt, nicht überschrieben.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Mind Map -->
+    <section class="help-section" id="mindmap">
+      <div class="section-header">
+        <div class="section-icon">🗺</div>
+        <div><h2>Mind Map</h2><div class="section-meta">Visuelle Übersicht · D3.js · Zoom & Pan · SVG/PDF-Export</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">🗺</div>
+        <h3>Mind Map generieren</h3>
+        <p>Wie die Mind Map aus dem Transkript erstellt wird, wie man sie bedient (Zoom, Pan) und wie der Export funktioniert.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- Folgegespräch -->
+    <section class="help-section" id="folgegespräch">
+      <div class="section-header">
+        <div class="section-icon">💬</div>
+        <div><h2>Folgegespräch</h2><div class="section-meta">Folgefragen · Analysen als Kontext · Mehrere Runden</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">💬</div>
+        <h3>Folgegespräch führen</h3>
+        <p>Wie du nach einer Analyse konkrete Folgefragen stellen kannst — Claude kennt dabei alle Analyseergebnisse als Kontext.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- Kapitel -->
+    <section class="help-section" id="kapitel">
+      <div class="section-header">
+        <div class="section-icon">📑</div>
+        <div><h2>Kapitel-Analyse</h2><div class="section-meta">Tiefenanalyse · Gesamtbild · Zeitstempel</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">📑</div>
+        <h3>Kapitel-Tiefenanalyse</h3>
+        <p>Wie das Gespräch in Kapitel unterteilt wird und wie die Tiefenanalyse pro Kapitel sowie das Gesamtbild funktionieren.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- ═══ DESIGN & EXPORT ═══════════════════════════════ -->
+
+    <!-- Präsentation -->
+    <section class="help-section" id="praesentation">
+      <div class="section-header">
+        <div class="section-icon">🎨</div>
+        <div><h2>Präsentation erstellen</h2><div class="section-meta">6 Formate · Claude Design · .pptx-Export</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">🎨</div>
+        <h3>Präsentation aus Analyse erstellen</h3>
+        <p>Wie du aus deinen Analysen direkt eine Präsentation, einen Flyer, OnePager oder Social Media Post generierst und über Claude Design fertigstellst.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- Claude Design -->
+    <section class="help-section" id="claudedesign">
+      <div class="section-header">
+        <div class="section-icon">✦</div>
+        <div><h2>Claude Design</h2><div class="section-meta">claude.ai/design · Brand Kit · CI einrichten</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">✦</div>
+        <h3>Mit Claude Design arbeiten</h3>
+        <p>Wie du dein Brand Kit in Claude Design einrichtest und Inhalte aus Distill Voice direkt in polierte Designs verwandelst.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- Export -->
+    <section class="help-section" id="export">
+      <div class="section-header">
+        <div class="section-icon">⬇</div>
+        <div><h2>Exportieren</h2><div class="section-meta">TXT · PDF · PPTX · Markdown</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">⬇</div>
+        <h3>Ergebnisse exportieren</h3>
+        <p>Alle Export-Optionen im Überblick — von einzelnen Analyse-Abschnitten bis zur vollständigen Sitzung als Markdown.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- ═══ PERSONEN & ARCHIV ══════════════════════════════ -->
+
+    <!-- Personen-Profile -->
+    <section class="help-section" id="personen">
+      <div class="section-header">
+        <div class="section-icon">👤</div>
+        <div><h2>Personen-Profile</h2><div class="section-meta">Profil-Synthese · Beziehungskontext · Mein Profil</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">👤</div>
+        <h3>Personen-Profile nutzen</h3>
+        <p>Wie sich über mehrere Gespräche hinweg automatisch Profile aufbauen und wie die KI-Profil-Synthese funktioniert.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- Archiv & Tags -->
+    <section class="help-section" id="archiv">
+      <div class="section-header">
+        <div class="section-icon">🗂</div>
+        <div><h2>Archiv &amp; Tags</h2><div class="section-meta">Filter · Ordner · Tag-Suche</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">🗂</div>
+        <h3>Archiv organisieren</h3>
+        <p>Sitzungen mit Tags versehen, in Ordner sortieren und gezielt filtern — so behältst du auch bei vielen Aufnahmen den Überblick.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- Suche -->
+    <section class="help-section" id="suche">
+      <div class="section-header">
+        <div class="section-icon">🔍</div>
+        <div><h2>Suche</h2><div class="section-meta">Volltextsuche · Semantische Suche · Tags</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">🔍</div>
+        <h3>Im Archiv suchen</h3>
+        <p>Textsuche über alle Sitzungen, semantische Claude-Suche nach Themen und die Unterschiede zwischen beiden.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- ═══ EINSTELLUNGEN ══════════════════════════════════ -->
+
+    <!-- API-Keys -->
+    <section class="help-section" id="apikeys">
+      <div class="section-header">
+        <div class="section-icon">🔑</div>
+        <div><h2>API-Keys einrichten</h2><div class="section-meta">Anthropic · AssemblyAI · Sicherheit</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">🔑</div>
+        <h3>API-Keys einrichten</h3>
+        <p>Wo du die Keys herbekommst, wie du sie einträgst und warum sie sicher in deinem Browser bleiben — nie auf einem Server.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- Prompt-Bibliothek -->
+    <section class="help-section" id="prompts">
+      <div class="section-header">
+        <div class="section-icon">📝</div>
+        <div><h2>Prompt-Bibliothek</h2><div class="section-meta">Eigene Prompts · Anpassen · Zurücksetzen</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">📝</div>
+        <h3>Prompts anpassen</h3>
+        <p>Wie du bestehende Analyse-Prompts bearbeitest, eigene erstellst und wie sich Änderungen auf die Analysen auswirken.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+    <!-- Google Drive -->
+    <section class="help-section" id="drive">
+      <div class="section-header">
+        <div class="section-icon">☁</div>
+        <div><h2>Google Drive</h2><div class="section-meta">Sync · Backup · Zugriff von mehreren Geräten</div></div>
+      </div>
+      <div class="placeholder-section">
+        <div class="ph-icon">☁</div>
+        <h3>Google Drive verbinden</h3>
+        <p>Wie die automatische Synchronisation mit Google Drive funktioniert und wie du auf deine Sitzungen von verschiedenen Geräten zugreifst.</p>
+        <div class="ph-badge">Wird in Kürze ergänzt</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="help-footer">
+  Distill Voice v4.35 &nbsp;·&nbsp;
+  <a href="index.html">Zurück zum Dashboard</a> &nbsp;·&nbsp;
+  Diese Hilfe wird laufend erweitert.
+</footer>
+
+<script>
+  // Aktiven Nav-Link setzen
+  function setActive(el) {
+    if (!el) return;
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // Beim Scrollen automatisch aktiven Link aktualisieren
+  const sections = document.querySelectorAll('.help-section');
+  const navLinks  = document.querySelectorAll('.nav-link[href]');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navLinks.forEach(l => {
+          l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
