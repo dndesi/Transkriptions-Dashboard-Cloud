@@ -218,87 +218,146 @@ function askInputKeydown(e) {
 
 
 // ═══════════════════════════════════════════════════
-// MIND MAP EXPORT (Mermaid.js)
+// MIND MAP (Mermaid.js)
 // ═══════════════════════════════════════════════════
 
+// Haupt-Einstiegspunkt: Cache prüfen, sonst neu generieren
 async function generateAndShowMindMap() {
   const s = getSession();
   if (!s || !s.utterances?.length) {
     showToast('Kein Transkript verfügbar', 'error');
     return;
   }
+  // Cache: bereits vorhanden → direkt anzeigen
+  if (s.claudeMindmap) {
+    renderMindmapPanel(s.claudeMindmap);
+    // Akkordeon öffnen
+    const panel = document.getElementById('accMindmap');
+    if (panel && !panel.classList.contains('open')) toggleAccPanel('accMindmap');
+    showToast('Mind Map geladen (gecacht)', 'info');
+    return;
+  }
+  await _fetchAndStoreMindmap(s);
+}
 
-  const btn = document.getElementById('mindmapBtn');
-  if (btn) { btn.disabled = true; btn.innerHTML = icon('loader',12,'margin-right:5px') + ' Generiere…'; }
+// Neu generieren (aus dem Akkordeon-Panel heraus)
+async function regenerateMindmap() {
+  const s = getSession();
+  if (!s || !s.utterances?.length) { showToast('Kein Transkript verfügbar', 'error'); return; }
+  await _fetchAndStoreMindmap(s);
+}
 
+async function _fetchAndStoreMindmap(s) {
+  const btn    = document.getElementById('mindmapBtn');
+  const reBtn  = document.getElementById('mindmapRegenBtn');
+  const setBusy = (busy) => {
+    if (btn)   { btn.disabled   = busy; btn.innerHTML   = busy ? icon('loader',12,'margin-right:5px') + ' Generiere…' : icon('git-branch',12,'margin-right:5px') + ' Mind Map'; }
+    if (reBtn) { reBtn.disabled = busy; reBtn.innerHTML = busy ? icon('loader',12,'margin-right:5px') + ' …' : icon('refresh-cw',13,'margin-right:4px') + ' Neu generieren'; }
+  };
+  setBusy(true);
   try {
     const { forward, reverse } = buildAnonMap(s);
     const transcript = buildTranscriptText(s);
     const prompt = getEditablePromptText('builtin_mindmap')
       .replace(/\{\{transkript\}\}/g, trimTranscript(transcript, 300000));
-
     const { text: rawText, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
     const text = deanonymizeText(rawText, reverse);
     addTokensToSession(s, inputTokens, outputTokens);
-
-    let mermaidCode = text.trim();
-    // Markdown-Fence entfernen falls vorhanden
-    mermaidCode = mermaidCode.replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/, '').trim();
-
+    let mermaidCode = text.trim().replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/, '').trim();
     s.claudeMindmap = mermaidCode;
     saveSessions();
-
-    openMindMapModal(mermaidCode, s.label);
+    renderMindmapPanel(mermaidCode);
+    // Akkordeon öffnen
+    const panel = document.getElementById('accMindmap');
+    if (panel && !panel.classList.contains('open')) toggleAccPanel('accMindmap');
+    showToast('Mind Map erstellt', 'success');
   } catch(e) {
     showToast('Fehler: ' + e.message, 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = icon('map',12,'margin-right:5px') + ' Mind Map'; }
+    setBusy(false);
   }
 }
 
+// Rendert den Mermaid-Code ins Akkordeon-Panel
+function renderMindmapPanel(code) {
+  const container = document.getElementById('mindmapPanelRender');
+  if (!container) return;
+  container.innerHTML = `<pre class="mermaid">${escHtml(code)}</pre>`;
+  if (window.mermaid) {
+    try {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: document.documentElement.dataset.theme === 'light' ? 'default' : 'dark'
+      });
+      mermaid.run({ nodes: container.querySelectorAll('.mermaid') });
+    } catch(e) {
+      container.innerHTML = `<pre style="color:var(--red);font-size:0.78rem;white-space:pre-wrap">${escHtml(e.message)}\n\n${escHtml(code)}</pre>`;
+    }
+  }
+}
+
+// Export SVG
+function exportMindmapSvg() {
+  const container = document.getElementById('mindmapPanelRender');
+  const svgEl = container?.querySelector('svg');
+  if (!svgEl) { showToast('Erst Mind Map generieren', 'error'); return; }
+  const svgStr = new XMLSerializer().serializeToString(svgEl);
+  const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const s = getSession();
+  a.href = url; a.download = (s?.label || 'mindmap') + '.svg';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// Export PDF (via Print-Dialog mit SVG-only-Seite)
+function exportMindmapPdf() {
+  const container = document.getElementById('mindmapPanelRender');
+  const svgEl = container?.querySelector('svg');
+  if (!svgEl) { showToast('Erst Mind Map generieren', 'error'); return; }
+  const svgStr = new XMLSerializer().serializeToString(svgEl);
+  const s = getSession();
+  const title = escHtml(s?.label || 'Mind Map');
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
+    <style>body{margin:20px;font-family:sans-serif} h1{font-size:16px;margin-bottom:12px} svg{max-width:100%;height:auto} @media print{@page{size:A4 landscape;margin:15mm}}</style>
+    </head><body><h1>${title} – Mind Map</h1>${svgStr}</body></html>`;
+  const win = window.open('', '_blank');
+  if (!win) { showToast('Pop-up blockiert – bitte erlauben', 'error'); return; }
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => { win.print(); };
+}
+
+// Modal (Legacy – bleibt für Rückwärtskompatibilität)
 function openMindMapModal(code, label) {
   const titleEl  = document.getElementById('mindmapTitle');
   const codeEl   = document.getElementById('mindmapCode');
   const renderEl = document.getElementById('mindmapRender');
-
-  if (titleEl)  titleEl.textContent  = label || 'Mind Map';
-  if (codeEl)   codeEl.textContent   = code;
-
+  if (titleEl)  titleEl.textContent = label || 'Mind Map';
+  if (codeEl)   codeEl.textContent  = code;
   if (renderEl) {
-    renderEl.innerHTML = `<pre class="mermaid">${code}</pre>`;
+    renderEl.innerHTML = `<pre class="mermaid">${escHtml(code)}</pre>`;
     if (window.mermaid) {
       try {
-        mermaid.initialize({
-          startOnLoad: false,
-          theme: document.documentElement.dataset.theme === 'light' ? 'default' : 'dark'
-        });
+        mermaid.initialize({ startOnLoad: false, theme: document.documentElement.dataset.theme === 'light' ? 'default' : 'dark' });
         mermaid.run({ nodes: renderEl.querySelectorAll('.mermaid') });
       } catch(e) {
-        renderEl.innerHTML = `<pre style="color:var(--red); font-size:0.78rem; white-space:pre-wrap">${escHtml(e.message)}\n\n${escHtml(code)}</pre>`;
+        renderEl.innerHTML = `<pre style="color:var(--red);font-size:0.78rem;white-space:pre-wrap">${escHtml(e.message)}\n\n${escHtml(code)}</pre>`;
       }
-    } else {
-      renderEl.innerHTML = `<pre style="font-size:0.78rem; color:var(--muted); white-space:pre-wrap">${escHtml(code)}</pre>`;
     }
   }
-
-  document.getElementById('mindmapModal').classList.add('open');
+  document.getElementById('mindmapModal')?.classList.add('open');
 }
-
-function closeMindMapModal() {
-  document.getElementById('mindmapModal').classList.remove('open');
-}
-
+function closeMindMapModal() { document.getElementById('mindmapModal')?.classList.remove('open'); }
 function copyMindMapCode() {
   const code = document.getElementById('mindmapCode')?.textContent;
   if (!code) return;
   navigator.clipboard.writeText(code).then(() => showToast('Mermaid-Code kopiert', 'success'));
 }
-
-// Gespeicherte Mind Map einer Session anzeigen
 function showExistingMindMap() {
   const s = getSession();
   if (!s?.claudeMindmap) return;
-  openMindMapModal(s.claudeMindmap, s.label);
+  renderMindmapPanel(s.claudeMindmap);
 }
 
 

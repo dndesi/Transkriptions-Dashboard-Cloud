@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.20</button>
+        onmouseout="this.style.color='var(--muted)'">v4.21</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -598,6 +598,25 @@
           </div>
         </div>
 
+        <!-- Panel: Mind Map -->
+        <div class="acc-panel" id="accMindmap">
+          <button class="acc-panel-header" onclick="toggleAccPanel('accMindmap')">
+            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="git-branch" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Mind Map</span>
+            <span class="acc-chevron">▾</span>
+          </button>
+          <div class="acc-panel-body">
+            <div style="padding:12px 16px 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border)">
+              <button id="mindmapRegenBtn" class="btn btn-ghost" style="font-size:0.8rem;padding:5px 12px;display:inline-flex;align-items:center;gap:4px"
+                onclick="regenerateMindmap()"><i data-lucide="refresh-cw" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Neu generieren</button>
+              <button class="insights-export-btn" onclick="exportMindmapSvg()" title="SVG exportieren" style="font-size:0.78rem;padding:4px 10px">SVG</button>
+              <button class="insights-export-btn" onclick="exportMindmapPdf()" title="PDF exportieren" style="font-size:0.78rem;padding:4px 10px">PDF</button>
+            </div>
+            <div id="mindmapPanelRender" style="padding:16px;overflow-x:auto;min-height:60px">
+              <span style="color:var(--muted);font-size:0.85rem">Noch keine Mind Map generiert – klicke oben auf „Mind Map" oder „Neu generieren".</span>
+            </div>
+          </div>
+        </div>
+
       </div>
       <!-- /session-accordion -->
 
@@ -617,6 +636,22 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.21 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.21</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Mind Map im Akkordeon</strong> – Neues Panel „Mind Map" direkt in der Sitzungsdetailansicht. Nach der Generierung bleibt die Karte sichtbar und wird beim nächsten Öffnen sofort geladen.</li>
+          <li><strong>Mindmap-Cache</strong> – Der Header-Button „Mind Map" generiert nur einmal; danach wird die gespeicherte Version direkt angezeigt. „Neu generieren" im Panel erzwingt einen neuen API-Call.</li>
+          <li><strong>Export SVG + PDF</strong> – Die Mind Map lässt sich als SVG (verlustfrei, skalierbar) oder als PDF (A4 Querformat, via Druckdialog) exportieren.</li>
+          <li><strong>Revert v4.20</strong> – Ordner-Sidebar rückgängig gemacht (audio.js, styles.css, ui.js, index.html).</li>
+        </ul>
+        <div class="cl-tech">features.js: generateAndShowMindMap() cached, _fetchAndStoreMindmap(), renderMindmapPanel(), exportMindmapSvg(), exportMindmapPdf(). index.html: accMindmap-Panel. claude.js: showTranscript() lädt Mindmap-Panel, accMindmap in _restoreAccState().</div>
+      </div>
 
       <!-- ── v4.20 ── -->
       <div class="cl-entry">

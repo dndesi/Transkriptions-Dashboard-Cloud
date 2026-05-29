@@ -750,7 +750,7 @@ function toggleAccPanel(panelId) {
 
 function _saveAccState() {
   if (!currentSessionId) return;
-  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen'];
+  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen','accMindmap'];
   const open = panels.filter(id => {
     const el = document.getElementById(id);
     return el && el.classList.contains('open');
@@ -759,7 +759,7 @@ function _saveAccState() {
 }
 
 function _restoreAccState(sessionId) {
-  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen'];
+  const panels = ['accAudio','accNamen','accTranskript','accTags','accNotizen','accAnalysen','accMindmap'];
   // Alle schließen
   panels.forEach(id => {
     const el = document.getElementById(id);
@@ -1131,6 +1131,13 @@ function showTranscript(session) {
   renderInsights(session);
   loadAudioForSession(session);
   renderUtterances(session);
+  // Mindmap-Panel befüllen falls bereits generiert
+  if (session.claudeMindmap && typeof renderMindmapPanel === 'function') {
+    renderMindmapPanel(session.claudeMindmap);
+  } else {
+    const mp = document.getElementById('mindmapPanelRender');
+    if (mp) mp.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">Noch keine Mind Map generiert – klicke oben auf „Mind Map" oder „Neu generieren".</span>';
+  }
   _restoreAccState(session.id);
 }
 
