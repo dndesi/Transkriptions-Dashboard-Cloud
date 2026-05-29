@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.28</button>
+        onmouseout="this.style.color='var(--muted)'">v4.29</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -668,6 +668,22 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.29 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.29</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>D3.js Mindmap</strong> – Komplett neue Mindmap-Darstellung mit D3 v7 radial tree. Farben aus dem Dashboard-Theme (accent, accent2, grün, gelb, pink, blau), abgerundete Pill-Knoten für Hauptäste, farbige Punkte für Unterknoten.</li>
+          <li><strong>Zoom & Pan</strong> – Die Mindmap ist frei zoom- und verschiebbar (Mausrad / Touch).</li>
+          <li><strong>Mehr Inhalt</strong> – Prompt erlaubt jetzt 4 Ebenen und 20–35 Knoten statt bisher 3 Ebenen / 20 Knoten. Labels präziser und aussagekräftiger.</li>
+          <li><strong>Rückwärtskompatibel</strong> – Alte Mermaid-Mindmaps werden weiterhin korrekt angezeigt (Fallback).</li>
+        </ul>
+        <div class="cl-tech">features.js: renderMindmapPanel() auf D3 umgestellt, _renderD3Mindmap() neu. index.html: D3 v7 CDN. prompts.js: builtin_mindmap gibt JSON zurück statt Mermaid.</div>
+      </div>
 
       <!-- ── v4.28 ── -->
       <div class="cl-entry">
@@ -2058,6 +2074,7 @@
 <script src="js/prompts.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>if(window.mermaid) mermaid.initialize({ startOnLoad: false });</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 
 <!-- ─── MODAL: Globale Suche ─────────────────────── -->
 <div class="modal-backdrop" id="searchModal">

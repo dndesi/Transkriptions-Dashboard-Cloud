@@ -278,22 +278,140 @@ async function _fetchAndStoreMindmap(s) {
   }
 }
 
-// Rendert den Mermaid-Code ins Akkordeon-Panel
+// Rendert die Mindmap als interaktiven D3 radial tree
 function renderMindmapPanel(code) {
   const container = document.getElementById('mindmapPanelRender');
   if (!container) return;
-  container.innerHTML = `<pre class="mermaid">${escHtml(code)}</pre>`;
-  if (window.mermaid) {
-    try {
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: document.documentElement.dataset.theme === 'light' ? 'default' : 'dark'
-      });
-      mermaid.run({ nodes: container.querySelectorAll('.mermaid') });
-    } catch(e) {
-      container.innerHTML = `<pre style="color:var(--red);font-size:0.78rem;white-space:pre-wrap">${escHtml(e.message)}\n\n${escHtml(code)}</pre>`;
+
+  // JSON parsen (neues Format)
+  let treeData = null;
+  try {
+    const json = JSON.parse(extractJSON(code, '{'));
+    if (json && json.label) treeData = json;
+  } catch (_) {}
+
+  if (!treeData) {
+    // Fallback: altes Mermaid-Format
+    container.innerHTML = `<pre class="mermaid">${escHtml(code)}</pre>`;
+    if (window.mermaid) {
+      try {
+        mermaid.initialize({ startOnLoad: false, theme: document.documentElement.dataset.theme === 'light' ? 'default' : 'dark' });
+        mermaid.run({ nodes: container.querySelectorAll('.mermaid') });
+      } catch(e) {
+        container.innerHTML = `<pre style="color:var(--red);font-size:0.78rem;white-space:pre-wrap">${escHtml(e.message)}\n\n${escHtml(code)}</pre>`;
+      }
     }
+    return;
   }
+
+  if (!window.d3) {
+    container.innerHTML = `<div style="color:var(--muted);padding:16px;font-size:0.85rem">D3.js wird geladen…</div>`;
+    setTimeout(() => renderMindmapPanel(code), 800);
+    return;
+  }
+
+  _renderD3Mindmap(container, treeData);
+}
+
+function _renderD3Mindmap(container, data) {
+  container.innerHTML = '';
+
+  const style    = getComputedStyle(document.documentElement);
+  const isDark   = document.documentElement.dataset.theme !== 'light';
+  const clrText    = style.getPropertyValue('--text').trim()    || (isDark ? '#e2e8f0' : '#1a1a2e');
+  const clrMuted   = style.getPropertyValue('--muted').trim()   || (isDark ? '#94a3b8' : '#64748b');
+  const clrAccent  = style.getPropertyValue('--accent').trim()  || '#6c63ff';
+  const clrAccent2 = style.getPropertyValue('--accent2').trim() || '#a78bfa';
+  const clrBorder  = style.getPropertyValue('--border').trim()  || (isDark ? '#2d3148' : '#e2e8f0');
+
+  const branchColors = [clrAccent, clrAccent2, '#34d399', '#f59e0b', '#f472b6', '#60a5fa', '#fb923c'];
+
+  const W = Math.max(container.clientWidth || 700, 500);
+  const H = Math.max(Math.round(W * 0.72), 440);
+  const cx = W / 2, cy = H / 2;
+  const radius = Math.min(cx, cy) * 0.86;
+
+  const svg = d3.select(container).append('svg')
+    .attr('width', '100%').attr('height', H)
+    .attr('viewBox', `0 0 ${W} ${H}`)
+    .style('font-family', 'inherit').style('display', 'block');
+
+  const g = svg.append('g').attr('transform', `translate(${cx},${cy})`);
+
+  svg.call(d3.zoom().scaleExtent([0.25, 4])
+    .on('zoom', e => g.attr('transform', e.transform.translate(cx, cy))));
+
+  const root = d3.hierarchy(data);
+  d3.tree().size([2 * Math.PI, radius])
+    .separation((a, b) => (a.parent === b.parent ? 1 : 1.5) / a.depth)(root);
+
+  // Branch-Farbe vererben
+  root._color = clrAccent;
+  root.children?.forEach((c, i) => {
+    c._color = branchColors[i % branchColors.length];
+    c.descendants().forEach(d => { if (!d._color) d._color = c._color; });
+  });
+
+  // Verbindungslinien
+  g.append('g').attr('fill', 'none')
+    .selectAll('path').data(root.links()).join('path')
+    .attr('d', d3.linkRadial().angle(d => d.x).radius(d => d.y))
+    .attr('stroke', d => d.target._color || clrBorder)
+    .attr('stroke-width', d => d.target.depth === 1 ? 2.5 : 1.5)
+    .attr('stroke-opacity', d => d.target.depth === 1 ? 0.65 : 0.4)
+    .attr('stroke-linecap', 'round');
+
+  // Knoten
+  const node = g.append('g').selectAll('g').data(root.descendants()).join('g')
+    .attr('transform', d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`);
+
+  // Root: Kreis mit Glow
+  node.filter(d => d.depth === 0)
+    .call(sel => {
+      sel.append('circle').attr('r', 32).attr('fill', clrAccent).attr('fill-opacity', 0.12)
+        .attr('stroke', clrAccent).attr('stroke-width', 2);
+    });
+
+  // Ebene 1: abgerundete Pill
+  node.filter(d => d.depth === 1).each(function(d) {
+    const el = d3.select(this);
+    const flip = d.x > Math.PI;
+    const w = 96, h = 28;
+    el.append('rect')
+      .attr('x', flip ? -(w + 6) : 6).attr('y', -h / 2)
+      .attr('width', w).attr('height', h).attr('rx', 10)
+      .attr('fill', d._color).attr('fill-opacity', 0.14)
+      .attr('stroke', d._color).attr('stroke-width', 1.8);
+  });
+
+  // Ebene 2: kleiner farbiger Punkt
+  node.filter(d => d.depth === 2).append('circle')
+    .attr('r', 5.5).attr('fill', d => d._color).attr('fill-opacity', 0.75);
+
+  // Ebene 3+: Mini-Punkt
+  node.filter(d => d.depth >= 3).append('circle')
+    .attr('r', 3).attr('fill', clrMuted).attr('fill-opacity', 0.6);
+
+  // Labels
+  node.append('text')
+    .attr('transform', d => d.depth > 0 ? `rotate(${d.x > Math.PI ? 180 : 0})` : 'rotate(0)')
+    .attr('dy', '0.32em')
+    .attr('x', d => {
+      if (d.depth === 0) return 0;
+      const flip = d.x > Math.PI;
+      if (d.depth === 1) return flip ? -108 : 108;
+      return flip ? -12 : 12;
+    })
+    .attr('text-anchor', d => {
+      if (d.depth === 0) return 'middle';
+      if (d.depth === 1) return 'middle';
+      return d.x > Math.PI ? 'end' : 'start';
+    })
+    .attr('font-size', d => d.depth === 0 ? '13px' : d.depth === 1 ? '11px' : '9.5px')
+    .attr('font-weight', d => d.depth <= 1 ? '700' : '400')
+    .attr('fill', d => d.depth === 0 ? clrAccent : d.depth === 1 ? d._color : clrText)
+    .attr('fill-opacity', d => d.depth >= 2 ? 0.88 : 1)
+    .text(d => d.data.label);
 }
 
 // Export SVG

@@ -256,22 +256,36 @@ TRANSKRIPT ({{sessionLabel}}):
     id: 'builtin_mindmap',
     category: 'feature',
     name: 'Mind Map',
-    description: 'Mermaid.js Mindmap · Max. 3 Ebenen · Max. 20 Knoten',
+    description: 'D3.js Mindmap · Bis 4 Ebenen · Bis 35 Knoten · Interaktiv',
     usedIn: 'Sitzungsdetail → Mind Map',
     icon: 'git-branch',
-    prompt: `Erstelle eine Mind Map für dieses deutsche Gesprächstranskript im Mermaid.js Format.
-Verwende exakt "mindmap" als ersten Bezeichner. Max. 3 Ebenen, max. 20 Knoten.
-Verwende nur einfache Texte ohne runde Klammern außer für den Root-Knoten. Keine Sonderzeichen in den Knoten.
+    prompt: `Analysiere das folgende Gesprächstranskript und erstelle eine strukturierte Mind Map.
+
+Regeln:
+- Zentrales Hauptthema als Root (kurz, max. 4 Wörter)
+- 4–7 Hauptäste (Ebene 1) – die wichtigsten Themen/Bereiche des Gesprächs
+- Pro Hauptast 2–5 Unterknoten (Ebene 2) – konkrete Inhalte, Erkenntnisse, Personen, Aufgaben
+- Optional: einzelne Ebene-3-Knoten für besonders wichtige Details
+- Gesamt: 20–35 Knoten
+- Labels: präzise, aussagekräftig, max. 5 Wörter pro Knoten
+- Keine Anführungszeichen, keine Sonderzeichen außer Bindestrich
 
 Transkript:
 {{transkript}}
 
-Antworte NUR mit dem rohen Mermaid-Code, ohne Markdown-Blöcke:
-mindmap
-  root((Hauptthema))
-    Thema 1
-      Detail 1a
-    Thema 2`
+Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
+{
+  "label": "Zentrales Thema",
+  "children": [
+    {
+      "label": "Hauptast 1",
+      "children": [
+        { "label": "Detail 1" },
+        { "label": "Detail 2", "children": [{ "label": "Tiefe 3" }] }
+      ]
+    }
+  ]
+}`
   },
   {
     id: 'builtin_person_profile',
