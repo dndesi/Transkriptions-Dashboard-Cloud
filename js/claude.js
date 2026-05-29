@@ -1133,14 +1133,17 @@ function showTranscript(session) {
   const preview = document.getElementById('canvaPreview');
   const exportBtn = document.getElementById('canvaExportBtn');
   if (preview) {
+    const transferBtn = document.getElementById('canvaTransferBtn');
     if (session.claudePresentation?.data) {
       _renderPresentationPreview(session.claudePresentation.data, preview);
-      if (exportBtn) exportBtn.style.display = 'inline-flex';
+      if (exportBtn)   exportBtn.style.display   = 'inline-flex';
+      if (transferBtn) transferBtn.style.display  = 'inline-flex';
       const sel = document.getElementById('canvaPromptSelect');
       if (sel && session.claudePresentation.promptId) sel.value = session.claudePresentation.promptId;
     } else {
       preview.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">Wähle einen Typ und klicke auf „Generieren" – Claude strukturiert den Inhalt aus deinen Analysen.</span>';
-      if (exportBtn) exportBtn.style.display = 'none';
+      if (exportBtn)   exportBtn.style.display   = 'none';
+      if (transferBtn) transferBtn.style.display  = 'none';
     }
   }
   _restoreAccState(session.id);
@@ -1403,6 +1406,72 @@ async function askFollowUp() {
   }
 }
 
+async function exportToCanva() {
+  const session = getSession(currentSessionId);
+  if (!session?.claudePresentation?.data) {
+    showToast('Erst Design generieren.', 'warning');
+    return;
+  }
+  if (!driveToken) {
+    showToast('Bitte zuerst Google Drive verbinden (oben rechts).', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('canvaTransferBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = icon('loader',13,'margin-right:5px') + ' Speichere…'; }
+
+  const json       = session.claudePresentation.data;
+  const promptId   = session.claudePresentation.promptId || 'builtin_canva_presentation';
+  const promptDef  = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === promptId);
+  const canvaType  = promptDef?.canvaDesignType || 'presentation';
+
+  const exportData = {
+    version:        '1.0',
+    exportedAt:     new Date().toISOString(),
+    sessionId:      session.id,
+    sessionLabel:   session.label || '',
+    sessionDate:    session.date  || '',
+    promptId,
+    canvaDesignType: canvaType,
+    content:         json
+  };
+
+  try {
+    await ensureDriveFolder();
+    // Vorhandene Export-Datei suchen und überschreiben
+    const search = await driveGet('/files', {
+      q: `name='distill-canva-export.json' and '${driveFolderId}' in parents and trashed=false`,
+      fields: 'files(id)'
+    });
+    const existingId = search.files?.[0]?.id || null;
+    await driveUploadJSON('distill-canva-export.json', exportData, existingId, driveFolderId);
+
+    showToast('In Google Drive gespeichert ✓', 'success');
+
+    // Hinweis-Box
+    const preview = document.getElementById('canvaPreview');
+    if (preview) {
+      const old = preview.querySelector('.canva-hint');
+      if (old) old.remove();
+      const hint = document.createElement('div');
+      hint.className = 'canva-hint';
+      hint.style.cssText = 'margin-top:14px;padding:14px 16px;background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.3);border-radius:10px;font-size:0.83rem;line-height:1.7';
+      const typeLabel = { presentation:'Präsentation', doc:'OnePager', report:'Report', flyer:'Flyer', poster:'Poster', instagram_post:'Social Media Post' }[canvaType] || canvaType;
+      hint.innerHTML = `<strong style="color:var(--accent)">✓ In Google Drive gespeichert</strong><br>
+        Wechsle jetzt zu <strong>Cowork</strong> und schreibe:<br>
+        <code style="background:var(--surface2);padding:3px 8px;border-radius:5px;font-size:0.82rem;display:inline-block;margin-top:4px">
+          Erstelle Canva-${typeLabel} aus meiner letzten Distill-Voice-Übergabe
+        </code>`;
+      preview.appendChild(hint);
+    }
+  } catch(e) {
+    showToast('Fehler: ' + (e.message || 'Drive nicht erreichbar'), 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = icon('send',13,'margin-right:5px') + ' In Canva übergeben'; }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+}
+
 function clearFollowUp() {
   const session = getSession(currentSessionId);
   if (!session) return;
@@ -1457,7 +1526,9 @@ async function generatePresentation() {
     await saveToArchive(session);
 
     _renderPresentationPreview(json, preview);
-    if (exportBtn) { exportBtn.style.display = 'inline-flex'; }
+    if (exportBtn) exportBtn.style.display = 'inline-flex';
+    const transferBtn2 = document.getElementById('canvaTransferBtn');
+    if (transferBtn2) transferBtn2.style.display = 'inline-flex';
     if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [preview] });
     showToast('Präsentation erstellt', 'success');
   } catch (e) {

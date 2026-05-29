@@ -374,6 +374,7 @@ Beantworte die Folgefrage konkret. Beziehe dich direkt auf die Analyseergebnisse
     name: 'Präsentation',
     description: 'Brainstorming → Strukturierte Folien · Titel · Kernpunkte · Nächste Schritte',
     usedIn: 'Sitzungsdetail → Präsentation erstellen',
+    canvaDesignType: 'presentation',
     icon: 'layout',
     rolle: 'ein erfahrener Präsentationsdesigner und Strategieberater. Du verwandelst Gesprächsinhalte und Ideen in eine klare, überzeugende Präsentationsstruktur. Du weißt welche Informationen auf welche Folie gehören und wie man einen roten Faden schafft',
     tonalitaet: 'professionell, klar, prägnant. Folientitel sind kurz und stark. Bullet Points sind konkret und handlungsorientiert. Keine Füllwörter, keine Wiederholungen',
@@ -405,6 +406,7 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
     name: '1-Pager Zusammenfassung',
     description: 'Kompakte Übersicht · Kernaussagen · Ergebnisse · Offene Punkte',
     usedIn: 'Sitzungsdetail → Präsentation erstellen',
+    canvaDesignType: 'doc',
     icon: 'file-text',
     rolle: 'ein präziser Redakteur der komplexe Gesprächsinhalte auf das Wesentliche verdichtet. Du erstellst kompakte Zusammenfassungen die alles Wichtige enthalten aber nichts Überflüssiges',
     tonalitaet: 'sachlich, knapp, strukturiert. Keine Einleitungen. Direkt mit dem Inhalt beginnen',
@@ -436,6 +438,7 @@ Antworte NUR mit einem JSON-Objekt:
     name: 'Aktionsplan',
     description: 'Nächste Schritte · Verantwortlichkeiten · Deadlines · Offene Fragen',
     usedIn: 'Sitzungsdetail → Präsentation erstellen',
+    canvaDesignType: 'report',
     icon: 'check-square',
     rolle: 'ein strukturierter Projektmanager der aus Gesprächen klare Aktionspläne ableitet. Du erkennst wer was bis wann erledigen muss und welche Fragen noch offen sind',
     tonalitaet: 'direkt, handlungsorientiert, klar zugeordnet. Jeder Punkt hat einen Verantwortlichen wo erkennbar',
@@ -462,6 +465,102 @@ Antworte NUR mit einem JSON-Objekt:
       "heading": "Offene Fragen",
       "bullets": ["Frage 1", "Frage 2"],
       "note": ""
+    }
+  ]
+}`
+  },
+  {
+    id: 'builtin_canva_flyer',
+    category: 'feature',
+    name: 'Flyer',
+    description: 'Kernbotschaft · Highlights · Call to Action · Kompakt & visuell',
+    usedIn: 'Sitzungsdetail → Präsentation erstellen',
+    icon: 'file',
+    canvaDesignType: 'flyer',
+    rolle: 'ein erfahrener Grafik-Texter der komplexe Inhalte auf das Wesentliche für einen Flyer verdichtet. Du weißt: ein Flyer hat eine starke Überschrift, 3–5 Kernpunkte und einen klaren Call to Action',
+    tonalitaet: 'knapp, überzeugend, werbewirksam. Kurze Sätze. Starke Verben. Jedes Wort zählt',
+    grenzen: 'maximal 5 Bullet Points, maximal 1 Call-to-Action. Nur Inhalte aus dem Gespräch',
+    kontext: `ANALYSEERGEBNISSE:
+{{analyseContext}}
+
+TRANSKRIPT-AUSZUG:
+{{transcript}}
+
+Erstelle einen Flyer-Inhalt aus diesem Gespräch.
+
+Antworte NUR mit einem JSON-Objekt:
+{
+  "title": "Starke Überschrift (max. 6 Wörter)",
+  "subtitle": "Kurzer Untertitel",
+  "slides": [
+    {
+      "heading": "Warum das wichtig ist",
+      "bullets": ["Kernpunkt 1", "Kernpunkt 2", "Kernpunkt 3"],
+      "note": "Call to Action: ..."
+    }
+  ]
+}`
+  },
+  {
+    id: 'builtin_canva_poster',
+    category: 'feature',
+    name: 'Poster',
+    description: 'Visuelles Statement · Hauptaussage · Kernpunkte auf einen Blick',
+    usedIn: 'Sitzungsdetail → Präsentation erstellen',
+    icon: 'image',
+    canvaDesignType: 'poster',
+    rolle: 'ein Poster-Designer der eine starke zentrale Botschaft aus einem Gespräch destilliert. Poster kommunizieren eine einzige Kernaussage sehr klar',
+    tonalitaet: 'stark, direkt, einprägsam. Hauptaussage in maximal 8 Wörtern',
+    grenzen: 'eine Hauptaussage, maximal 4 Unterpunkte. Keine langen Erklärungen',
+    kontext: `ANALYSEERGEBNISSE:
+{{analyseContext}}
+
+TRANSKRIPT-AUSZUG:
+{{transcript}}
+
+Erstelle Poster-Inhalt aus diesem Gespräch.
+
+Antworte NUR mit einem JSON-Objekt:
+{
+  "title": "Hauptaussage (max. 8 Wörter)",
+  "subtitle": "Ergänzender Satz",
+  "slides": [
+    {
+      "heading": "Kernpunkte",
+      "bullets": ["Punkt 1", "Punkt 2", "Punkt 3"],
+      "note": ""
+    }
+  ]
+}`
+  },
+  {
+    id: 'builtin_canva_social',
+    category: 'feature',
+    name: 'Social Media Post',
+    description: 'Instagram · TikTok · LinkedIn · Kernbotschaft für Social Media',
+    usedIn: 'Sitzungsdetail → Präsentation erstellen',
+    icon: 'share-2',
+    canvaDesignType: 'instagram_post',
+    rolle: 'ein Social Media Experte der Gesprächsinhalte in ansprechende Posts verwandelt. Du kennst die Regeln: Hook in der ersten Zeile, klare Botschaft, starker Abschluss',
+    tonalitaet: 'authentisch, direkt, gesprächig. Keine Unternehmenssprache. So wie man wirklich spricht',
+    grenzen: 'maximal 5 Bullet Points, eine klare Kernaussage pro Post. Kein Fachjargon',
+    kontext: `ANALYSEERGEBNISSE:
+{{analyseContext}}
+
+TRANSKRIPT-AUSZUG:
+{{transcript}}
+
+Erstelle Social Media Post-Inhalt aus diesem Gespräch.
+
+Antworte NUR mit einem JSON-Objekt:
+{
+  "title": "Hook-Zeile (packt sofort)",
+  "subtitle": "Plattform-Vorschlag: Instagram / LinkedIn / TikTok",
+  "slides": [
+    {
+      "heading": "Kernbotschaft",
+      "bullets": ["Punkt 1", "Punkt 2", "Punkt 3"],
+      "note": "Caption-Vorschlag: ..."
     }
   ]
 }`

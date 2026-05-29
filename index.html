@@ -142,7 +142,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.32</button>
+        onmouseout="this.style.color='var(--muted)'">v4.34</button>
     </div>
     <!-- userEmail versteckt (wird intern noch genutzt) -->
     <span id="userEmail" style="display:none">—</span>
@@ -660,16 +660,26 @@
           </button>
           <div class="acc-panel-body">
             <div style="padding:12px 16px 10px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap">
-              <select id="canvaPromptSelect" style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 10px;font-size:0.83rem;outline:none;cursor:pointer">
-                <option value="builtin_canva_presentation">Präsentation (Folien)</option>
-                <option value="builtin_canva_summary">1-Pager Zusammenfassung</option>
-                <option value="builtin_canva_action">Aktionsplan</option>
+              <select id="canvaPromptSelect" style="flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 10px;font-size:0.83rem;outline:none;cursor:pointer">
+                <optgroup label="Dokumente">
+                  <option value="builtin_canva_presentation">Präsentation (Folien)</option>
+                  <option value="builtin_canva_summary">1-Pager / OnePager</option>
+                  <option value="builtin_canva_action">Aktionsplan / Report</option>
+                </optgroup>
+                <optgroup label="Marketing & Design">
+                  <option value="builtin_canva_flyer">Flyer</option>
+                  <option value="builtin_canva_poster">Poster</option>
+                  <option value="builtin_canva_social">Social Media Post</option>
+                </optgroup>
               </select>
               <button id="canvaGenerateBtn" onclick="generatePresentation()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
                 <i data-lucide="sparkles" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Generieren
               </button>
-              <button id="canvaExportBtn" onclick="exportPresentationPptx()" style="display:none;background:none;border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.83rem;color:var(--text);cursor:pointer;display:none;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
-                <i data-lucide="download" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> .pptx herunterladen
+              <button id="canvaExportBtn" onclick="exportPresentationPptx()" style="display:none;background:none;border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:0.83rem;color:var(--text);cursor:pointer;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
+                <i data-lucide="download" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> .pptx
+              </button>
+              <button id="canvaTransferBtn" onclick="exportToCanva()" style="display:none;background:none;border:1px solid rgba(108,99,255,0.5);border-radius:8px;padding:8px 14px;font-size:0.83rem;color:var(--accent);cursor:pointer;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
+                <i data-lucide="send" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> In Canva übergeben
               </button>
             </div>
             <div id="canvaPreview" style="padding:16px;min-height:60px">
@@ -697,6 +707,34 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.34 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.34</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Google Drive Bridge für Canva</strong> – „In Canva übergeben" speichert jetzt die Designdaten automatisch als <code>distill-canva-export.json</code> in Google Drive. Kein Copy-Paste mehr. In Cowork reicht ein Satz um das Design in Canva zu erstellen.</li>
+          <li><strong>6 Design-Formate</strong> – Dropdown erweitert: Präsentation, OnePager, Aktionsplan/Report, Flyer, Poster, Social Media Post. Jeder Typ hat einen eigenen Prompt und Canva-Design-Typ (canvaDesignType-Feld).</li>
+          <li><strong>3 neue Prompts</strong> – builtin_canva_flyer, builtin_canva_poster, builtin_canva_social — alle mit Rolle/Tonalität/Grenzen/Kontext in der Prompt-Bibliothek.</li>
+        </ul>
+        <div class="cl-tech">claude.js: exportToCanva() nutzt driveUploadJSON() + ensureDriveFolder(). prompts.js: canvaDesignType-Feld in allen 6 Canva-Prompts. index.html: Dropdown mit optgroup-Gruppen.</div>
+      </div>
+
+      <!-- ── v4.33 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.33</span>
+          <span class="cl-date">29.05.2026</span>
+          <span class="cl-tag cl-tag-feature">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>„In Canva übergeben" Button</strong> – Nach der Präsentationsgenerierung erscheint ein neuer Button. Er kopiert die komplette Folienstruktur als formatierten Text in die Zwischenablage + zeigt einen Hinweis. Text in Cowork einfügen → Claude erstellt die Präsentation direkt im Canva-Account via MCP-Connector.</li>
+        </ul>
+        <div class="cl-tech">claude.js: exportToCanva() formatiert session.claudePresentation.data als Text, kopiert via Clipboard API, zeigt Hinweis-Box. index.html: canvaTransferBtn neben .pptx-Button.</div>
+      </div>
 
       <!-- ── v4.32 ── -->
       <div class="cl-entry">
