@@ -336,25 +336,58 @@ function showProjectDashboard(id) {
 
   // ── Statistiken ──────────────────────────────────
   const totalDuration = projSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
-  const allPersons    = [...new Set(projSessions.flatMap(s => s.persons || []).map(p => p.trim()).filter(Boolean))];
-  const allTopics     = projSessions.flatMap(s => (s.claudeTopics || []).map(t => typeof t === 'string' ? t : t.text)).filter(Boolean);
-  const topicCounts   = {};
+
+  // Personen: case-insensitive Dedup, alle Sessions
+  const personMap = new Map();
+  projSessions.forEach(s => {
+    (Array.isArray(s.persons) ? s.persons : []).forEach(p => {
+      const key = (p || '').trim().toLowerCase();
+      if (key && !personMap.has(key)) personMap.set(key, p.trim());
+    });
+  });
+  const allPersons = [...personMap.values()];
+
+  const allTopics = projSessions.flatMap(s => (s.claudeTopics || []).map(t => typeof t === 'string' ? t : t.text)).filter(Boolean);
+  const topicCounts = {};
   allTopics.forEach(t => { topicCounts[t] = (topicCounts[t] || 0) + 1; });
-  const topTopics     = Object.entries(topicCounts).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const topTopics = Object.entries(topicCounts).sort((a,b)=>b[1]-a[1]).slice(0,12);
 
   // ── Aufgaben aggregieren (Paket 6) ───────────────
-  const taskStatus = proj.taskStatus || {};
+  const taskStatus  = proj.taskStatus  || {};
+  const taskPersons = proj.taskPersons || {}; // Personen-Zuweisung pro Task
   const allTasks = projSessions.flatMap(s =>
-    (s.workAnalysis?.tasks || []).map((text, idx) => ({
-      key: s.id + ':' + idx,
-      text,
-      sessionLabel: s.label,
-      sessionId: s.id,
-      done: !!(taskStatus[s.id + ':' + idx]),
-    }))
+    (s.workAnalysis?.tasks || []).map((text, idx) => {
+      const key = s.id + ':' + idx;
+      const resolved = _resolveTaskText(text);
+      // Projekt-Überschreibung hat Vorrang
+      const assignedPerson = taskPersons[key] !== undefined ? taskPersons[key] : resolved.person;
+      return {
+        key,
+        text,
+        resolvedText: resolved.text,
+        resolvedDeadline: resolved.deadline,
+        resolvedPriority: resolved.priority,
+        assignedPerson,
+        sessionLabel: s.label,
+        done: !!(taskStatus[key]),
+      };
+    })
   );
-  const openTasks = allTasks.filter(t => !t.done);
-  const doneTasks = allTasks.filter(t =>  t.done);
+
+  // ── Nach Person gruppieren ────────────────────────
+  const taskGroups = {};  // person → [tasks]
+  allTasks.forEach(t => {
+    const p = (t.assignedPerson || '').trim() || 'offen';
+    if (!taskGroups[p]) taskGroups[p] = [];
+    taskGroups[p].push(t);
+  });
+  // Sortierung: benannte Personen alphabetisch, "offen" immer zuletzt
+  const sortedPersonGroups = Object.keys(taskGroups)
+    .filter(p => p !== 'offen')
+    .sort((a,b) => a.localeCompare(b, 'de'))
+    .concat(taskGroups['offen'] ? ['offen'] : []);
+
+  const doneTasks = allTasks.filter(t => t.done);
 
   el.innerHTML = `
     <div class="project-detail">
@@ -396,16 +429,26 @@ function showProjectDashboard(id) {
           ${allTasks.length === 0
             ? `<div style="font-size:0.82rem;color:var(--muted)">Keine Aufgaben in diesem Projekt.<br>Führe eine Arbeits-Analyse in einer Sitzung durch.</div>`
             : `
-              ${openTasks.length > 0 ? `
-                <div style="margin-bottom:12px">
-                  <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px">Offen (${openTasks.length})</div>
-                  ${openTasks.map(t => renderTaskItem(t, id)).join('')}
-                </div>` : ''}
-              ${doneTasks.length > 0 ? `
-                <details style="margin-top:8px">
-                  <summary style="font-size:0.72rem;color:var(--muted);cursor:pointer;margin-bottom:6px">Erledigt (${doneTasks.length})</summary>
-                  ${doneTasks.map(t => renderTaskItem(t, id)).join('')}
-                </details>` : ''}
+              ${sortedPersonGroups.map(person => {
+                  const tasks = taskGroups[person] || [];
+                  const open = tasks.filter(t => !t.done);
+                  const done = tasks.filter(t =>  t.done);
+                  const isOffen = person === 'offen';
+                  return `
+                    <div style="margin-bottom:18px">
+                      <div style="font-size:0.78rem;font-weight:600;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px">
+                        ${isOffen ? icon('help-circle',13,'color:var(--muted)') : icon('user',13)}
+                        ${isOffen ? '<span style="color:var(--muted)">Nicht zugewiesen</span>' : escHtml(person)}
+                        <span style="font-weight:400;color:var(--muted);font-size:0.72rem">(${open.length} offen${done.length ? ', '+done.length+' erledigt' : ''})</span>
+                      </div>
+                      ${open.map(t => renderTaskItem(t, id, allPersons)).join('')}
+                      ${done.length > 0 ? `
+                        <details style="margin-top:4px">
+                          <summary style="font-size:0.72rem;color:var(--muted);cursor:pointer">Erledigt (${done.length})</summary>
+                          ${done.map(t => renderTaskItem(t, id, allPersons)).join('')}
+                        </details>` : ''}
+                    </div>`;
+                }).join('')}
             `
           }
         </div>
@@ -489,25 +532,45 @@ function _resolveTaskText(raw) {
   return { text: String(raw || ''), person: '', deadline: '', priority: '' };
 }
 
-function renderTaskItem(task, projId) {
-  const t = _resolveTaskText(task.text);
+function renderTaskItem(task, projId, knownPersons = []) {
   const meta = [
-    t.person   ? `👤 ${escHtml(t.person)}`   : '',
-    t.deadline ? `📅 ${escHtml(t.deadline)}` : '',
-    t.priority ? `${t.priority === 'hoch' ? '🔴' : t.priority === 'mittel' ? '🟡' : '🟢'} ${escHtml(t.priority)}` : '',
+    task.resolvedDeadline ? `📅 ${escHtml(task.resolvedDeadline)}` : '',
+    task.resolvedPriority ? `${task.resolvedPriority === 'hoch' ? '🔴' : task.resolvedPriority === 'mittel' ? '🟡' : '🟢'} ${escHtml(task.resolvedPriority)}` : '',
     `${icon('file-text',10,'margin-right:3px')}${escHtml(String(task.sessionLabel || ''))}`,
   ].filter(Boolean).join(' · ');
 
+  // Person-Dropdown: alle bekannten Personen + "offen"
+  const personOptions = ['offen', ...knownPersons]
+    .map(p => `<option value="${escHtml(p)}"${p === (task.assignedPerson||'offen') ? ' selected' : ''}>${escHtml(p)}</option>`)
+    .join('');
+
   return `
-    <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
       <input type="checkbox" ${task.done ? 'checked' : ''}
         onchange="toggleProjectTask('${projId}','${task.key}',this.checked)"
         style="margin-top:3px;flex-shrink:0;cursor:pointer" />
       <div style="flex:1;min-width:0">
-        <div style="font-size:0.83rem;color:var(--text);${task.done ? 'text-decoration:line-through;opacity:0.5' : ''}">${escHtml(t.text)}</div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:3px;display:flex;flex-wrap:wrap;gap:6px">${meta}</div>
+        <div style="font-size:0.83rem;color:var(--text);${task.done ? 'text-decoration:line-through;opacity:0.5' : ''}">${escHtml(task.resolvedText)}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">
+          <select onchange="assignTaskPerson('${projId}','${task.key}',this.value)"
+            style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--muted);padding:2px 6px;font-size:0.72rem;outline:none;cursor:pointer">
+            ${personOptions}
+          </select>
+          <span style="font-size:0.72rem;color:var(--muted)">${meta}</span>
+        </div>
       </div>
     </div>`;
+}
+
+// ── Person einer Aufgabe zuweisen ─────────────────────────────────────────
+function assignTaskPerson(projId, taskKey, person) {
+  const proj = getProjectById(projId);
+  if (!proj) return;
+  if (!proj.taskPersons) proj.taskPersons = {};
+  if (!person || person === 'offen') delete proj.taskPersons[taskKey];
+  else proj.taskPersons[taskKey] = person;
+  saveProjects();
+  showProjectDashboard(projId);
 }
 
 // ── Aufgabe abhaken / aufheben ────────────────────────────────────────────
