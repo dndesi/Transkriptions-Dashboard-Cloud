@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.46</button>
+        onmouseout="this.style.color='var(--muted)'">v4.48</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -748,6 +748,32 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.48 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.48</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Standard-Prompt pro Projekt</strong> – Im Projekt-Modal (Anlegen + Bearbeiten) kann ein Standard-Analyse-Prompt aus der Bibliothek gewählt werden. Beim Öffnen des Dashboards wird dieser Prompt automatisch vorausgewählt. Jedes Projekt kann so seinen eigenen Analyse-Stil haben (Arbeit, Privat, Philosophie etc.).</li>
+        </ul>
+        <div class="cl-tech">index.html: pmPrompt Select im Projekt-Modal. js/projects.js: _openProjectModal() befüllt pmPrompt-Dropdown mit EDITABLE_PROMPT_DEFAULTS, markiert proj.promptTemplateId als selected. saveProjectFromModal() speichert promptTemplateId. Dashboard-Dropdown markiert proj.promptTemplateId als selected.</div>
+      </div>
+
+      <!-- ── v4.47 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.47</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Personen-Erkennung komplett überarbeitet</strong> – s.persons wird jetzt sowohl als Array als auch als kommaseparierter String korrekt gelesen. Zusätzlich werden Personen aus den Task-Objekten (person-Feld der Arbeitsanalyse) als zweite Quelle eingesammelt. Alle Quellen werden case-insensitiv zusammengeführt und alphabetisch sortiert.</li>
+        </ul>
+        <div class="cl-tech">js/projects.js: _addPerson() Hilfsfunktion. personMap sammelt aus s.persons (Array + String) und workAnalysis.tasks[].person. allPersons alphabetisch sortiert.</div>
+      </div>
 
       <!-- ── v4.46 ── -->
       <div class="cl-entry">
@@ -2589,6 +2615,13 @@
         <option value="paused">Pausiert</option>
         <option value="archived">Archiviert</option>
       </select>
+    </div>
+    <div>
+      <label>Standard-Analyse-Prompt</label>
+      <select id="pmPrompt">
+        <option value="">Kein Standard (manuell wählen)</option>
+      </select>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Wird im Dashboard automatisch vorausgewählt.</div>
     </div>
     <div class="project-modal-footer">
       <button class="btn btn-ghost" onclick="closeProjectModal()">Abbrechen</button>

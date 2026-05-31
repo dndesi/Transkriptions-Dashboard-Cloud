@@ -248,6 +248,15 @@ function _openProjectModal(data) {
       onclick="_selectProjectColor('${c}')"></span>`
   ).join('');
 
+  // Prompt-Dropdown befüllen
+  const pmPrompt = overlay.querySelector('#pmPrompt');
+  if (pmPrompt) {
+    pmPrompt.innerHTML = '<option value="">Kein Standard (manuell wählen)</option>' +
+      (EDITABLE_PROMPT_DEFAULTS || []).map(p =>
+        `<option value="${p.id}"${p.id === data.promptTemplateId ? ' selected' : ''}>${escHtml(p.name)}</option>`
+      ).join('');
+  }
+
   overlay.classList.add('open');
   overlay.querySelector('#pmName').focus();
 }
@@ -268,11 +277,12 @@ function saveProjectFromModal() {
   const color = document.querySelector('#pmColors span.selected')?.dataset.color || PROJECT_COLORS[0];
   const goalDescription = document.getElementById('pmGoal')?.value.trim() || '';
   const status = document.getElementById('pmStatus')?.value || 'active';
+  const promptTemplateId = document.getElementById('pmPrompt')?.value || null;
 
   if (_projectModalMode === 'create') {
-    createProject({ name, color, goalDescription });
+    createProject({ name, color, goalDescription, promptTemplateId });
   } else {
-    updateProject(_projectModalEditId, { name, color, goalDescription, status });
+    updateProject(_projectModalEditId, { name, color, goalDescription, status, promptTemplateId });
   }
 
   closeProjectModal();
@@ -337,15 +347,28 @@ function showProjectDashboard(id) {
   // ── Statistiken ──────────────────────────────────
   const totalDuration = projSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
 
-  // Personen: case-insensitive Dedup, alle Sessions
+  // Personen: case-insensitive Dedup aus ALLEN Quellen
   const personMap = new Map();
+  const _addPerson = p => {
+    const key = (p || '').trim().toLowerCase();
+    if (key && key !== 'offen' && key !== 'ich' && !personMap.has(key))
+      personMap.set(key, p.trim());
+  };
   projSessions.forEach(s => {
-    (Array.isArray(s.persons) ? s.persons : []).forEach(p => {
-      const key = (p || '').trim().toLowerCase();
-      if (key && !personMap.has(key)) personMap.set(key, p.trim());
+    // Quelle 1: s.persons – kann Array ODER kommaseparierter String sein
+    const rawPersons = s.persons;
+    if (Array.isArray(rawPersons)) {
+      rawPersons.forEach(_addPerson);
+    } else if (typeof rawPersons === 'string' && rawPersons.trim()) {
+      rawPersons.split(',').forEach(_addPerson);
+    }
+    // Quelle 2: Personen aus Task-Objekten (person-Feld der Analyse)
+    (s.workAnalysis?.tasks || []).forEach(t => {
+      const resolved = _resolveTaskText(t);
+      if (resolved.person) _addPerson(resolved.person);
     });
   });
-  const allPersons = [...personMap.values()];
+  const allPersons = [...personMap.values()].sort((a,b) => a.localeCompare(b,'de'));
 
   const allTopics = projSessions.flatMap(s => (s.claudeTopics || []).map(t => typeof t === 'string' ? t : t.text)).filter(Boolean);
   const topicCounts = {};
@@ -496,7 +519,7 @@ function showProjectDashboard(id) {
           <select id="projAnalysisPromptSelect" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:0.82rem;outline:none;cursor:pointer;flex:1;min-width:200px">
             <option value="">Prompt wählen…</option>
             ${(EDITABLE_PROMPT_DEFAULTS||[]).map(p =>
-              `<option value="${p.id}">${escHtml(p.name)}</option>`
+              `<option value="${p.id}"${p.id === proj.promptTemplateId ? ' selected' : ''}>${escHtml(p.name)}</option>`
             ).join('')}
           </select>
           <button class="btn btn-primary" style="font-size:0.82rem" onclick="runProjectAnalysis('${id}')">
