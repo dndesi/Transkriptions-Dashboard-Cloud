@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.42</button>
+        onmouseout="this.style.color='var(--muted)'">v4.43</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -748,6 +748,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.43 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.43</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix + Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Dashboard-Bug behoben</strong> – openPersonProfile() existierte nicht (korrekt: renderPersonProfile + togglePersonsView). Führte zu JS-Fehler beim Rendern des Dashboards für Projekte mit Personen.</li>
+          <li><strong>Prompt-Auswahl aus Bibliothek</strong> – statt fester Buttons "Tiefenanalyse/Status" kann jetzt beliebiger Prompt aus der Bibliothek gewählt werden. Alle Prompt-Variablen werden befüllt (projektName, projektZiel, sitzungsAnalysen, Fallback für transkript).</li>
+          <li><strong>Analyse-Akkordeon</strong> – Ergebnisse werden im Projekt gespeichert (proj.analysisResults) und als Akkordeon angezeigt. Jüngste Analyse offen, ältere zugeklappt. JSON-Ergebnisse werden generisch gerendert, Plaintext-Antworten als Fließtext. Einzelne Analysen löschbar.</li>
+        </ul>
+        <div class="cl-tech">js/projects.js: _buildSitzungsAnalysen(), runProjectAnalysis() (Prompt-Dropdown statt mode-Parameter), _renderProjectAnalysisAccordion(), _renderProjectJsonResult(), _deleteProjectAnalysis(). Bug-fix: openPersonProfile → togglePersonsView + renderPersonProfile.</div>
+      </div>
 
       <!-- ── v4.42 ── -->
       <div class="cl-entry">

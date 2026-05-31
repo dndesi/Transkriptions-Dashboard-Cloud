@@ -418,7 +418,7 @@ function showProjectDashboard(id) {
             : `<div style="display:flex;flex-wrap:wrap;gap:6px">
                 ${allPersons.map(p =>
                   `<button style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:0.8rem;cursor:pointer;color:var(--text)"
-                    onclick="openPersonProfile('${escHtml(p).replace(/'/g,"\\'")}')">
+                    onclick="togglePersonsView();setTimeout(()=>renderPersonProfile('${escHtml(p).replace(/'/g,"\\'")}'),50)">
                     ${icon('user',12,'margin-right:4px')}${escHtml(p)}
                   </button>`
                 ).join('')}
@@ -447,15 +447,21 @@ function showProjectDashboard(id) {
         <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">
           ${icon('cpu',13,'margin-right:5px')} Projekt-Analyse (Claude)
         </div>
-        <div style="display:flex;gap:8px;margin-bottom:12px">
-          <button class="btn btn-primary" style="font-size:0.82rem" onclick="runProjectAnalysis('${id}','analysis')">
-            ${icon('layers',13)} Tiefenanalyse
-          </button>
-          <button class="btn btn-ghost" style="font-size:0.82rem" onclick="runProjectAnalysis('${id}','status')">
-            ${icon('activity',13)} Projekt-Status
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+          <select id="projAnalysisPromptSelect" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:0.82rem;outline:none;cursor:pointer;flex:1;min-width:200px">
+            <option value="">Prompt wählen…</option>
+            ${(EDITABLE_PROMPT_DEFAULTS||[]).map(p =>
+              `<option value="${p.id}">${escHtml(p.name)}</option>`
+            ).join('')}
+          </select>
+          <button class="btn btn-primary" style="font-size:0.82rem" onclick="runProjectAnalysis('${id}')">
+            ${icon('play',13)} Analysieren
           </button>
         </div>
-        <div id="projectAnalysisResult" style="display:none;background:var(--surface2);border-radius:var(--radius);padding:16px;font-size:0.85rem;line-height:1.6"></div>
+        <!-- Akkordeon: gespeicherte Analyse-Ergebnisse -->
+        <div id="projAnalysisAccordion" class="session-accordion">
+          ${_renderProjectAnalysisAccordion(proj)}
+        </div>
       </div>
 
     </div>
@@ -488,31 +494,13 @@ function toggleProjectTask(projId, taskKey, done) {
 }
 
 // ═══════════════════════════════════════════════════
-// PAKET 7 – Projekt-Analyse via Claude
+// PAKET 7 – Projekt-Analyse via Claude (Bibliotheks-Prompts + Akkordeon)
 // ═══════════════════════════════════════════════════
 
-async function runProjectAnalysis(projId, mode = 'analysis') {
-  const proj = getProjectById(projId);
-  if (!proj) return;
-
-  const resultEl = document.getElementById('projectAnalysisResult');
-  if (!resultEl) return;
-
-  const projSessions = sessions.filter(s =>
-    s.projectId === projId &&
-    (s.status === 'done' || (s.utterances?.length > 0))
-  );
-
-  if (projSessions.length === 0) {
-    resultEl.style.display = '';
-    resultEl.innerHTML = `<span style="color:var(--muted)">Keine analysierten Sitzungen in diesem Projekt.</span>`;
-    return;
-  }
-
-  // ── Analyse-Kontext aus Sitzungen sammeln (kein Rohtext → Token-Limit) ──
-  const sitzungsAnalysen = projSessions.map((s, i) => {
+function _buildSitzungsAnalysen(projSessions) {
+  return projSessions.map((s, i) => {
     const parts = [`[${i+1}] ${s.label} (${new Date(s.date).toLocaleDateString('de-DE')})`];
-    if (s.workAnalysis?.summary)    parts.push(`Zusammenfassung: ${s.workAnalysis.summary}`);
+    if (s.workAnalysis?.summary)           parts.push(`Zusammenfassung: ${s.workAnalysis.summary}`);
     if (s.workAnalysis?.tasks?.length)     parts.push(`Aufgaben: ${s.workAnalysis.tasks.join(' | ')}`);
     if (s.workAnalysis?.decisions?.length) parts.push(`Entscheidungen: ${s.workAnalysis.decisions.join(' | ')}`);
     if (s.workAnalysis?.openQuestions?.length) parts.push(`Offene Fragen: ${s.workAnalysis.openQuestions.join(' | ')}`);
@@ -523,69 +511,150 @@ async function runProjectAnalysis(projId, mode = 'analysis') {
     }
     return parts.join('\n');
   }).join('\n\n---\n\n');
+}
 
-  // ── Prompt auswählen ──────────────────────────────
-  const promptId = mode === 'status' ? 'builtin_project_status' : 'builtin_project_analysis';
+async function runProjectAnalysis(projId) {
+  const proj = getProjectById(projId);
+  if (!proj) return;
+
+  const promptId = document.getElementById('projAnalysisPromptSelect')?.value;
+  if (!promptId) { showToast('Bitte zuerst einen Prompt auswählen.', 'error'); return; }
+
   const promptDef = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === promptId);
-  if (!promptDef) { showToast('Prompt nicht gefunden', 'error'); return; }
+  if (!promptDef) { showToast('Prompt nicht gefunden.', 'error'); return; }
 
-  const prompt = promptDef.prompt
-    .replace('{{projektName}}',    proj.name)
-    .replace('{{projektZiel}}',    proj.goalDescription || '(kein Ziel definiert)')
-    .replace('{{sitzungsAnzahl}}', projSessions.length)
-    .replace('{{sitzungsAnalysen}}', sitzungsAnalysen);
+  const projSessions = sessions.filter(s =>
+    s.projectId === projId &&
+    (s.status === 'done' || (s.utterances?.length > 0))
+  );
 
-  // ── Laden-Zustand zeigen ─────────────────────────
-  resultEl.style.display = '';
-  resultEl.innerHTML = `<span style="color:var(--muted)">${icon('cpu',14,'margin-right:6px')} Claude analysiert${mode === 'status' ? ' Projektstatus' : ' das Projekt'}…</span>`;
+  if (projSessions.length === 0) {
+    showToast('Keine analysierten Sitzungen in diesem Projekt.', 'error'); return;
+  }
+
+  const sitzungsAnalysen = _buildSitzungsAnalysen(projSessions);
+
+  // Prompt-Variablen ersetzen (Projekt-spezifisch + allgemein)
+  const getPromptText = typeof getEditablePromptText === 'function'
+    ? getEditablePromptText(promptId)
+    : promptDef.prompt;
+
+  const prompt = (getPromptText || promptDef.prompt)
+    .replace(/\{\{projektName\}\}/g,      proj.name)
+    .replace(/\{\{projektZiel\}\}/g,      proj.goalDescription || '(kein Ziel definiert)')
+    .replace(/\{\{sitzungsAnzahl\}\}/g,   String(projSessions.length))
+    .replace(/\{\{sitzungsAnalysen\}\}/g, sitzungsAnalysen)
+    .replace(/\{\{transkript\}\}/g,       sitzungsAnalysen)   // Fallback für nicht-Projekt-Prompts
+    .replace(/\{\{speakerA\}\}/g,         'Sprecher A')
+    .replace(/\{\{speakerB\}\}/g,         'Sprecher B');
+
+  // Lade-Spinner im Akkordeon
+  const accordion = document.getElementById('projAnalysisAccordion');
+  if (accordion) {
+    const loadingPanel = document.createElement('div');
+    loadingPanel.className = 'acc-panel open';
+    loadingPanel.id = 'projAnalysisLoading';
+    loadingPanel.innerHTML = `
+      <div class="acc-panel-header" style="cursor:default">
+        ${icon('cpu',14,'margin-right:6px')} ${escHtml(promptDef.name)} – wird analysiert…
+      </div>
+      <div class="acc-panel-body" style="color:var(--muted);font-size:0.83rem">Claude analysiert…</div>`;
+    accordion.prepend(loadingPanel);
+  }
 
   try {
     const { text } = await callClaudeAPI(prompt);
-    const json = JSON.parse(extractJSON(text, '{'));
-    resultEl.innerHTML = renderAnalysisResult(json, mode);
+
+    // Ergebnis parsen: JSON versuchen, sonst Plaintext
+    let resultHtml;
+    try {
+      const json = JSON.parse(extractJSON(text, '{'));
+      resultHtml = _renderProjectJsonResult(json);
+    } catch {
+      // Kein JSON → Plaintext rendern
+      resultHtml = `<div style="white-space:pre-wrap;font-size:0.85rem;line-height:1.6">${escHtml(text.trim())}</div>`;
+    }
+
+    // Ergebnis im Projekt-Objekt speichern
+    if (!proj.analysisResults) proj.analysisResults = [];
+    proj.analysisResults.unshift({
+      promptId,
+      promptName: promptDef.name,
+      resultHtml,
+      timestamp: new Date().toISOString(),
+    });
+    saveProjects();
+
+    // Akkordeon neu rendern
+    document.getElementById('projAnalysisLoading')?.remove();
+    if (accordion) accordion.innerHTML = _renderProjectAnalysisAccordion(proj);
     showToast('Analyse abgeschlossen', 'success');
   } catch(e) {
-    resultEl.innerHTML = `<span style="color:var(--red)">${icon('alert-circle',14,'margin-right:6px')} Fehler: ${escHtml(e.message)}</span>`;
+    document.getElementById('projAnalysisLoading')?.remove();
+    if (accordion) {
+      const errPanel = document.createElement('div');
+      errPanel.className = 'acc-panel open';
+      errPanel.innerHTML = `
+        <div class="acc-panel-header" style="color:var(--red);cursor:default">${icon('alert-circle',14,'margin-right:6px')} Fehler</div>
+        <div class="acc-panel-body" style="color:var(--red);font-size:0.83rem">${escHtml(e.message)}</div>`;
+      accordion.prepend(errPanel);
+    }
     showToast('Analyse fehlgeschlagen: ' + e.message, 'error');
   }
 }
 
-function renderAnalysisResult(json, mode) {
-  if (mode === 'status') {
-    const statusColors = { 'on-track': 'var(--green)', 'at-risk': '#f59e0b', 'blocked': 'var(--red)' };
-    const statusLabels = { 'on-track': '✓ On Track', 'at-risk': '⚠ At Risk', 'blocked': '✕ Blockiert' };
-    const col = statusColors[json.status] || 'var(--muted)';
-    const lbl = statusLabels[json.status] || json.status;
-    return `
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-        <span style="font-weight:700;font-size:1rem;color:${col}">${lbl}</span>
-      </div>
-      ${json.zusammenfassung ? `<p style="margin:0 0 10px"><strong>Status:</strong> ${escHtml(json.zusammenfassung)}</p>` : ''}
-      ${json.letzteAktivitaet ? `<p style="margin:0 0 10px"><strong>Letzte Aktivität:</strong> ${escHtml(json.letzteAktivitaet)}</p>` : ''}
-      ${json.naechsterSchritt ? `<p style="margin:0 0 10px"><strong>Nächster Schritt:</strong> ${escHtml(json.naechsterSchritt)}</p>` : ''}
-      ${json.risiken?.length ? `
-        <div style="margin-top:8px"><strong>Risiken:</strong>
-          <ul style="margin:6px 0 0 16px;padding:0">${json.risiken.map(r=>`<li>${escHtml(r)}</li>`).join('')}</ul>
-        </div>` : ''}`;
+// ── Akkordeon-Renderer ────────────────────────────────────────────────────
+function _renderProjectAnalysisAccordion(proj) {
+  const results = proj.analysisResults || [];
+  if (!results.length) {
+    return `<div style="font-size:0.82rem;color:var(--muted);padding:8px 0">Noch keine Analysen. Prompt auswählen und „Analysieren" klicken.</div>`;
   }
+  return results.map((r, i) => `
+    <div class="acc-panel${i === 0 ? ' open' : ''}">
+      <div class="acc-panel-header" onclick="this.parentElement.classList.toggle('open')">
+        ${icon('cpu',13,'margin-right:6px')} ${escHtml(r.promptName)}
+        <span style="margin-left:auto;font-size:0.72rem;color:var(--muted);font-weight:400">
+          ${new Date(r.timestamp).toLocaleDateString('de-DE', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+        </span>
+        <span class="acc-chevron">${icon('chevron-down',14,'margin-left:8px')}</span>
+        <button onclick="event.stopPropagation();_deleteProjectAnalysis('${proj.id}',${i})"
+          style="background:none;border:none;color:var(--muted);cursor:pointer;padding:0 0 0 8px;font-size:0.75rem"
+          title="Löschen">✕</button>
+      </div>
+      <div class="acc-panel-body">${r.resultHtml}</div>
+    </div>`
+  ).join('');
+}
 
-  // Tiefenanalyse
-  const sections = [
-    { key: 'gesamtbild',     label: 'Gesamtbild',       single: true },
-    { key: 'fortschritt',    label: 'Fortschritt',       single: false },
-    { key: 'offenePunkte',   label: 'Offene Punkte',     single: false },
-    { key: 'muster',         label: 'Muster',            single: false },
-    { key: 'empfehlungen',   label: 'Empfehlungen',      single: false },
-  ];
-  return sections.map(({ key, label, single }) => {
-    const val = json[key];
+function _renderProjectJsonResult(json) {
+  // Generisch: alle String- und Array-Felder rendern
+  return Object.entries(json).map(([key, val]) => {
     if (!val || (Array.isArray(val) && !val.length)) return '';
-    if (single) return `<p style="margin:0 0 12px"><strong>${label}:</strong> ${escHtml(val)}</p>`;
-    return `
-      <div style="margin-bottom:12px">
-        <strong>${label}:</strong>
-        <ul style="margin:6px 0 0 16px;padding:0">${val.map(v=>`<li style="margin-bottom:3px">${escHtml(v)}</li>`).join('')}</ul>
+    const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+    if (typeof val === 'string') {
+      // Status-Feld speziell behandeln
+      if (key === 'status') {
+        const col = { 'on-track':'var(--green)', 'at-risk':'#f59e0b', 'blocked':'var(--red)' }[val] || 'var(--text)';
+        const lbl = { 'on-track':'✓ On Track', 'at-risk':'⚠ At Risk', 'blocked':'✕ Blockiert' }[val] || val;
+        return `<p style="margin:0 0 10px"><strong>${label}:</strong> <span style="color:${col};font-weight:600">${lbl}</span></p>`;
+      }
+      return `<p style="margin:0 0 10px"><strong>${label}:</strong> ${escHtml(val)}</p>`;
+    }
+    if (Array.isArray(val)) {
+      return `<div style="margin-bottom:12px"><strong>${label}:</strong>
+        <ul style="margin:6px 0 0 16px;padding:0">${val.map(v=>`<li style="margin-bottom:3px">${escHtml(String(v))}</li>`).join('')}</ul>
       </div>`;
+    }
+    return '';
   }).join('');
+}
+
+function _deleteProjectAnalysis(projId, idx) {
+  const proj = getProjectById(projId);
+  if (!proj?.analysisResults) return;
+  proj.analysisResults.splice(idx, 1);
+  saveProjects();
+  const accordion = document.getElementById('projAnalysisAccordion');
+  if (accordion) accordion.innerHTML = _renderProjectAnalysisAccordion(proj);
 }
 
