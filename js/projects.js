@@ -331,10 +331,8 @@ function showProjectDashboard(id) {
   // Sofort Ladeindikator zeigen – beweist dass die Funktion aufgerufen wird
   el.innerHTML = '<div style="padding:24px;color:var(--muted)">Dashboard wird geladen…</div>';
 
-  const projSessions = sessions.filter(s =>
-    s.projectId === id &&
-    (s.status === 'done' || s.status === 'error' || (s.utterances?.length > 0))
-  );
+  // Alle Sessions des Projekts – kein Status-Filter damit nichts verloren geht
+  const projSessions = sessions.filter(s => s.projectId === id);
 
   // ── Statistiken ──────────────────────────────────
   const totalDuration = projSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
@@ -477,15 +475,37 @@ function showProjectDashboard(id) {
   }
 }
 
+function _resolveTaskText(raw) {
+  // Tasks können Strings ODER Objekte sein {task, person, deadline, priority}
+  if (typeof raw === 'string') return { text: raw, person: '', deadline: '', priority: '' };
+  if (raw && typeof raw === 'object') {
+    return {
+      text:     String(raw.task || raw.text || raw.description || JSON.stringify(raw)),
+      person:   String(raw.person   || raw.assignee || ''),
+      deadline: String(raw.deadline || raw.due      || ''),
+      priority: String(raw.priority || ''),
+    };
+  }
+  return { text: String(raw || ''), person: '', deadline: '', priority: '' };
+}
+
 function renderTaskItem(task, projId) {
+  const t = _resolveTaskText(task.text);
+  const meta = [
+    t.person   ? `👤 ${escHtml(t.person)}`   : '',
+    t.deadline ? `📅 ${escHtml(t.deadline)}` : '',
+    t.priority ? `${t.priority === 'hoch' ? '🔴' : t.priority === 'mittel' ? '🟡' : '🟢'} ${escHtml(t.priority)}` : '',
+    `${icon('file-text',10,'margin-right:3px')}${escHtml(String(task.sessionLabel || ''))}`,
+  ].filter(Boolean).join(' · ');
+
   return `
     <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
       <input type="checkbox" ${task.done ? 'checked' : ''}
         onchange="toggleProjectTask('${projId}','${task.key}',this.checked)"
         style="margin-top:3px;flex-shrink:0;cursor:pointer" />
       <div style="flex:1;min-width:0">
-        <div style="font-size:0.83rem;color:var(--text);${task.done ? 'text-decoration:line-through;opacity:0.5' : ''}">${escHtml(typeof task.text === 'string' ? task.text : JSON.stringify(task.text) || '')}</div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${icon('file-text',10,'margin-right:3px')}${escHtml(String(task.sessionLabel || ''))}</div>
+        <div style="font-size:0.83rem;color:var(--text);${task.done ? 'text-decoration:line-through;opacity:0.5' : ''}">${escHtml(t.text)}</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:3px;display:flex;flex-wrap:wrap;gap:6px">${meta}</div>
       </div>
     </div>`;
 }
@@ -510,7 +530,7 @@ function _buildSitzungsAnalysen(projSessions) {
   return projSessions.map((s, i) => {
     const parts = [`[${i+1}] ${s.label} (${new Date(s.date).toLocaleDateString('de-DE')})`];
     if (s.workAnalysis?.summary)           parts.push(`Zusammenfassung: ${s.workAnalysis.summary}`);
-    if (s.workAnalysis?.tasks?.length)     parts.push(`Aufgaben: ${s.workAnalysis.tasks.join(' | ')}`);
+    if (s.workAnalysis?.tasks?.length)     parts.push(`Aufgaben: ${s.workAnalysis.tasks.map(t => _resolveTaskText(t).text).join(' | ')}`);
     if (s.workAnalysis?.decisions?.length) parts.push(`Entscheidungen: ${s.workAnalysis.decisions.join(' | ')}`);
     if (s.workAnalysis?.openQuestions?.length) parts.push(`Offene Fragen: ${s.workAnalysis.openQuestions.join(' | ')}`);
     if (s.privateAnalysis?.openTopics?.length) parts.push(`Offene Themen: ${s.privateAnalysis.openTopics.join(' | ')}`);

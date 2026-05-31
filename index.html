@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.44</button>
+        onmouseout="this.style.color='var(--muted)'">v4.45</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -748,6 +748,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.45 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.45</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Alle Projekt-Sitzungen berücksichtigt</strong> – Dashboard filterte nur Sessions mit status=done/error. Jetzt werden alle Sessions eines Projekts gezogen, unabhängig vom Status.</li>
+          <li><strong>Task-Objekte korrekt aufgelöst</strong> – workAnalysis.tasks kann Strings ODER Objekte sein ({task, person, deadline, priority}). Neue Funktion _resolveTaskText() extrahiert den Text und zeigt Person, Deadline und Priorität als Meta-Zeile unter der Aufgabe an.</li>
+        </ul>
+        <div class="cl-tech">js/projects.js: projSessions-Filter auf s.projectId===id vereinfacht. _resolveTaskText() neu. renderTaskItem() nutzt _resolveTaskText(), zeigt person/deadline/priority. _buildSitzungsAnalysen() nutzt ebenfalls _resolveTaskText().</div>
+      </div>
 
       <!-- ── v4.44 ── -->
       <div class="cl-entry">
