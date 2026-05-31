@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.38</button>
+        onmouseout="this.style.color='var(--muted)'">v4.39</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -725,6 +725,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.39 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.39</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Paket 1: Projekt-Datenstruktur</strong> – Projekt-Objekt mit id, name, color, status, goalDescription, promptTemplateId, createdAt. CRUD-Funktionen: createProject, updateProject, archiveProject, deleteProject. Builtin-Projekt "Allgemeines Projekt" (kann nicht gelöscht werden).</li>
+          <li><strong>Migration</strong> – Beim App-Start werden alle bestehenden Sessions ohne projectId automatisch dem "Allgemeinen Projekt" zugewiesen.</li>
+          <li><strong>2 neue Prompts</strong> – builtin_project_analysis (übergreifende Analyse aller Projektsitzungen) und builtin_project_status (Kurz-Status: on-track / at-risk / blocked) in der Prompt-Bibliothek.</li>
+        </ul>
+        <div class="cl-tech">js/config.js: let projects, saveProjects(), BUILTIN_PROJECT_ID. js/sessions.js: createProject(), updateProject(), archiveProject(), deleteProject(), getProjectById(), migrateSessionsToDefaultProject(). js/prompts.js: builtin_project_analysis, builtin_project_status. js/app.js: migrateSessionsToDefaultProject() im init().</div>
+      </div>
 
       <!-- ── v4.38 ── -->
       <div class="cl-entry">

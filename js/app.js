@@ -2,6 +2,7 @@
 // INIT
 // ═══════════════════════════════════════════════════
 function init() {
+  migrateSessionsToDefaultProject(); // Paket 1: bestehende Sessions → Allgemeines Projekt
   updateApiIndicator();
   updateDriveStatus();
   updateTagFilter();

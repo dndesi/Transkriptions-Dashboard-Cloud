@@ -343,3 +343,69 @@ function confirmDelete() {
 }
 
 // ═══════════════════════════════════════════════════
+// PROJEKT-VERWALTUNG
+// ═══════════════════════════════════════════════════
+
+function genProjectId() {
+  return 'proj_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+}
+
+function createProject({ name, color = '#6b7280', goalDescription = '', promptTemplateId = null } = {}) {
+  if (!name?.trim()) return null;
+  const proj = {
+    id: genProjectId(),
+    name: name.trim(),
+    color,
+    status: 'active',
+    goalDescription,
+    promptTemplateId,
+    createdAt: new Date().toISOString(),
+    builtin: false,
+  };
+  projects.unshift(proj);
+  saveProjects();
+  return proj;
+}
+
+function updateProject(id, changes = {}) {
+  const proj = projects.find(p => p.id === id);
+  if (!proj) return;
+  const allowed = ['name', 'color', 'status', 'goalDescription', 'promptTemplateId'];
+  allowed.forEach(k => { if (k in changes) proj[k] = changes[k]; });
+  saveProjects();
+  return proj;
+}
+
+function archiveProject(id) {
+  return updateProject(id, { status: 'archived' });
+}
+
+function deleteProject(id) {
+  const proj = projects.find(p => p.id === id);
+  if (!proj || proj.builtin) { showToast('Dieses Projekt kann nicht gelöscht werden.', 'error'); return; }
+  // Alle zugehörigen Sessions ins Allgemeine Projekt verschieben
+  sessions.forEach(s => {
+    if (s.projectId === id) { s.projectId = BUILTIN_PROJECT_ID; }
+  });
+  saveSessions();
+  projects = projects.filter(p => p.id !== id);
+  saveProjects();
+}
+
+function getProjectById(id) {
+  return projects.find(p => p.id === id) || null;
+}
+
+// ── Migration: bestehende Sessions ohne projectId → Allgemeines Projekt ──
+function migrateSessionsToDefaultProject() {
+  let changed = false;
+  sessions.forEach(s => {
+    if (!s.projectId) {
+      s.projectId = BUILTIN_PROJECT_ID;
+      changed = true;
+    }
+  });
+  if (changed) saveSessions();
+}
+
+// ═══════════════════════════════════════════════════

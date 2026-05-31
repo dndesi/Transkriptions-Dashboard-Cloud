@@ -128,6 +128,38 @@ let sessions = JSON.parse(localStorage.getItem('transcription_sessions') || '[]'
 let currentSessionId = null;
 let pollTimer = null;
 
+// ── Projekte ──────────────────────────────────────────────────────────────
+const BUILTIN_PROJECT_ID = 'project_general';
+
+function _defaultProjects() {
+  return [{
+    id: BUILTIN_PROJECT_ID,
+    name: 'Allgemeines Projekt',
+    color: '#6b7280',
+    status: 'active',         // 'active' | 'paused' | 'archived'
+    goalDescription: 'Sammelbecken für Sitzungen ohne Projektzuordnung',
+    promptTemplateId: null,   // null = kein Projekt-Prompt
+    createdAt: new Date().toISOString(),
+    builtin: true,            // kann nicht gelöscht werden
+  }];
+}
+
+let projects = (() => {
+  try {
+    const stored = JSON.parse(localStorage.getItem('distill_projects') || 'null');
+    if (!stored) return _defaultProjects();
+    // Sicherstellen dass das Builtin-Projekt immer vorhanden ist
+    if (!stored.find(p => p.id === BUILTIN_PROJECT_ID)) {
+      stored.unshift(_defaultProjects()[0]);
+    }
+    return stored;
+  } catch { return _defaultProjects(); }
+})();
+
+function saveProjects() {
+  localStorage.setItem('distill_projects', JSON.stringify(projects));
+}
+
 // Google Drive State
 let driveToken = null;
 let driveTokenExpiry = 0;

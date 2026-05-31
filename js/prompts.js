@@ -583,6 +583,58 @@ SUCHANFRAGE: {{query}}
 Antworte auf Deutsch. Nenne konkret welche Aufnahmen relevant sind (Nummer und Name).
 Fasse kurz zusammen was in den relevanten Aufnahmen dazu steht.
 Falls nichts passt, sage das direkt.`
+  },
+  // ── Projekt-Prompts ────────────────────────────────
+  {
+    id: 'builtin_project_analysis',
+    category: 'feature',
+    name: 'Projekt-Analyse',
+    description: 'Übergreifende Analyse aller Sitzungen eines Projekts',
+    usedIn: 'Projekt-Dashboard → Analyse',
+    icon: 'layers',
+    prompt: `Du bist ein erfahrener Strategie- und Kommunikationsanalyst.
+Du erhältst die Analyse-Zusammenfassungen aller Sitzungen eines Projekts – nicht die Rohtexte.
+
+PROJEKT: {{projektName}}
+ZIEL: {{projektZiel}}
+ANZAHL SITZUNGEN: {{sitzungsAnzahl}}
+
+SITZUNGS-ANALYSEN:
+{{sitzungsAnalysen}}
+
+Erstelle eine übergreifende Projekt-Analyse auf Deutsch. Antworte NUR mit einem JSON-Objekt:
+{
+  "gesamtbild": "2-3 Sätze: Was ist der Kernkonflik oder der rote Faden des Projekts?",
+  "fortschritt": ["Was wurde erreicht oder geklärt?"],
+  "offenePunkte": ["Was ist noch ungeklärt oder blockiert?"],
+  "muster": ["Wiederkehrende Themen, Dynamiken oder Verhaltensweisen"],
+  "empfehlungen": ["Konkrete nächste Schritte oder strategische Hinweise"]
+}`
+  },
+  {
+    id: 'builtin_project_status',
+    category: 'feature',
+    name: 'Projekt-Status',
+    description: 'Kurze Statusübersicht: Was läuft, was stockt, was fehlt',
+    usedIn: 'Projekt-Dashboard → Status',
+    icon: 'activity',
+    prompt: `Du bist ein präziser Projektassistent.
+Gib einen knappen Projektstatus auf Basis der Sitzungs-Analysen.
+
+PROJEKT: {{projektName}}
+ZIEL: {{projektZiel}}
+
+SITZUNGS-ANALYSEN (neueste zuerst):
+{{sitzungsAnalysen}}
+
+Antworte NUR mit einem JSON-Objekt:
+{
+  "status": "on-track" | "at-risk" | "blocked",
+  "zusammenfassung": "1 Satz: Aktueller Stand in einfachen Worten",
+  "letzteAktivitaet": "Was war das letzte konkrete Ergebnis oder Ereignis?",
+  "naechsterSchritt": "Was ist der dringlichste nächste Schritt?",
+  "risiken": ["Mögliche Probleme oder Verzögerungen – nur wenn relevant"]
+}`
   }
 ];
 
