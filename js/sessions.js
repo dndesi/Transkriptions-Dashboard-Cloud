@@ -396,6 +396,27 @@ function getProjectById(id) {
   return projects.find(p => p.id === id) || null;
 }
 
+// ── Projekt-Dropdown im Sitzungsdetail befüllen ───────────────────────────
+function updateSessionProjectDropdown(session) {
+  const sel = document.getElementById('sessionProjectSelect');
+  if (!sel) return;
+  sel.innerHTML = (projects || [])
+    .filter(p => p.status !== 'archived')
+    .map(p => `<option value="${p.id}"${p.id === (session.projectId || BUILTIN_PROJECT_ID) ? ' selected' : ''}>${escHtml(p.name)}</option>`)
+    .join('');
+}
+
+// ── Projekt einer Sitzung ändern ──────────────────────────────────────────
+async function changeSessionProject(projectId) {
+  const s = sessions.find(x => x.id === currentSessionId);
+  if (!s) return;
+  s.projectId = projectId || BUILTIN_PROJECT_ID;
+  saveSessions();
+  await saveToArchive(s);
+  renderBrowser();
+  showToast('Projekt zugewiesen', 'success');
+}
+
 // ── Migration: bestehende Sessions ohne projectId → Allgemeines Projekt ──
 function migrateSessionsToDefaultProject() {
   let changed = false;

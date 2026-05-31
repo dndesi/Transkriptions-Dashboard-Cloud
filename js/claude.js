@@ -1106,6 +1106,9 @@ function showTranscript(session) {
   // Typ-Buttons aktualisieren
   _updateTypeButtons(session.type || 'privat');
 
+  // Projekt-Dropdown befüllen
+  if (typeof updateSessionProjectDropdown === 'function') updateSessionProjectDropdown(session);
+
   // Namensfelder befüllen
   document.getElementById('editSpeakerA').value = session.speakerA || 'Sprecher A';
   document.getElementById('editSpeakerB').value = session.speakerB || 'Sprecher B';

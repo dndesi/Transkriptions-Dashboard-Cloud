@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.41</button>
+        onmouseout="this.style.color='var(--muted)'">v4.42</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -251,11 +251,11 @@
     </button>
     <button class="sidenav-item active" id="navGrid" onclick="setView('grid'); showBrowser(); setSidenavActive(this)">
       <i data-lucide="layout-grid" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-      Kacheln
+      Sitzungen
     </button>
     <button class="sidenav-item" id="navTimeline" onclick="setView('timeline'); showBrowser(); setSidenavActive(this)">
       <i data-lucide="list" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-      Zeitstrahl
+      Sitzungschronik
     </button>
 
     <div class="sidenav-sep"></div>
@@ -331,8 +331,8 @@
           <input type="text" id="sidebarSearchMain" placeholder="Suchen…" oninput="filterBrowser()" />
         </div>
         <div class="view-toggle">
-          <button class="view-btn active" id="viewGrid" onclick="setView('grid')" title="Kachelansicht">⊞</button>
-          <button class="view-btn" id="viewTimeline" onclick="setView('timeline')" title="Zeitstrahl">≡</button>
+          <button class="view-btn active" id="viewGrid" onclick="setView('grid')" title="Sitzungen">⊞</button>
+          <button class="view-btn" id="viewTimeline" onclick="setView('timeline')" title="Sitzungschronik">≡</button>
         </div>
         <button class="btn btn-ghost select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()">☑ Auswählen</button>
       </div>
@@ -408,6 +408,15 @@
             </button>
           </div>
         </div>
+        <!-- Projekt-Zuordnung -->
+        <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+          <i data-lucide="layers" style="width:13px;height:13px;stroke:rgba(255,255,255,0.6);stroke-width:2;fill:none;flex-shrink:0"></i>
+          <select id="sessionProjectSelect"
+            onchange="changeSessionProject(this.value)"
+            style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:7px;color:#fff;padding:3px 10px;font-size:0.78rem;outline:none;cursor:pointer;max-width:180px">
+          </select>
+        </div>
+
         <div id="dateEditRow" style="display:none; margin-top:6px">
           <input type="datetime-local" id="sessionDateEdit" style="background:var(--surface2); border:1px solid var(--accent); border-radius:8px; color:var(--text); padding:7px 10px; font-size:0.85rem; outline:none;" />
           <button class="btn btn-primary" style="padding:5px 12px; font-size:0.8rem; margin-left:6px" onclick="commitDateEdit()">✓</button>
@@ -739,6 +748,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.42 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.42</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Projekt-Zuordnung im Sitzungsdetail</strong> – Projekt-Dropdown direkt in der Meta-Zeile jeder Sitzung. Änderung wird sofort gespeichert (lokal + Drive). Dropdown zeigt alle aktiven und pausierten Projekte.</li>
+          <li><strong>Projekt-Badge auf Kacheln</strong> – Badge wird nun für ALLE Projekte angezeigt, inkl. "Allgemeines Projekt". Vorher war er für das Standard-Projekt ausgeblendet, was dazu führte dass nie ein Badge sichtbar war.</li>
+          <li><strong>Umbenennung</strong> – "Kacheln" → "Sitzungen", "Zeitstrahl" → "Sitzungschronik" in Sidenav und View-Toggle.</li>
+        </ul>
+        <div class="cl-tech">index.html: sessionProjectSelect Dropdown in Sitzungsdetail-Header. sessions.js: updateSessionProjectDropdown(), changeSessionProject(). claude.js: showTranscript() ruft updateSessionProjectDropdown(). ui.js: Badge-Bedingung entfernt (proj.id !== BUILTIN_PROJECT_ID).</div>
+      </div>
 
       <!-- ── v4.41 ── -->
       <div class="cl-entry">

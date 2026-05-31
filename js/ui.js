@@ -123,7 +123,7 @@ function renderBrowser(filter = '') {
       <div class="sc-icon">${icon(typeIconMap[t]||'message-circle', 17)}</div>
       <div class="sc-body">
         <span class="sc-type ${typeCls[t]||'sc-type-privat'}">${icon(typeIconMap[t]||'message-circle',11)} ${typeLabel[t]||'Privat'}</span>
-        ${(()=>{ const proj = getProjectById(s.projectId); return proj && proj.id !== BUILTIN_PROJECT_ID ? `<span class="sc-project-badge" style="background:${proj.color}">${icon('layers',10,'margin-right:3px')}${escHtml(proj.name)}</span>` : ''; })()}
+        ${(()=>{ const proj = getProjectById(s.projectId); return proj ? `<span class="sc-project-badge" style="background:${proj.color}">${icon('layers',10,'margin-right:3px')}${escHtml(proj.name)}</span>` : ''; })()}
         <div class="sc-name">${escHtml(s.label)}</div>
         ${s.persons?.length ? `<div class="sc-persons" style="display:flex;align-items:center;gap:5px">${icon('users',12,'margin-right:3px')} ${s.persons.map(p=>escHtml(p)).join(' · ')}</div>` : ''}
         <div class="sc-meta">
