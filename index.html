@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.43</button>
+        onmouseout="this.style.color='var(--muted)'">v4.44</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -748,6 +748,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.44 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.44</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Debug + Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Dashboard try/catch</strong> – showProjectDashboard() ist jetzt vollständig von try/catch umschlossen. Bei Fehlern wird eine lesbare Fehlermeldung + Stack-Trace direkt im Dashboard angezeigt statt stillem Versagen.</li>
+          <li><strong>Ladeindikator</strong> – "Dashboard wird geladen…" erscheint sofort beim Klick, bevor das Template gerendert wird. Beweist dass die Funktion aufgerufen wird.</li>
+          <li><strong>4 fehlende Icons</strong> – arrow-left, list, check-square, tag in icons.js ergänzt. Diese wurden im Dashboard und in der Detailansicht verwendet, lieferten aber leere Strings.</li>
+        </ul>
+        <div class="cl-tech">js/projects.js: try/catch um showProjectDashboard(), sofortiger Ladeindikator. js/icons.js: arrow-left, list, check-square, tag hinzugefügt.</div>
+      </div>
 
       <!-- ── v4.43 ── -->
       <div class="cl-entry">

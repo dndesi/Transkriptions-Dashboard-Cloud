@@ -322,14 +322,18 @@ function confirmDeleteProject(id) {
 
 // ── Dashboard-Tab öffnen (von Detailansicht aus) ─────────────────────────
 function showProjectDashboard(id) {
+  try {
   const proj = getProjectById(id);
   const el = document.getElementById('projectsView');
-  if (!proj || !el) return;
+  if (!proj || !el) { showToast('Projekt nicht gefunden (id: ' + id + ')', 'error'); return; }
   _currentProjectDetailId = id;
+
+  // Sofort Ladeindikator zeigen – beweist dass die Funktion aufgerufen wird
+  el.innerHTML = '<div style="padding:24px;color:var(--muted)">Dashboard wird geladen…</div>';
 
   const projSessions = sessions.filter(s =>
     s.projectId === id &&
-    (s.status === 'done' || (s.utterances?.length > 0))
+    (s.status === 'done' || s.status === 'error' || (s.utterances?.length > 0))
   );
 
   // ── Statistiken ──────────────────────────────────
@@ -466,6 +470,11 @@ function showProjectDashboard(id) {
 
     </div>
   `;
+  } catch(err) {
+    const el2 = document.getElementById('projectsView');
+    if (el2) el2.innerHTML = `<div style="padding:24px;color:var(--red)">Dashboard-Fehler: ${escHtml(err.message)}<br><pre style="font-size:0.75rem;margin-top:8px">${escHtml(err.stack||'')}</pre></div>`;
+    console.error('showProjectDashboard Fehler:', err);
+  }
 }
 
 function renderTaskItem(task, projId) {
@@ -475,8 +484,8 @@ function renderTaskItem(task, projId) {
         onchange="toggleProjectTask('${projId}','${task.key}',this.checked)"
         style="margin-top:3px;flex-shrink:0;cursor:pointer" />
       <div style="flex:1;min-width:0">
-        <div style="font-size:0.83rem;color:var(--text);${task.done ? 'text-decoration:line-through;opacity:0.5' : ''}">${escHtml(task.text)}</div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${icon('file-text',10,'margin-right:3px')}${escHtml(task.sessionLabel)}</div>
+        <div style="font-size:0.83rem;color:var(--text);${task.done ? 'text-decoration:line-through;opacity:0.5' : ''}">${escHtml(typeof task.text === 'string' ? task.text : JSON.stringify(task.text) || '')}</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${icon('file-text',10,'margin-right:3px')}${escHtml(String(task.sessionLabel || ''))}</div>
       </div>
     </div>`;
 }
