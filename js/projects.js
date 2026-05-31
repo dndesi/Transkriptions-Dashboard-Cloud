@@ -257,6 +257,12 @@ function _openProjectModal(data) {
       ).join('');
   }
 
+  // Löschen-Button: nur beim Bearbeiten + nicht bei Builtin-Projekten
+  const deleteBtn = overlay.querySelector('#pmDeleteBtn');
+  if (deleteBtn) {
+    deleteBtn.style.display = (_projectModalMode === 'edit' && !data.builtin) ? 'inline-flex' : 'none';
+  }
+
   overlay.classList.add('open');
   overlay.querySelector('#pmName').focus();
 }
@@ -362,7 +368,10 @@ function showProjectDashboard(id) {
     } else if (typeof rawPersons === 'string' && rawPersons.trim()) {
       rawPersons.split(',').forEach(_addPerson);
     }
-    // Quelle 2: Personen aus Task-Objekten (person-Feld der Analyse)
+    // Quelle 2: speakerA + speakerB (enthält oft den User selbst)
+    if (s.speakerA && s.speakerA !== 'Sprecher A') _addPerson(s.speakerA);
+    if (s.speakerB && s.speakerB !== 'Sprecher B') _addPerson(s.speakerB);
+    // Quelle 3: Personen aus Task-Objekten (person-Feld der Analyse)
     (s.workAnalysis?.tasks || []).forEach(t => {
       const resolved = _resolveTaskText(t);
       if (resolved.person) _addPerson(resolved.person);
@@ -682,11 +691,20 @@ async function runProjectAnalysis(projId) {
 
     // Ergebnis parsen: JSON versuchen, sonst Plaintext
     let resultHtml;
+    let isMindMap = false;
+    let mindMapData = null;
     try {
       const json = JSON.parse(extractJSON(text, '{'));
-      resultHtml = _renderProjectJsonResult(json);
+      // Mind-Map erkennen: hat label + children auf Root-Ebene
+      if (json && json.label && Array.isArray(json.children)) {
+        isMindMap = true;
+        mindMapData = json;
+        const mmId = 'projMindmap_' + Date.now();
+        resultHtml = `<div id="${mmId}" style="width:100%;height:420px;overflow:hidden;border-radius:var(--radius)"></div>`;
+      } else {
+        resultHtml = _renderProjectJsonResult(json);
+      }
     } catch {
-      // Kein JSON → Plaintext rendern
       resultHtml = `<div style="white-space:pre-wrap;font-size:0.85rem;line-height:1.6">${escHtml(text.trim())}</div>`;
     }
 
@@ -696,6 +714,7 @@ async function runProjectAnalysis(projId) {
       promptId,
       promptName: promptDef.name,
       resultHtml,
+      mindMapData: isMindMap ? mindMapData : null,
       timestamp: new Date().toISOString(),
     });
     saveProjects();
@@ -703,6 +722,14 @@ async function runProjectAnalysis(projId) {
     // Akkordeon neu rendern
     document.getElementById('projAnalysisLoading')?.remove();
     if (accordion) accordion.innerHTML = _renderProjectAnalysisAccordion(proj);
+
+    // Mind Map D3 rendern falls erkannt
+    if (isMindMap && mindMapData) {
+      const mmContainer = accordion.querySelector('[id^="projMindmap_"]');
+      if (mmContainer && typeof _renderD3Mindmap === 'function') {
+        setTimeout(() => _renderD3Mindmap(mmContainer, mindMapData), 50);
+      }
+    }
     showToast('Analyse abgeschlossen', 'success');
   } catch(e) {
     document.getElementById('projAnalysisLoading')?.remove();
@@ -724,9 +751,9 @@ function _renderProjectAnalysisAccordion(proj) {
   if (!results.length) {
     return `<div style="font-size:0.82rem;color:var(--muted);padding:8px 0">Noch keine Analysen. Prompt auswählen und „Analysieren" klicken.</div>`;
   }
-  return results.map((r, i) => `
-    <div class="acc-panel${i === 0 ? ' open' : ''}">
-      <div class="acc-panel-header" onclick="this.parentElement.classList.toggle('open')">
+  const html = results.map((r, i) => `
+    <div class="acc-panel${i === 0 ? ' open' : ''}" data-result-idx="${i}">
+      <div class="acc-panel-header" onclick="this.parentElement.classList.toggle('open');_initProjMindmapInPanel(this.parentElement,'${proj.id}',${i})">
         ${icon('cpu',13,'margin-right:6px')} ${escHtml(r.promptName)}
         <span style="margin-left:auto;font-size:0.72rem;color:var(--muted);font-weight:400">
           ${new Date(r.timestamp).toLocaleDateString('de-DE', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
@@ -739,6 +766,28 @@ function _renderProjectAnalysisAccordion(proj) {
       <div class="acc-panel-body">${r.resultHtml}</div>
     </div>`
   ).join('');
+
+  // Mind Maps der offenen Panels nach kurzem Delay rendern
+  setTimeout(() => {
+    results.forEach((r, i) => {
+      if (r.mindMapData && i === 0) {
+        const panel = document.querySelector(`[data-result-idx="${i}"]`);
+        if (panel) _initProjMindmapInPanel(panel, proj.id, i);
+      }
+    });
+  }, 80);
+
+  return html;
+}
+
+function _initProjMindmapInPanel(panel, projId, idx) {
+  const proj = getProjectById(projId);
+  const r = proj?.analysisResults?.[idx];
+  if (!r?.mindMapData) return;
+  const container = panel.querySelector('[id^="projMindmap_"]');
+  if (container && container.children.length === 0 && typeof _renderD3Mindmap === 'function') {
+    _renderD3Mindmap(container, r.mindMapData);
+  }
 }
 
 function _renderProjectJsonResult(json) {

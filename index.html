@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.49</button>
+        onmouseout="this.style.color='var(--muted)'">v4.51</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -748,6 +748,33 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.51 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.51</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Projekt löschen im Bearbeiten-Modal</strong> – Roter "Projekt löschen"-Button unten links im Modal. Erscheint nur beim Bearbeiten, nicht beim Anlegen, und nicht beim "Allgemeinen Projekt". Sessions werden beim Löschen ins Allgemeine Projekt verschoben.</li>
+        </ul>
+        <div class="cl-tech">index.html: pmDeleteBtn im Modal-Footer. js/projects.js: _openProjectModal() blendet pmDeleteBtn je nach Modus und builtin-Flag ein/aus.</div>
+      </div>
+
+      <!-- ── v4.50 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.50</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>User als Person erkannt</strong> – speakerA und speakerB werden jetzt als zusätzliche Personen-Quellen gesammelt (neben s.persons und Task-Personen). Damit wird auch der User selbst (z.B. Daniel als speakerA) im Projekt erkannt.</li>
+          <li><strong>Mind Map D3-Visualisierung im Akkordeon</strong> – Wenn ein Analyse-Ergebnis eine Mind-Map-Struktur zurückgibt (label + children), wird die D3-Visualisierung direkt im Akkordeon-Panel gerendert. Mind-Map-Daten werden im Projekt gespeichert und beim erneuten Öffnen wiederhergestellt.</li>
+        </ul>
+        <div class="cl-tech">js/projects.js: speakerA/speakerB in _addPerson(). runProjectAnalysis() erkennt mindMapData. Akkordeon speichert mindMapData pro Ergebnis. _renderProjectAnalysisAccordion() initialisiert D3 nach Render. _initProjMindmapInPanel() rendert D3 beim Aufklappen.</div>
+      </div>
 
       <!-- ── v4.49 ── -->
       <div class="cl-entry">
@@ -2638,6 +2665,10 @@
       <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Wird im Dashboard automatisch vorausgewählt.</div>
     </div>
     <div class="project-modal-footer">
+      <button id="pmDeleteBtn" class="btn btn-ghost" style="margin-right:auto;color:var(--red);border-color:var(--red);display:none"
+        onclick="closeProjectModal();confirmDeleteProject(_projectModalEditId)">
+        Projekt löschen
+      </button>
       <button class="btn btn-ghost" onclick="closeProjectModal()">Abbrechen</button>
       <button class="btn btn-primary" onclick="saveProjectFromModal()">Speichern</button>
     </div>
