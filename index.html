@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.40</button>
+        onmouseout="this.style.color='var(--muted)'">v4.41</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -739,6 +739,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.41 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.41</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Paket 5: Projekt-Dashboard</strong> – Statistik-Zeile (Sitzungen, Gesamtdauer, Personen, Aufgaben-Fortschritt). Häufige Themen aus allen Projektsitzungen aggregiert. Beteiligte Personen als klickbare Chips (verlinkt zu Personen-Profilen).</li>
+          <li><strong>Paket 6: Aufgaben-Tracking</strong> – Alle workAnalysis.tasks aller Projektsitzungen aggregiert. Häkchen zum Abhaken mit Sitzungs-Quellenangabe. Status wird im Projekt-Objekt (taskStatus) gespeichert. Erledigte Aufgaben in ausklappbarer Details-Gruppe.</li>
+          <li><strong>Paket 7: Projekt-Analyse</strong> – "Tiefenanalyse" und "Projekt-Status" Buttons im Dashboard. Claude erhält Analyse-Kontext aller Sitzungen (kein Rohtext). Ergebnis wird direkt im Dashboard gerendert mit strukturierten Sektionen / Status-Badge.</li>
+        </ul>
+        <div class="cl-tech">js/projects.js: showProjectDashboard(), renderTaskItem(), toggleProjectTask(), runProjectAnalysis(), renderAnalysisResult(). Dashboard-Button in renderProjectDetail(). config.js/sessions.js: proj.taskStatus für Aufgaben-Status.</div>
+      </div>
 
       <!-- ── v4.40 ── -->
       <div class="cl-entry">

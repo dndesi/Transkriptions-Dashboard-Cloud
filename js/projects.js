@@ -150,9 +150,14 @@ function renderProjectDetail(id, searchVal = '', sortVal = 'date-desc') {
           ${escHtml(proj.name)}
           <span class="project-card-status ${proj.status}" style="font-size:0.72rem">${statusLabel}</span>
         </div>
-        <button class="btn btn-ghost" style="margin-left:auto;font-size:0.82rem" onclick="openEditProjectModal('${proj.id}')">
-          ${icon('edit-2',13)} Bearbeiten
-        </button>
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <button class="btn btn-ghost" style="font-size:0.82rem" onclick="showProjectDashboard('${proj.id}')">
+            ${icon('bar-chart-2',13)} Dashboard
+          </button>
+          <button class="btn btn-ghost" style="font-size:0.82rem" onclick="openEditProjectModal('${proj.id}')">
+            ${icon('edit-2',13)} Bearbeiten
+          </button>
+        </div>
       </div>
 
       ${proj.goalDescription ? `
@@ -310,3 +315,277 @@ function confirmDeleteProject(id) {
   renderProjectBrowser();
   showToast('Projekt gelöscht', 'success');
 }
+
+// ═══════════════════════════════════════════════════
+// PAKET 5 + 6 – Projekt-Dashboard + Aufgaben-Tracking
+// ═══════════════════════════════════════════════════
+
+// ── Dashboard-Tab öffnen (von Detailansicht aus) ─────────────────────────
+function showProjectDashboard(id) {
+  const proj = getProjectById(id);
+  const el = document.getElementById('projectsView');
+  if (!proj || !el) return;
+  _currentProjectDetailId = id;
+
+  const projSessions = sessions.filter(s =>
+    s.projectId === id &&
+    (s.status === 'done' || (s.utterances?.length > 0))
+  );
+
+  // ── Statistiken ──────────────────────────────────
+  const totalDuration = projSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+  const allPersons    = [...new Set(projSessions.flatMap(s => s.persons || []).map(p => p.trim()).filter(Boolean))];
+  const allTopics     = projSessions.flatMap(s => (s.claudeTopics || []).map(t => typeof t === 'string' ? t : t.text)).filter(Boolean);
+  const topicCounts   = {};
+  allTopics.forEach(t => { topicCounts[t] = (topicCounts[t] || 0) + 1; });
+  const topTopics     = Object.entries(topicCounts).sort((a,b)=>b[1]-a[1]).slice(0,12);
+
+  // ── Aufgaben aggregieren (Paket 6) ───────────────
+  const taskStatus = proj.taskStatus || {};
+  const allTasks = projSessions.flatMap(s =>
+    (s.workAnalysis?.tasks || []).map((text, idx) => ({
+      key: s.id + ':' + idx,
+      text,
+      sessionLabel: s.label,
+      sessionId: s.id,
+      done: !!(taskStatus[s.id + ':' + idx]),
+    }))
+  );
+  const openTasks = allTasks.filter(t => !t.done);
+  const doneTasks = allTasks.filter(t =>  t.done);
+
+  el.innerHTML = `
+    <div class="project-detail">
+
+      <!-- Header -->
+      <div class="project-detail-header">
+        <button class="project-detail-back" onclick="renderProjectBrowser()">
+          ${icon('arrow-left',13)} Projekte
+        </button>
+        <div class="project-detail-title">
+          <span style="width:14px;height:14px;border-radius:50%;background:${proj.color};display:inline-block;flex-shrink:0"></span>
+          ${escHtml(proj.name)}
+        </div>
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <button class="btn btn-ghost" style="font-size:0.82rem" onclick="showProjectDetail('${id}')">
+            ${icon('list',13)} Sitzungen
+          </button>
+          <button class="btn btn-ghost" style="font-size:0.82rem" onclick="openEditProjectModal('${id}')">
+            ${icon('edit-2',13)} Bearbeiten
+          </button>
+        </div>
+      </div>
+
+      <!-- Statistik-Zeile -->
+      <div class="project-detail-info" style="gap:20px">
+        <span>${icon('file-text',13,'margin-right:5px')}<strong>${projSessions.length}</strong> Sitzungen</span>
+        <span>${icon('clock',13,'margin-right:5px')}<strong>${formatDuration(totalDuration)}</strong> Gesamtdauer</span>
+        <span>${icon('users',13,'margin-right:5px')}<strong>${allPersons.length}</strong> beteiligte Personen</span>
+        <span>${icon('check-square',13,'margin-right:5px')}<strong>${doneTasks.length}/${allTasks.length}</strong> Aufgaben erledigt</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+
+        <!-- Aufgaben (Paket 6) -->
+        <div>
+          <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">
+            ${icon('check-square',13,'margin-right:5px')} Aufgaben
+          </div>
+          ${allTasks.length === 0
+            ? `<div style="font-size:0.82rem;color:var(--muted)">Keine Aufgaben in diesem Projekt.<br>Führe eine Arbeits-Analyse in einer Sitzung durch.</div>`
+            : `
+              ${openTasks.length > 0 ? `
+                <div style="margin-bottom:12px">
+                  <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px">Offen (${openTasks.length})</div>
+                  ${openTasks.map(t => renderTaskItem(t, id)).join('')}
+                </div>` : ''}
+              ${doneTasks.length > 0 ? `
+                <details style="margin-top:8px">
+                  <summary style="font-size:0.72rem;color:var(--muted);cursor:pointer;margin-bottom:6px">Erledigt (${doneTasks.length})</summary>
+                  ${doneTasks.map(t => renderTaskItem(t, id)).join('')}
+                </details>` : ''}
+            `
+          }
+        </div>
+
+        <!-- Personen -->
+        <div>
+          <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">
+            ${icon('users',13,'margin-right:5px')} Beteiligte Personen
+          </div>
+          ${allPersons.length === 0
+            ? `<div style="font-size:0.82rem;color:var(--muted)">Keine Personen erfasst.</div>`
+            : `<div style="display:flex;flex-wrap:wrap;gap:6px">
+                ${allPersons.map(p =>
+                  `<button style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:0.8rem;cursor:pointer;color:var(--text)"
+                    onclick="openPersonProfile('${escHtml(p).replace(/'/g,"\\'")}')">
+                    ${icon('user',12,'margin-right:4px')}${escHtml(p)}
+                  </button>`
+                ).join('')}
+              </div>`
+          }
+
+          <!-- Themen -->
+          <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin:20px 0 10px">
+            ${icon('tag',13,'margin-right:5px')} Häufige Themen
+          </div>
+          ${topTopics.length === 0
+            ? `<div style="font-size:0.82rem;color:var(--muted)">Keine Themen analysiert.</div>`
+            : `<div style="display:flex;flex-wrap:wrap;gap:6px">
+                ${topTopics.map(([text, count]) =>
+                  `<span style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:0.78rem;color:var(--text)">
+                    ${escHtml(text)}${count > 1 ? ` <span style="color:var(--muted);font-size:0.7rem">×${count}</span>` : ''}
+                  </span>`
+                ).join('')}
+              </div>`
+          }
+        </div>
+      </div>
+
+      <!-- Projekt-Analyse (Paket 7) -->
+      <div style="margin-top:28px">
+        <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">
+          ${icon('cpu',13,'margin-right:5px')} Projekt-Analyse (Claude)
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button class="btn btn-primary" style="font-size:0.82rem" onclick="runProjectAnalysis('${id}','analysis')">
+            ${icon('layers',13)} Tiefenanalyse
+          </button>
+          <button class="btn btn-ghost" style="font-size:0.82rem" onclick="runProjectAnalysis('${id}','status')">
+            ${icon('activity',13)} Projekt-Status
+          </button>
+        </div>
+        <div id="projectAnalysisResult" style="display:none;background:var(--surface2);border-radius:var(--radius);padding:16px;font-size:0.85rem;line-height:1.6"></div>
+      </div>
+
+    </div>
+  `;
+}
+
+function renderTaskItem(task, projId) {
+  return `
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <input type="checkbox" ${task.done ? 'checked' : ''}
+        onchange="toggleProjectTask('${projId}','${task.key}',this.checked)"
+        style="margin-top:3px;flex-shrink:0;cursor:pointer" />
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.83rem;color:var(--text);${task.done ? 'text-decoration:line-through;opacity:0.5' : ''}">${escHtml(task.text)}</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${icon('file-text',10,'margin-right:3px')}${escHtml(task.sessionLabel)}</div>
+      </div>
+    </div>`;
+}
+
+// ── Aufgabe abhaken / aufheben ────────────────────────────────────────────
+function toggleProjectTask(projId, taskKey, done) {
+  const proj = getProjectById(projId);
+  if (!proj) return;
+  if (!proj.taskStatus) proj.taskStatus = {};
+  if (done) proj.taskStatus[taskKey] = true;
+  else delete proj.taskStatus[taskKey];
+  saveProjects();
+  // Dashboard neu rendern ohne vollständigen Reload (Checkbox-State bleibt stabil durch erneutes Rendern)
+  showProjectDashboard(projId);
+}
+
+// ═══════════════════════════════════════════════════
+// PAKET 7 – Projekt-Analyse via Claude
+// ═══════════════════════════════════════════════════
+
+async function runProjectAnalysis(projId, mode = 'analysis') {
+  const proj = getProjectById(projId);
+  if (!proj) return;
+
+  const resultEl = document.getElementById('projectAnalysisResult');
+  if (!resultEl) return;
+
+  const projSessions = sessions.filter(s =>
+    s.projectId === projId &&
+    (s.status === 'done' || (s.utterances?.length > 0))
+  );
+
+  if (projSessions.length === 0) {
+    resultEl.style.display = '';
+    resultEl.innerHTML = `<span style="color:var(--muted)">Keine analysierten Sitzungen in diesem Projekt.</span>`;
+    return;
+  }
+
+  // ── Analyse-Kontext aus Sitzungen sammeln (kein Rohtext → Token-Limit) ──
+  const sitzungsAnalysen = projSessions.map((s, i) => {
+    const parts = [`[${i+1}] ${s.label} (${new Date(s.date).toLocaleDateString('de-DE')})`];
+    if (s.workAnalysis?.summary)    parts.push(`Zusammenfassung: ${s.workAnalysis.summary}`);
+    if (s.workAnalysis?.tasks?.length)     parts.push(`Aufgaben: ${s.workAnalysis.tasks.join(' | ')}`);
+    if (s.workAnalysis?.decisions?.length) parts.push(`Entscheidungen: ${s.workAnalysis.decisions.join(' | ')}`);
+    if (s.workAnalysis?.openQuestions?.length) parts.push(`Offene Fragen: ${s.workAnalysis.openQuestions.join(' | ')}`);
+    if (s.privateAnalysis?.openTopics?.length) parts.push(`Offene Themen: ${s.privateAnalysis.openTopics.join(' | ')}`);
+    if (s.claudeTopics?.length) {
+      const topicTexts = s.claudeTopics.map(t => typeof t === 'string' ? t : t.text).slice(0, 8);
+      parts.push(`Themen: ${topicTexts.join(', ')}`);
+    }
+    return parts.join('\n');
+  }).join('\n\n---\n\n');
+
+  // ── Prompt auswählen ──────────────────────────────
+  const promptId = mode === 'status' ? 'builtin_project_status' : 'builtin_project_analysis';
+  const promptDef = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === promptId);
+  if (!promptDef) { showToast('Prompt nicht gefunden', 'error'); return; }
+
+  const prompt = promptDef.prompt
+    .replace('{{projektName}}',    proj.name)
+    .replace('{{projektZiel}}',    proj.goalDescription || '(kein Ziel definiert)')
+    .replace('{{sitzungsAnzahl}}', projSessions.length)
+    .replace('{{sitzungsAnalysen}}', sitzungsAnalysen);
+
+  // ── Laden-Zustand zeigen ─────────────────────────
+  resultEl.style.display = '';
+  resultEl.innerHTML = `<span style="color:var(--muted)">${icon('cpu',14,'margin-right:6px')} Claude analysiert${mode === 'status' ? ' Projektstatus' : ' das Projekt'}…</span>`;
+
+  try {
+    const { text } = await callClaudeAPI(prompt);
+    const json = JSON.parse(extractJSON(text, '{'));
+    resultEl.innerHTML = renderAnalysisResult(json, mode);
+    showToast('Analyse abgeschlossen', 'success');
+  } catch(e) {
+    resultEl.innerHTML = `<span style="color:var(--red)">${icon('alert-circle',14,'margin-right:6px')} Fehler: ${escHtml(e.message)}</span>`;
+    showToast('Analyse fehlgeschlagen: ' + e.message, 'error');
+  }
+}
+
+function renderAnalysisResult(json, mode) {
+  if (mode === 'status') {
+    const statusColors = { 'on-track': 'var(--green)', 'at-risk': '#f59e0b', 'blocked': 'var(--red)' };
+    const statusLabels = { 'on-track': '✓ On Track', 'at-risk': '⚠ At Risk', 'blocked': '✕ Blockiert' };
+    const col = statusColors[json.status] || 'var(--muted)';
+    const lbl = statusLabels[json.status] || json.status;
+    return `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span style="font-weight:700;font-size:1rem;color:${col}">${lbl}</span>
+      </div>
+      ${json.zusammenfassung ? `<p style="margin:0 0 10px"><strong>Status:</strong> ${escHtml(json.zusammenfassung)}</p>` : ''}
+      ${json.letzteAktivitaet ? `<p style="margin:0 0 10px"><strong>Letzte Aktivität:</strong> ${escHtml(json.letzteAktivitaet)}</p>` : ''}
+      ${json.naechsterSchritt ? `<p style="margin:0 0 10px"><strong>Nächster Schritt:</strong> ${escHtml(json.naechsterSchritt)}</p>` : ''}
+      ${json.risiken?.length ? `
+        <div style="margin-top:8px"><strong>Risiken:</strong>
+          <ul style="margin:6px 0 0 16px;padding:0">${json.risiken.map(r=>`<li>${escHtml(r)}</li>`).join('')}</ul>
+        </div>` : ''}`;
+  }
+
+  // Tiefenanalyse
+  const sections = [
+    { key: 'gesamtbild',     label: 'Gesamtbild',       single: true },
+    { key: 'fortschritt',    label: 'Fortschritt',       single: false },
+    { key: 'offenePunkte',   label: 'Offene Punkte',     single: false },
+    { key: 'muster',         label: 'Muster',            single: false },
+    { key: 'empfehlungen',   label: 'Empfehlungen',      single: false },
+  ];
+  return sections.map(({ key, label, single }) => {
+    const val = json[key];
+    if (!val || (Array.isArray(val) && !val.length)) return '';
+    if (single) return `<p style="margin:0 0 12px"><strong>${label}:</strong> ${escHtml(val)}</p>`;
+    return `
+      <div style="margin-bottom:12px">
+        <strong>${label}:</strong>
+        <ul style="margin:6px 0 0 16px;padding:0">${val.map(v=>`<li style="margin-bottom:3px">${escHtml(v)}</li>`).join('')}</ul>
+      </div>`;
+  }).join('');
+}
+
