@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.48</button>
+        onmouseout="this.style.color='var(--muted)'">v4.49</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -748,6 +748,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.49 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.49</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>"Ich"-Filter entfernt</strong> – Personen-Sammlung hat "ich" explizit gefiltert, was den User selbst aus der Liste ausschloss. Jetzt werden alle Personen inkl. "Ich" gesammelt.</li>
+          <li><strong>[object Object] im Akkordeon behoben</strong> – _renderProjectJsonResult konnte keine verschachtelten Objekte/Arrays rendern. Neue Hilfsfunktion _renderJsonValue() extrahiert text/label/task/wish-Felder aus Objekten, rendert Mind-Map-Strukturen mit Kindern als verschachtelte Listen, und gibt bei unbekannten Strukturen sinnvolle Schlüssel-Wert-Paare aus.</li>
+        </ul>
+        <div class="cl-tech">js/projects.js: _addPerson() ohne 'ich'-Filter. _renderProjectJsonResult() mit rekursivem Objekt-Handling. _renderJsonValue() neu für Array-Items (String, Objekt, nested children).</div>
+      </div>
 
       <!-- ── v4.48 ── -->
       <div class="cl-entry">

@@ -351,7 +351,7 @@ function showProjectDashboard(id) {
   const personMap = new Map();
   const _addPerson = p => {
     const key = (p || '').trim().toLowerCase();
-    if (key && key !== 'offen' && key !== 'ich' && !personMap.has(key))
+    if (key && key !== 'offen' && !personMap.has(key))
       personMap.set(key, p.trim());
   };
   projSessions.forEach(s => {
@@ -742,12 +742,12 @@ function _renderProjectAnalysisAccordion(proj) {
 }
 
 function _renderProjectJsonResult(json) {
-  // Generisch: alle String- und Array-Felder rendern
   return Object.entries(json).map(([key, val]) => {
-    if (!val || (Array.isArray(val) && !val.length)) return '';
+    if (val === null || val === undefined || val === '') return '';
+    if (Array.isArray(val) && !val.length) return '';
     const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+
     if (typeof val === 'string') {
-      // Status-Feld speziell behandeln
       if (key === 'status') {
         const col = { 'on-track':'var(--green)', 'at-risk':'#f59e0b', 'blocked':'var(--red)' }[val] || 'var(--text)';
         const lbl = { 'on-track':'✓ On Track', 'at-risk':'⚠ At Risk', 'blocked':'✕ Blockiert' }[val] || val;
@@ -755,13 +755,51 @@ function _renderProjectJsonResult(json) {
       }
       return `<p style="margin:0 0 10px"><strong>${label}:</strong> ${escHtml(val)}</p>`;
     }
+
     if (Array.isArray(val)) {
+      const items = val.map(v => `<li style="margin-bottom:4px">${_renderJsonValue(v)}</li>`).join('');
       return `<div style="margin-bottom:12px"><strong>${label}:</strong>
-        <ul style="margin:6px 0 0 16px;padding:0">${val.map(v=>`<li style="margin-bottom:3px">${escHtml(String(v))}</li>`).join('')}</ul>
+        <ul style="margin:6px 0 0 16px;padding:0">${items}</ul>
+      </div>`;
+    }
+
+    if (typeof val === 'object') {
+      // Verschachteltes Objekt – z.B. Mind Map root
+      return `<div style="margin-bottom:12px"><strong>${label}:</strong>
+        <div style="margin-top:6px;padding-left:12px;border-left:2px solid var(--border)">
+          ${_renderProjectJsonResult(val)}
+        </div>
       </div>`;
     }
     return '';
   }).join('');
+}
+
+// Einzelnen Wert aus einem Array rendern (String, Objekt, verschachtelt)
+function _renderJsonValue(v) {
+  if (v === null || v === undefined) return '';
+  if (typeof v === 'string') return escHtml(v);
+  if (typeof v === 'number' || typeof v === 'boolean') return escHtml(String(v));
+  if (typeof v === 'object') {
+    // Häufige Felder priorisieren: text, label, task, wish, title, name, content
+    const text = v.text || v.label || v.task || v.wish || v.title || v.name || v.content || v.description;
+    if (text && typeof text === 'string') {
+      // Gibt es Kinder? (z.B. Mind Map)
+      const children = v.children || v.items || v.subtopics;
+      if (Array.isArray(children) && children.length) {
+        return `${escHtml(text)}<ul style="margin:4px 0 0 16px;padding:0">
+          ${children.map(c => `<li style="margin-bottom:2px">${_renderJsonValue(c)}</li>`).join('')}
+        </ul>`;
+      }
+      return escHtml(text);
+    }
+    // Fallback: alle String-Felder ausgeben
+    const parts = Object.entries(v)
+      .filter(([,val]) => typeof val === 'string' && val)
+      .map(([k,val]) => `<span style="color:var(--muted);font-size:0.78rem">${k}:</span> ${escHtml(val)}`);
+    return parts.join(' · ') || JSON.stringify(v);
+  }
+  return escHtml(String(v));
 }
 
 function _deleteProjectAnalysis(projId, idx) {
