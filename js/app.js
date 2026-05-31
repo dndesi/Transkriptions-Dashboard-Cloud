@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════
 function init() {
   migrateSessionsToDefaultProject(); // Paket 1: bestehende Sessions → Allgemeines Projekt
+  updateProjectBadge();              // Paket 2: Sidenav-Badge aktualisieren
   updateApiIndicator();
   updateDriveStatus();
   updateTagFilter();

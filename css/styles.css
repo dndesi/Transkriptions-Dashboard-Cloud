@@ -270,7 +270,7 @@
     /* ─── LAYOUT: Sidenav + Content ─────────────── */
     .layout {
       display: grid;
-      grid-template-columns: 200px 1fr;
+      grid-template-columns: 230px 1fr;
       min-height: calc(100vh - 53px);
     }
 
@@ -2422,4 +2422,273 @@ mark.search-highlight {
   font-size: 0.82rem;
   color: var(--muted);
   margin-bottom: 10px;
+}
+
+/* ═══════════════════════════════════════════════════
+   PROJEKT-SYSTEM (Paket 2–4, v4.40)
+   ═══════════════════════════════════════════════════ */
+
+/* ── Aktives Projekt Badge in Sidenav ── */
+.sidenav-project-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  margin: 4px 0 8px 0;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s;
+  overflow: hidden;
+}
+.sidenav-project-badge:hover { background: var(--border); }
+.sidenav-project-badge .spb-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.sidenav-project-badge .spb-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ── Projekt-Badge auf Session-Kacheln ── */
+.sc-project-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 20px;
+  margin-bottom: 4px;
+  color: #fff;
+  opacity: 0.9;
+}
+
+/* ── Projekt-Browser Grid ── */
+.projects-browser {
+  padding: 24px;
+}
+.projects-browser-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.projects-browser-header h2 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.project-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.project-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+.project-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.project-card-color {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.project-card-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  flex: 1;
+}
+.project-card-status {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.project-card-status.active   { background: #d1fae5; color: #065f46; }
+.project-card-status.paused   { background: #fef3c7; color: #92400e; }
+.project-card-status.archived { background: var(--surface2); color: var(--muted); }
+[data-theme="dark"] .project-card-status.active   { background: #064e3b; color: #6ee7b7; }
+[data-theme="dark"] .project-card-status.paused   { background: #451a03; color: #fcd34d; }
+.project-card-goal {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.project-card-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.project-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.project-card-actions button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  padding: 4px 9px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.project-card-actions button:hover { color: var(--text); border-color: var(--text); }
+.project-card-actions button.danger:hover { color: var(--red); border-color: var(--red); }
+
+/* ── Projekt-Detailansicht ── */
+.project-detail {
+  padding: 24px;
+}
+.project-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.project-detail-back {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.15s;
+}
+.project-detail-back:hover { color: var(--text); }
+.project-detail-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.project-detail-info {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.project-detail-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.project-detail-toolbar select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  outline: none;
+  cursor: pointer;
+}
+
+/* ── Projekt-Modal ── */
+.project-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.project-modal-overlay.open { display: flex; }
+.project-modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 28px;
+  width: 440px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+}
+.project-modal h3 { margin: 0; font-size: 1.1rem; }
+.project-modal label { font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; display: block; }
+.project-modal input[type="text"],
+.project-modal textarea,
+.project-modal select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  outline: none;
+  box-sizing: border-box;
+}
+.project-modal textarea { resize: vertical; min-height: 70px; }
+.project-modal-colors {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.project-modal-colors span {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+.project-modal-colors span.selected { border-color: var(--text); }
+.project-modal-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
 }

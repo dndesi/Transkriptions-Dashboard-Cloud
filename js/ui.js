@@ -57,14 +57,16 @@ function showBrowser() {
 }
 
 function renderBrowser(filter = '') {
-  const folderFilter = document.getElementById('folderFilter')?.value || '';
-  const tagFilter    = document.getElementById('tagFilter')?.value || '';
+  const folderFilter   = document.getElementById('folderFilter')?.value || '';
+  const tagFilter      = document.getElementById('tagFilter')?.value || '';
+  const projectFilter  = document.getElementById('projectFilter')?.value || '';
   const searchVal = filter || document.getElementById('sidebarSearchMain')?.value || '';
   const grid = document.getElementById('sessionGrid');
   if (!grid) return;
 
   // Ordner-Dropdown aktualisieren
   updateFolderDropdown();
+  updateProjectFilterDropdown();
 
   // Sessions anzeigen: 'done'/'error' ODER wenn utterances vorhanden (aus Drive geladen)
   let list = sessions.filter(s =>
@@ -72,8 +74,9 @@ function renderBrowser(filter = '') {
     (s.utterances && s.utterances.length > 0)
   );
 
-  if (folderFilter) list = list.filter(s => s.archiveFolder === folderFilter);
-  if (tagFilter)    list = list.filter(s => (s.tags || []).includes(tagFilter));
+  if (folderFilter)  list = list.filter(s => s.archiveFolder === folderFilter);
+  if (tagFilter)     list = list.filter(s => (s.tags || []).includes(tagFilter));
+  if (projectFilter) list = list.filter(s => s.projectId === projectFilter);
 
   if (searchVal.trim()) {
     const q = searchVal.toLowerCase();
@@ -120,6 +123,7 @@ function renderBrowser(filter = '') {
       <div class="sc-icon">${icon(typeIconMap[t]||'message-circle', 17)}</div>
       <div class="sc-body">
         <span class="sc-type ${typeCls[t]||'sc-type-privat'}">${icon(typeIconMap[t]||'message-circle',11)} ${typeLabel[t]||'Privat'}</span>
+        ${(()=>{ const proj = getProjectById(s.projectId); return proj && proj.id !== BUILTIN_PROJECT_ID ? `<span class="sc-project-badge" style="background:${proj.color}">${icon('layers',10,'margin-right:3px')}${escHtml(proj.name)}</span>` : ''; })()}
         <div class="sc-name">${escHtml(s.label)}</div>
         ${s.persons?.length ? `<div class="sc-persons" style="display:flex;align-items:center;gap:5px">${icon('users',12,'margin-right:3px')} ${s.persons.map(p=>escHtml(p)).join(' · ')}</div>` : ''}
         <div class="sc-meta">
@@ -168,6 +172,21 @@ function updateFolderDropdown() {
     opt.value = f;
     opt.textContent = f + (count > 0 ? ` (${count})` : ' – leer');
     if (f === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function updateProjectFilterDropdown() {
+  const sel = document.getElementById('projectFilter');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Alle Projekte</option>';
+  (projects || []).filter(p => p.status !== 'archived').forEach(p => {
+    const count = sessions.filter(s => s.projectId === p.id).length;
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name + (count > 0 ? ` (${count})` : '');
+    if (p.id === current) opt.selected = true;
     sel.appendChild(opt);
   });
 }
@@ -345,11 +364,11 @@ function _setHeaderBtn(id, active) {
 
 function _showOverlay(viewId, btnId, renderFn) {
   // Alle anderen Overlay-Views schließen
-  ['costsView','personsView','archView','promptsView'].forEach(id => {
+  ['costsView','personsView','archView','promptsView','projectsView'].forEach(id => {
     const el = document.getElementById(id);
     if (el && id !== viewId) el.style.display = 'none';
   });
-  ['headerCostsBtn','headerPersonsBtn','headerArchBtn','headerPromptsBtn'].forEach(id => {
+  ['headerCostsBtn','headerPersonsBtn','headerArchBtn','headerPromptsBtn','navProjects'].forEach(id => {
     if (id !== btnId) _setHeaderBtn(id, false);
   });
   document.getElementById('browserView').classList.add('visible');

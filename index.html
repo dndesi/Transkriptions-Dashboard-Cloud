@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.39</button>
+        onmouseout="this.style.color='var(--muted)'">v4.40</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -238,7 +238,17 @@
       Neue Aufnahme
     </button>
 
+    <!-- Aktives Projekt Badge -->
+    <div class="sidenav-project-badge" id="sidenavProjectBadge" onclick="toggleProjectsView(); setSidenavActive(document.getElementById('navProjects'))" style="display:none">
+      <span class="spb-dot"></span>
+      <span class="spb-name">Projekt</span>
+    </div>
+
     <div class="sidenav-label">Archiv</div>
+    <button class="sidenav-item" id="navProjects" onclick="toggleProjectsView(); setSidenavActive(this)">
+      <i data-lucide="layers" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Projekte
+    </button>
     <button class="sidenav-item active" id="navGrid" onclick="setView('grid'); showBrowser(); setSidenavActive(this)">
       <i data-lucide="layout-grid" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Kacheln
@@ -313,6 +323,9 @@
         <select id="tagFilter" onchange="filterBrowser()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:0.82rem;outline:none;cursor:pointer;">
           <option value="">Alle Tags</option>
         </select>
+        <select id="projectFilter" onchange="filterBrowser()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:0.82rem;outline:none;cursor:pointer;">
+          <option value="">Alle Projekte</option>
+        </select>
         <div class="search-box" style="flex:1; min-width:130px;">
           <i data-lucide="search" style="width:14px;height:14px;stroke:var(--muted);stroke-width:2;fill:none;flex-shrink:0"></i>
           <input type="text" id="sidebarSearchMain" placeholder="Suchen…" oninput="filterBrowser()" />
@@ -331,6 +344,7 @@
       <div id="personsView" style="display:none; padding-bottom:40px"></div>
       <div id="archView" style="display:none; padding-bottom:40px"></div>
       <div id="promptsView" style="display:none; padding-bottom:40px"></div>
+      <div id="projectsView" style="display:none; padding-bottom:40px"></div>
     </div>
 
     <!-- Transkript / Sitzungsdetail -->
@@ -725,6 +739,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.40 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.40</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Paket 2: Projekt-Browser</strong> – Neue "Projekte"-Ansicht in der Sidenav (230px breit). Kachelansicht mit Aktiv/Pausiert/Archiviert-Gruppen. Neues Projekt anlegen, bearbeiten, archivieren, löschen. Aktives Projekt als Badge in der Sidenav.</li>
+          <li><strong>Paket 3: Projekt-Zuordnung</strong> – Farbiger Projekt-Badge auf allen Session-Kacheln. Projekt-Filter-Dropdown im Archiv. Sessions ohne Projekt zeigen keinen Badge (Allgemeines Projekt ist "unsichtbar").</li>
+          <li><strong>Paket 4: Projekt-Detailansicht</strong> – Klick auf Projekt-Kachel öffnet gefilterte Session-Liste. Suche und Sort (Neueste/Älteste/Name). Info-Panel mit Ziel, Sitzungsanzahl, Erstelldatum. Zurück-Button zum Projekt-Browser.</li>
+        </ul>
+        <div class="cl-tech">NEU: js/projects.js (toggleProjectsView, renderProjectBrowser, renderProjectCard, showProjectDetail, renderProjectDetail, openCreateProjectModal, openEditProjectModal, saveProjectFromModal, confirmArchiveProject, confirmDeleteProject, updateProjectBadge). css/styles.css: grid 230px, .sidenav-project-badge, .sc-project-badge, .projects-browser, .project-card, .project-detail, .project-modal-overlay. index.html: navProjects, sidenavProjectBadge, projectsView, projectFilter, projectModalOverlay, script projects.js. js/ui.js: projectsView in _showOverlay, updateProjectFilterDropdown(), Projekt-Badge in renderBrowser(). js/app.js: updateProjectBadge() im init().</div>
+      </div>
 
       <!-- ── v4.39 ── -->
       <div class="cl-entry">
@@ -2273,6 +2302,7 @@
 <script src="js/search.js"></script>
 <script src="js/calendar.js"></script>
 <script src="js/prompts.js"></script>
+<script src="js/projects.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>if(window.mermaid) mermaid.initialize({ startOnLoad: false });</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -2435,8 +2465,39 @@
     background:var(--red); color:#fff;
     border:none; border-radius:50px; cursor:pointer;
     box-shadow:0 4px 16px rgba(248,113,113,0.45);">
-  ⏹ Audio stoppen
+  ��� Audio stoppen
 </button>
+
+<!-- ── Projekt-Modal ─────────────────────────────── -->
+<div class="project-modal-overlay" id="projectModalOverlay" onclick="if(event.target===this)closeProjectModal()">
+  <div class="project-modal">
+    <h3 id="pmTitle">Neues Projekt</h3>
+    <div>
+      <label>Name *</label>
+      <input type="text" id="pmName" placeholder="Projektname…" />
+    </div>
+    <div>
+      <label>Farbe</label>
+      <div class="project-modal-colors" id="pmColors"></div>
+    </div>
+    <div>
+      <label>Zielbeschreibung</label>
+      <textarea id="pmGoal" placeholder="Worum geht es in diesem Projekt?"></textarea>
+    </div>
+    <div>
+      <label>Status</label>
+      <select id="pmStatus">
+        <option value="active">Aktiv</option>
+        <option value="paused">Pausiert</option>
+        <option value="archived">Archiviert</option>
+      </select>
+    </div>
+    <div class="project-modal-footer">
+      <button class="btn btn-ghost" onclick="closeProjectModal()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveProjectFromModal()">Speichern</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
