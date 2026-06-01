@@ -353,12 +353,22 @@ function showProjectDashboard(id) {
   // ── Statistiken ──────────────────────────────────
   const totalDuration = projSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
 
-  // Personen: case-insensitive Dedup aus ALLEN Quellen
-  const personMap = new Map();
+  // Personen: smart Dedup über erstes Wort als Schlüssel
+  // Längere/vollständigere Form gewinnt (z.B. "Ich (Daniel)" > "Ich")
+  const personMap = new Map(); // firstWordKey → canonicalName
   const _addPerson = p => {
-    const key = (p || '').trim().toLowerCase();
-    if (key && key !== 'offen' && !personMap.has(key))
-      personMap.set(key, p.trim());
+    const name = (p || '').trim();
+    if (!name || name.toLowerCase() === 'offen') return;
+    // Schlüssel = erstes Wort lowercase (deckt "Ich" = "Ich (Daniel)" = "Ich(Daniel)" ab)
+    const firstWord = name.toLowerCase().split(/[\s(,]/)[0];
+    if (!firstWord) return;
+    if (!personMap.has(firstWord)) {
+      personMap.set(firstWord, name);
+    } else {
+      // Längere Form bevorzugen (mehr Information)
+      const existing = personMap.get(firstWord);
+      if (name.length > existing.length) personMap.set(firstWord, name);
+    }
   };
   projSessions.forEach(s => {
     // Quelle 1: s.persons – kann Array ODER kommaseparierter String sein
@@ -371,11 +381,7 @@ function showProjectDashboard(id) {
     // Quelle 2: speakerA + speakerB (enthält oft den User selbst)
     if (s.speakerA && s.speakerA !== 'Sprecher A') _addPerson(s.speakerA);
     if (s.speakerB && s.speakerB !== 'Sprecher B') _addPerson(s.speakerB);
-    // Quelle 3: Personen aus Task-Objekten (person-Feld der Analyse)
-    (s.workAnalysis?.tasks || []).forEach(t => {
-      const resolved = _resolveTaskText(t);
-      if (resolved.person) _addPerson(resolved.person);
-    });
+    // Quelle 3: Task-Personen NICHT mehr – KI-Kurzformen (z.B. "Hat") verursachen Duplikate
   });
   const allPersons = [...personMap.values()].sort((a,b) => a.localeCompare(b,'de'));
 
@@ -407,9 +413,18 @@ function showProjectDashboard(id) {
   );
 
   // ── Nach Person gruppieren ────────────────────────
-  const taskGroups = {};  // person → [tasks]
+  // Aufgelöste Person: Task-Person auf canonical allPersons mappen
+  const _resolvePersonKey = rawPerson => {
+    if (!rawPerson || rawPerson.trim() === '') return 'offen';
+    const firstWord = rawPerson.trim().toLowerCase().split(/[\s(,]/)[0];
+    // Suche in allPersons nach übereinstimmendem Erstwort
+    const match = allPersons.find(p => p.toLowerCase().split(/[\s(,]/)[0] === firstWord);
+    return match || rawPerson.trim();
+  };
+
+  const taskGroups = {};  // canonicalPerson → [tasks]
   allTasks.forEach(t => {
-    const p = (t.assignedPerson || '').trim() || 'offen';
+    const p = _resolvePersonKey(t.assignedPerson);
     if (!taskGroups[p]) taskGroups[p] = [];
     taskGroups[p].push(t);
   });

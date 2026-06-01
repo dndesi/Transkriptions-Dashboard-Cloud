@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.51</button>
+        onmouseout="this.style.color='var(--muted)'">v4.52</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -748,6 +748,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.52 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.52</span>
+          <span class="cl-date">31.05.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Personen-Duplikate behoben</strong> – Dedup-Logik nutzt jetzt das erste Wort als Schlüssel: "Ich" = "Ich (Daniel)", "Hatice" = "Hatice (Kunde)" = "Hatice (Kunde) (Atice)". Längere Form gewinnt. Task-Personen werden nicht mehr gesammelt (KI-Kurzformen wie "Hat" verursachten Duplikate).</li>
+          <li><strong>Aufgaben-Gruppierung normalisiert</strong> – Task-Personen (aus Analyse) werden auf die kanonische Person aus allPersons gemappt, sodass "Ich" und "Ich (Daniel)" in dieselbe Gruppe fallen.</li>
+        </ul>
+        <div class="cl-tech">js/projects.js: _addPerson() mit firstWord-Schlüssel + longer-wins. Task-Quelle entfernt. _resolvePersonKey() mappt Task-Personen auf kanonische allPersons-Einträge.</div>
+      </div>
 
       <!-- ── v4.51 ── -->
       <div class="cl-entry">
