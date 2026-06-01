@@ -353,37 +353,19 @@ function showProjectDashboard(id) {
   // ── Statistiken ──────────────────────────────────
   const totalDuration = projSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
 
-  // Personen: smart Dedup über erstes Wort als Schlüssel
-  // Längere/vollständigere Form gewinnt (z.B. "Ich (Daniel)" > "Ich")
-  const personMap = new Map(); // firstWordKey → canonicalName
-  const _addPerson = p => {
-    const name = (p || '').trim();
-    if (!name || name.toLowerCase() === 'offen') return;
-    // Schlüssel = erstes Wort lowercase (deckt "Ich" = "Ich (Daniel)" = "Ich(Daniel)" ab)
-    const firstWord = name.toLowerCase().split(/[\s(,]/)[0];
-    if (!firstWord) return;
-    if (!personMap.has(firstWord)) {
-      personMap.set(firstWord, name);
-    } else {
-      // Längere Form bevorzugen (mehr Information)
-      const existing = personMap.get(firstWord);
-      if (name.length > existing.length) personMap.set(firstWord, name);
-    }
-  };
+  // Personen: NUR aus s.persons der Projekt-Sessions (manuell zugewiesene Namen)
+  // speakerA/B und KI-Extrakte werden NICHT verwendet – sie sind unzuverlässig
+  const personSet = new Set();
   projSessions.forEach(s => {
-    // Quelle 1: s.persons – kann Array ODER kommaseparierter String sein
-    const rawPersons = s.persons;
-    if (Array.isArray(rawPersons)) {
-      rawPersons.forEach(_addPerson);
-    } else if (typeof rawPersons === 'string' && rawPersons.trim()) {
-      rawPersons.split(',').forEach(_addPerson);
-    }
-    // Quelle 2: speakerA + speakerB (enthält oft den User selbst)
-    if (s.speakerA && s.speakerA !== 'Sprecher A') _addPerson(s.speakerA);
-    if (s.speakerB && s.speakerB !== 'Sprecher B') _addPerson(s.speakerB);
-    // Quelle 3: Task-Personen NICHT mehr – KI-Kurzformen (z.B. "Hat") verursachen Duplikate
+    const raw = s.persons;
+    const list = Array.isArray(raw)
+      ? raw
+      : typeof raw === 'string' && raw.trim()
+        ? raw.split(',')
+        : [];
+    list.forEach(p => { const n = p.trim(); if (n) personSet.add(n); });
   });
-  const allPersons = [...personMap.values()].sort((a,b) => a.localeCompare(b,'de'));
+  const allPersons = [...personSet].sort((a,b) => a.localeCompare(b,'de'));
 
   const allTopics = projSessions.flatMap(s => (s.claudeTopics || []).map(t => typeof t === 'string' ? t : t.text)).filter(Boolean);
   const topicCounts = {};

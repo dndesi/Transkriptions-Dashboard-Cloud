@@ -1774,19 +1774,33 @@ function renameSpeaker(speaker, newName) {
 function swapAllSpeakers() {
   const s = getSession();
   if (!s || !s.utterances) return;
-  // Nur Namen tauschen – die Farb-/Label-Zuordnung bleibt gleich,
-  // aber der Name der pink markierten Person wechselt zur blauen und umgekehrt.
+  if (!confirm(
+    `Sprecher A und B vollständig tauschen?\n\n` +
+    `A: "${s.speakerA || 'Sprecher A'}" → wird B\n` +
+    `B: "${s.speakerB || 'Sprecher B'}" → wird A\n\n` +
+    `Alle Utterances werden umgekehrt. Dies wird gespeichert.`
+  )) return;
+
+  // 1. Namen tauschen
   const tmp = s.speakerA; s.speakerA = s.speakerB; s.speakerB = tmp;
+
+  // 2. Alle utterances tauschen – das ist der entscheidende Teil
+  s.utterances.forEach(u => {
+    if (u.speaker === 'A') u.speaker = 'B';
+    else if (u.speaker === 'B') u.speaker = 'A';
+  });
+
+  // 3. Speichern (lokal + Drive)
   saveSessions();
   saveToArchive(s);
-  // Namensfelder oben aktualisieren
+
+  // 4. UI aktualisieren
   const elA = document.getElementById('editSpeakerA');
   const elB = document.getElementById('editSpeakerB');
   if (elA) elA.value = s.speakerA || 'Sprecher A';
   if (elB) elB.value = s.speakerB || 'Sprecher B';
-  // Transkript neu rendern (Namen haben sich geändert)
   renderUtterances(s);
-  showToast('Sprecher A ↔ B getauscht', 'success');
+  showToast('Sprecher A ↔ B vollständig getauscht ✓', 'success');
 }
 
 function toggleUtteranceSpeaker(idx) {

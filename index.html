@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.52</button>
+        onmouseout="this.style.color='var(--muted)'">v4.53</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -748,6 +748,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.53 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.53</span>
+          <span class="cl-date">01.06.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Sprecher-Tausch vollständig</strong> – swapAllSpeakers() tauschte bisher nur die Namen, nicht die Utterances. Jetzt werden alle utterances.speaker A↔B korrekt umgekehrt und in Drive gespeichert. KI-Analysen verwenden danach die richtige Zuordnung.</li>
+          <li><strong>Projekt-Personen nur aus s.persons</strong> – Personen kommen ausschließlich aus dem manuell eingetragenen s.persons-Feld. speakerA/B und KI-Extrakte werden nicht mehr verwendet – die kanonische Quelle ist was der User beim Hochladen einträgt.</li>
+        </ul>
+        <div class="cl-tech">js/claude.js: swapAllSpeakers() tauscht jetzt utterances.speaker A↔B + Bestätigungsdialog + Drive-Save. js/projects.js: allPersons nur aus s.persons (Array + String), keine speakerA/B mehr.</div>
+      </div>
 
       <!-- ── v4.52 ── -->
       <div class="cl-entry">
