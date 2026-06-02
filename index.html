@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.56</button>
+        onmouseout="this.style.color='var(--muted)'">v4.57</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -748,6 +748,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.57 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.57</span>
+          <span class="cl-date">02.06.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Projekt löschen: Sessions auf Drive aktualisiert</strong> – deleteProject() hat Sessions lokal auf BUILTIN_PROJECT_ID gesetzt, aber nicht auf Drive gespeichert. Beim nächsten Sync kam die alte projectId zurück. Jetzt werden alle betroffenen Sessions nach dem Löschen automatisch auf Drive geschrieben.</li>
+        </ul>
+        <div class="cl-tech">js/sessions.js: deleteProject() sammelt affected Sessions, ruft saveToArchive() für jede auf (async, nicht blockierend).</div>
+      </div>
 
       <!-- ── v4.56 ── -->
       <div class="cl-entry">

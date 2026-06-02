@@ -383,11 +383,17 @@ function archiveProject(id) {
 function deleteProject(id) {
   const proj = projects.find(p => p.id === id);
   if (!proj || proj.builtin) { showToast('Dieses Projekt kann nicht gelöscht werden.', 'error'); return; }
-  // Alle zugehörigen Sessions ins Allgemeine Projekt verschieben
+  // Alle zugehörigen Sessions ins Allgemeine Projekt verschieben + auf Drive speichern
+  const affected = [];
   sessions.forEach(s => {
-    if (s.projectId === id) { s.projectId = BUILTIN_PROJECT_ID; }
+    if (s.projectId === id) {
+      s.projectId = BUILTIN_PROJECT_ID;
+      affected.push(s);
+    }
   });
   saveSessions();
+  // Drive-Sync für betroffene Sessions (async, nicht blockierend)
+  affected.forEach(s => saveToArchive(s).catch(() => {}));
   projects = projects.filter(p => p.id !== id);
   saveProjects();
 }
