@@ -166,6 +166,7 @@ async function sendAskQuestion() {
     const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
     addTokensToSession(s, inputTokens, outputTokens);
     saveSessions();
+    saveToArchive(s).catch(() => {}); // Token-Kosten auf Drive speichern
 
     askHistory.push({ role: 'assistant', text: deanonymizeText(text, reverse) });
   } catch(e) {
@@ -266,6 +267,7 @@ async function _fetchAndStoreMindmap(s) {
     let mermaidCode = text.trim().replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/, '').trim();
     s.claudeMindmap = mermaidCode;
     saveSessions();
+    saveToArchive(s).catch(() => {}); // Mind Map auf Drive speichern
     renderMindmapPanel(mermaidCode);
     // Akkordeon öffnen
     const panel = document.getElementById('accMindmap');

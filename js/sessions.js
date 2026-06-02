@@ -425,14 +425,18 @@ async function changeSessionProject(projectId) {
 
 // ── Migration: bestehende Sessions ohne projectId → Allgemeines Projekt ──
 function migrateSessionsToDefaultProject() {
-  let changed = false;
+  const affected = [];
   sessions.forEach(s => {
     if (!s.projectId) {
       s.projectId = BUILTIN_PROJECT_ID;
-      changed = true;
+      affected.push(s);
     }
   });
-  if (changed) saveSessions();
+  if (affected.length) {
+    saveSessions();
+    // Drive-Sync: betroffene Sessions aktualisieren damit projectId nicht beim nächsten Sync verloren geht
+    affected.forEach(s => saveToArchive(s).catch(() => {}));
+  }
 }
 
 // ═══════════════════════════════════════════════════
