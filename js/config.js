@@ -128,6 +128,9 @@ let sessions = JSON.parse(localStorage.getItem('transcription_sessions') || '[]'
 let currentSessionId = null;
 let pollTimer = null;
 
+// ── Nutzer-Profil (Inhaber der App) ──────────────────────────────────────
+let ownerName = localStorage.getItem('ownerName') || '';
+
 // ── Projekte ──────────────────────────────────────────────────────────────
 const BUILTIN_PROJECT_ID = 'project_general';
 

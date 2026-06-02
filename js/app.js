@@ -4,6 +4,7 @@
 function init() {
   migrateSessionsToDefaultProject(); // Paket 1: bestehende Sessions → Allgemeines Projekt
   updateProjectBadge();              // Paket 2: Sidenav-Badge aktualisieren
+  _applyOwnerName();                 // Owner-Name in UI einsetzen
   updateApiIndicator();
   updateDriveStatus();
   updateTagFilter();
@@ -72,6 +73,13 @@ function resetForNewSession() {
   if (document.getElementById('sessionPersons')) document.getElementById('sessionPersons').value = '';
   onSessionTypeChange();
   checkUploadReady();
+}
+
+function _applyOwnerName() {
+  if (!ownerName) return;
+  // Upload-Panel: Sprecher-A-Vorschau auf ownerName setzen
+  const previewEl = document.getElementById('speakerAPreview');
+  if (previewEl) previewEl.textContent = ownerName;
 }
 
 function setDateInputToNow() {
@@ -180,6 +188,8 @@ function checkUploadReady() {
 }
 
 function openApiModal() {
+  const ownerEl = document.getElementById('ownerNameInput');
+  if (ownerEl) ownerEl.value = ownerName;
   document.getElementById('apiKeyInput').value = apiKey;
   document.getElementById('anthropicKeyInput').value = anthropicKey;
   document.getElementById('proxyUrlInput').value = proxyUrl;
@@ -193,6 +203,12 @@ function openApiModal() {
 }
 function closeApiModal() { document.getElementById('apiModal').classList.remove('open'); }
 function saveApiKey() {
+  // Owner-Name speichern
+  const nameVal = document.getElementById('ownerNameInput')?.value.trim() || '';
+  ownerName = nameVal;
+  if (nameVal) localStorage.setItem('ownerName', nameVal);
+  else localStorage.removeItem('ownerName');
+
   const val = document.getElementById('apiKeyInput').value.trim();
   if (!val) { showToast('Bitte AssemblyAI Key eingeben.', 'error'); return; }
   apiKey = val;

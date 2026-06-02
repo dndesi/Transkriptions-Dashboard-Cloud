@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.54</button>
+        onmouseout="this.style.color='var(--muted)'">v4.55</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -205,7 +205,7 @@
         </div>
         <div class="step-body">
           <div id="speakerSummary" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; font-size:0.82rem; color:var(--muted);">
-            <span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)">Ich</strong></span>
+            <span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)" id="speakerAPreview">Ich</strong></span>
             <span style="color:var(--border)">·</span>
             <span><span style="color:var(--speaker-b)">●</span> <strong style="color:var(--text)" id="speakerBPreview">Gesprächspartner</strong></span>
           </div>
@@ -748,6 +748,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.55 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.55</span>
+          <span class="cl-date">02.06.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Owner-Profil (Mein Name)</strong> – Neues Feld „Mein Name" ganz oben im API-Keys-Modal. Wird einmalig eingetragen und in localStorage gespeichert. Dieser Name gilt als kanonische Identität des App-Inhabers.</li>
+          <li><strong>speakerA Auto-Fill</strong> – Bei jeder Aufnahme wird Sprecher A automatisch mit dem ownerName belegt (statt fest „Ich"). Upload-Panel-Vorschau zeigt den Namen direkt an.</li>
+          <li><strong>ownerName als Fallback überall</strong> – Alle Stellen die bisher „Ich" als Fallback hatten (claude.js, prompts.js, features.js, persons.js) nutzen jetzt ownerName || 'Ich'.</li>
+        </ul>
+        <div class="cl-tech">js/config.js: let ownerName. index.html: ownerNameInput im API-Modal, speakerAPreview-ID. js/app.js: openApiModal/saveApiKey laden+speichern ownerName, _applyOwnerName() setzt speakerAPreview. js/assemblyai.js: ownerName || 'Ich'. claude.js/prompts.js/features.js/persons.js: session.speakerA || ownerName || 'Ich'.</div>
+      </div>
 
       <!-- ── v4.54 ── -->
       <div class="cl-entry">
@@ -2200,6 +2215,14 @@
 <div class="modal-backdrop" id="apiModal">
   <div class="modal">
     <h3 style="display:flex;align-items:center;gap:8px"><i data-lucide="key" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"></i> API-Keys</h3>
+    <div class="field" style="background:var(--surface2);border-radius:var(--radius);padding:12px;margin-bottom:4px">
+      <label style="display:flex;align-items:center;gap:6px">
+        <i data-lucide="user" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
+        Mein Name <span style="font-weight:400;font-size:0.72rem;color:var(--muted)">(wird automatisch als Sprecher A eingetragen)</span>
+      </label>
+      <input type="text" id="ownerNameInput" placeholder="z.B. Daniel"
+        style="margin-top:6px;width:100%;box-sizing:border-box" />
+    </div>
     <div class="field">
       <label>AssemblyAI API-Key</label>
       <p style="font-size:0.78rem; color:var(--muted); margin-bottom:6px">Für Transkription — <a href="https://app.assemblyai.com" target="_blank" style="color:var(--accent)">app.assemblyai.com → Account</a></p>

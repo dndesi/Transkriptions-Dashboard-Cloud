@@ -243,7 +243,7 @@ async function processFile(file) {
 
   const label = document.getElementById('sessionLabel').value.trim()
     || `Gespräch ${new Date().toLocaleDateString('de-DE', { day:'numeric', month:'long', year:'numeric' })}`;
-  const speakerA = 'Ich';
+  const speakerA = ownerName || 'Ich';
   const _persons  = (document.getElementById('sessionPersons')?.value || '')
                       .split(',').map(p => p.trim()).filter(Boolean);
   const _type     = document.getElementById('sessionType')?.value || 'privat';

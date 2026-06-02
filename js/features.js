@@ -10,7 +10,7 @@
 
 async function analyse360(session, transcript) {
   const { forward, reverse } = buildAnonMap(session);
-  const speakerA = session.speakerA || 'Ich';
+  const speakerA = session.speakerA || ownerName || 'Ich';
   const speakerB = session.speakerB || 'Gesprächspartner';
 
   // Editierbaren Prompt aus Bibliothek holen (oder Default)

@@ -1072,7 +1072,7 @@ function deletePromptById(id) {
 // ── Custom Prompt ausführen ──────────────────────
 async function runCustomPrompt(session, promptObj, transcript) {
   const { forward, reverse } = buildAnonMap(session);
-  const speakerA = session.speakerA || 'Ich';
+  const speakerA = session.speakerA || ownerName || 'Ich';
   const speakerB = session.speakerB || 'Gesprächspartner';
 
   let promptText = assemblePromptText(promptObj)

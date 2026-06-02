@@ -449,7 +449,7 @@ async function runAnalysis(types) {
 async function analysePrivate(session, transcript) {
   const { forward, reverse } = buildAnonMap(session);
   const isThoughts = session.type === 'gedanken';
-  const speakerA   = session.speakerA || 'Ich';
+  const speakerA   = session.speakerA || ownerName || 'Ich';
   const speakerB   = session.speakerB || 'Gesprächspartner';
   const persons    = (session.persons || []).join(', ') || 'nicht angegeben';
   const relContext = speakerB && speakerB !== 'Gesprächspartner' ? getRelationship(speakerB) : '';
@@ -525,7 +525,7 @@ async function analyseSentiment(session, transcript) {
 
 async function analyseChapters(session, transcript) {
   const { forward, reverse } = buildAnonMap(session);
-  const speakerA = session.speakerA || 'Ich';
+  const speakerA = session.speakerA || ownerName || 'Ich';
   const speakerB = session.speakerB || 'Gesprächspartner';
 
   // Editierbaren Prompt aus Bibliothek holen (oder Default)
@@ -657,7 +657,7 @@ async function startChaptersDeepAnalysis(sessionId) {
 
 async function analyseTopics(session, transcript) {
   const { forward, reverse } = buildAnonMap(session);
-  const speakerA = session.speakerA || 'Ich';
+  const speakerA = session.speakerA || ownerName || 'Ich';
   const speakerB = session.speakerB || 'Gesprächspartner';
 
   // Editierbaren Prompt aus Bibliothek holen (oder Default)

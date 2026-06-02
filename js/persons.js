@@ -69,7 +69,7 @@ function getMeinProfilData() {
   done.forEach(s => {
     const dateStr = new Date(s.date).toLocaleDateString('de-DE');
     const meta    = { sessionDate: s.date, sessionLabel: s.label, dateStr, sessionType: s.type };
-    const meName  = (s.speakerA || 'Ich').toLowerCase();
+    const meName  = (s.speakerA || ownerName || 'Ich').toLowerCase();
 
     // Eigene Wünsche: wishes wo person = speakerA / "Ich"
     (s.privateAnalysis?.wishes || []).forEach(w => {
