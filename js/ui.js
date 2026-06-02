@@ -52,6 +52,10 @@ function setSidenavActive(el) {
 function showBrowser() {
   document.getElementById('browserView').classList.add('visible');
   document.getElementById('transcriptCard').classList.remove('visible');
+  // Alle Overlay-Views schließen
+  ['costsView','personsView','archView','promptsView','projectsView'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
   currentSessionId = null;
   renderBrowser();
 }
@@ -338,14 +342,14 @@ function setView(v) {
   document.getElementById('viewTimeline').classList.toggle('active', v === 'timeline');
   document.getElementById('sessionGrid').style.display = v === 'grid' ? '' : 'none';
   document.getElementById('timelineView').classList.toggle('visible', v === 'timeline');
-  document.getElementById('costsView').style.display = 'none';
-  document.getElementById('personsView').style.display = 'none';
-  document.getElementById('archView').style.display = 'none';
-  const _pv = document.getElementById('promptsView'); if (_pv) _pv.style.display = 'none';
+  // Alle Overlay-Views verstecken
+  ['costsView','personsView','archView','promptsView','projectsView'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
   // Browser-Toolbar wieder einblenden (war ggf. für Prompt-Bibliothek ausgeblendet)
   const bt = document.getElementById('browserToolbar'); if (bt) bt.style.display = '';
-  // Overlay-Buttons zurücksetzen
-  ['headerCostsBtn', 'headerPersonsBtn', 'headerArchBtn', 'headerPromptsBtn'].forEach(id => {
+  // Alle Overlay-Buttons zurücksetzen inkl. navProjects
+  ['headerCostsBtn','headerPersonsBtn','headerArchBtn','headerPromptsBtn','navProjects'].forEach(id => {
     const btn = document.getElementById(id);
     if (btn) { btn.classList.remove('active'); btn.style.borderColor='var(--border)'; btn.style.color='var(--muted)'; btn.style.background='none'; }
   });

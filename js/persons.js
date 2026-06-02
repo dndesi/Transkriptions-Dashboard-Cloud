@@ -118,8 +118,8 @@ function renderPersonsView() {
     <div class="person-card" onclick="renderMeinProfil()" style="
       border-color: rgba(108,99,255,0.4);
       background: linear-gradient(135deg, rgba(108,99,255,0.08), rgba(167,139,250,0.06));">
-      <div style="font-size:0.67rem; font-weight:700; color:var(--accent2); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:4px">Ich</div>
-      <div class="person-card-name">Mein Profil</div>
+      <div style="font-size:0.67rem; font-weight:700; color:var(--accent2); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:4px">${escHtml(ownerName || 'Ich')}</div>
+      <div class="person-card-name">${escHtml(ownerName || 'Mein Profil')}</div>
       <div class="person-card-meta">${meine.sessions.length} Gespräch${meine.sessions.length!==1?'e':''} · alle Sitzungen</div>
       <div class="person-card-topics">${meinTopics.map(t=>`<span class="person-topic-chip">${escHtml(t)}</span>`).join('')}</div>
     </div>`;
@@ -198,7 +198,7 @@ function renderMeinProfil() {
 
     <div class="profile-header">
       <div>
-        <div class="profile-name">Mein Profil</div>
+        <div class="profile-name">${escHtml(ownerName || 'Mein Profil')}</div>
         <div class="profile-stats">
           ${data.sessions.length} Gespräch${data.sessions.length!==1?'e':''} insgesamt ·
           ${data.sessions.filter(s=>s.type==='gedanken').length} Gedanken-Sitzungen
