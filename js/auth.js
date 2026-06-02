@@ -1,16 +1,24 @@
 // Google Auth separat initialisieren (unabhängig von init())
 window.addEventListener('load', function() {
+  // App sofort mit localStorage-Daten zeigen – kein Login-Block
+  const overlay = document.getElementById('loginOverlay');
+  if (overlay) overlay.style.display = 'none';
+
+  // Stille Auth im Hintergrund versuchen
   const check = setInterval(() => {
     if (window.google?.accounts?.oauth2) {
       clearInterval(check);
-      try { initGoogleAuth(); } catch(e) { console.error('initGoogleAuth Fehler:', e); }
+      try {
+        initGoogleAuth();
+        // Stille Anfrage: kein Popup, kein Account-Picker
+        driveTokenClient.requestAccessToken({ prompt: '' });
+      } catch(e) { console.error('initGoogleAuth Fehler:', e); }
     }
   }, 100);
   setTimeout(() => {
     clearInterval(check);
     if (!driveTokenClient) {
-      const err = document.getElementById('loginError');
-      if (err) { err.style.display = 'block'; err.textContent = 'Google API nicht geladen – bitte Seite neu laden oder Werbeblocker deaktivieren.'; }
+      _showDriveBanner('Google API nicht geladen – Werbeblocker deaktivieren?');
     }
   }, 15000);
 });
@@ -44,7 +52,7 @@ function signInWithGoogle() {
         try {
           if (!driveTokenClient) initGoogleAuth();
           if (btn) { btn.innerHTML = orig; btn.disabled = false; }
-          driveTokenClient.requestAccessToken({ prompt: 'select_account' });
+          driveTokenClient.requestAccessToken({ prompt: 'consent' });
         } catch(e) {
           if (btn) { btn.innerHTML = orig; btn.disabled = false; }
           showToast('Google Auth Fehler: ' + e.message, 'error');
@@ -61,13 +69,15 @@ function signInWithGoogle() {
     }, 12000);
     return;
   }
-  driveTokenClient.requestAccessToken({ prompt: 'select_account' });
+  driveTokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
 async function onTokenReceived(resp) {
   if (resp.error) {
-    const err = document.getElementById('loginError');
-    if (err) { err.style.display = 'block'; err.textContent = 'Anmeldung fehlgeschlagen: ' + resp.error; }
+    // Stille Auth fehlgeschlagen → kleinen Banner zeigen (nicht blockierend)
+    if (resp.error !== 'user_cancelled') {
+      _showDriveBanner('Drive nicht verbunden – Klicken um zu verbinden', true);
+    }
     return;
   }
   driveToken = resp.access_token;
@@ -84,8 +94,11 @@ async function onTokenReceived(resp) {
 }
 
 async function enterApp() {
-  document.getElementById('loginOverlay').style.display = 'none';
-  setDateInputToNow(); // sofort setzen, unabhängig von Drive
+  // Overlay verstecken (falls noch sichtbar) + Drive-Banner wegräumen
+  const overlay = document.getElementById('loginOverlay');
+  if (overlay) overlay.style.display = 'none';
+  _hideDriveBanner();
+  setDateInputToNow();
 
   if (driveUser) {
     const badge = document.getElementById('userBadge');
@@ -111,6 +124,31 @@ async function enterApp() {
   renderBrowser();
   setupAudioSync();
   await loadFromDrive();
+}
+
+// ── Drive-Banner (nicht blockierend) ─────────────────────────────────────
+function _showDriveBanner(msg, clickable = false) {
+  let banner = document.getElementById('driveBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'driveBanner';
+    banner.style.cssText = `
+      position:fixed; top:0; left:0; right:0; z-index:500;
+      background:var(--surface2); border-bottom:1px solid var(--border);
+      padding:8px 16px; font-size:0.82rem; color:var(--muted);
+      display:flex; align-items:center; justify-content:center; gap:12px;`;
+    document.body.prepend(banner);
+  }
+  banner.innerHTML = `
+    <span>${msg}</span>
+    ${clickable ? `<button onclick="signInWithGoogle()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:0.78rem;cursor:pointer">Verbinden</button>` : ''}
+    <button onclick="_hideDriveBanner()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0 4px">✕</button>`;
+  banner.style.display = 'flex';
+}
+
+function _hideDriveBanner() {
+  const banner = document.getElementById('driveBanner');
+  if (banner) banner.style.display = 'none';
 }
 
 function signOut() {

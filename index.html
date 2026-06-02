@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.55</button>
+        onmouseout="this.style.color='var(--muted)'">v4.56</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -748,6 +748,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.56 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.56</span>
+          <span class="cl-date">02.06.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature + Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Kein Login-Block beim Refresh</strong> – App startet sofort mit localStorage-Daten. Login-Overlay wird nicht mehr gezeigt. Im Hintergrund wird eine stille Google-Auth versucht (prompt: ''). Klappt es → Drive verbindet sich unsichtbar. Klappt es nicht → kleiner nicht-blockierender Banner oben: "Drive nicht verbunden – Verbinden".</li>
+          <li><strong>Projekt-Dropdown immer aktuell</strong> – Nach jedem Projekt anlegen/bearbeiten/archivieren/löschen wird jetzt _refreshAllViews() aufgerufen: updateProjectBadge() + updateProjectFilterDropdown() + renderBrowser(). Das "Alle Projekte"-Dropdown im Archiv ist damit immer synchron.</li>
+        </ul>
+        <div class="cl-tech">js/auth.js: loginOverlay auf display:none beim load. stille requestAccessToken({prompt:''}). _showDriveBanner()/_hideDriveBanner() neu. onTokenReceived zeigt Banner statt Overlay bei Fehler. enterApp() räumt Banner weg. js/projects.js: _refreshAllViews() Hilfsfunktion, alle CRUD-Funktionen + saveProjectFromModal rufen sie auf.</div>
+      </div>
 
       <!-- ── v4.55 ── -->
       <div class="cl-entry">

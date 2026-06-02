@@ -292,7 +292,7 @@ function saveProjectFromModal() {
   }
 
   closeProjectModal();
-  updateProjectBadge();
+  _refreshAllViews();
 
   // Zurück zum richtigen View
   if (_currentProjectDetailId) {
@@ -304,19 +304,26 @@ function saveProjectFromModal() {
 }
 
 // ── Archivieren / Aktivieren / Löschen ──────────────────────────────────
+function _refreshAllViews() {
+  // Nach jeder Projekt-Änderung alle betroffenen UI-Teile aktualisieren
+  updateProjectBadge();
+  updateProjectFilterDropdown(); // Archiv-Dropdown
+  renderBrowser();               // Session-Kacheln + Filter
+}
+
 function confirmArchiveProject(id) {
   const proj = getProjectById(id);
   if (!proj) return;
   if (!confirm(`Projekt „${proj.name}" archivieren?\n\nDie Sitzungen bleiben erhalten.`)) return;
   archiveProject(id);
-  updateProjectBadge();
+  _refreshAllViews();
   renderProjectBrowser();
   showToast(`Projekt archiviert`, 'success');
 }
 
 function confirmUnarchiveProject(id) {
   updateProject(id, { status: 'active' });
-  updateProjectBadge();
+  _refreshAllViews();
   renderProjectBrowser();
   showToast('Projekt wieder aktiviert', 'success');
 }
@@ -327,7 +334,7 @@ function confirmDeleteProject(id) {
   const count = sessions.filter(s => s.projectId === id).length;
   if (!confirm(`Projekt „${proj.name}" löschen?\n\n${count > 0 ? `${count} Sitzung(en) werden ins Allgemeine Projekt verschoben.` : 'Keine Sitzungen betroffen.'}`)) return;
   deleteProject(id);
-  updateProjectBadge();
+  _refreshAllViews();
   renderProjectBrowser();
   showToast('Projekt gelöscht', 'success');
 }
