@@ -76,7 +76,12 @@ async function loadFromDrive() {
     }
 
     // 3. Merge mit lokalem Cache
+    const validProjectIds = new Set((projects || []).map(p => p.id));
     loaded.forEach(driveSession => {
+      // Ungültige projectId aus Drive nicht übernehmen
+      if (driveSession.projectId && !validProjectIds.has(driveSession.projectId)) {
+        driveSession.projectId = BUILTIN_PROJECT_ID;
+      }
       const idx = sessions.findIndex(s => s.id === driveSession.id);
       if (idx >= 0) sessions[idx] = { ...sessions[idx], ...driveSession };
       else sessions.push(driveSession);
@@ -406,9 +411,19 @@ function getProjectById(id) {
 function updateSessionProjectDropdown(session) {
   const sel = document.getElementById('sessionProjectSelect');
   if (!sel) return;
+
+  // Defensiv: wenn projectId auf nicht-existierendes Projekt zeigt → korrigieren
+  const validIds = new Set((projects || []).map(p => p.id));
+  if (session.projectId && !validIds.has(session.projectId)) {
+    session.projectId = BUILTIN_PROJECT_ID;
+    saveSessions();
+    saveToArchive(session).catch(() => {});
+  }
+
+  const currentId = session.projectId || BUILTIN_PROJECT_ID;
   sel.innerHTML = (projects || [])
     .filter(p => p.status !== 'archived')
-    .map(p => `<option value="${p.id}"${p.id === (session.projectId || BUILTIN_PROJECT_ID) ? ' selected' : ''}>${escHtml(p.name)}</option>`)
+    .map(p => `<option value="${p.id}"${p.id === currentId ? ' selected' : ''}>${escHtml(p.name)}</option>`)
     .join('');
 }
 

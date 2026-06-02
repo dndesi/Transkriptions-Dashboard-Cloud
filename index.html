@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.58</button>
+        onmouseout="this.style.color='var(--muted)'">v4.59</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -748,6 +748,21 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.59 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.59</span>
+          <span class="cl-date">02.06.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Ungültige projectId automatisch korrigiert</strong> – updateSessionProjectDropdown() prüft ob die gespeicherte projectId noch existiert. Falls nicht (Projekt gelöscht), wird sofort auf Allgemeines Projekt gesetzt und auf Drive gespeichert.</li>
+          <li><strong>Drive-Sync überschreibt nicht mehr mit gelöschter projectId</strong> – loadFromDrive() validiert jede projectId beim Merge. Verweise auf nicht-existierende Projekte werden beim Download auf BUILTIN_PROJECT_ID gesetzt.</li>
+          <li><strong>Owner immer in Personen-Liste</strong> – ownerName (oder "Ich") ist jetzt immer der erste Eintrag in allPersons im Projekt-Dashboard. Aufgaben können damit auch dem App-Inhaber zugewiesen werden.</li>
+        </ul>
+        <div class="cl-tech">js/sessions.js: updateSessionProjectDropdown() validiert projectId + auto-fix. loadFromDrive() Merge filtert ungültige projectIds. js/projects.js: allPersons beginnt immer mit myName (ownerName||'Ich').</div>
+      </div>
 
       <!-- ── v4.58 ── -->
       <div class="cl-entry">

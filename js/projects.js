@@ -360,8 +360,8 @@ function showProjectDashboard(id) {
   // ── Statistiken ──────────────────────────────────
   const totalDuration = projSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
 
-  // Personen: NUR aus s.persons der Projekt-Sessions (manuell zugewiesene Namen)
-  // speakerA/B und KI-Extrakte werden NICHT verwendet – sie sind unzuverlässig
+  // Personen: ownerName immer als Erster + s.persons der Projekt-Sessions
+  const myName = ownerName || 'Ich';
   const personSet = new Set();
   projSessions.forEach(s => {
     const raw = s.persons;
@@ -372,7 +372,8 @@ function showProjectDashboard(id) {
         : [];
     list.forEach(p => { const n = p.trim(); if (n) personSet.add(n); });
   });
-  const allPersons = [...personSet].sort((a,b) => a.localeCompare(b,'de'));
+  // Owner immer zuerst, dann alle anderen alphabetisch
+  const allPersons = [myName, ...[...personSet].filter(p => p !== myName).sort((a,b) => a.localeCompare(b,'de'))];
 
   const allTopics = projSessions.flatMap(s => (s.claudeTopics || []).map(t => typeof t === 'string' ? t : t.text)).filter(Boolean);
   const topicCounts = {};
