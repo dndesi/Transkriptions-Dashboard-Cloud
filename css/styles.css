@@ -2692,3 +2692,18 @@ mark.search-highlight {
   justify-content: flex-end;
   margin-top: 4px;
 }
+
+/* ── Utterance: Ab-hier-tauschen Button ── */
+.utterance-speaker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.utterance:hover .utt-swap-from-btn {
+  display: inline-flex !important;
+  align-items: center;
+}
+.utt-swap-from-btn:hover {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}

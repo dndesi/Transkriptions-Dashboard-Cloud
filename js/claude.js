@@ -1699,12 +1699,19 @@ function renderUtterances(session) {
     div.dataset.start = u.start;
     div.dataset.end = u.end;
     div.innerHTML = `
-      <div class="utterance-speaker" title="Klicken um zu &quot;${escHtml(otherName)}&quot; zu wechseln"
-           style="cursor:pointer; user-select:none;"
-           onclick="toggleUtteranceSpeaker(${idx})">
-        <span class="utterance-speaker-dot" style="background:${color}"></span>
-        <span style="color:${color}">${escHtml(name)}</span>
-        <span style="font-size:0.65rem; color:var(--muted); margin-left:2px">⇄</span>
+      <div class="utterance-speaker-wrap">
+        <div class="utterance-speaker" title="Nur diese Passage tauschen"
+             style="cursor:pointer; user-select:none;"
+             onclick="toggleUtteranceSpeaker(${idx})">
+          <span class="utterance-speaker-dot" style="background:${color}"></span>
+          <span style="color:${color}">${escHtml(name)}</span>
+          <span style="font-size:0.65rem; color:var(--muted); margin-left:2px">⇄</span>
+        </div>
+        <button class="utt-swap-from-btn" title="Ab hier alle folgenden tauschen"
+          onclick="swapSpeakersFromIndex(${idx})"
+          style="display:none;background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-size:0.68rem;padding:1px 6px;cursor:pointer;margin-left:4px;white-space:nowrap">
+          ↓ ab hier
+        </button>
       </div>
       <div class="utterance-body">
         <div class="utterance-text">${escHtml(u.text)}</div>
@@ -1803,12 +1810,26 @@ function swapAllSpeakers() {
   showToast('Sprecher A ↔ B vollständig getauscht ✓', 'success');
 }
 
+function swapSpeakersFromIndex(idx) {
+  const s = getSession();
+  if (!s || !s.utterances) return;
+  const count = s.utterances.length - idx;
+  if (!confirm(`Ab dieser Passage alle ${count} folgenden Abschnitte tauschen?\n\nA ↔ B von hier bis zum Ende.`)) return;
+  for (let i = idx; i < s.utterances.length; i++) {
+    s.utterances[i].speaker = s.utterances[i].speaker === 'A' ? 'B' : 'A';
+  }
+  saveSessions();
+  saveToArchive(s);
+  renderUtterances(s);
+  showToast(`${count} Abschnitte ab hier getauscht ✓`, 'success');
+}
+
 function toggleUtteranceSpeaker(idx) {
   const s = getSession();
   if (!s || !s.utterances[idx]) return;
   s.utterances[idx].speaker = s.utterances[idx].speaker === 'A' ? 'B' : 'A';
   saveSessions();
-  saveToArchive(s); // Archiv aktualisieren
+  saveToArchive(s);
   showTranscript(s);
 }
 
