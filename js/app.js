@@ -46,15 +46,16 @@ function updateSpeakerSummary() {
   const summary = document.getElementById('speakerSummary');
   const preview = document.getElementById('speakerBPreview');
   if (!summary) return;
+  const myName = ownerName || 'Ich';
 
   if (type === 'gedanken') {
-    summary.innerHTML = `<span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)">Ich</strong></span>
+    summary.innerHTML = `<span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)">${escHtml(myName)}</strong></span>
       <span style="color:var(--border); margin:0 4px">·</span>
       <span style="color:var(--muted); font-style:italic">Nur eigene Gedanken – kein zweiter Sprecher</span>`;
   } else {
     const bName = persons[0] || (type === 'arbeit' ? 'Kollege/Kollegin' : 'Gesprächspartner/in');
     const extras = persons.slice(1);
-    let html = `<span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)">Ich</strong></span>
+    let html = `<span><span style="color:var(--speaker-a)">●</span> <strong style="color:var(--text)">${escHtml(myName)}</strong></span>
       <span style="color:var(--border); margin:0 4px">·</span>
       <span><span style="color:var(--speaker-b)">●</span> <strong style="color:var(--text)">${escHtml(bName)}</strong></span>`;
     extras.forEach((name, i) => {
