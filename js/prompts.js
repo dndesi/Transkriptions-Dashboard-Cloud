@@ -784,10 +784,7 @@ function renderPromptsView() {
         <button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;flex-shrink:0">
           ${icon('plus',14)} Neuer Prompt
         </button>
-        <button class="btn btn-ghost" onclick="exportPrompts()" style="gap:6px;flex-shrink:0" title="Alle eigenen Prompts exportieren">
-          ${icon('download',14)} Export
-        </button>
-        <label class="btn btn-ghost" style="gap:6px;flex-shrink:0;cursor:pointer" title="Prompts importieren">
+        <label class="btn btn-ghost" style="gap:6px;flex-shrink:0;cursor:pointer" title="Prompt importieren">
           ${icon('upload',14)} Import
           <input type="file" accept=".json" onchange="importPrompts(event)" style="display:none" />
         </label>
@@ -885,6 +882,9 @@ function _renderPromptsResults() {
           <button class="btn btn-ghost" onclick="openEditablePromptEditor('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap">
             ${icon('edit-2',12)} Bearbeiten
           </button>
+          <button class="btn btn-ghost" onclick="exportSingleEditablePrompt('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap" title="Diesen Prompt exportieren">
+            ${icon('download',12)}
+          </button>
           ${modified ? `<button class="btn" onclick="resetEditablePromptAndRefresh('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)">
             ${icon('refresh-cw',12)} Reset
           </button>` : ''}
@@ -907,6 +907,9 @@ function _renderPromptsResults() {
         <div class="prompt-card-actions">
           <button class="btn btn-ghost" onclick="openPromptEditorModal('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap">
             ${icon('edit-2',12)} Bearbeiten
+          </button>
+          <button class="btn btn-ghost" onclick="exportSinglePrompt('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap" title="Diesen Prompt exportieren">
+            ${icon('download',12)}
           </button>
           <button class="btn" onclick="deletePromptById('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)">
             ${icon('trash-2',12)} Löschen
@@ -1191,26 +1194,43 @@ function renderCustomPromptCheckboxes() {
 // PROMPT EXPORT / IMPORT
 // ═══════════════════════════════════════════════════
 
-function exportPrompts() {
-  const customPrompts   = getCustomPrompts();
-  const editedDefaults  = getEditablePrompts(); // nur bearbeitete Werte
-
-  const exportData = {
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    exportedBy: ownerName || 'Distill Voice',
-    customPrompts,
-    editedDefaults,
-  };
-
-  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+function _downloadPromptJson(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;
-  a.download = `distill-voice-prompts_${new Date().toISOString().slice(0,10)}.json`;
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
-  showToast(`${customPrompts.length} Prompts exportiert`, 'success');
+}
+
+// Einzelnen eigenen Prompt exportieren
+function exportSinglePrompt(id) {
+  const prompt = getCustomPrompts().find(p => p.id === id);
+  if (!prompt) return;
+  _downloadPromptJson({
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    exportedBy: ownerName || 'Distill Voice',
+    customPrompts: [prompt],
+  }, `prompt_${prompt.name.replace(/[^a-z0-9äöü]/gi,'_').slice(0,40)}.json`);
+  showToast(`"${prompt.name}" exportiert`, 'success');
+}
+
+// Einzelnen Standard/Feature-Prompt exportieren
+function exportSingleEditablePrompt(id) {
+  const def  = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === id);
+  if (!def) return;
+  const text = getEditablePromptText(id);
+  _downloadPromptJson({
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    exportedBy: ownerName || 'Distill Voice',
+    editedDefaults: { [id]: text },
+    // Metadaten damit der Empfänger weiß was das ist
+    meta: { id, name: def.name, category: def.category, description: def.description },
+  }, `prompt_${def.name.replace(/[^a-z0-9äöü]/gi,'_').slice(0,40)}.json`);
+  showToast(`"${def.name}" exportiert`, 'success');
 }
 
 function importPrompts(event) {
