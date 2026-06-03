@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
-function init() {
+async function init() {
+  await initStorage();               // IndexedDB laden (sessions + projects)
   migrateSessionsToDefaultProject(); // Paket 1: bestehende Sessions → Allgemeines Projekt
   updateProjectBadge();              // Paket 2: Sidenav-Badge aktualisieren
   _applyOwnerName();                 // Owner-Name in UI einsetzen

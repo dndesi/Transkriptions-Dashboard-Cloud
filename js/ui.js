@@ -507,7 +507,8 @@ function renderArchView() {
 
       <!-- Lokaler Speicher + Proxy + Auth -->
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px">
-        ${archBox(icon('lock',18,'color:#60a5fa'), 'localStorage', 'API-Keys · Theme · Prompts · Akkordeon-Status · Einstellungen', '#60a5fa', 'Nur lokal – nie in der Cloud')}
+        ${archBox(icon('lock',18,'color:#60a5fa'), 'localStorage', 'API-Keys · Theme · Akkordeon-Status · Einstellungen · distill_has_sessions-Flag', '#60a5fa', 'Nur lokal – nie in der Cloud')}
+        ${archBox(icon('database',18,'color:#a78bfa'), 'IndexedDB', 'Sessions + Projekte (js/storage.js) · kein Größenlimit · automatische Migration aus localStorage', '#a78bfa', 'distill_voice_db')}
         ${archBox(icon('key',18,'color:#34d399'), 'Google OAuth 2.0', 'GIS Client · Drive + Calendar + Gmail · Token-Refresh', '#34d399', 'accounts.google.com/gsi')}
         ${archBox(icon('zap',18,'color:#f472b6'), 'Cloudflare Worker', 'CORS-Proxy für DELETE-Requests', '#f472b6', 'Optional – workers.dev')}
       </div>
@@ -565,7 +566,7 @@ function renderArchView() {
         ${techRow('Prompt-System', 'Editierbare Prompts in localStorage · System/Standard/Feature/Eigene · usedIn-Badge zeigt Verwendungsort · assemblePromptText() aus Rolle/Tonalität/Grenzen/Kontext')}
         ${techRow('Akkordeon', 'Sitzungsdetail als Akkordeon · Zustand in localStorage pro Session')}
         ${techRow('OAuth Scopes', 'drive.file · userinfo.profile · calendar.events · gmail.compose')}
-        ${techRow('Daten lokal', 'localStorage: Keys, Theme, Prompts, Akkordeon-State, Beziehungen')}
+        ${techRow('Daten lokal', 'IndexedDB (distill_voice_db): Sessions + Projekte · localStorage: Keys, Theme, Prompts, Akkordeon-State, Beziehungen')}
         ${techRow('CORS-Proxy', 'Cloudflare Worker (optional, ~5 Min Setup)')}
         ${techRow('Wechselkurs', 'Frankfurter API (api.frankfurter.app) – USD → EUR')}
         ${techRow('Datenschutz', 'DSGVO: Anonymisierungs-Funktion vor API-Calls, Echtname bleibt lokal')}

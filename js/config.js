@@ -124,7 +124,7 @@ function assemblyBase() {
     ? 'https://api.eu.assemblyai.com'
     : 'https://api.assemblyai.com';
 }
-let sessions = JSON.parse(localStorage.getItem('transcription_sessions') || '[]');
+let sessions = []; // wird von initStorage() aus IndexedDB geladen
 let currentSessionId = null;
 let pollTimer = null;
 
@@ -147,21 +147,7 @@ function _defaultProjects() {
   }];
 }
 
-let projects = (() => {
-  try {
-    const stored = JSON.parse(localStorage.getItem('distill_projects') || 'null');
-    if (!stored) return _defaultProjects();
-    // Sicherstellen dass das Builtin-Projekt immer vorhanden ist
-    if (!stored.find(p => p.id === BUILTIN_PROJECT_ID)) {
-      stored.unshift(_defaultProjects()[0]);
-    }
-    return stored;
-  } catch { return _defaultProjects(); }
-})();
-
-function saveProjects() {
-  localStorage.setItem('distill_projects', JSON.stringify(projects));
-}
+let projects = _defaultProjects(); // wird von initStorage() aus IndexedDB geladen
 
 // Google Drive State
 let driveToken = null;
@@ -173,9 +159,7 @@ let driveSubfolderId = null;
 let driveSubfolderName = '';
 let rememberedFolders = []; // Drive-Unterordner (wird dynamisch geladen)
 
-function saveSessions() {
-  localStorage.setItem('transcription_sessions', JSON.stringify(sessions));
-}
+// saveSessions() und saveProjects() → js/storage.js (IndexedDB)
 
 
 

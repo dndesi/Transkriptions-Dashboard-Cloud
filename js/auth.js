@@ -3,7 +3,7 @@ window.addEventListener('load', function() {
   // Nur für wiederkehrende Nutzer (mit gecachten Sessions) Login-Overlay überspringen
   // Neue Nutzer (kein Cache) sehen weiterhin den Login-Screen
   const overlay = document.getElementById('loginOverlay');
-  const hasCachedSessions = (JSON.parse(localStorage.getItem('transcription_sessions') || '[]')).length > 0;
+  const hasCachedSessions = localStorage.getItem('distill_has_sessions') === '1';
   const hasKnownFolder  = !!localStorage.getItem('drive_folder_id');
   if (overlay && (hasCachedSessions || hasKnownFolder)) {
     overlay.style.display = 'none';
