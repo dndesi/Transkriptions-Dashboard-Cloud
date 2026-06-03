@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.60</button>
+        onmouseout="this.style.color='var(--muted)'">v4.61</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -344,7 +344,6 @@
       <div id="personsView" style="display:none; padding-bottom:40px"></div>
       <div id="archView" style="display:none; padding-bottom:40px"></div>
       <div id="promptsView" style="display:none; padding-bottom:40px"></div>
-      <div id="projectsView" style="display:none; padding-bottom:40px"></div>
     </div>
 
     <!-- Transkript / Sitzungsdetail -->
@@ -740,6 +739,9 @@
   </main>
 </div>
 
+<!-- ─── PROJEKTE PANEL (außerhalb browserView, eigenes Full-Panel) ─── -->
+<div id="projectsView" style="display:none; position:fixed; top:53px; left:230px; right:0; bottom:0; overflow-y:auto; background:var(--bg); z-index:10; padding-bottom:40px"></div>
+
 <!-- ─── MODAL: Versionsprotokoll ─────────────────── -->
 <div class="modal-backdrop" id="changelogModal">
   <div class="modal" style="max-width:620px; width:95%; max-height:85vh; display:flex; flex-direction:column;">
@@ -748,6 +750,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.61 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.61</span>
+          <span class="cl-date">03.06.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>projectsView als eigenes Fixed-Panel</strong> – Root-Ursache der View-Überlagerung: projectsView war innerhalb von browserView eingebettet und konnte nie wirklich isoliert angezeigt werden. Jetzt ist es ein position:fixed Panel außerhalb des Layouts (top:53px, left:230px). Keine Überlagerung mehr möglich.</li>
+          <li><strong>_showOverlay überarbeitet</strong> – Unterscheidet jetzt zwischen normalen Overlay-Views (innerhalb browserView) und projectsView (fixed). browserView bleibt beim Öffnen der Projekte unberührt.</li>
+        </ul>
+        <div class="cl-tech">index.html: projectsView aus browserView herausgelöst, position:fixed außerhalb div.layout. ui.js: _showOverlay() unterscheidet isProjects-Pfad. projects.js: toggleProjectsView() prüft display==='block' statt !=='none'.</div>
+      </div>
 
       <!-- ── v4.60 ── -->
       <div class="cl-entry">

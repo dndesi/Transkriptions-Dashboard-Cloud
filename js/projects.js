@@ -31,11 +31,14 @@ function updateProjectBadge() {
 function toggleProjectsView() {
   const el = document.getElementById('projectsView');
   if (!el) return;
-  if (el.style.display !== 'none') {
+  if (el.style.display === 'block') {
+    // Schließen
     el.style.display = 'none';
     _setHeaderBtn('navProjects', false);
-    setView('grid');
+    const bt = document.getElementById('browserToolbar');
+    if (bt) bt.style.display = '';
   } else {
+    // Öffnen
     _showOverlay('projectsView', 'navProjects', renderProjectBrowser);
   }
 }

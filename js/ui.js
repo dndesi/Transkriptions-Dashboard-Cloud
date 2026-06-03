@@ -367,24 +367,38 @@ function _setHeaderBtn(id, active) {
 }
 
 function _showOverlay(viewId, btnId, renderFn) {
-  // Alle anderen Overlay-Views schließen
-  ['costsView','personsView','archView','promptsView','projectsView'].forEach(id => {
+  const isProjects = viewId === 'projectsView';
+
+  // Andere Overlay-Views (innerhalb browserView) schließen
+  ['costsView','personsView','archView','promptsView'].forEach(id => {
     const el = document.getElementById(id);
     if (el && id !== viewId) el.style.display = 'none';
   });
+  // projectsView ist ein eigenes Fixed-Panel – immer schließen wenn nicht aktiv
+  if (!isProjects) {
+    const pv = document.getElementById('projectsView');
+    if (pv) pv.style.display = 'none';
+  }
   ['headerCostsBtn','headerPersonsBtn','headerArchBtn','headerPromptsBtn','navProjects'].forEach(id => {
     if (id !== btnId) _setHeaderBtn(id, false);
   });
-  document.getElementById('browserView').classList.add('visible');
-  document.getElementById('transcriptCard').classList.remove('visible');
-  document.getElementById('sessionGrid').style.display = 'none';
-  document.getElementById('timelineView').classList.remove('visible');
-  document.getElementById(viewId).style.display = '';
+
+  if (isProjects) {
+    // projectsView: fixed panel – browserView bleibt unberührt
+    document.getElementById('projectsView').style.display = 'block';
+  } else {
+    document.getElementById('browserView').classList.add('visible');
+    document.getElementById('transcriptCard').classList.remove('visible');
+    document.getElementById('sessionGrid').style.display = 'none';
+    document.getElementById('timelineView').classList.remove('visible');
+    document.getElementById(viewId).style.display = '';
+  }
+
   _setHeaderBtn(btnId, true);
   currentView = viewId.replace('View','');
-  // Browser-Toolbar tauschen: Prompt-Bibliothek hat eigene Suche
+  // Browser-Toolbar tauschen
   const bt = document.getElementById('browserToolbar');
-  if (bt) bt.style.display = viewId === 'promptsView' ? 'none' : '';
+  if (bt) bt.style.display = (viewId === 'promptsView' || isProjects) ? 'none' : '';
   if (renderFn) renderFn();
 }
 
