@@ -784,6 +784,13 @@ function renderPromptsView() {
         <button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;flex-shrink:0">
           ${icon('plus',14)} Neuer Prompt
         </button>
+        <button class="btn btn-ghost" onclick="exportPrompts()" style="gap:6px;flex-shrink:0" title="Alle eigenen Prompts exportieren">
+          ${icon('download',14)} Export
+        </button>
+        <label class="btn btn-ghost" style="gap:6px;flex-shrink:0;cursor:pointer" title="Prompts importieren">
+          ${icon('upload',14)} Import
+          <input type="file" accept=".json" onchange="importPrompts(event)" style="display:none" />
+        </label>
       </div>
       <div id="promptsResults"></div>
     </div>`;
@@ -1178,4 +1185,75 @@ function renderCustomPromptCheckboxes() {
       `).join('')}
     </div>`;
   if (window.lucide) lucide.createIcons({ nodes: [container] });
+}
+
+// ═══════════════════════════════════════════════════
+// PROMPT EXPORT / IMPORT
+// ═══════════════════════════════════════════════════
+
+function exportPrompts() {
+  const customPrompts   = getCustomPrompts();
+  const editedDefaults  = getEditablePrompts(); // nur bearbeitete Werte
+
+  const exportData = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    exportedBy: ownerName || 'Distill Voice',
+    customPrompts,
+    editedDefaults,
+  };
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `distill-voice-prompts_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`${customPrompts.length} Prompts exportiert`, 'success');
+}
+
+function importPrompts(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+
+      // Validierung
+      if (!data.version || (!data.customPrompts && !data.editedDefaults)) {
+        showToast('Ungültige Prompt-Datei.', 'error'); return;
+      }
+
+      let added = 0;
+
+      // Custom Prompts importieren (keine Duplikate per Name)
+      if (Array.isArray(data.customPrompts)) {
+        const existing = getCustomPrompts();
+        const existingNames = new Set(existing.map(p => p.name?.toLowerCase()));
+        const newPrompts = data.customPrompts.filter(p => !existingNames.has(p.name?.toLowerCase()));
+        // Neue ID vergeben
+        newPrompts.forEach(p => { p.id = genPromptId(); });
+        saveCustomPrompts([...existing, ...newPrompts]);
+        added += newPrompts.length;
+      }
+
+      // Bearbeitete Standard-Prompts zusammenführen
+      if (data.editedDefaults && typeof data.editedDefaults === 'object') {
+        const current = getEditablePrompts();
+        const merged  = { ...data.editedDefaults, ...current }; // lokale Änderungen haben Vorrang
+        localStorage.setItem(EDITABLE_PROMPTS_KEY, JSON.stringify(merged));
+      }
+
+      showToast(`${added} neue Prompt(s) importiert`, 'success');
+      renderPromptsView();
+    } catch {
+      showToast('Datei konnte nicht gelesen werden.', 'error');
+    }
+  };
+  reader.readAsText(file);
+  // Input zurücksetzen damit dieselbe Datei nochmal importiert werden kann
+  event.target.value = '';
 }

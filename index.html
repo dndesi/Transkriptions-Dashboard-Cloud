@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.65</button>
+        onmouseout="this.style.color='var(--muted)'">v4.66</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -750,6 +750,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.66 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.66</span>
+          <span class="cl-date">03.06.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Prompt Export/Import</strong> – In der Prompt-Bibliothek gibt es zwei neue Buttons: „Export" lädt alle eigenen Prompts + bearbeitete Standard-Prompts als JSON-Datei herunter. „Import" liest eine JSON-Datei ein und fügt neue Prompts hinzu (Duplikate werden per Name erkannt und übersprungen). Lokale Änderungen haben beim Import Vorrang.</li>
+        </ul>
+        <div class="cl-tech">js/prompts.js: exportPrompts() serialisiert customPrompts + editedDefaults als JSON-Download. importPrompts() liest Datei, filtert Duplikate per Name, vergibt neue IDs, merged editedDefaults. Toolbar-Buttons Export + Import (label+file-input).</div>
+      </div>
 
       <!-- ── v4.65 ── -->
       <div class="cl-entry">
