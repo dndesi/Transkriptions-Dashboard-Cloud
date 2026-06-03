@@ -856,15 +856,15 @@ function _renderPromptsResults() {
       <div class="prompt-card-header">
         <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 18, 'color:var(--muted)')}</div>
         <div class="prompt-card-name" style="color:var(--text)">${escHtml(p.name)}</div>
-        <div class="prompt-card-actions">
-          <button class="btn btn-ghost" onclick="openSystemPromptView('${p.id}')" style="padding:5px 7px" title="Ansehen">
-            ${icon('eye',13)}
-          </button>
-        </div>
       </div>
       ${p.description ? `<div class="prompt-card-desc" style="color:var(--muted)">${escHtml(p.description)}</div>` : ''}
       ${_usedInChip(p.usedIn)}
       <div class="prompt-card-preview">${escHtml(p.prompt.slice(0, 120))}…</div>
+      <div class="prompt-card-actions">
+        <button class="btn btn-ghost" onclick="openSystemPromptView('${p.id}')" style="padding:5px 7px" title="Ansehen">
+          ${icon('eye',13)}
+        </button>
+      </div>
     </div>`;
 
   const _cardEditable = (p) => {
@@ -878,21 +878,21 @@ function _renderPromptsResults() {
           ${escHtml(p.name)}
           ${modified ? `<span style="font-size:0.62rem;background:rgba(108,99,255,0.15);color:var(--accent);padding:1px 5px;border-radius:8px;font-weight:600;margin-left:4px">angepasst</span>` : ''}
         </div>
-        <div class="prompt-card-actions">
-          <button class="btn btn-ghost" onclick="openEditablePromptEditor('${p.id}')" style="padding:5px 7px" title="Bearbeiten">
-            ${icon('edit-2',13)}
-          </button>
-          <button class="btn btn-ghost" onclick="exportSingleEditablePrompt('${p.id}')" style="padding:5px 7px" title="Exportieren">
-            ${icon('download',13)}
-          </button>
-          ${modified ? `<button class="btn btn-ghost" onclick="resetEditablePromptAndRefresh('${p.id}')" style="padding:5px 7px;color:var(--red)" title="Zurücksetzen">
-            ${icon('refresh-cw',13)}
-          </button>` : ''}
-        </div>
       </div>
       ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
       ${_usedInChip(p.usedIn)}
       <div class="prompt-card-preview">${escHtml(currentText.slice(0, 120))}${currentText.length > 120 ? '…' : ''}</div>
+      <div class="prompt-card-actions">
+        <button class="btn btn-ghost" onclick="openEditablePromptEditor('${p.id}')" style="padding:5px 7px" title="Bearbeiten">
+          ${icon('edit-2',13)}
+        </button>
+        <button class="btn btn-ghost" onclick="exportSingleEditablePrompt('${p.id}')" style="padding:5px 7px" title="Exportieren">
+          ${icon('download',13)}
+        </button>
+        ${modified ? `<button class="btn btn-ghost" onclick="resetEditablePromptAndRefresh('${p.id}')" style="padding:5px 7px;color:var(--red)" title="Zurücksetzen">
+          ${icon('refresh-cw',13)}
+        </button>` : ''}
+      </div>
     </div>`;
   };
 
@@ -904,22 +904,22 @@ function _renderPromptsResults() {
       <div class="prompt-card-header">
         <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 18, 'color:var(--accent)')}</div>
         <div class="prompt-card-name">${escHtml(p.name)}</div>
-        <div class="prompt-card-actions">
-          <button class="btn btn-ghost" onclick="openPromptEditorModal('${p.id}')" style="padding:5px 7px" title="Bearbeiten">
-            ${icon('edit-2',13)}
-          </button>
-          <button class="btn btn-ghost" onclick="exportSinglePrompt('${p.id}')" style="padding:5px 7px" title="Exportieren">
-            ${icon('download',13)}
-          </button>
-          <button class="btn btn-ghost" onclick="deletePromptById('${p.id}')" style="padding:5px 7px;color:var(--red)" title="Löschen">
-            ${icon('trash-2',13)}
-          </button>
-        </div>
       </div>
       ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
       ${_usedInChip('Sitzungsdetail → Analysen → Eigene Prompts')}
       ${tags.length ? `<div class="prompt-card-tags">${tags.map(t=>`<span class="tag-chip">${escHtml(t)}</span>`).join('')}</div>` : ''}
       <div class="prompt-card-preview">${escHtml(preview.slice(0, 120))}${preview.length > 120 ? '…' : ''}</div>
+      <div class="prompt-card-actions">
+        <button class="btn btn-ghost" onclick="openPromptEditorModal('${p.id}')" style="padding:5px 7px" title="Bearbeiten">
+          ${icon('edit-2',13)}
+        </button>
+        <button class="btn btn-ghost" onclick="exportSinglePrompt('${p.id}')" style="padding:5px 7px" title="Exportieren">
+          ${icon('download',13)}
+        </button>
+        <button class="btn btn-ghost" onclick="deletePromptById('${p.id}')" style="padding:5px 7px;color:var(--red)" title="Löschen">
+          ${icon('trash-2',13)}
+        </button>
+      </div>
     </div>`;
   };
 

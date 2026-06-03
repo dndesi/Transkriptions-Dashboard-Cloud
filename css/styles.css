@@ -979,9 +979,11 @@
     }
     .prompt-card-actions {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       gap: 4px;
-      flex-shrink: 0;
+      justify-content: flex-end;
+      margin-top: auto;
+      padding-top: 10px;
     }
     .prompt-card-desc {
       font-size: 0.75rem;
