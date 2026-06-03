@@ -466,7 +466,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 4.24</span>
+          <span style="color:var(--accent); font-weight:600">Version 4.69</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -497,7 +497,7 @@ function renderArchView() {
         <div style="margin-bottom:8px; display:flex;justify-content:center">${icon('globe',28,'color:var(--accent)')}</div>
         <div style="font-weight:700; font-size:1rem; margin-bottom:6px">Distill Voice – Browser-App (GitHub Pages)</div>
         <div style="font-size:0.78rem; color:var(--muted); line-height:1.9">
-          <span style="opacity:0.7">app.js · config.js · ui.js · claude.js · drive.js</span><br>
+          <span style="opacity:0.7">app.js · config.js · storage.js · ui.js · claude.js · drive.js</span><br>
           <span style="opacity:0.7">assemblyai.js · recorder.js · sessions.js · auth.js</span><br>
           <span style="color:var(--accent2); font-weight:500">features.js · search.js · calendar.js · persons.js</span><br>
           <span style="color:var(--accent); font-weight:500">prompts.js · audio.js · tags.js · notes.js</span><br>
@@ -517,7 +517,8 @@ function renderArchView() {
     <!-- JS-Module -->
     <div style="margin-bottom:14px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted)">JavaScript-Module</div>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; margin-bottom:24px">
-      ${flowCard('config.js', 'Globaler State', 'API-Keys, Sessions, Drive-Token, OAuth-Scopes, Preise, Wechselkurs', '#60a5fa')}
+      ${flowCard('config.js', 'Globaler State', 'API-Keys, Sessions[], Drive-Token, OAuth-Scopes, Preise, Wechselkurs', '#60a5fa')}
+      ${flowCard('storage.js', 'IndexedDB-Speicher', 'initStorage(), saveSessions(), saveProjects() – Sessions + Projekte in IndexedDB, automatische Migration aus localStorage', '#a78bfa')}
       ${flowCard('assemblyai.js', 'Transkription', 'AssemblyAI Upload → Polling → Utterances mit Speaker-Labels und Timestamps', '#fbbf24')}
       ${flowCard('claude.js', 'KI-Analyse', 'Privat/Arbeit/Gedanken-Analyse, Kapitel, Themen, Stimmung, Anonymisierung, Token-Tracking', '#a78bfa')}
       ${flowCard('drive.js', 'Cloud Storage', 'Google Drive OAuth, Ordner anlegen, Sessions als JSON speichern/laden/löschen', '#34d399')}
@@ -532,10 +533,10 @@ function renderArchView() {
       ${flowCard('ui.js', 'UI-Rendering', 'Session-Browser, Zeitstrahl, Personen, Kosten, Systemarchitektur, Responsive/Hamburger', '#c084fc')}
       ${flowCard('audio.js', 'Audio & Zeitstrahl', 'Audio-Player, Sync zu Utterances, Zeitstrahl-Ansicht nach Monat gruppiert', '#34d399')}
       ${flowCard('recorder.js', 'Audio-Aufnahme', 'MediaRecorder API, Mikrofon-Zugriff, WebM-Aufnahme direkt im Browser', '#34d399')}
-      ${flowCard('sessions.js', 'Session-Verwaltung', 'Session speichern, Google Drive Archiv, Sitzungstypen (privat/arbeit/gedanken)', '#60a5fa')}
+      ${flowCard('sessions.js', 'Session-Verwaltung', 'Session speichern, Google Drive Archiv, Sitzungstypen (privat/arbeit/gedanken) · editAnalysisItem/Field, addAnalysisItem, saveAnalysisItem/Field', '#60a5fa')}
       ${flowCard('tags.js', 'Tags', 'Tag-System für Sitzungen, Chips-UI, Filter', '#f59e0b')}
       ${flowCard('notes.js', 'Notizen', 'Persönliche Notizen pro Sitzung, Auto-Save', '#94a3b8')}
-      ${flowCard('app.js', 'Initialisierung', 'Init, Theme-Toggle (Dark/Light), Upload-Schrittvalidierung, Drag & Drop', '#c084fc')}
+      ${flowCard('app.js', 'Initialisierung', 'async init() → await initStorage() → IndexedDB laden vor UI-Start · Theme-Toggle · Upload-Schrittvalidierung · Drag & Drop', '#c084fc')}
     </div>
 
     <!-- Datenflüsse -->
@@ -566,7 +567,7 @@ function renderArchView() {
         ${techRow('Prompt-System', 'Editierbare Prompts in localStorage · System/Standard/Feature/Eigene · usedIn-Badge zeigt Verwendungsort · assemblePromptText() aus Rolle/Tonalität/Grenzen/Kontext')}
         ${techRow('Akkordeon', 'Sitzungsdetail als Akkordeon · Zustand in localStorage pro Session')}
         ${techRow('OAuth Scopes', 'drive.file · userinfo.profile · calendar.events · gmail.compose')}
-        ${techRow('Daten lokal', 'IndexedDB (distill_voice_db): Sessions + Projekte · localStorage: Keys, Theme, Prompts, Akkordeon-State, Beziehungen')}
+        ${techRow('Lokaler Speicher', 'IndexedDB (distill_voice_db, js/storage.js): Sessions + Projekte · kein Größenlimit · Auto-Migration · localStorage: API-Keys, Theme, Prompts, Akkordeon-State, Beziehungen, distill_has_sessions-Flag')}
         ${techRow('CORS-Proxy', 'Cloudflare Worker (optional, ~5 Min Setup)')}
         ${techRow('Wechselkurs', 'Frankfurter API (api.frankfurter.app) – USD → EUR')}
         ${techRow('Datenschutz', 'DSGVO: Anonymisierungs-Funktion vor API-Calls, Echtname bleibt lokal')}
