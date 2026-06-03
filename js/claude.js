@@ -783,27 +783,31 @@ function renderInsights(session) {
   const privateContent = document.getElementById('privateContent');
   const pa = session.privateAnalysis;
 
-  if (pa && (pa.summary || pa.agreements?.length || pa.wishes?.length || pa.openTopics?.length || pa.dynamics || pa.keyThoughts?.length || pa.nextSteps?.length)) {
+  if (pa) {
     let html = '';
+
+    const editFieldBtn = (aKey, field) =>
+      `<button class="work-item-del" title="Bearbeiten" style="margin-left:6px;opacity:0.6"
+        onclick="editAnalysisField('${sid}','${aKey}','${field}')">${icon('pencil',11)}</button>`;
 
     if (pa.summary) {
       html += `<div class="work-section">
-        <div class="work-section-title">Zusammenfassung</div>
-        <div class="work-summary">${escHtml(pa.summary)}</div>
+        <div class="work-section-title">Zusammenfassung ${editFieldBtn('privateAnalysis','summary')}</div>
+        <div class="work-summary" data-textfield="privateAnalysis-summary">${escHtml(pa.summary)}</div>
       </div>`;
     }
 
     if (pa.dynamics) {
       html += `<div class="work-section">
-        <div class="work-section-title">${icon('message-circle',13,'margin-right:5px')} Gesprächsdynamik</div>
-        <div class="private-dynamics">${escHtml(pa.dynamics)}</div>
+        <div class="work-section-title">${icon('message-circle',13,'margin-right:5px')} Gesprächsdynamik ${editFieldBtn('privateAnalysis','dynamics')}</div>
+        <div class="private-dynamics" data-textfield="privateAnalysis-dynamics">${escHtml(pa.dynamics)}</div>
       </div>`;
     }
 
     if (pa.zwischenzeilen) {
       html += `<div class="work-section">
-        <div class="work-section-title">${icon('search',13,'margin-right:5px')} Zwischen den Zeilen</div>
-        <div class="private-dynamics" style="border-left:3px solid var(--accent2); padding-left:12px; font-style:italic">${escHtml(pa.zwischenzeilen)}</div>
+        <div class="work-section-title">${icon('search',13,'margin-right:5px')} Zwischen den Zeilen ${editFieldBtn('privateAnalysis','zwischenzeilen')}</div>
+        <div class="private-dynamics" style="border-left:3px solid var(--accent2); padding-left:12px; font-style:italic" data-textfield="privateAnalysis-zwischenzeilen">${escHtml(pa.zwischenzeilen)}</div>
       </div>`;
     }
 
@@ -812,53 +816,68 @@ function renderInsights(session) {
       `<button class="work-item-del" title="Eintrag löschen"
         onclick="deleteAnalysisItem('${sid}','${aKey}','${field}',${i})">${icon('trash-2',12)}</button>`;
 
+    const addBtn = (aKey, field) =>
+      `<button class="work-item-del" title="Hinzufügen" style="margin-left:6px;opacity:0.6;font-size:0.75rem"
+        onclick="addAnalysisItem('${sid}','${aKey}','${field}')">${icon('plus',11)} Hinzufügen</button>`;
+    const editItemBtn = (aKey, field, i) =>
+      `<button class="work-item-del" title="Bearbeiten" style="opacity:0.5"
+        onclick="editAnalysisItem('${sid}','${aKey}','${field}',${i})">${icon('pencil',11)}</button>`;
+
     if (pa.agreements?.length) {
-      html += `<div class="work-section"><div class="work-section-title">${icon('check-circle',13,'margin-right:5px')} Vereinbarungen</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('check-circle',13,'margin-right:5px')} Vereinbarungen ${addBtn('privateAnalysis','agreements')}</div><div data-section="privateAnalysis-agreements">`;
       pa.agreements.forEach((a, i) => {
-        html += `<div class="work-item"><span>${icon('check',11,'color:var(--green)')}</span><div class="work-item-content">${escHtml(a)}</div>${delBtn('privateAnalysis','agreements',i)}</div>`;
+        html += `<div class="work-item"><span>${icon('check',11,'color:var(--green)')}</span><div class="work-item-content" data-edit-key="privateAnalysis" data-edit-field="agreements" data-edit-idx="${i}">${escHtml(a)}</div>${editItemBtn('privateAnalysis','agreements',i)}${delBtn('privateAnalysis','agreements',i)}</div>`;
       });
-      html += `</div>`;
+      html += `</div></div>`;
+    } else {
+      html += `<div class="work-section"><div class="work-section-title">${icon('check-circle',13,'margin-right:5px')} Vereinbarungen ${addBtn('privateAnalysis','agreements')}</div><div data-section="privateAnalysis-agreements"></div></div>`;
     }
 
     if (pa.wishes?.length) {
-      html += `<div class="work-section"><div class="work-section-title">${icon('target',13,'margin-right:5px')} Wünsche & Bedürfnisse</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('target',13,'margin-right:5px')} Wünsche & Bedürfnisse ${addBtn('privateAnalysis','wishes')}</div><div data-section="privateAnalysis-wishes">`;
       pa.wishes.forEach((w, i) => {
         const pName = typeof w === 'object' ? w.person : '';
         const wish  = typeof w === 'object' ? w.wish   : w;
         html += `<div class="work-item">
           <span>${icon('message-square',11)}</span>
-          <div class="work-item-content">
+          <div class="work-item-content" data-edit-key="privateAnalysis" data-edit-field="wishes" data-edit-idx="${i}">
             ${pName ? `<div style="font-size:0.72rem; color:var(--muted); font-weight:700; margin-bottom:2px">${escHtml(pName)}</div>` : ''}
             <div>${escHtml(wish)}</div>
           </div>
-          ${delBtn('privateAnalysis','wishes',i)}
+          ${editItemBtn('privateAnalysis','wishes',i)}${delBtn('privateAnalysis','wishes',i)}
         </div>`;
       });
-      html += `</div>`;
+      html += `</div></div>`;
     }
 
     if (pa.openTopics?.length) {
-      html += `<div class="work-section"><div class="work-section-title">${icon('clock',13,'margin-right:5px')} Offene Themen</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('clock',13,'margin-right:5px')} Offene Themen ${addBtn('privateAnalysis','openTopics')}</div><div data-section="privateAnalysis-openTopics">`;
       pa.openTopics.forEach((t, i) => {
-        html += `<div class="work-item"><span>○</span><div class="work-item-content">${escHtml(t)}</div>${delBtn('privateAnalysis','openTopics',i)}</div>`;
+        html += `<div class="work-item"><span>○</span><div class="work-item-content" data-edit-key="privateAnalysis" data-edit-field="openTopics" data-edit-idx="${i}">${escHtml(t)}</div>${editItemBtn('privateAnalysis','openTopics',i)}${delBtn('privateAnalysis','openTopics',i)}</div>`;
       });
-      html += `</div>`;
+      html += `</div></div>`;
+    } else {
+      html += `<div class="work-section"><div class="work-section-title">${icon('clock',13,'margin-right:5px')} Offene Themen ${addBtn('privateAnalysis','openTopics')}</div><div data-section="privateAnalysis-openTopics"></div></div>`;
     }
 
     if (pa.keyThoughts?.length) {
-      html += `<div class="work-section"><div class="work-section-title">${icon('lightbulb',13,'margin-right:5px')} Kerngedanken</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('lightbulb',13,'margin-right:5px')} Kerngedanken ${addBtn('privateAnalysis','keyThoughts')}</div><div data-section="privateAnalysis-keyThoughts">`;
       pa.keyThoughts.forEach((t, i) => {
-        html += `<div class="work-item"><span>→</span><div class="work-item-content">${escHtml(t)}</div>${delBtn('privateAnalysis','keyThoughts',i)}</div>`;
+        html += `<div class="work-item"><span>→</span><div class="work-item-content" data-edit-key="privateAnalysis" data-edit-field="keyThoughts" data-edit-idx="${i}">${escHtml(t)}</div>${editItemBtn('privateAnalysis','keyThoughts',i)}${delBtn('privateAnalysis','keyThoughts',i)}</div>`;
       });
-      html += `</div>`;
+      html += `</div></div>`;
+    } else {
+      html += `<div class="work-section"><div class="work-section-title">${icon('lightbulb',13,'margin-right:5px')} Kerngedanken ${addBtn('privateAnalysis','keyThoughts')}</div><div data-section="privateAnalysis-keyThoughts"></div></div>`;
     }
 
     if (pa.nextSteps?.length) {
-      html += `<div class="work-section"><div class="work-section-title">${icon('arrow-right',13,'margin-right:5px')} Nächste Schritte</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('arrow-right',13,'margin-right:5px')} Nächste Schritte ${addBtn('privateAnalysis','nextSteps')}</div><div data-section="privateAnalysis-nextSteps">`;
       pa.nextSteps.forEach((t, i) => {
-        html += `<div class="work-item"><span>${icon('square',11,'opacity:0.5')}</span><div class="work-item-content">${escHtml(t)}</div>${delBtn('privateAnalysis','nextSteps',i)}</div>`;
+        html += `<div class="work-item"><span>${icon('square',11,'opacity:0.5')}</span><div class="work-item-content" data-edit-key="privateAnalysis" data-edit-field="nextSteps" data-edit-idx="${i}">${escHtml(t)}</div>${editItemBtn('privateAnalysis','nextSteps',i)}${delBtn('privateAnalysis','nextSteps',i)}</div>`;
       });
-      html += `</div>`;
+      html += `</div></div>`;
+    } else {
+      html += `<div class="work-section"><div class="work-section-title">${icon('arrow-right',13,'margin-right:5px')} Nächste Schritte ${addBtn('privateAnalysis','nextSteps')}</div><div data-section="privateAnalysis-nextSteps"></div></div>`;
     }
 
     privateContent.innerHTML = html;
@@ -873,28 +892,37 @@ function renderInsights(session) {
   const workContent = document.getElementById('workContent');
   const wa = session.workAnalysis;
 
-  if (wa && (wa.tasks?.length || wa.decisions?.length || wa.openQuestions?.length || wa.risks?.length || wa.summary)) {
+  if (wa) {
     let html = '';
-
-    if (wa.summary) {
-      html += `<div class="work-section">
-        <div class="work-section-title">Zusammenfassung</div>
-        <div class="work-summary">${escHtml(wa.summary)}</div>
-      </div>`;
-    }
 
     const wSid = session.id;
     const wDel = (field, i) =>
       `<button class="work-item-del" title="Eintrag löschen"
         onclick="deleteAnalysisItem('${wSid}','workAnalysis','${field}',${i})">${icon('trash-2',12)}</button>`;
+    const wEdit = (field, i) =>
+      `<button class="work-item-del" title="Bearbeiten" style="opacity:0.5"
+        onclick="editAnalysisItem('${wSid}','workAnalysis','${field}',${i})">${icon('pencil',11)}</button>`;
+    const wAdd = (field) =>
+      `<button class="work-item-del" title="Hinzufügen" style="margin-left:6px;opacity:0.6;font-size:0.75rem"
+        onclick="addAnalysisItem('${wSid}','workAnalysis','${field}')">${icon('plus',11)} Hinzufügen</button>`;
+    const wEditField = (field) =>
+      `<button class="work-item-del" title="Bearbeiten" style="margin-left:6px;opacity:0.6"
+        onclick="editAnalysisField('${wSid}','workAnalysis','${field}')">${icon('pencil',11)}</button>`;
+
+    if (wa.summary) {
+      html += `<div class="work-section">
+        <div class="work-section-title">Zusammenfassung ${wEditField('summary')}</div>
+        <div class="work-summary" data-textfield="workAnalysis-summary">${escHtml(wa.summary)}</div>
+      </div>`;
+    }
 
     if (wa.tasks?.length) {
-      html += `<div class="work-section"><div class="work-section-title">${icon('check-circle',13,'margin-right:5px')} Aufgaben (${wa.tasks.length})</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('check-circle',13,'margin-right:5px')} Aufgaben (${wa.tasks.length}) ${wAdd('tasks')}</div><div data-section="workAnalysis-tasks">`;
       wa.tasks.forEach((t, i) => {
         const prioClass = t.priority === 'hoch' ? 'work-prio-hoch' : t.priority === 'niedrig' ? 'work-prio-niedrig' : 'work-prio-mittel';
         html += `<div class="work-item">
           <span>${icon('square',11,'opacity:0.5')}</span>
-          <div class="work-item-content">
+          <div class="work-item-content" data-edit-key="workAnalysis" data-edit-field="tasks" data-edit-idx="${i}">
             <div>${escHtml(t.task)}</div>
             <div class="work-item-meta">
               ${t.person ? `${icon('user',11,'margin-right:3px')}${escHtml(t.person)}` : ''}
@@ -902,40 +930,48 @@ function renderInsights(session) {
               ${t.priority ? ` · <span class="${prioClass}">${escHtml(t.priority)}</span>` : ''}
             </div>
           </div>
-          ${wDel('tasks',i)}
+          ${wEdit('tasks',i)}${wDel('tasks',i)}
         </div>`;
       });
-      html += `</div>`;
+      html += `</div></div>`;
+    } else {
+      html += `<div class="work-section"><div class="work-section-title">${icon('check-circle',13,'margin-right:5px')} Aufgaben ${wAdd('tasks')}</div><div data-section="workAnalysis-tasks"></div></div>`;
     }
 
     if (wa.decisions?.length) {
-      html += `<div class="work-section"><div class="work-section-title">${icon('clipboard',13,'margin-right:5px')} Entscheidungen</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('clipboard',13,'margin-right:5px')} Entscheidungen ${wAdd('decisions')}</div><div data-section="workAnalysis-decisions">`;
       wa.decisions.forEach((d, i) => {
-        html += `<div class="work-item"><span>${icon('check',11,'color:var(--green)')}</span><div class="work-item-content">${escHtml(d)}</div>${wDel('decisions',i)}</div>`;
+        html += `<div class="work-item"><span>${icon('check',11,'color:var(--green)')}</span><div class="work-item-content" data-edit-key="workAnalysis" data-edit-field="decisions" data-edit-idx="${i}">${escHtml(d)}</div>${wEdit('decisions',i)}${wDel('decisions',i)}</div>`;
       });
-      html += `</div>`;
+      html += `</div></div>`;
+    } else {
+      html += `<div class="work-section"><div class="work-section-title">${icon('clipboard',13,'margin-right:5px')} Entscheidungen ${wAdd('decisions')}</div><div data-section="workAnalysis-decisions"></div></div>`;
     }
 
     if (wa.openQuestions?.length) {
-      html += `<div class="work-section"><div class="work-section-title">${icon('alert-circle',13,'margin-right:5px')} Offene Fragen</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('alert-circle',13,'margin-right:5px')} Offene Fragen ${wAdd('openQuestions')}</div><div data-section="workAnalysis-openQuestions">`;
       wa.openQuestions.forEach((q, i) => {
-        html += `<div class="work-item"><span>?</span><div class="work-item-content">${escHtml(q)}</div>${wDel('openQuestions',i)}</div>`;
+        html += `<div class="work-item"><span>?</span><div class="work-item-content" data-edit-key="workAnalysis" data-edit-field="openQuestions" data-edit-idx="${i}">${escHtml(q)}</div>${wEdit('openQuestions',i)}${wDel('openQuestions',i)}</div>`;
       });
-      html += `</div>`;
+      html += `</div></div>`;
+    } else {
+      html += `<div class="work-section"><div class="work-section-title">${icon('alert-circle',13,'margin-right:5px')} Offene Fragen ${wAdd('openQuestions')}</div><div data-section="workAnalysis-openQuestions"></div></div>`;
     }
 
     if (wa.risks?.length) {
-      html += `<div class="work-section"><div class="work-section-title">${icon('alert-triangle',13,'margin-right:5px')} Risiken</div>`;
+      html += `<div class="work-section"><div class="work-section-title">${icon('alert-triangle',13,'margin-right:5px')} Risiken ${wAdd('risks')}</div><div data-section="workAnalysis-risks">`;
       wa.risks.forEach((r, i) => {
-        html += `<div class="work-item"><span>${icon('alert-triangle',11,'color:var(--yellow)')}</span><div class="work-item-content">${escHtml(r)}</div>${wDel('risks',i)}</div>`;
+        html += `<div class="work-item"><span>${icon('alert-triangle',11,'color:var(--yellow)')}</span><div class="work-item-content" data-edit-key="workAnalysis" data-edit-field="risks" data-edit-idx="${i}">${escHtml(r)}</div>${wEdit('risks',i)}${wDel('risks',i)}</div>`;
       });
-      html += `</div>`;
+      html += `</div></div>`;
+    } else {
+      html += `<div class="work-section"><div class="work-section-title">${icon('alert-triangle',13,'margin-right:5px')} Risiken ${wAdd('risks')}</div><div data-section="workAnalysis-risks"></div></div>`;
     }
 
     if (wa.zwischenzeilen) {
       html += `<div class="work-section">
-        <div class="work-section-title">${icon('search',13,'margin-right:5px')} Zwischen den Zeilen</div>
-        <div class="private-dynamics" style="border-left:3px solid var(--accent2); padding-left:12px; font-style:italic">${escHtml(wa.zwischenzeilen)}</div>
+        <div class="work-section-title">${icon('search',13,'margin-right:5px')} Zwischen den Zeilen ${wEditField('zwischenzeilen')}</div>
+        <div class="private-dynamics" style="border-left:3px solid var(--accent2); padding-left:12px; font-style:italic" data-textfield="workAnalysis-zwischenzeilen">${escHtml(wa.zwischenzeilen)}</div>
       </div>`;
     }
 
@@ -1166,20 +1202,26 @@ function _buildSectionText(type, session) {
     if (!pa) return null;
     header('GESPRÄCHSANALYSE');
     lines.push(meta, '');
-    if (pa.summary)           { lines.push('Zusammenfassung', pa.summary, ''); }
-    if (pa.keyPoints?.length) { lines.push('Kernpunkte'); pa.keyPoints.forEach(item); lines.push(''); }
-    if (pa.actionItems?.length){ lines.push('Maßnahmen'); pa.actionItems.forEach(item); lines.push(''); }
-    if (pa.openQuestions?.length){ lines.push('Offene Fragen'); pa.openQuestions.forEach(item); lines.push(''); }
+    if (pa.summary)              { lines.push('Zusammenfassung', pa.summary, ''); }
+    if (pa.dynamics)             { lines.push('Gesprächsdynamik', pa.dynamics, ''); }
+    if (pa.zwischenzeilen)       { lines.push('Zwischen den Zeilen', pa.zwischenzeilen, ''); }
+    if (pa.agreements?.length)   { lines.push('Vereinbarungen'); pa.agreements.forEach(item); lines.push(''); }
+    if (pa.wishes?.length)       { lines.push('Wünsche & Bedürfnisse'); pa.wishes.forEach(w => item(typeof w === 'object' ? (w.person ? w.person + ': ' + w.wish : w.wish) : w)); lines.push(''); }
+    if (pa.openTopics?.length)   { lines.push('Offene Themen'); pa.openTopics.forEach(item); lines.push(''); }
+    if (pa.keyThoughts?.length)  { lines.push('Kerngedanken'); pa.keyThoughts.forEach(item); lines.push(''); }
+    if (pa.nextSteps?.length)    { lines.push('Nächste Schritte'); pa.nextSteps.forEach(item); lines.push(''); }
 
   } else if (type === 'work') {
     const wa = session.workAnalysis;
     if (!wa) return null;
     header('ARBEITSANALYSE');
     lines.push(meta, '');
-    if (wa.summary)            { lines.push('Zusammenfassung', wa.summary, ''); }
-    if (wa.keyPoints?.length)  { lines.push('Kernpunkte'); wa.keyPoints.forEach(item); lines.push(''); }
-    if (wa.actionItems?.length){ lines.push('Maßnahmen'); wa.actionItems.forEach(item); lines.push(''); }
-    if (wa.followUpEmails?.length){ lines.push('E-Mail-Vorlagen'); wa.followUpEmails.forEach(e => { lines.push(`An: ${e.to}`, `Betreff: ${e.subject}`, e.body, ''); }); }
+    if (wa.summary)              { lines.push('Zusammenfassung', wa.summary, ''); }
+    if (wa.zwischenzeilen)       { lines.push('Zwischen den Zeilen', wa.zwischenzeilen, ''); }
+    if (wa.tasks?.length)        { lines.push('Aufgaben'); wa.tasks.forEach(t => item(t.task + (t.person ? ' [' + t.person + ']' : '') + (t.deadline ? ' bis ' + t.deadline : '') + (t.priority ? ' (' + t.priority + ')' : ''))); lines.push(''); }
+    if (wa.decisions?.length)    { lines.push('Entscheidungen'); wa.decisions.forEach(item); lines.push(''); }
+    if (wa.openQuestions?.length){ lines.push('Offene Fragen'); wa.openQuestions.forEach(item); lines.push(''); }
+    if (wa.risks?.length)        { lines.push('Risiken'); wa.risks.forEach(item); lines.push(''); }
 
   } else if (type === 'sentiment') {
     const cs = session.claudeSentiment;

@@ -146,6 +146,114 @@ function deleteAnalysisItem(sessionId, analysisKey, field, idx) {
   saveToArchive(s).catch(() => {});
   renderInsights(s);
 }
+// ── Analyse-Items bearbeiten ──────────────────────────────────────────────
+
+// Listeneintrag bearbeiten (inline textarea statt Text)
+function editAnalysisItem(sessionId, analysisKey, field, idx) {
+  const itemEl = document.querySelector(
+    `[data-edit-key="${analysisKey}"][data-edit-field="${field}"][data-edit-idx="${idx}"]`
+  );
+  if (!itemEl) return;
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s?.[analysisKey]?.[field]) return;
+  const raw = s[analysisKey][field][idx];
+  const current = typeof raw === 'object' ? (raw.wish || raw.task || JSON.stringify(raw)) : raw;
+  itemEl.innerHTML = `
+    <textarea style="width:100%;min-height:52px;background:var(--bg2);color:var(--text);border:1px solid var(--accent);border-radius:6px;padding:6px 8px;font-size:0.85rem;resize:vertical;box-sizing:border-box"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();saveAnalysisItem('${sessionId}','${analysisKey}','${field}',${idx},this.value)}"
+      >${current.replace(/</g,'&lt;')}</textarea>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="work-item-del" style="padding:2px 10px;border-radius:5px;background:var(--accent);color:#fff;font-size:0.78rem"
+        onclick="saveAnalysisItem('${sessionId}','${analysisKey}','${field}',${idx},this.closest('[data-edit-key]').querySelector('textarea').value)">✓ Speichern</button>
+      <button class="work-item-del" style="padding:2px 8px;border-radius:5px;font-size:0.78rem"
+        onclick="renderInsights(sessions.find(x=>x.id==='${sessionId}'))">✕</button>
+    </div>`;
+}
+
+function saveAnalysisItem(sessionId, analysisKey, field, idx, value) {
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s?.[analysisKey]?.[field]) return;
+  const val = value.trim();
+  if (!val) return;
+  const raw = s[analysisKey][field][idx];
+  if (typeof raw === 'object') {
+    // z.B. wishes { person, wish } oder tasks { task, ... }
+    if ('wish'  in raw) raw.wish  = val;
+    else if ('task' in raw) raw.task = val;
+    else s[analysisKey][field][idx] = val;
+  } else {
+    s[analysisKey][field][idx] = val;
+  }
+  saveSessions();
+  saveToArchive(s).catch(() => {});
+  renderInsights(s);
+}
+
+// Textfeld bearbeiten (summary, dynamics, zwischenzeilen)
+function editAnalysisField(sessionId, analysisKey, field) {
+  const el = document.querySelector(`[data-textfield="${analysisKey}-${field}"]`);
+  if (!el) return;
+  const s = sessions.find(x => x.id === sessionId);
+  const current = s?.[analysisKey]?.[field] || '';
+  el.innerHTML = `
+    <textarea style="width:100%;min-height:72px;background:var(--bg2);color:var(--text);border:1px solid var(--accent);border-radius:6px;padding:8px;font-size:0.85rem;resize:vertical;box-sizing:border-box"
+      onkeydown="if(event.key==='Enter'&&event.ctrlKey){saveAnalysisField('${sessionId}','${analysisKey}','${field}',this.value)}"
+      >${current.replace(/</g,'&lt;')}</textarea>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="work-item-del" style="padding:2px 10px;border-radius:5px;background:var(--accent);color:#fff;font-size:0.78rem"
+        onclick="saveAnalysisField('${sessionId}','${analysisKey}','${field}',this.closest('[data-textfield]').querySelector('textarea').value)">✓ Speichern</button>
+      <button class="work-item-del" style="padding:2px 8px;border-radius:5px;font-size:0.78rem"
+        onclick="renderInsights(sessions.find(x=>x.id==='${sessionId}'))">✕</button>
+    </div>`;
+}
+
+function saveAnalysisField(sessionId, analysisKey, field, value) {
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s) return;
+  if (!s[analysisKey]) s[analysisKey] = {};
+  s[analysisKey][field] = value.trim();
+  saveSessions();
+  saveToArchive(s).catch(() => {});
+  renderInsights(s);
+}
+
+// Neuen Listeneintrag hinzufügen
+function addAnalysisItem(sessionId, analysisKey, field) {
+  const containerId = `add-input-${analysisKey}-${field}`;
+  const existing = document.getElementById(containerId);
+  if (existing) { existing.querySelector('textarea')?.focus(); return; }
+  const sectionEl = document.querySelector(`[data-section="${analysisKey}-${field}"]`);
+  if (!sectionEl) return;
+  const div = document.createElement('div');
+  div.id = containerId;
+  div.style.cssText = 'margin-top:6px;';
+  div.innerHTML = `
+    <textarea placeholder="Neuer Eintrag …" style="width:100%;min-height:52px;background:var(--bg2);color:var(--text);border:1px solid var(--accent);border-radius:6px;padding:6px 8px;font-size:0.85rem;resize:vertical;box-sizing:border-box"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();confirmAddAnalysisItem('${sessionId}','${analysisKey}','${field}',this.value)}"></textarea>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="work-item-del" style="padding:2px 10px;border-radius:5px;background:var(--accent);color:#fff;font-size:0.78rem"
+        onclick="confirmAddAnalysisItem('${sessionId}','${analysisKey}','${field}',this.closest('#${containerId}').querySelector('textarea').value)">✓ Hinzufügen</button>
+      <button class="work-item-del" style="padding:2px 8px;border-radius:5px;font-size:0.78rem"
+        onclick="document.getElementById('${containerId}').remove()">✕</button>
+    </div>`;
+  sectionEl.appendChild(div);
+  div.querySelector('textarea').focus();
+}
+
+function confirmAddAnalysisItem(sessionId, analysisKey, field, value) {
+  const val = value.trim();
+  if (!val) return;
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s) return;
+  if (!s[analysisKey]) s[analysisKey] = {};
+  if (!Array.isArray(s[analysisKey][field])) s[analysisKey][field] = [];
+  s[analysisKey][field].push(val);
+  saveSessions();
+  saveToArchive(s).catch(() => {});
+  renderInsights(s);
+}
+
+
 
 // ── Topic-Kuration (vereinfacht: nur noch löschen) ────────────────────────
 function deleteTopic(sessionId, idx) {

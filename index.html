@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.68</button>
+        onmouseout="this.style.color='var(--muted)'">v4.69</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -750,6 +750,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.69 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.69</span>
+          <span class="cl-date">03.06.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+          <span class="cl-tag cl-tag-feat">Feature</span>
+        </div>
+        <div class="cl-title">Analyse editierbar + Export-Vollständigkeit</div>
+        <div class="cl-body">Analyse-Sektionen können jetzt manuell bearbeitet werden: Texte (Zusammenfassung, Dynamik, Zwischen den Zeilen) per Stift-Icon inline editieren; Listeneinträge per Stift bearbeiten oder per „+ Hinzufügen" ergänzen. Export-Bug behoben: TXT/PDF-Export enthält jetzt alle Sektionen (Gesprächsdynamik, Vereinbarungen, Offene Themen, Kerngedanken, Nächste Schritte, Aufgaben, Entscheidungen etc.).</div>
+        <div class="cl-tech">js/sessions.js: editAnalysisItem, saveAnalysisItem, editAnalysisField, saveAnalysisField, addAnalysisItem, confirmAddAnalysisItem. js/claude.js: renderInsights mit Stift/Plus-Buttons, data-textfield + data-section Attribute, _buildSectionText auf korrekte Feldnamen aktualisiert (agreements, keyThoughts, nextSteps, dynamics, zwischenzeilen, tasks, decisions, risks).</div>
+      </div>
 
       <!-- ── v4.68 ── -->
       <div class="cl-entry">
