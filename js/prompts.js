@@ -857,8 +857,8 @@ function _renderPromptsResults() {
         <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 18, 'color:var(--muted)')}</div>
         <div class="prompt-card-name" style="color:var(--text)">${escHtml(p.name)}</div>
         <div class="prompt-card-actions">
-          <button class="btn btn-ghost" onclick="openSystemPromptView('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap">
-            ${icon('eye',12)} Ansehen
+          <button class="btn btn-ghost" onclick="openSystemPromptView('${p.id}')" style="padding:5px 7px" title="Ansehen">
+            ${icon('eye',13)}
           </button>
         </div>
       </div>
@@ -879,14 +879,14 @@ function _renderPromptsResults() {
           ${modified ? `<span style="font-size:0.62rem;background:rgba(108,99,255,0.15);color:var(--accent);padding:1px 5px;border-radius:8px;font-weight:600;margin-left:4px">angepasst</span>` : ''}
         </div>
         <div class="prompt-card-actions">
-          <button class="btn btn-ghost" onclick="openEditablePromptEditor('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap">
-            ${icon('edit-2',12)} Bearbeiten
+          <button class="btn btn-ghost" onclick="openEditablePromptEditor('${p.id}')" style="padding:5px 7px" title="Bearbeiten">
+            ${icon('edit-2',13)}
           </button>
-          <button class="btn btn-ghost" onclick="exportSingleEditablePrompt('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap" title="Diesen Prompt exportieren">
-            ${icon('download',12)}
+          <button class="btn btn-ghost" onclick="exportSingleEditablePrompt('${p.id}')" style="padding:5px 7px" title="Exportieren">
+            ${icon('download',13)}
           </button>
-          ${modified ? `<button class="btn" onclick="resetEditablePromptAndRefresh('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)">
-            ${icon('refresh-cw',12)} Reset
+          ${modified ? `<button class="btn btn-ghost" onclick="resetEditablePromptAndRefresh('${p.id}')" style="padding:5px 7px;color:var(--red)" title="Zurücksetzen">
+            ${icon('refresh-cw',13)}
           </button>` : ''}
         </div>
       </div>
@@ -905,14 +905,14 @@ function _renderPromptsResults() {
         <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 18, 'color:var(--accent)')}</div>
         <div class="prompt-card-name">${escHtml(p.name)}</div>
         <div class="prompt-card-actions">
-          <button class="btn btn-ghost" onclick="openPromptEditorModal('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap">
-            ${icon('edit-2',12)} Bearbeiten
+          <button class="btn btn-ghost" onclick="openPromptEditorModal('${p.id}')" style="padding:5px 7px" title="Bearbeiten">
+            ${icon('edit-2',13)}
           </button>
-          <button class="btn btn-ghost" onclick="exportSinglePrompt('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap" title="Diesen Prompt exportieren">
-            ${icon('download',12)}
+          <button class="btn btn-ghost" onclick="exportSinglePrompt('${p.id}')" style="padding:5px 7px" title="Exportieren">
+            ${icon('download',13)}
           </button>
-          <button class="btn" onclick="deletePromptById('${p.id}')" style="padding:4px 10px;font-size:0.76rem;gap:4px;white-space:nowrap;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)">
-            ${icon('trash-2',12)} Löschen
+          <button class="btn btn-ghost" onclick="deletePromptById('${p.id}')" style="padding:5px 7px;color:var(--red)" title="Löschen">
+            ${icon('trash-2',13)}
           </button>
         </div>
       </div>
