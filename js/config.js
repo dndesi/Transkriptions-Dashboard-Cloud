@@ -14,21 +14,21 @@
 const PRICING = {
   assemblyai: {
     name: 'AssemblyAI',
-    model: 'Best (mit Speaker Diarization)',
-    perMinute: 0.0061,        // USD/Minute – $0.37/Std Basispreis
-    diarizationPerMin: 0.00033, // USD/Minute – Speaker Diarization Add-on
+    model: 'Universal (mit Speaker Diarization)',
+    perMinute: 0.0045,        // USD/Minute – $0.27/Std inkl. Diarization (verifiziert 03.06.2026)
+    diarizationPerMin: 0,     // Diarization ist im Flatrate-Preis enthalten
     currency: 'USD',
-    updatedAt: '2026-05-24',
+    updatedAt: '2026-06-03',
     source: 'https://www.assemblyai.com/pricing/',
   },
   claude: {
     name: 'Anthropic Claude',
-    model: 'claude-haiku-4-5-20251001',
-    inputPerMToken: 1.00,     // USD pro Million Input-Tokens
-    outputPerMToken: 5.00,    // USD pro Million Output-Tokens
+    model: 'claude-sonnet-4-6',
+    inputPerMToken: 3.00,     // USD pro Million Input-Tokens (verifiziert 03.06.2026)
+    outputPerMToken: 15.00,   // USD pro Million Output-Tokens (verifiziert 03.06.2026)
     currency: 'USD',
-    updatedAt: '2026-05-24',
-    source: 'https://platform.claude.com/docs/en/about-claude/pricing',
+    updatedAt: '2026-06-03',
+    source: 'https://platform.claude.com/docs/en/about-claude/models/all-models',
   },
 };
 
