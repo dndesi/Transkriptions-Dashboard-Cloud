@@ -785,6 +785,7 @@ function renderInsights(session) {
 
   if (pa) {
     let html = '';
+    const sid = session.id;
 
     const editFieldBtn = (aKey, field) =>
       `<button class="work-item-del" title="Bearbeiten" style="margin-left:6px;opacity:0.6"
@@ -811,7 +812,6 @@ function renderInsights(session) {
       </div>`;
     }
 
-    const sid = session.id;
     const delBtn = (aKey, field, i) =>
       `<button class="work-item-del" title="Eintrag löschen"
         onclick="deleteAnalysisItem('${sid}','${aKey}','${field}',${i})">${icon('trash-2',12)}</button>`;
