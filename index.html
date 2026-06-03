@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.64</button>
+        onmouseout="this.style.color='var(--muted)'">v4.65</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -750,6 +750,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.65 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.65</span>
+          <span class="cl-date">03.06.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>AssemblyAI EU-Löschung behoben</strong> – Cloudflare Worker war hartkodiert auf US-Server (api.assemblyai.com). EU-Transkripte (api.eu.assemblyai.com) konnten damit nicht gefunden und gelöscht werden. Worker akzeptiert jetzt ?region=eu Parameter. deleteFromAssemblyAI() schickt die aktuelle Region mit.</li>
+        </ul>
+        <div class="cl-tech">index.html: Worker-Code liest region Query-Parameter, wählt EU oder US Endpoint. js/assemblyai.js: deleteFromAssemblyAI() hängt ?region=eu an Proxy-URL wenn assemblyRegion==='eu'.</div>
+      </div>
 
       <!-- ── v4.64 ── -->
       <div class="cl-entry">
@@ -2399,9 +2412,12 @@
     if (request.method !== 'DELETE') {
       return new Response('Not allowed', { status: 405, headers: cors });
     }
-    const id = new URL(request.url).pathname.split('/').pop();
+    const url = new URL(request.url);
+    const id = url.pathname.split('/').pop();
     if (!id) return new Response('Missing ID', { status: 400, headers: cors });
-    const res = await fetch(`https://api.assemblyai.com/v2/transcript/${id}`, {
+    const region = url.searchParams.get('region') || 'us';
+    const base = region === 'eu' ? 'https://api.eu.assemblyai.com' : 'https://api.assemblyai.com';
+    const res = await fetch(`${base}/v2/transcript/${id}`, {
       method: 'DELETE',
       headers: { authorization: request.headers.get('authorization') || '' },
     });

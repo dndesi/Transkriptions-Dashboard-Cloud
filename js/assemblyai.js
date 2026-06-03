@@ -2,8 +2,10 @@
 // ═══════════════════════════════════════════════════
 async function deleteFromAssemblyAI(transcriptId) {
   if (!transcriptId) return { ok: false, error: 'Keine ID' };
+  // Region mitgeben damit der Proxy den richtigen AssemblyAI-Server anspricht
+  const regionParam = assemblyRegion === 'eu' ? '?region=eu' : '';
   const deleteUrl = proxyUrl
-    ? proxyUrl.replace(/\/$/, '') + '/' + transcriptId
+    ? proxyUrl.replace(/\/$/, '') + '/' + transcriptId + regionParam
     : `${assemblyBase()}/v2/transcript/${transcriptId}`;
   console.log('[AssemblyAI DELETE] URL:', deleteUrl);
   try {
