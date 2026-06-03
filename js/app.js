@@ -5,6 +5,8 @@ function init() {
   migrateSessionsToDefaultProject(); // Paket 1: bestehende Sessions → Allgemeines Projekt
   updateProjectBadge();              // Paket 2: Sidenav-Badge aktualisieren
   _applyOwnerName();                 // Owner-Name in UI einsetzen
+  // Unterbrochene Transkriptionen nach kurzem Delay fortsetzen (APIs müssen bereit sein)
+  setTimeout(() => resumePendingTranscriptions(), 3000);
   updateApiIndicator();
   updateDriveStatus();
   updateTagFilter();

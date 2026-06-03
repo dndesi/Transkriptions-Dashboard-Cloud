@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.63</button>
+        onmouseout="this.style.color='var(--muted)'">v4.64</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -750,6 +750,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.64 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.64</span>
+          <span class="cl-date">03.06.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature + Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Session-Recovery</strong> – Beim App-Start werden unterbrochene Transkriptionen (status=processing + transcriptId vorhanden) automatisch fortgesetzt. Polling wird wiederaufgenommen, Ergebnis in Drive gespeichert. Funktioniert auch wenn die Seite während der Verarbeitung geschlossen wurde.</li>
+          <li><strong>Polling-Timeout 10→30 Minuten</strong> – Maximale Wartezeit von 120 auf 360 Versuche erhöht (je 5s). 2,5-Stunden-Dateien (~15 Min Verarbeitung) laufen jetzt nicht mehr in einen Timeout.</li>
+        </ul>
+        <div class="cl-tech">js/assemblyai.js: pollTranscription() max 120→360. resumePendingTranscriptions() neu – findet sessions mit status=processing+transcriptId, pollt AssemblyAI, speichert Ergebnis+Drive. js/app.js: setTimeout(resumePendingTranscriptions, 3000) in init().</div>
+      </div>
 
       <!-- ── v4.63 ── -->
       <div class="cl-entry">

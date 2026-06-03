@@ -397,7 +397,7 @@ async function pollTranscription(transcriptId) {
   const headers = { 'authorization': apiKey };
   let attempts = 0;
 
-  while (attempts < 120) {
+  while (attempts < 360) { // max. 30 Minuten (360 × 5s)
     await sleep(5000);
     const res = await fetch(url, { headers });
     const data = await res.json();
@@ -409,7 +409,7 @@ async function pollTranscription(transcriptId) {
     const progress = 50 + Math.min(35, attempts * 0.5);
     setProgress(progress, `Warte… (${attempts * 5}s)`, icon('loader',12,'margin-right:5px') + ` Status: ${data.status}\n` + icon('clock',12,'margin-right:5px') + ` Bisher ${attempts * 5} Sekunden gewartet…`);
   }
-  throw new Error('Timeout – Transkription dauert zu lange');
+  throw new Error('Timeout – Transkription dauert zu lange (> 30 Min). Seite neu laden um fortzufahren.');
 }
 
 // ═══════════════════════════════════════════════════
@@ -432,3 +432,65 @@ function setProgress(pct, step, log) {
 }
 
 // ═══════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════
+// SESSION RECOVERY – unterbrochene Transkriptionen wiederherstellen
+// ═══════════════════════════════════════════════════
+async function resumePendingTranscriptions() {
+  if (!apiKey) return;
+  const pending = sessions.filter(s => s.status === 'processing' && s.transcriptId);
+  if (!pending.length) return;
+
+  showToast(`${pending.length} unterbrochene Transkription(en) werden fortgesetzt…`, 'info');
+
+  for (const session of pending) {
+    try {
+      showProgress();
+      setProgress(50, 'Recovery…', `${icon('refresh-cw',12,'margin-right:5px')} Setze Transkription fort (ID: ${session.transcriptId})…`);
+
+      // Erst prüfen ob AssemblyAI schon fertig ist
+      const url = `${assemblyBase()}/v2/transcript/${session.transcriptId}`;
+      const res = await fetch(url, { headers: { authorization: apiKey } });
+      const data = await res.json();
+
+      let result;
+      if (data.status === 'completed') {
+        result = data;
+      } else if (data.status === 'error') {
+        throw new Error(data.error || 'Transkription fehlgeschlagen');
+      } else {
+        // Noch nicht fertig – weiterpollen
+        result = await pollTranscription(session.transcriptId);
+      }
+
+      setProgress(90, 'Recovery: Ergebnis laden…', icon('check-circle',12,'margin-right:5px;color:var(--green)') + ' Transkription fertig\n' + icon('save',12,'margin-right:5px') + ' Speichere…');
+
+      session.utterances = result.utterances || [];
+      session.status = 'done';
+      session.duration = result.audio_duration;
+      session.processedAt = new Date().toISOString();
+
+      // Wechselkurs holen
+      const rateDay = new Date(session.date).toISOString().slice(0, 10);
+      const { rate: eurRate, date: eurRateDate } = await fetchExchangeRate(rateDay).catch(() => ({ rate: null, date: null }));
+      if (eurRate) { session.usdToEur = eurRate; session.usdToEurDate = eurRateDate; }
+
+      saveSessions();
+      // Drive-Sync ohne Audiodatei (Audio war bereits hochgeladen oder liegt auf Gerät)
+      await saveToArchive(session).catch(() => {});
+
+      setProgress(100, 'Recovery abgeschlossen!', icon('check-circle',12,'margin-right:5px;color:var(--green)') + ` ${session.label} wiederhergestellt`);
+      await deleteFromAssemblyAI(session.transcriptId).catch(() => {});
+
+      setTimeout(() => { hideProgress(); renderBrowser(); }, 1500);
+      showToast(`"${session.label}" wiederhergestellt ✓`, 'success');
+
+    } catch(err) {
+      session.status = 'error';
+      session.error = err.message;
+      saveSessions();
+      hideProgress();
+      showToast(`Recovery fehlgeschlagen: ${err.message}`, 'error');
+    }
+  }
+}
