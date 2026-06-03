@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.62</button>
+        onmouseout="this.style.color='var(--muted)'">v4.63</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -750,6 +750,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.63 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.63</span>
+          <span class="cl-date">03.06.2026</span>
+          <span class="cl-tag cl-tag-fix">Fix</span>
+        </div>
+        <ul class="cl-list">
+          <li><strong>Login-Screen für neue Nutzer wiederhergestellt</strong> – v4.56 hat das Login-Overlay für alle Nutzer ausgeblendet. Neue Nutzer (kein localStorage-Cache, kein bekannter Drive-Ordner) sahen keinen Google-Login mehr. Jetzt: Neue Nutzer sehen den Login-Screen, wiederkehrende Nutzer starten direkt mit ihren gecachten Daten.</li>
+        </ul>
+        <div class="cl-tech">js/auth.js: Login-Overlay nur verstecken wenn hasCachedSessions || hasKnownFolder. Neue Nutzer sehen loginOverlay weiterhin.</div>
+      </div>
 
       <!-- ── v4.62 ── -->
       <div class="cl-entry">
