@@ -1101,10 +1101,12 @@ function renderInsights(session) {
       customContainer.innerHTML = keys.map(pid => {
         const res  = customResults[pid];
         const bid  = 'customBlock_' + pid;
-        const cid  = 'customContent_' + pid;
         const icoName = (typeof getCustomPrompts === 'function'
           ? (getCustomPrompts().find(p => p.id === pid)?.icon || 'sparkles')
           : 'sparkles');
+        const bodyHtml = (res.structured && res.schema)
+          ? renderCustomSchemaResult(session, pid, res.structured, res.schema)
+          : `<div class="custom-result-text" style="white-space:pre-wrap">${escHtml(res.text || '')}</div>`;
         return `
           <div class="insights-block" id="${bid}">
             <div class="insights-block-title" onclick="toggleInsightsBlock('${bid}')">
@@ -1114,9 +1116,7 @@ function renderInsights(session) {
               </span>
               <span class="insights-block-chevron">▾</span>
             </div>
-            <div class="insights-block-body">
-              <div id="${cid}" class="custom-result-text">${escHtml(res.text || '')}</div>
-            </div>
+            <div class="insights-block-body">${bodyHtml}</div>
           </div>`;
       }).join('');
       showInsightsBlock(customContainer.querySelector('.insights-block'));
@@ -1189,6 +1189,123 @@ function showTranscript(session) {
   _restoreAccState(session.id);
 }
 
+
+// ═══════════════════════════════════════════════════
+// CUSTOM SCHEMA RENDERER
+// Rendert strukturierte Custom-Prompt-Ergebnisse anhand des outputSchema
+// ═══════════════════════════════════════════════════
+function renderCustomSchemaResult(session, promptId, data, schema) {
+  const sid = session.id;
+  let html = '';
+
+  schema.forEach(schemaDef => {
+    const { field, type, label, columns } = schemaDef;
+    const value = data[field];
+    if (value === undefined || value === null) return;
+
+    const sectionId = `custom-section-${promptId}-${field}`;
+
+    // ── Hilfsfunktionen ──────────────────────────────
+    const editFieldBtn = () =>
+      `<button class="work-item-del" title="Bearbeiten" style="margin-left:6px;opacity:0.6"
+        onclick="editCustomResultField('${sid}','${promptId}','${field}')">${icon('pencil',11)}</button>`;
+    const addBtn = () =>
+      `<button class="work-item-del" title="Hinzufügen" style="margin-left:6px;opacity:0.6;font-size:0.75rem"
+        onclick="addCustomResultItem('${sid}','${promptId}','${field}')">${icon('plus',11)} Hinzufügen</button>`;
+    const editItemBtn = (i) =>
+      `<button class="work-item-del" title="Bearbeiten" style="opacity:0.5"
+        onclick="editCustomResultItem('${sid}','${promptId}','${field}',${i})">${icon('pencil',11)}</button>`;
+    const delItemBtn = (i) =>
+      `<button class="work-item-del" title="Löschen"
+        onclick="deleteCustomResultItem('${sid}','${promptId}','${field}',${i})">${icon('trash-2',12)}</button>`;
+
+    // ── Typen rendern ────────────────────────────────
+
+    if (type === 'text') {
+      html += `<div class="work-section">
+        <div class="work-section-title">${escHtml(label)} ${editFieldBtn()}</div>
+        <div class="work-summary" data-custom-textfield="${promptId}-${field}">${escHtml(String(value))}</div>
+      </div>`;
+
+    } else if (type === 'list') {
+      const items = Array.isArray(value) ? value : [];
+      html += `<div class="work-section">
+        <div class="work-section-title">${escHtml(label)} ${addBtn()}</div>
+        <div id="${sectionId}" data-custom-section="${promptId}-${field}">`;
+      items.forEach((item, i) => {
+        html += `<div class="work-item">
+          <span>•</span>
+          <div class="work-item-content" data-custom-item="${promptId}-${field}-${i}">${escHtml(String(item))}</div>
+          ${editItemBtn(i)}${delItemBtn(i)}
+        </div>`;
+      });
+      html += `</div></div>`;
+
+    } else if (type === 'checklist') {
+      const items = Array.isArray(value) ? value : [];
+      html += `<div class="work-section">
+        <div class="work-section-title">${escHtml(label)} ${addBtn()}</div>
+        <div id="${sectionId}" data-custom-section="${promptId}-${field}">`;
+      items.forEach((item, i) => {
+        const checked = typeof item === 'object' && item.done;
+        const text    = typeof item === 'object' ? item.text : String(item);
+        html += `<div class="work-item">
+          <input type="checkbox" ${checked ? 'checked' : ''}
+            onchange="toggleCustomCheckItem('${sid}','${promptId}','${field}',${i},this.checked)"
+            style="margin-right:4px;cursor:pointer;accent-color:var(--accent)">
+          <div class="work-item-content" data-custom-item="${promptId}-${field}-${i}"
+            style="${checked ? 'opacity:0.5;text-decoration:line-through' : ''}">${escHtml(text)}</div>
+          ${editItemBtn(i)}${delItemBtn(i)}
+        </div>`;
+      });
+      html += `</div></div>`;
+
+    } else if (type === 'list_with_person') {
+      const items = Array.isArray(value) ? value : [];
+      html += `<div class="work-section">
+        <div class="work-section-title">${escHtml(label)} ${addBtn()}</div>
+        <div id="${sectionId}" data-custom-section="${promptId}-${field}">`;
+      items.forEach((item, i) => {
+        const person = typeof item === 'object' ? (item.person || '') : '';
+        const text   = typeof item === 'object' ? (item.text || String(item)) : String(item);
+        html += `<div class="work-item">
+          <span>${icon('user',11)}</span>
+          <div class="work-item-content" data-custom-item="${promptId}-${field}-${i}">
+            ${person ? `<div style="font-size:0.72rem;color:var(--muted);font-weight:700;margin-bottom:2px">${escHtml(person)}</div>` : ''}
+            <div>${escHtml(text)}</div>
+          </div>
+          ${editItemBtn(i)}${delItemBtn(i)}
+        </div>`;
+      });
+      html += `</div></div>`;
+
+    } else if (type === 'table') {
+      const rows = Array.isArray(value) ? value : [];
+      const cols = columns || (rows[0] ? Array.from({length: rows[0].length}, (_,i) => `Spalte ${i+1}`) : []);
+      html += `<div class="work-section">
+        <div class="work-section-title">${escHtml(label)}</div>
+        <div style="overflow-x:auto;margin-top:6px">
+          <table style="width:100%;border-collapse:collapse;font-size:0.82rem">
+            <thead>
+              <tr>${cols.map(c => `<th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600">${escHtml(c)}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${rows.map((row, ri) => {
+                const cells = Array.isArray(row) ? row : [row];
+                return `<tr style="${ri % 2 === 0 ? '' : 'background:rgba(255,255,255,0.03)'}">
+                  ${cells.map(cell => `<td style="padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top">${escHtml(String(cell ?? ''))}</td>`).join('')}
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+  });
+
+  return html || '<div style="color:var(--muted);font-size:0.85rem">Keine strukturierten Daten vorhanden.</div>';
+}
+
 // Baut reinen Text für einen Analysebereich
 function _buildSectionText(type, session) {
   const lines = [];
@@ -1251,6 +1368,48 @@ function _buildSectionText(type, session) {
     header('360°-AUSWERTUNG');
     lines.push(meta, '');
     lines.push(typeof session.claude360 === 'string' ? session.claude360 : JSON.stringify(session.claude360, null, 2));
+
+  } else if (type.startsWith('custom:')) {
+    const promptId = type.slice(7);
+    const res = session.customResults?.[promptId];
+    if (!res) return null;
+    header(res.promptName?.toUpperCase() || 'EIGENER PROMPT');
+    lines.push(meta, '');
+    if (res.structured && res.schema) {
+      res.schema.forEach(s => {
+        const val = res.structured[s.field];
+        if (val === undefined || val === null) return;
+        lines.push(s.label);
+        if (s.type === 'text') {
+          lines.push(String(val), '');
+        } else if (s.type === 'list' || s.type === 'list_with_person') {
+          const arr = Array.isArray(val) ? val : [];
+          arr.forEach(item => {
+            if (typeof item === 'object') lines.push('• ' + (item.person ? item.person + ': ' : '') + (item.text || JSON.stringify(item)));
+            else lines.push('• ' + String(item));
+          });
+          lines.push('');
+        } else if (s.type === 'checklist') {
+          const arr = Array.isArray(val) ? val : [];
+          arr.forEach(item => {
+            const text = typeof item === 'object' ? item.text : String(item);
+            const done = typeof item === 'object' && item.done;
+            lines.push((done ? '☑ ' : '☐ ') + text);
+          });
+          lines.push('');
+        } else if (s.type === 'table') {
+          const rows = Array.isArray(val) ? val : [];
+          if (s.columns) lines.push(s.columns.join(' | '));
+          rows.forEach(row => {
+            const cells = Array.isArray(row) ? row : [row];
+            lines.push(cells.map(c => String(c ?? '')).join(' | '));
+          });
+          lines.push('');
+        }
+      });
+    } else {
+      lines.push(res.text || '');
+    }
   }
 
   return lines.join('\n');

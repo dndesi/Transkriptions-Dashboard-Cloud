@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.69</button>
+        onmouseout="this.style.color='var(--muted)'">v4.70</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -750,6 +750,18 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.70 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.70</span>
+          <span class="cl-date">09.06.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature</span>
+        </div>
+        <div class="cl-title">Strukturierte Custom Prompts (outputSchema)</div>
+        <div class="cl-body">Eigene Prompts können jetzt ein outputSchema definieren – die KI gibt strukturiertes JSON zurück, das die App automatisch als interaktive Sektionen rendert. Unterstützte Typen: text (Textblock mit Bearbeiten), list (Liste mit Bearbeiten/Löschen/Hinzufügen), checklist (abhakbare Liste), list_with_person (Person + Text), table (Tabelle mit Spalten). Rückwärtskompatibel – Prompts ohne Schema laufen weiterhin als Freitext. Export (TXT/PDF) unterstützt alle neuen Typen.</div>
+        <div class="cl-tech">js/prompts.js: runCustomPrompt() erkennt outputSchema, generiert JSON-Format-Anweisung, parst Antwort strukturiert. js/claude.js: renderCustomSchemaResult() (neu), renderInsights() nutzt Schema-Renderer, _buildSectionText() für custom:ID erweitert. js/sessions.js: editCustomResultField, saveCustomResultField, editCustomResultItem, saveCustomResultItem, deleteCustomResultItem, toggleCustomCheckItem, addCustomResultItem, confirmAddCustomResultItem.</div>
+      </div>
 
       <!-- ── v4.69 ── -->
       <div class="cl-entry">

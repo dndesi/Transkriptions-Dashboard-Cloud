@@ -253,6 +253,143 @@ function confirmAddAnalysisItem(sessionId, analysisKey, field, value) {
   renderInsights(s);
 }
 
+// ── Custom Result Items bearbeiten ───────────────────────────────────────
+
+function _getCustomResult(sessionId, promptId) {
+  const s = sessions.find(x => x.id === sessionId);
+  return s?.customResults?.[promptId] || null;
+}
+
+function _saveCustomResult(sessionId) {
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s) return;
+  saveSessions();
+  saveToArchive(s).catch(() => {});
+  renderInsights(s);
+}
+
+// Textfeld (type: text) inline bearbeiten
+function editCustomResultField(sessionId, promptId, field) {
+  const el = document.querySelector(`[data-custom-textfield="${promptId}-${field}"]`);
+  if (!el) return;
+  const res = _getCustomResult(sessionId, promptId);
+  const current = res?.structured?.[field] || '';
+  el.innerHTML = `
+    <textarea style="width:100%;min-height:72px;background:var(--bg2);color:var(--text);border:1px solid var(--accent);border-radius:6px;padding:8px;font-size:0.85rem;resize:vertical;box-sizing:border-box"
+      onkeydown="if(event.key==='Enter'&&event.ctrlKey){saveCustomResultField('${sessionId}','${promptId}','${field}',this.value)}"
+      >${escHtml ? escHtml(String(current)) : current.replace(/</g,'&lt;')}</textarea>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="work-item-del" style="padding:2px 10px;border-radius:5px;background:var(--accent);color:#fff;font-size:0.78rem"
+        onclick="saveCustomResultField('${sessionId}','${promptId}','${field}',this.closest('[data-custom-textfield]').querySelector('textarea').value)">✓ Speichern</button>
+      <button class="work-item-del" style="padding:2px 8px;border-radius:5px;font-size:0.78rem"
+        onclick="renderInsights(sessions.find(x=>x.id==='${sessionId}'))">✕</button>
+    </div>`;
+}
+
+function saveCustomResultField(sessionId, promptId, field, value) {
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s?.customResults?.[promptId]?.structured) return;
+  s.customResults[promptId].structured[field] = value.trim();
+  _saveCustomResult(sessionId);
+}
+
+// Listeneintrag bearbeiten
+function editCustomResultItem(sessionId, promptId, field, idx) {
+  const el = document.querySelector(`[data-custom-item="${promptId}-${field}-${idx}"]`);
+  if (!el) return;
+  const res = _getCustomResult(sessionId, promptId);
+  const raw = res?.structured?.[field]?.[idx];
+  const current = typeof raw === 'object' ? (raw.text || raw.wish || JSON.stringify(raw)) : String(raw || '');
+  el.innerHTML = `
+    <textarea style="width:100%;min-height:48px;background:var(--bg2);color:var(--text);border:1px solid var(--accent);border-radius:6px;padding:6px 8px;font-size:0.85rem;resize:vertical;box-sizing:border-box"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();saveCustomResultItem('${sessionId}','${promptId}','${field}',${idx},this.value)}"
+      >${current.replace(/</g,'&lt;')}</textarea>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="work-item-del" style="padding:2px 10px;border-radius:5px;background:var(--accent);color:#fff;font-size:0.78rem"
+        onclick="saveCustomResultItem('${sessionId}','${promptId}','${field}',${idx},this.closest('[data-custom-item]').querySelector('textarea').value)">✓</button>
+      <button class="work-item-del" style="padding:2px 8px;border-radius:5px;font-size:0.78rem"
+        onclick="renderInsights(sessions.find(x=>x.id==='${sessionId}'))">✕</button>
+    </div>`;
+}
+
+function saveCustomResultItem(sessionId, promptId, field, idx, value) {
+  const s = sessions.find(x => x.id === sessionId);
+  const arr = s?.customResults?.[promptId]?.structured?.[field];
+  if (!Array.isArray(arr)) return;
+  const val = value.trim();
+  if (!val) return;
+  const raw = arr[idx];
+  if (typeof raw === 'object' && raw !== null) {
+    if ('text' in raw) raw.text = val;
+    else arr[idx] = val;
+  } else {
+    arr[idx] = val;
+  }
+  _saveCustomResult(sessionId);
+}
+
+// Listeneintrag löschen
+function deleteCustomResultItem(sessionId, promptId, field, idx) {
+  const s = sessions.find(x => x.id === sessionId);
+  const arr = s?.customResults?.[promptId]?.structured?.[field];
+  if (!Array.isArray(arr)) return;
+  arr.splice(idx, 1);
+  _saveCustomResult(sessionId);
+}
+
+// Checkbox-Eintrag abhaken
+function toggleCustomCheckItem(sessionId, promptId, field, idx, checked) {
+  const s = sessions.find(x => x.id === sessionId);
+  const arr = s?.customResults?.[promptId]?.structured?.[field];
+  if (!Array.isArray(arr)) return;
+  const raw = arr[idx];
+  if (typeof raw === 'object' && raw !== null) {
+    raw.done = checked;
+  } else {
+    arr[idx] = { text: String(raw), done: checked };
+  }
+  saveSessions();
+  saveToArchive(s).catch(() => {});
+  // Nur Styling updaten ohne neu zu rendern
+  const el = document.querySelector(`[data-custom-item="${promptId}-${field}-${idx}"]`);
+  if (el) el.style.cssText = checked ? 'opacity:0.5;text-decoration:line-through' : '';
+}
+
+// Neuen Listeneintrag hinzufügen
+function addCustomResultItem(sessionId, promptId, field) {
+  const containerId = `add-custom-${promptId}-${field}`;
+  const existing = document.getElementById(containerId);
+  if (existing) { existing.querySelector('textarea')?.focus(); return; }
+  const sectionEl = document.querySelector(`[data-custom-section="${promptId}-${field}"]`);
+  if (!sectionEl) return;
+  const div = document.createElement('div');
+  div.id = containerId;
+  div.style.cssText = 'margin-top:6px;';
+  div.innerHTML = `
+    <textarea placeholder="Neuer Eintrag …" style="width:100%;min-height:48px;background:var(--bg2);color:var(--text);border:1px solid var(--accent);border-radius:6px;padding:6px 8px;font-size:0.85rem;resize:vertical;box-sizing:border-box"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();confirmAddCustomResultItem('${sessionId}','${promptId}','${field}',this.value)}"></textarea>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="work-item-del" style="padding:2px 10px;border-radius:5px;background:var(--accent);color:#fff;font-size:0.78rem"
+        onclick="confirmAddCustomResultItem('${sessionId}','${promptId}','${field}',this.closest('#${containerId}').querySelector('textarea').value)">✓ Hinzufügen</button>
+      <button class="work-item-del" style="padding:2px 8px;border-radius:5px;font-size:0.78rem"
+        onclick="document.getElementById('${containerId}').remove()">✕</button>
+    </div>`;
+  sectionEl.appendChild(div);
+  div.querySelector('textarea').focus();
+}
+
+function confirmAddCustomResultItem(sessionId, promptId, field, value) {
+  const val = value.trim();
+  if (!val) return;
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s?.customResults?.[promptId]?.structured) return;
+  const arr = s.customResults[promptId].structured[field];
+  if (Array.isArray(arr)) arr.push(val);
+  else s.customResults[promptId].structured[field] = [val];
+  _saveCustomResult(sessionId);
+}
+
+
 
 
 // ── Topic-Kuration (vereinfacht: nur noch löschen) ────────────────────────

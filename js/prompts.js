@@ -1097,17 +1097,52 @@ async function runCustomPrompt(session, promptObj, transcript) {
     promptText += `\n\nTranskript:\n${trimTranscript(transcript, 300000)}`;
   }
 
+  // ── Strukturiertes Ausgabe-Schema ────────────────────────────────────────
+  const schema = promptObj.outputSchema;
+  if (Array.isArray(schema) && schema.length > 0) {
+    // Automatische JSON-Format-Anweisung anhängen
+    const jsonTemplate = {};
+    schema.forEach(s => {
+      if (s.type === 'text')             jsonTemplate[s.field] = 'Text...';
+      else if (s.type === 'list')        jsonTemplate[s.field] = ['Eintrag 1', 'Eintrag 2'];
+      else if (s.type === 'checklist')   jsonTemplate[s.field] = ['Schritt 1', 'Schritt 2'];
+      else if (s.type === 'list_with_person') jsonTemplate[s.field] = [{ person: 'Name', text: 'Inhalt' }];
+      else if (s.type === 'table')       jsonTemplate[s.field] = [(s.columns || ['Spalte 1', 'Spalte 2']).map(() => '...')];
+    });
+    promptText += `\n\nAntworte ausschließlich mit validem JSON, ohne Erklärungen, ohne Markdown-Blöcke. Exaktes Format:\n${JSON.stringify(jsonTemplate, null, 2)}`;
+  }
+
   const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(promptText, forward));
   addTokensToSession(session, inputTokens, outputTokens);
   const result = deanonymizeText(text, reverse);
 
   if (!session.customResults) session.customResults = {};
-  session.customResults[promptObj.id] = {
-    text:       result,
-    promptName: promptObj.name,
-    icon:       promptObj.icon || 'sparkles',
-    createdAt:  new Date().toISOString()
-  };
+
+  // Strukturiertes Ergebnis parsen wenn Schema vorhanden
+  if (Array.isArray(schema) && schema.length > 0) {
+    let structured = null;
+    try {
+      const jsonStr = result.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+      structured = JSON.parse(jsonStr);
+    } catch(e) {
+      console.warn('[customPrompt] JSON-Parse fehlgeschlagen, Fallback auf Freitext:', e.message);
+    }
+    session.customResults[promptObj.id] = {
+      text:       result,       // Fallback Freitext
+      structured: structured,   // Strukturiertes Ergebnis (null bei Parse-Fehler)
+      schema:     schema,       // Schema für Renderer
+      promptName: promptObj.name,
+      icon:       promptObj.icon || 'sparkles',
+      createdAt:  new Date().toISOString()
+    };
+  } else {
+    session.customResults[promptObj.id] = {
+      text:       result,
+      promptName: promptObj.name,
+      icon:       promptObj.icon || 'sparkles',
+      createdAt:  new Date().toISOString()
+    };
+  }
 }
 
 // ── Editable-Prompt Editor öffnen ───────────────
