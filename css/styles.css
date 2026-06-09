@@ -148,7 +148,7 @@
     [data-theme="light"] .modal-box {
       box-shadow: 0 8px 40px rgba(0,0,0,0.2);
     }
-    [data-theme="light"] .work-item { background: #eef0fb; }
+    [data-theme="light"] .work-item { background: none; }
     [data-theme="light"] .synthese-box {
       background: #eef0fb;
       border: 1px solid var(--border);
@@ -818,10 +818,10 @@
     /* ─── INSIGHTS (Stimmung / Kapitel / Themen) ─── */
     .insights-section { margin-bottom: 20px; }
     .insights-block {
-      background: var(--surface2);
+      background: transparent;
       border: 1px solid var(--border);
       border-radius: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       overflow: hidden;
     }
     .insights-block-title {
@@ -1354,32 +1354,40 @@
     .sc-type-gedanken { background: rgba(108,99,255,0.10); color: var(--accent); border-color: rgba(108,99,255,0.22); }
     .sc-persons { font-size: 0.72rem; color: var(--muted); margin-bottom: 2px; }
 
-    /* ─── ARBEITS-ANALYSE ─── */
-    .work-section { margin-bottom: 14px; }
+    /* ─── ARBEITS-ANALYSE (clean/minimal) ─── */
+    .work-section { margin-bottom: 22px; }
     .work-section-title {
-      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.07em; color: var(--muted); margin-bottom: 6px;
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--text); opacity: 0.75;
+      margin-bottom: 8px; padding-bottom: 7px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 6px;
+      flex-wrap: wrap;
     }
     .work-item {
-      display: flex; align-items: flex-start; gap: 8px;
-      padding: 8px 10px; background: var(--surface2);
-      border-radius: 8px; margin-bottom: 5px; font-size: 0.83rem; line-height: 1.4;
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 2px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 0; font-size: 0.84rem; line-height: 1.5;
+      background: none;
     }
+    [data-theme="light"] .work-item { border-bottom-color: rgba(0,0,0,0.06); }
+    .work-item:last-child { border-bottom: none; }
     .work-item-content { flex: 1; min-width: 0; }
     .work-item-del {
       flex-shrink: 0; background: none; border: none; cursor: pointer;
-      font-size: 0.78rem; opacity: 0; color: var(--red);
+      font-size: 0.78rem; opacity: 0; color: var(--muted);
       padding: 0 2px; transition: opacity 0.15s; align-self: center;
     }
-    .work-item:hover .work-item-del { opacity: 0.55; }
-    .work-item-del:hover { opacity: 1 !important; }
+    .work-item:hover .work-item-del { opacity: 0.45; }
+    .work-item-del:hover { opacity: 1 !important; color: var(--red); }
     .work-item-meta { font-size: 0.71rem; color: var(--muted); margin-top: 3px; }
-    .work-prio-hoch    { color: var(--red);    font-size: 0.68rem; font-weight:700; text-transform:uppercase; }
-    .work-prio-mittel  { color: var(--yellow); font-size: 0.68rem; font-weight:700; text-transform:uppercase; }
-    .work-prio-niedrig { color: var(--green);  font-size: 0.68rem; font-weight:700; text-transform:uppercase; }
+    .work-prio-hoch    { color: var(--red);    font-size: 0.68rem; font-weight:600; }
+    .work-prio-mittel  { color: var(--yellow); font-size: 0.68rem; font-weight:600; }
+    .work-prio-niedrig { color: var(--green);  font-size: 0.68rem; font-weight:600; }
     .work-summary {
-      font-size: 0.83rem; line-height: 1.55; color: var(--text);
-      padding: 10px 12px; background: var(--surface2); border-radius: 8px;
+      font-size: 0.84rem; line-height: 1.7; color: var(--text);
+      padding: 2px 0;
     }
 
     /* ─── PERSONEN-PROFIL ─── */
@@ -1439,9 +1447,9 @@
 
     /* ─── PRIVATE-ANALYSE ─── */
     .private-dynamics {
-      font-size: 0.83rem; line-height: 1.55; color: var(--text);
-      padding: 10px 12px; background: rgba(244,114,182,0.07);
-      border: 1px solid rgba(244,114,182,0.2); border-radius: 8px;
+      font-size: 0.84rem; line-height: 1.7; color: var(--text);
+      padding: 4px 0 4px 12px;
+      border-left: 2px solid rgba(244,114,182,0.35);
       font-style: italic;
     }
 
