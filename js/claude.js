@@ -1148,6 +1148,7 @@ function showTranscript(session) {
   // Namensfelder befüllen
   document.getElementById('editSpeakerA').value = session.speakerA || 'Sprecher A';
   document.getElementById('editSpeakerB').value = session.speakerB || 'Sprecher B';
+  renderExtraSpeakerFields(session);
   updateSpeakerStatus();
   updateAnalyseDropdown();
 
@@ -1966,8 +1967,14 @@ function filterTranscript(query) {
 function renameSpeaker(speaker, newName) {
   const s = getSession();
   if (!s || !newName.trim()) return;
+  // Multi-Sprecher (Samsung Import): speakers-Array aktualisieren
+  if (s.speakers && s.speakers.length > 0) {
+    const sp = s.speakers.find(p => p.id === speaker);
+    if (sp) sp.name = newName.trim();
+  }
+  // Immer auch speakerA/speakerB für Kompatibilität pflegen
   if (speaker === 'A') s.speakerA = newName.trim();
-  else s.speakerB = newName.trim();
+  else if (speaker === 'B') s.speakerB = newName.trim();
   saveSessions();
   saveToArchive(s);
   // Pflichtpfad: Required-Highlight entfernen, Status aktualisieren
@@ -1977,6 +1984,35 @@ function renameSpeaker(speaker, newName) {
   // Nur Utterances neu rendern, nicht die Inputs (die hat der User gerade editiert)
   renderUtterances(s);
   showToast(`Sprecher ${speaker} → „${newName.trim()}" ✓`, 'success');
+}
+
+// Zeigt Umbenennung für Sprecher C, D, … (Samsung Multi-Speaker)
+function renderExtraSpeakerFields(session) {
+  const container = document.getElementById('extraSpeakerFields');
+  if (!container) return;
+
+  const extra = (session.speakers || []).filter(sp => sp.id !== 'A' && sp.id !== 'B');
+  if (extra.length === 0) {
+    container.style.display = 'none';
+    container.innerHTML = '';
+    return;
+  }
+
+  const colors = { C: 'var(--speaker-c)', D: 'var(--speaker-d)' };
+  container.innerHTML = extra.map(sp => `
+    <div class="speaker-name-field" style="margin-bottom:8px">
+      <span class="speaker-name-dot" style="background:${colors[sp.id] || 'var(--speaker-extra)'}"></span>
+      <input
+        class="speaker-name-input"
+        placeholder="Sprecher ${sp.id}"
+        value="${(sp.name || sp.label || '').replace(/"/g, '&quot;')}"
+        onchange="renameSpeaker('${sp.id}', this.value)"
+        onkeydown="if(event.key==='Enter') this.blur()"
+        style="border-color:${colors[sp.id] || 'var(--speaker-extra)'}22"
+      />
+    </div>
+  `).join('');
+  container.style.display = '';
 }
 
 function swapAllSpeakers() {

@@ -468,6 +468,11 @@ function deletePersonPermanently(name) {
 
 // ── Speaker-Helfer: unterstützt A, B und beliebig viele weitere Sprecher ──
 function getSpeakerName(speaker, session) {
+  // Multi-Sprecher (Samsung Import): speakers-Array hat Vorrang
+  if (session && session.speakers && session.speakers.length > 0) {
+    const sp = session.speakers.find(s => s.id === speaker);
+    if (sp) return sp.name || sp.label || `Sprecher ${speaker}`;
+  }
   if (speaker === 'A') return session.speakerA || 'Sprecher A';
   if (speaker === 'B') return session.speakerB || 'Sprecher B';
   return `Sprecher ${speaker}`;

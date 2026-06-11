@@ -466,7 +466,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 4.69</span>
+          <span style="color:var(--accent); font-weight:600">Version 4.71</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -500,7 +500,7 @@ function renderArchView() {
           <span style="opacity:0.7">app.js · config.js · storage.js · ui.js · claude.js · drive.js</span><br>
           <span style="opacity:0.7">assemblyai.js · recorder.js · sessions.js · auth.js</span><br>
           <span style="color:var(--accent2); font-weight:500">features.js · search.js · calendar.js · persons.js</span><br>
-          <span style="color:var(--accent); font-weight:500">prompts.js · audio.js · tags.js · notes.js</span><br>
+          <span style="color:var(--accent); font-weight:500">prompts.js · audio.js · tags.js · notes.js · import.js</span><br>
           <span style="color:var(--accent); font-size:0.72rem">dndesi.github.io/Transkriptions-Dashboard-Cloud</span>
         </div>
       </div>
@@ -535,6 +535,7 @@ function renderArchView() {
       ${flowCard('recorder.js', 'Audio-Aufnahme', 'MediaRecorder API, Mikrofon-Zugriff, WebM-Aufnahme direkt im Browser', '#34d399')}
       ${flowCard('sessions.js', 'Session-Verwaltung', 'Session speichern, Google Drive Archiv, Sitzungstypen (privat/arbeit/gedanken) · editAnalysisItem/Field, addAnalysisItem, saveAnalysisItem/Field', '#60a5fa')}
       ${flowCard('tags.js', 'Tags', 'Tag-System für Sitzungen, Chips-UI, Filter', '#f59e0b')}
+      ${flowCard('import.js', 'Samsung-Import', 'parseSamsungTranscript() (UTF-16 BOM-Erkennung), renderImportSpeakerFields() für multi-speaker (A–Z), startSamsungImport() erstellt Session mit status:done ohne AssemblyAI', '#34d399')}
       ${flowCard('notes.js', 'Notizen', 'Persönliche Notizen pro Sitzung, Auto-Save', '#94a3b8')}
       ${flowCard('app.js', 'Initialisierung', 'async init() → await initStorage() → IndexedDB laden vor UI-Start · Theme-Toggle · Upload-Schrittvalidierung · Drag & Drop', '#c084fc')}
     </div>

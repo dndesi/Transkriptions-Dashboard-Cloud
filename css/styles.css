@@ -390,6 +390,36 @@
     }
     .upload-panel-close:hover { color: var(--text); }
 
+    /* Tab-Umschalter im Upload-Panel */
+    .upload-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .upload-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 10px 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.15s;
+    }
+    .upload-tab:hover { color: var(--text); }
+    .upload-tab.upload-tab-active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+
     .upload-panel-body {
       padding: 20px;
       display: flex;
