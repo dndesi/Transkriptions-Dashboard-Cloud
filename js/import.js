@@ -14,7 +14,7 @@ function openAudioTab() {
   document.getElementById('audioTabContent').style.display = '';
   document.getElementById('importTabContent').style.display = 'none';
   document.querySelector('.upload-panel-head h3').innerHTML =
-    `<i data-lucide="upload" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Neue Aufnahme`;
+    `<i data-lucide="mic" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Transkribieren`;
   if (window.lucide) lucide.createIcons();
 }
 
@@ -24,7 +24,7 @@ function openImportTab() {
   document.getElementById('importTabContent').style.display = '';
   document.getElementById('audioTabContent').style.display = 'none';
   document.querySelector('.upload-panel-head h3').innerHTML =
-    `<i data-lucide="smartphone" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Samsung-Import`;
+    `<i data-lucide="file-text" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Importieren`;
   if (window.lucide) lucide.createIcons();
 }
 

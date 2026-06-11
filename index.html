@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.71</button>
+        onmouseout="this.style.color='var(--muted)'">v4.72</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -118,10 +118,10 @@
     <!-- Tab-Umschalter -->
     <div class="upload-tabs">
       <button id="audioTabBtn" class="upload-tab upload-tab-active" onclick="openAudioTab()">
-        <i data-lucide="mic" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Aufnahme
+        <i data-lucide="mic" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Transkribieren
       </button>
       <button id="importTabBtn" class="upload-tab" onclick="openImportTab()">
-        <i data-lucide="smartphone" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Samsung
+        <i data-lucide="file-text" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Importieren
       </button>
     </div>
 
@@ -195,9 +195,12 @@
             </div>
           </div>
           <div id="driveSubfolderSection" style="display:none">
-            <p style="font-size:0.72rem; color:var(--muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Archiv-Unterordner wählen:</p>
-            <div id="driveSubfolderList" style="margin-bottom:8px"></div>
-            <button onclick="createDriveSubfolder()" class="archive-btn" style="margin-top:4px">
+            <label style="font-size:0.72rem;color:var(--muted);margin-bottom:5px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Archiv-Unterordner</label>
+            <select id="driveSubfolderSelect" onchange="onSubfolderSelectChange(this)"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:0.85rem;outline:none;cursor:pointer;margin-bottom:6px">
+              <option value="">– Hauptordner –</option>
+            </select>
+            <button onclick="createDriveSubfolder()" class="archive-btn" style="margin-top:2px">
               <span class="archive-icon"><i data-lucide="plus" style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none"></i></span>
               <span class="archive-label">Neuen Unterordner anlegen…</span>
             </button>
@@ -309,6 +312,32 @@
           <p id="importSpeakerLabel" style="display:none;font-size:0.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">Erkannte Sprecher aus der Datei:</p>
           <div id="importSpeakerFields" style="display:none"></div>
           <p style="font-size:0.73rem;color:var(--muted);margin-top:6px">Namen können auch nach dem Import geändert werden.</p>
+        </div>
+      </div>
+
+      <!-- Import Schritt 4: Google Drive Ordner (optional) -->
+      <div class="step-block" id="importStep4">
+        <div class="step-header">
+          <span class="step-number">4</span>
+          <span class="step-title">Google Drive (optional)</span>
+        </div>
+        <div class="step-body">
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.82rem;margin-bottom:8px">
+            <span id="importDriveStatusDot" style="width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0"></span>
+            <span id="importDriveStatusText" style="color:var(--muted)">Nicht verbunden</span>
+          </div>
+          <div id="importFolderSection" style="display:none">
+            <label style="font-size:0.72rem;color:var(--muted);margin-bottom:5px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Archiv-Unterordner</label>
+            <select id="importFolderSelect" onchange="onImportFolderSelectChange(this)"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:0.85rem;outline:none;cursor:pointer;margin-bottom:6px">
+              <option value="">– Hauptordner –</option>
+            </select>
+            <button onclick="createDriveSubfolder()" class="archive-btn" style="margin-top:2px">
+              <span class="archive-icon"><i data-lucide="plus" style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none"></i></span>
+              <span class="archive-label">Neuen Unterordner anlegen…</span>
+            </button>
+          </div>
+          <p style="font-size:0.72rem;color:var(--muted);margin-top:6px;line-height:1.5">Session-JSON wird in Drive gespeichert. Audiodatei optional.</p>
         </div>
       </div>
 
@@ -849,6 +878,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.72 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.72</span>
+          <span class="cl-date">11.06.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature</span>
+          <span class="cl-tag cl-tag-ux">UX</span>
+        </div>
+        <div class="cl-title">Ordner-Dropdown + Import-Tab Drive-Anbindung</div>
+        <div class="cl-body">Die Unterordner-Auswahl im Upload-Panel wurde von einer Button-Liste auf ein kompaktes Dropdown-Menü umgestellt – skaliert jetzt auf beliebig viele Ordner. Beide Tabs (Transkribieren / Importieren) sind synchronisiert: die gleiche Auswahl gilt in beiden. Der Import-Tab hat jetzt einen eigenen Drive-Status-Schritt (optional). Tabs wurden umbenannt: „Transkribieren" (Audio → AssemblyAI) und „Importieren" (fertige Transkripte).</div>
+        <div class="cl-tech">js/drive.js: renderSubfolderList() → _populateFolderSelect() befüllt driveSubfolderSelect + importFolderSelect. onSubfolderSelectChange() + onImportFolderSelectChange() synchronisieren beide Selects. updateDriveStatus() zeigt/versteckt importFolderSection. selectDriveSubfolder() synct beide Selects. index.html: driveSubfolderList div → select#driveSubfolderSelect, Import-Tab Step 4 mit importDriveStatusDot/Text + select#importFolderSelect. Tab-Buttons: Transkribieren (mic) / Importieren (file-text).</div>
+      </div>
 
       <!-- ── v4.71 ── -->
       <div class="cl-entry">

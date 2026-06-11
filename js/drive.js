@@ -129,15 +129,25 @@ function updateDriveStatus() {
   const dot  = document.getElementById('driveStatusDot');
   const text = document.getElementById('driveStatusText');
   const sec  = document.getElementById('driveSubfolderSection');
+  // Import-Tab Status-Indikatoren
+  const impDot  = document.getElementById('importDriveStatusDot');
+  const impText = document.getElementById('importDriveStatusText');
+  const impSec  = document.getElementById('importFolderSection');
   if (!dot) return;
   if (driveToken && driveFolderId) {
     dot.style.background = 'var(--green)';
     text.textContent = 'Verbunden – „' + FOLDER_NAME + '"';
     if (sec) sec.style.display = 'block';
+    if (impDot)  impDot.style.background  = 'var(--green)';
+    if (impText) impText.textContent = 'Verbunden – „' + FOLDER_NAME + '"';
+    if (impSec)  impSec.style.display = 'block';
   } else {
     dot.style.background = 'var(--red)';
     text.textContent = driveToken ? 'Ordner wird vorbereitet…' : 'Nicht angemeldet';
     if (sec) sec.style.display = 'none';
+    if (impDot)  impDot.style.background  = 'var(--red)';
+    if (impText) impText.textContent = driveToken ? 'Ordner wird vorbereitet…' : 'Nicht angemeldet';
+    if (impSec)  impSec.style.display = 'none';
   }
 }
 
@@ -164,30 +174,54 @@ async function loadDriveSubfolders() {
 }
 
 function renderSubfolderList(folders) {
-  const list = document.getElementById('driveSubfolderList');
-  if (!list) return;
-  if (folders.length === 0) {
-    list.innerHTML = '<p style="font-size:0.75rem;color:var(--muted);margin-bottom:4px">Noch keine Unterordner vorhanden.</p>';
-    return;
-  }
-  list.innerHTML = folders.map(f => {
-    const isActive = f.id === driveSubfolderId;
-    return `<div class="known-folder-row">
-      <span class="known-folder-name ${isActive ? 'active-folder' : ''}" style="display:inline-flex;align-items:center;gap:5px">${icon('folder',13)} ${escHtml(f.name)}</span>
-      <button class="known-folder-connect ${isActive ? 'connected' : ''}"
-        ${isActive ? 'disabled' : `onclick="selectDriveSubfolder('${f.id}','${f.name.replace(/'/g,"\\'")}')"`}>
-        ${isActive ? icon('check',11,'margin-right:3px')+' Aktiv' : 'Wählen'}
-      </button>
-    </div>`;
-  }).join('');
+  _populateFolderSelect('driveSubfolderSelect', folders);
+  _populateFolderSelect('importFolderSelect', folders);
+}
+
+// Befüllt ein <select>-Element mit Unterordnern
+function _populateFolderSelect(selectId, folders) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">– Hauptordner –</option>';
+  folders.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.id;
+    opt.textContent = f.name;
+    if (f.id === driveSubfolderId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  // Vorherige Auswahl erhalten falls noch vorhanden
+  if (!driveSubfolderId && prev) sel.value = prev;
+}
+
+function onSubfolderSelectChange(sel) {
+  const id   = sel.value;
+  const name = id ? sel.options[sel.selectedIndex].text : '';
+  driveSubfolderId   = id;
+  driveSubfolderName = name;
+  // Sync anderen Select
+  const other = document.getElementById(sel.id === 'driveSubfolderSelect' ? 'importFolderSelect' : 'driveSubfolderSelect');
+  if (other) other.value = id;
+  updateFolderDropdown();
+  checkUploadReady();
+  if (name) showToast(`Ordner „${name}" ausgewählt`, 'success');
+}
+
+function onImportFolderSelectChange(sel) {
+  onSubfolderSelectChange(sel);
 }
 
 function selectDriveSubfolder(id, name) {
   driveSubfolderId = id;
   driveSubfolderName = name;
+  // Beide Selects synchronisieren
+  const selA = document.getElementById('driveSubfolderSelect');
+  const selB = document.getElementById('importFolderSelect');
+  if (selA) selA.value = id;
+  if (selB) selB.value = id;
   updateFolderDropdown();
   checkUploadReady();
-  loadDriveSubfolders();
   showToast(`Ordner „${name}" ausgewählt`, 'success');
 }
 
