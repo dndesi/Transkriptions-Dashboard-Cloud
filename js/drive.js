@@ -170,6 +170,7 @@ async function loadDriveSubfolders() {
     renderSubfolderList(folders);
   } catch(e) {
     console.warn('Unterordner laden fehlgeschlagen:', e);
+    if (typeof showToast === 'function') showToast('Unterordner konnten nicht geladen werden: ' + e.message, 'warning');
   }
 }
 

@@ -3,6 +3,9 @@ function openUploadPanel() {
   document.getElementById('uploadPanel')?.classList.add('open');
   document.getElementById('uploadOverlay')?.classList.add('open');
   closeSidenav();
+  // Ordner-Selects sofort aus Cache befüllen, dann frisch aus Drive nachladen
+  if (typeof renderSubfolderList === 'function') renderSubfolderList(rememberedFolders || []);
+  if (typeof loadDriveSubfolders === 'function' && driveToken && driveFolderId) loadDriveSubfolders();
 }
 function _openUploadPanel_unused() {
   document.querySelector('.layout')?.classList.add('panel-open');
@@ -466,7 +469,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 4.72</span>
+          <span style="color:var(--accent); font-weight:600">Version 4.73</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
