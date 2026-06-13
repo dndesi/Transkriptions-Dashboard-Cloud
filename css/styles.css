@@ -2922,6 +2922,32 @@ mark.search-highlight {
 }
 .sdc-sidebar-input.hidden { display: none; }
 
+
+/* ── Mobile Bottom-Sheet Handle (v4.78) ── */
+.sdc-mobile-handle {
+  display: none; /* auf Desktop unsichtbar */
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px 6px;
+  flex-shrink: 0;
+  position: relative;
+}
+.sdc-mobile-grip {
+  width: 40px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+}
+.sdc-mobile-close-btn {
+  position: absolute;
+  right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none;
+  color: var(--muted); cursor: pointer;
+  padding: 4px; display: flex; align-items: center;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.sdc-mobile-close-btn:hover { color: var(--text); background: var(--surface2); }
+
 /* ── Mobile: Sidebar als Bottom Sheet ── */
 @media (max-width: 768px) {
   .sdc-sidebar {
@@ -2940,6 +2966,7 @@ mark.search-highlight {
     pointer-events: auto !important;
   }
   .sdc-sidebar.sdc-sidebar-open { transform: translateY(0); }
+  .sdc-mobile-handle { display: flex; } /* auf Mobile einblenden */
   .sdc-sidebar.sdc-sidebar-collapsed { transform: translateY(100%) !important; pointer-events: none !important; }
   .sdc-mobile-fab { display: flex !important; }
 }
