@@ -1576,7 +1576,7 @@ async function askFollowUp() {
   if (!session) { showToast('Keine aktive Sitzung.', 'warning'); return; }
 
   const input = document.getElementById('followUpInput');
-  const btn   = document.getElementById('followUpSendBtn');
+  const btn   = document.getElementById('askSendBtn'); // v4.77: war followUpSendBtn (altes Modal)
   const question = input?.value?.trim();
   if (!question) { showToast('Bitte erst eine Frage eingeben.', 'warning'); return; }
   if (!anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'warning'); return; }
