@@ -2965,7 +2965,7 @@ mark.search-highlight {
     opacity: 1 !important;
     pointer-events: auto !important;
   }
-  .sdc-sidebar.sdc-sidebar-open { transform: translateY(0); }
+  .sdc-sidebar.sdc-sidebar-open { transform: translateY(0); overflow-y: auto; } /* v4.79: scrollbar */
   .sdc-mobile-handle { display: flex; } /* auf Mobile einblenden */
   .sdc-sidebar.sdc-sidebar-collapsed { transform: translateY(100%) !important; pointer-events: none !important; }
   .sdc-mobile-fab { display: flex !important; }
@@ -3017,9 +3017,13 @@ mark.search-highlight {
   transform: translateY(-50%);
   background: var(--accent);
   color: #fff;
+  border: none;           /* v4.79: button-Reset */
+  font: inherit;          /* v4.79: button-Reset */
   border-radius: 10px 0 0 10px;
   padding: 14px 6px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent; /* v4.79: iOS tap-fix */
+  touch-action: manipulation;               /* v4.79: kein 300ms-Delay */
   z-index: 202;
   display: flex;
   flex-direction: column;
@@ -3052,7 +3056,8 @@ mark.search-highlight {
     flex-direction: row;
     padding: 12px 16px;
     border-radius: 50px;
-    bottom: 20px;
+    /* v4.79: safe-area-inset – weg aus Home-Indicator-Zone auf iPhone */
+    bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 8px));
     top: auto;
     right: 20px;
     transform: none;
