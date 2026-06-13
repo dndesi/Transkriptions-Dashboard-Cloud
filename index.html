@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.73</button>
+        onmouseout="this.style.color='var(--muted)'">v4.74</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -482,10 +482,6 @@
           <button class="back-btn" onclick="showBrowser()">← Zurück zum Archiv</button>
           <div class="sdh-actions">
             <button class="btn btn-ghost sdh-btn" onclick="exportTxt()" title="TXT exportieren"><i data-lucide="download" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> TXT</button>
-            <button class="btn btn-ghost sdh-btn" onclick="openAskModal()" title="Aufnahme befragen"><i data-lucide="message-circle" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Fragen</button>
-            <button class="btn btn-ghost sdh-btn" id="mindmapBtn" onclick="generateAndShowMindMap()" title="Mind Map"><i data-lucide="git-branch" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Mind Map</button>
-            <button class="btn btn-ghost sdh-btn" onclick="openCalendarModal()" title="Kalender"><i data-lucide="calendar" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Kalender</button>
-            <button class="btn btn-ghost sdh-btn" onclick="openGmailModal()" title="E-Mails"><i data-lucide="mail" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mails</button>
             <button class="btn btn-ghost sdh-btn" onclick="openDeleteModal(currentSessionId)" title="Sitzung löschen"><i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i></button>
             <!-- Senden an Claude: versteckt, aber im DOM aktiv -->
             <div class="claude-btn-wrap" id="claudeBtnWrap" style="display:none">
@@ -549,23 +545,6 @@
         </div>
 
         <!-- Zeile 4: Analyse-Leiste (visuell abgesetzt) -->
-        <div class="sdh-analyse-bar">
-          <select id="analyseTypeSelect" onchange="updateAnalyseStartBtn()" class="sdh-analyse-select">
-            <option value="">Analyse wählen…</option>
-            <optgroup label="Standard" id="stdPromptsOptgroup">
-              <option value="private" id="analyseOptPrivate">Gesprächsanalyse</option>
-              <option value="work"    id="analyseOptWork">Arbeitsanalyse</option>
-              <option value="360">360°-Auswertung</option>
-              <option value="topics">Themen</option>
-              <option value="chapters">Kapitel</option>
-            </optgroup>
-            <optgroup label="Eigene Prompts" id="customPromptsOptgroup" style="display:none"></optgroup>
-          </select>
-          <button class="btn btn-primary" onclick="startSelectedAnalysis()" id="analyseDropdownStartBtn"
-            disabled style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;font-size:0.85rem">
-            <i data-lucide="play" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Starten
-          </button>
-        </div>
       </div>
       <!-- /sdh -->
 
@@ -576,106 +555,109 @@
       </div>
 
       <!-- ── AKKORDEON ── -->
-      <div class="session-accordion">
+      <!-- ── TABS + SIDEBAR LAYOUT (v4.74) ── -->
+      <div class="sdc-layout" id="sdcLayout">
 
-        <!-- Panel: Aufnahme -->
-        <div class="acc-panel" id="accAudio">
-          <button class="acc-panel-header" onclick="toggleAccPanel('accAudio')">
-            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="music" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Aufnahme</span>
-            <span class="acc-chevron">▾</span>
-          </button>
-          <div class="acc-panel-body">
+        <!-- LINKE SEITE: Tab-Leiste + Panels -->
+        <div class="sdc-main">
+
+          <!-- Tab-Leiste -->
+          <div class="sdc-tabs">
+            <button class="sdc-tab sdc-tab-active" id="sdcTab-transkript" onclick="switchSessionTab('transkript')">
+              <i data-lucide="align-left" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Transkript
+            </button>
+            <button class="sdc-tab" id="sdcTab-analysen" onclick="switchSessionTab('analysen')">
+              <i data-lucide="bar-chart-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Analysen
+            </button>
+            <button class="sdc-tab" id="sdcTab-mindmap" onclick="switchSessionTab('mindmap')">
+              <i data-lucide="git-branch" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Mindmap
+            </button>
+            <button class="sdc-tab" id="sdcTab-design" onclick="switchSessionTab('design')">
+              <i data-lucide="layout" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Design
+            </button>
+            <button class="sdc-tab" id="sdcTab-notizen" onclick="switchSessionTab('notizen')">
+              <i data-lucide="file-text" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Notizen
+            </button>
+            <button class="sdc-tab" id="sdcTab-tags" onclick="switchSessionTab('tags')">
+              <i data-lucide="tag" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Tags
+            </button>
+            <!-- Sidebar-Toggle -->
+            <button class="sdc-sidebar-toggle" id="sdcSidebarToggle" onclick="toggleSessionSidebar()" title="Assistent-Sidebar öffnen">
+              <i data-lucide="panel-right" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i>
+            </button>
+          </div>
+
+          <!-- ── TAB: Transkript ── -->
+          <div class="sdc-panel sdc-panel-active" id="sdc-panel-transkript">
+
+            <div class="sdc-section-label">
+              <i data-lucide="music" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Aufnahme
+            </div>
             <div class="audio-player-bar" id="audioPlayerBar">
               <div class="audio-player-label"><span id="audioPlayerFilename"></span></div>
               <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:6px">
                 <audio id="audioPlayer" controls style="flex:1; min-width:200px;"></audio>
-                <button id="audioStopBtn" onclick="stopAudio()" title="Stop" style="display:none; align-items:center; justify-content:center; gap:5px; padding:6px 12px; font-size:0.82rem; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); color:var(--red); border-radius:8px; cursor:pointer;">⏹ Stop</button>
+                <button id="audioStopBtn" onclick="stopAudio()" title="Stop" style="display:none; align-items:center; justify-content:center; gap:5px; padding:6px 12px; font-size:0.82rem; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); color:var(--red); border-radius:8px; cursor:pointer;">&#9209; Stop</button>
               </div>
-              <div class="audio-no-file" id="audioNoFile" style="display:none">⚠️ Audiodatei nicht verknüpft oder Drive nicht verbunden</div>
+              <div class="audio-no-file" id="audioNoFile" style="display:none">&#9888;&#65039; Audiodatei nicht verknüpft oder Drive nicht verbunden</div>
             </div>
-          </div>
-        </div>
 
-        <!-- Panel: Namen -->
-        <div class="acc-panel" id="accNamen">
-          <button class="acc-panel-header" onclick="toggleAccPanel('accNamen')">
-            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="users" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Namen</span>
-            <span class="acc-chevron">▾</span>
-          </button>
-          <div class="acc-panel-body">
+            <div class="sdc-section-label">
+              <i data-lucide="users" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Sprecher
+            </div>
             <div class="acc-namen-row">
               <div class="speaker-name-field">
                 <span class="speaker-name-dot" style="background:var(--speaker-a)"></span>
-                <input class="speaker-name-input speaker-a" id="editSpeakerA"
-                  placeholder="Sprecher A"
-                  onchange="renameSpeaker('A', this.value)"
-                  onkeydown="if(event.key==='Enter') this.blur()" />
+                <input class="speaker-name-input speaker-a" id="editSpeakerA" placeholder="Sprecher A" onchange="renameSpeaker('A', this.value)" onkeydown="if(event.key==='Enter') this.blur()" />
               </div>
-              <button class="btn btn-ghost" onclick="swapAllSpeakers()" title="Sprecher A↔B tauschen" style="display:inline-flex;align-items:center;gap:4px;padding:6px 10px;flex-shrink:0">
+              <button class="btn btn-ghost" onclick="swapAllSpeakers()" title="Sprecher A&#8596;B tauschen" style="display:inline-flex;align-items:center;gap:4px;padding:6px 10px;flex-shrink:0">
                 <i data-lucide="repeat" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Tauschen
               </button>
               <div class="speaker-name-field">
                 <span class="speaker-name-dot" style="background:var(--speaker-b)"></span>
-                <input class="speaker-name-input speaker-b" id="editSpeakerB"
-                  placeholder="Sprecher B"
-                  onchange="renameSpeaker('B', this.value)"
-                  onkeydown="if(event.key==='Enter') this.blur()" />
+                <input class="speaker-name-input speaker-b" id="editSpeakerB" placeholder="Sprecher B" onchange="renameSpeaker('B', this.value)" onkeydown="if(event.key==='Enter') this.blur()" />
               </div>
             </div>
-            <!-- Extra-Sprecher C, D, … (Samsung-Import) -->
             <div id="extraSpeakerFields" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid var(--border)"></div>
-          </div>
-        </div>
 
-        <!-- Panel: Transkript -->
-        <div class="acc-panel" id="accTranskript">
-          <button class="acc-panel-header" onclick="toggleAccPanel('accTranskript')">
-            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="align-left" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Transkript</span>
-            <span class="acc-chevron">▾</span>
-          </button>
-          <div class="acc-panel-body">
-            <div style="padding:8px 16px 0">
+            <div class="sdc-section-label">
+              <i data-lucide="align-left" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Transkript
+            </div>
+            <div style="margin-bottom:10px">
               <input id="transcriptSearch" type="search" placeholder="Im Transkript suchen…" oninput="filterTranscript(this.value)"
                 style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:7px 12px; font-size:0.85rem; outline:none; box-sizing:border-box">
             </div>
             <div class="utterances" id="utterancesContainer"></div>
-          </div>
-        </div>
 
-        <!-- Panel: Tags -->
-        <div class="acc-panel" id="accTags">
-          <button class="acc-panel-header" onclick="toggleAccPanel('accTags')">
-            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="tag" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Tags</span>
-            <span class="acc-chevron">▾</span>
-          </button>
-          <div class="acc-panel-body">
-            <div class="tag-input-wrap" id="tagInputWrap">
-              <div id="tagChips"></div>
-              <input class="tag-text-input" id="tagTextInput" placeholder="Tag eingeben + Enter…"
-                onkeydown="handleTagInput(event)" />
+          </div>
+          <!-- /transkript -->
+
+          <!-- ── TAB: Analysen ── -->
+          <div class="sdc-panel" id="sdc-panel-analysen">
+
+            <!-- Analyse starten -->
+            <div class="sdh-analyse-bar" style="border-radius:10px; margin:0 0 16px; padding:12px; display:flex; gap:8px; align-items:center">
+              <select id="analyseTypeSelect" onchange="updateAnalyseStartBtn()" class="sdh-analyse-select">
+                <option value="">Analyse wählen…</option>
+                <optgroup label="Standard" id="stdPromptsOptgroup">
+                  <option value="private" id="analyseOptPrivate">Gesprächsanalyse</option>
+                  <option value="work"    id="analyseOptWork">Arbeitsanalyse</option>
+                  <option value="360">360°-Auswertung</option>
+                  <option value="topics">Themen</option>
+                  <option value="chapters">Kapitel</option>
+                </optgroup>
+                <optgroup label="Eigene Prompts" id="customPromptsOptgroup" style="display:none"></optgroup>
+              </select>
+              <button class="btn btn-primary" onclick="startSelectedAnalysis()" id="analyseDropdownStartBtn"
+                disabled style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;font-size:0.85rem">
+                <i data-lucide="play" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Starten
+              </button>
             </div>
-          </div>
-        </div>
 
-        <!-- Panel: Notizen -->
-        <div class="acc-panel" id="accNotizen">
-          <button class="acc-panel-header" onclick="toggleAccPanel('accNotizen')">
-            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="file-text" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Notizen</span>
-            <span class="acc-chevron">▾</span>
-          </button>
-          <div class="acc-panel-body">
-            <textarea class="notes-area" id="notesArea" placeholder="Persönliche Eindrücke, Kontext, Beobachtungen…"
-              oninput="saveNotes()" style="margin:0"></textarea>
-          </div>
-        </div>
+            <!-- Sub-Tabs bestehender Analysen -->
+            <div class="sdc-subtabs" id="analysenSubtabs"></div>
 
-        <!-- Panel: Analysen -->
-        <div class="acc-panel" id="accAnalysen">
-          <button class="acc-panel-header" onclick="toggleAccPanel('accAnalysen')">
-            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="bar-chart-2" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Analysen</span>
-            <span class="acc-chevron">▾</span>
-          </button>
-          <div class="acc-panel-body">
+            <!-- Analyse-Ergebnisse -->
             <div class="insights-section" id="insightsSection">
               <!-- Gesprächsanalyse -->
               <div class="insights-block" id="privateBlock" style="display:none">
@@ -684,7 +666,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('private','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('private','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">▾</span>
+                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
                 <div class="insights-block-body"><div id="privateContent"></div></div>
@@ -696,7 +678,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('work','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('work','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">▾</span>
+                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
                 <div class="insights-block-body"><div id="workContent"></div></div>
@@ -708,7 +690,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('sentiment','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('sentiment','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">▾</span>
+                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
                 <div class="insights-block-body"><div id="sentimentContent"></div></div>
@@ -720,7 +702,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('chapters','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('chapters','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">▾</span>
+                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
                 <div class="insights-block-body"><div id="chaptersContent"></div></div>
@@ -732,7 +714,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('topics','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('topics','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">▾</span>
+                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
                 <div class="insights-block-body"><div id="topicsContent"></div></div>
@@ -744,7 +726,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('360','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('360','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">▾</span>
+                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
                 <div class="insights-block-body"><div id="content360"></div></div>
@@ -753,71 +735,34 @@
               <div id="customResultsContainer"></div>
             </div>
           </div>
-        </div>
+          <!-- /analysen -->
 
-        <!-- Panel: Mind Map -->
-        <div class="acc-panel" id="accMindmap">
-          <button class="acc-panel-header" onclick="toggleAccPanel('accMindmap')">
-            <span style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="git-branch" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Mind Map</span>
-            <span class="acc-chevron">▾</span>
-          </button>
-          <div class="acc-panel-body">
-            <div style="padding:12px 16px 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border)">
+          <!-- ── TAB: Mindmap ── -->
+          <div class="sdc-panel" id="sdc-panel-mindmap">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+              <button id="mindmapBtn" class="btn btn-primary" style="font-size:0.83rem;padding:7px 14px;display:inline-flex;align-items:center;gap:5px"
+                onclick="generateAndShowMindMap()"><i data-lucide="sparkles" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Generieren</button>
               <button id="mindmapRegenBtn" class="btn btn-ghost" style="font-size:0.8rem;padding:5px 12px;display:inline-flex;align-items:center;gap:4px"
                 onclick="regenerateMindmap()"><i data-lucide="refresh-cw" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Neu generieren</button>
               <button class="insights-export-btn" onclick="exportMindmapSvg()" title="SVG exportieren" style="font-size:0.78rem;padding:4px 10px">SVG</button>
               <button class="insights-export-btn" onclick="exportMindmapPdf()" title="PDF exportieren" style="font-size:0.78rem;padding:4px 10px">PDF</button>
             </div>
-            <div id="mindmapPanelRender" style="padding:16px;overflow-x:auto;min-height:60px">
-              <span style="color:var(--muted);font-size:0.85rem">Noch keine Mind Map generiert – klicke oben auf „Mind Map" oder „Neu generieren".</span>
+            <div id="mindmapPanelRender" style="overflow-x:auto;min-height:60px">
+              <span style="color:var(--muted);font-size:0.85rem">Noch keine Mind Map generiert – klicke auf „Generieren".</span>
             </div>
           </div>
-        </div>
+          <!-- /mindmap -->
 
-        <!-- ── Folgegespräch ─────────────────────────────── -->
-        <div class="acc-panel" id="accFolgegespraech">
-          <button class="acc-panel-header" onclick="toggleAccPanel('accFolgegespraech')">
-            <span style="display:flex;align-items:center;gap:8px">
-              <i data-lucide="message-circle" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i>
-              Folgegespräch
-            </span>
-            <span class="acc-chevron">▾</span>
-          </button>
-          <div class="acc-panel-body">
-            <div style="padding:10px 16px 8px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--border)">
-              <span style="font-size:0.8rem;color:var(--muted);flex:1">Stelle Folgefragen zu den erstellten Analysen – Claude kennt alle Ergebnisse als Kontext.</span>
-              <button onclick="clearFollowUp()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:0.78rem;cursor:pointer">Löschen</button>
-            </div>
-            <div id="followUpMessages" style="padding:16px;max-height:400px;overflow-y:auto;min-height:60px">
-              <span style="color:var(--muted);font-size:0.85rem">Noch keine Fragen gestellt – tippe unten eine Folgefrage ein.</span>
-            </div>
-            <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end">
-              <textarea id="followUpInput" rows="2" placeholder="z.B. Was wäre ein guter nächster Schritt für mich?" style="flex:1;resize:vertical;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.88rem;font-family:inherit;line-height:1.5" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){askFollowUp()}"></textarea>
-              <button id="followUpSendBtn" onclick="askFollowUp()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
-                <i data-lucide="send" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Senden
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── Präsentation erstellen ──────────────────── -->
-        <div class="acc-panel" id="accCanva">
-          <button class="acc-panel-header" onclick="toggleAccPanel('accCanva')">
-            <span style="display:flex;align-items:center;gap:8px">
-              <i data-lucide="layout" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i>
-              Präsentation erstellen
-            </span>
-            <span class="acc-chevron">▾</span>
-          </button>
-          <div class="acc-panel-body">
-            <div style="padding:12px 16px 10px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap">
+          <!-- ── TAB: Design ── -->
+          <div class="sdc-panel" id="sdc-panel-design">
+            <div style="padding:0 0 10px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap;margin-bottom:16px">
               <select id="canvaPromptSelect" style="flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 10px;font-size:0.83rem;outline:none;cursor:pointer">
                 <optgroup label="Dokumente">
                   <option value="builtin_canva_presentation">Präsentation (Folien)</option>
                   <option value="builtin_canva_summary">1-Pager / OnePager</option>
                   <option value="builtin_canva_action">Aktionsplan / Report</option>
                 </optgroup>
-                <optgroup label="Marketing & Design">
+                <optgroup label="Marketing &amp; Design">
                   <option value="builtin_canva_flyer">Flyer</option>
                   <option value="builtin_canva_poster">Poster</option>
                   <option value="builtin_canva_social">Social Media Post</option>
@@ -833,12 +778,12 @@
                 <i data-lucide="sparkles" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> In Claude Design öffnen
               </button>
             </div>
-            <div id="canvaPreview" style="padding:16px;min-height:60px">
+            <div id="canvaPreview" style="min-height:60px;margin-bottom:16px">
               <span style="color:var(--muted);font-size:0.85rem">Wähle einen Typ und klicke auf „Generieren" – Claude strukturiert den Inhalt aus deinen Analysen.</span>
             </div>
             <!-- Gespeicherte Design-Links -->
-            <div style="padding:0 16px 12px;border-top:1px solid var(--border)">
-              <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin:12px 0 8px;display:flex;align-items:center;gap:5px">
+            <div style="border-top:1px solid var(--border);padding-top:14px">
+              <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;display:flex;align-items:center;gap:5px">
                 <i data-lucide="link" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none"></i> Gespeicherte Designs
               </div>
               <div id="designLinksContainer" style="margin-bottom:10px">
@@ -849,15 +794,143 @@
                   style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:0.82rem;outline:none"
                   onkeydown="if(event.key==='Enter') saveDesignLink()" />
                 <button onclick="saveDesignLink()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:0.82rem;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px">
-                  <i data-lucide="plus" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Speichern
+                  <i data-lucide="plus" style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none"></i> Speichern
                 </button>
               </div>
             </div>
           </div>
+          <!-- /design -->
+
+          <!-- ── TAB: Notizen ── -->
+          <div class="sdc-panel" id="sdc-panel-notizen">
+            <textarea class="notes-area" id="notesArea" placeholder="Persönliche Eindrücke, Kontext, Beobachtungen…"
+              oninput="saveNotes()" style="margin:0;width:100%;min-height:280px;box-sizing:border-box"></textarea>
+          </div>
+          <!-- /notizen -->
+
+          <!-- ── TAB: Tags ── -->
+          <div class="sdc-panel" id="sdc-panel-tags">
+            <div class="tag-input-wrap" id="tagInputWrap">
+              <div id="tagChips"></div>
+              <input class="tag-text-input" id="tagTextInput" placeholder="Tag eingeben + Enter…"
+                onkeydown="handleTagInput(event)" />
+            </div>
+          </div>
+          <!-- /tags -->
+
         </div>
+        <!-- /sdc-main -->
+
+        <!-- RECHTE SIDEBAR -->
+        <div class="sdc-sidebar sdc-sidebar-collapsed" id="sdcSidebar">
+
+          <!-- Mode-Buttons -->
+          <div class="sdc-sidebar-modes">
+            <button class="sdc-mode-btn sdc-mode-active" id="sdcMode-fragen" onclick="setSidebarMode('fragen')">
+              <i data-lucide="message-circle" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Fragen
+            </button>
+            <button class="sdc-mode-btn" id="sdcMode-folgefragen" onclick="setSidebarMode('folgefragen')">
+              <i data-lucide="messages-square" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Folge
+            </button>
+            <button class="sdc-mode-btn" id="sdcMode-email" onclick="setSidebarMode('email')">
+              <i data-lucide="mail" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mail
+            </button>
+            <button class="sdc-mode-btn" id="sdcMode-kalender" onclick="setSidebarMode('kalender')">
+              <i data-lucide="calendar" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Kalender
+            </button>
+          </div>
+
+          <!-- Content-Panels -->
+          <div class="sdc-sidebar-content">
+
+            <!-- Fragen-Panel -->
+            <div class="sdc-sidebar-panel sdc-panel-active" id="sdc-sb-fragen">
+              <div id="askChatHistory" style="flex:1;overflow-y:auto;padding:14px;min-height:80px">
+                <div style="text-align:center;color:var(--muted);padding:24px 12px;font-size:0.85rem">
+                  Stelle eine Frage zum Transkript.<br>
+                  <span style="font-size:0.78rem;opacity:0.7">z.B. „Was hat Max über das Budget gesagt?"</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Folgefragen-Panel -->
+            <div class="sdc-sidebar-panel" id="sdc-sb-folgefragen">
+              <div style="padding:10px 12px 8px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)">
+                <span style="font-size:0.78rem;color:var(--muted);flex:1">Claude kennt alle Analyse-Ergebnisse als Kontext.</span>
+                <button onclick="clearFollowUp()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;font-size:0.75rem;cursor:pointer">Löschen</button>
+              </div>
+              <div id="followUpMessages" style="flex:1;overflow-y:auto;padding:14px;min-height:80px">
+                <span style="color:var(--muted);font-size:0.85rem">Noch keine Folgefragen gestellt.</span>
+              </div>
+            </div>
+
+            <!-- E-Mail-Panel -->
+            <div class="sdc-sidebar-panel" id="sdc-sb-email">
+              <div style="padding:14px;flex-shrink:0">
+                <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">Sitzung: <span id="mailSessionName" style="font-weight:600;color:var(--text)"></span></div>
+                <button onclick="extractEmailDrafts(calendarSession)" class="btn btn-primary" style="width:100%;justify-content:center;display:flex;align-items:center;gap:6px" id="mailExtractBtn">
+                  <i data-lucide="file-text" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mails ableiten
+                </button>
+                <button class="btn btn-ghost" onclick="renderGmailDrafts(gmailDrafts)" style="width:100%;justify-content:center;display:flex;align-items:center;gap:4px;margin-top:6px;font-size:0.8rem">&#8635; Neu laden</button>
+                <p style="font-size:0.72rem;color:var(--muted);line-height:1.5;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+                  E-Mails werden als Entwürfe in Gmail gespeichert – du sendest sie selbst ab.
+                </p>
+              </div>
+              <div id="mailSummary" style="padding:4px 14px;font-size:0.8rem;color:var(--muted)"></div>
+              <div id="mailDraftsList" style="flex:1;overflow-y:auto;padding:0 14px 14px">
+                <div class="cal-empty">Klicke auf „E-Mails ableiten" um das Transkript zu analysieren.</div>
+              </div>
+            </div>
+
+            <!-- Kalender-Panel -->
+            <div class="sdc-sidebar-panel" id="sdc-sb-kalender">
+              <div style="padding:14px;flex-shrink:0">
+                <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">Sitzung: <span id="calSessionName" style="font-weight:600;color:var(--text)"></span></div>
+                <button onclick="extractCalendarEvents(calendarSession)" class="btn btn-primary" style="width:100%;justify-content:center;display:flex;align-items:center;gap:6px" id="calExtractBtn">
+                  <i data-lucide="search" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Termine extrahieren
+                </button>
+                <button class="btn btn-ghost" onclick="renderCalendarEvents(calendarEvents)" style="width:100%;justify-content:center;display:flex;align-items:center;gap:4px;margin-top:6px;font-size:0.8rem">&#8635; Neu laden</button>
+                <p style="font-size:0.72rem;color:var(--muted);line-height:1.5;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+                  Termine werden direkt in deinen primären Google Kalender eingetragen.
+                </p>
+              </div>
+              <div id="calSummary" style="padding:4px 14px;font-size:0.8rem;color:var(--muted)"></div>
+              <div id="calEventsList" style="flex:1;overflow-y:auto;padding:0 14px 14px">
+                <div class="cal-empty">Klicke auf „Termine extrahieren" um das Transkript zu analysieren.</div>
+              </div>
+            </div>
+
+          </div>
+          <!-- /sdc-sidebar-content -->
+
+          <!-- Einheitliches Chat-Input (Fragen + Folgefragen) -->
+          <div class="sdc-sidebar-input" id="sdcSidebarInput">
+            <textarea id="askInput" rows="2"
+              placeholder="Frage zum Transkript… (Strg+Enter)"
+              onkeydown="askInputKeydown(event)"
+              style="flex:1;resize:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-family:inherit;line-height:1.5;outline:none"></textarea>
+            <textarea id="followUpInput" rows="2"
+              placeholder="Folgefrage… (Strg+Enter)"
+              onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){askFollowUp()}"
+              style="display:none;flex:1;resize:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-family:inherit;line-height:1.5;outline:none"></textarea>
+            <button id="askSendBtn" onclick="sendAskQuestion()"
+              style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0">
+              <i data-lucide="send" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
+            </button>
+          </div>
+
+        </div>
+        <!-- /sdc-sidebar -->
 
       </div>
-      <!-- /session-accordion -->
+      <!-- /sdc-layout -->
+
+      <!-- Mobile Overlay + FAB -->
+      <div class="sdc-sidebar-overlay" id="sdcOverlay" onclick="toggleSessionSidebar()"></div>
+      <button class="sdc-mobile-fab" id="sdcMobileFab" onclick="toggleSessionSidebar()">
+        <i data-lucide="message-circle" style="width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none"></i>
+      </button>
+
 
     </div>
 
@@ -879,7 +952,20 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
-      <!-- ── v4.73 ── -->
+      <!-- ── v4.74 ── -->
+      <!-- ── v4.74 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.74</span>
+          <span class="cl-date">13.06.2026</span>
+          <span class="cl-tag cl-tag-feat">Feature</span>
+          <span class="cl-tag cl-tag-ux">UX</span>
+        </div>
+        <div class="cl-title">Session-Ansicht: Tabs + einklappbare Sidebar</div>
+        <div class="cl-body">Kompletter Umbau der Session-Detailansicht: Akkordeons ersetzt durch Tab-Leiste (Transkript · Analysen · Mindmap · Design · Notizen · Tags). Neue rechte Sidebar mit Fragen, Folgefragen, E-Mail und Kalender – einklappbar. Header bereinigt. Mobile: Sidebar als Bottom-Sheet mit FAB.</div>
+        <div class="cl-tech">index.html: session-accordion → sdc-layout (Tabs+Sidebar); askModal/calModal/mailModal entfernt. css/styles.css: .sdc-* Klassen. js/ui.js: switchSessionTab(), toggleSessionSidebar(), setSidebarMode(). js/features.js+calendar.js: Modal-Öffner → Sidebar.</div>
+      </div>
+
       <div class="cl-entry">
         <div class="cl-header">
           <span class="cl-version">v4.73</span>
@@ -887,8 +973,8 @@
           <span class="cl-tag cl-tag-fix">Bugfix</span>
         </div>
         <div class="cl-title">Ordner-Dropdown: Unterordner werden wieder angezeigt</div>
-        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.73 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
-        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.73 Cache-Busting.</div>
+        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.74 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
+        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.74 Cache-Busting.</div>
       </div>
 
       <!-- ── v4.72 ── -->
@@ -2881,29 +2967,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=4.73"></script>
-<script src="js/storage.js?v=4.73"></script>
-<script src="js/config.js?v=4.73"></script>
-<script src="js/auth.js?v=4.73"></script>
-<script src="js/drive.js?v=4.73"></script>
-<script src="js/sessions.js?v=4.73"></script>
-<script src="js/assemblyai.js?v=4.73"></script>
-<script src="js/claude.js?v=4.73"></script>
-<script src="js/ui.js?v=4.73"></script>
-<script src="js/tags.js?v=4.73"></script>
-<script src="js/notes.js?v=4.73"></script>
-<script src="js/persons.js?v=4.73"></script>
-<script src="js/audio.js?v=4.73"></script>
-<script src="js/recorder.js?v=4.73"></script>
-<script src="js/app.js?v=4.73"></script>
+<script src="js/icons.js?v=4.74"></script>
+<script src="js/storage.js?v=4.74"></script>
+<script src="js/config.js?v=4.74"></script>
+<script src="js/auth.js?v=4.74"></script>
+<script src="js/drive.js?v=4.74"></script>
+<script src="js/sessions.js?v=4.74"></script>
+<script src="js/assemblyai.js?v=4.74"></script>
+<script src="js/claude.js?v=4.74"></script>
+<script src="js/ui.js?v=4.74"></script>
+<script src="js/tags.js?v=4.74"></script>
+<script src="js/notes.js?v=4.74"></script>
+<script src="js/persons.js?v=4.74"></script>
+<script src="js/audio.js?v=4.74"></script>
+<script src="js/recorder.js?v=4.74"></script>
+<script src="js/app.js?v=4.74"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=4.73"></script>
-<script src="js/search.js?v=4.73"></script>
-<script src="js/calendar.js?v=4.73"></script>
-<script src="js/prompts.js?v=4.73"></script>
-<script src="js/projects.js?v=4.73"></script>
-<script src="js/import.js?v=4.73"></script>
+<script src="js/features.js?v=4.74"></script>
+<script src="js/search.js?v=4.74"></script>
+<script src="js/calendar.js?v=4.74"></script>
+<script src="js/prompts.js?v=4.74"></script>
+<script src="js/projects.js?v=4.74"></script>
+<script src="js/import.js?v=4.74"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>if(window.mermaid) mermaid.initialize({ startOnLoad: false });</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -2946,26 +3032,6 @@
   </div>
 </div>
 
-<!-- ─── MODAL: Ask Your Recording ───────────────── -->
-<div class="modal-backdrop" id="askModal">
-  <div class="modal" style="max-width:640px; width:95%; max-height:90vh; display:flex; flex-direction:column;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-shrink:0">
-      <h3 style="margin:0; font-size:1.05rem; display:flex;align-items:center;gap:7px"><i data-lucide="message-circle" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Aufnahme befragen</h3>
-      <button onclick="closeAskModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">×</button>
-    </div>
-    <div id="askChatHistory" style="flex:1; overflow-y:auto; min-height:200px; max-height:420px; margin-bottom:14px; padding-right:4px"></div>
-    <div style="display:flex; gap:8px; flex-shrink:0">
-      <textarea id="askInput"
-        placeholder="Frage stellen… z.B. „Was hat Max über das Budget gesagt?""
-        onkeydown="askInputKeydown(event)"
-        style="flex:1; resize:none; height:56px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:10px 12px; font-size:0.88rem; outline:none; font-family:inherit; line-height:1.4"></textarea>
-      <button id="askSendBtn" onclick="sendAskQuestion()" class="btn btn-primary" style="align-self:stretch; padding:0 18px; flex-shrink:0">Senden</button>
-    </div>
-    <p style="font-size:0.72rem; color:var(--muted); margin-top:8px; flex-shrink:0">
-      Claude zitiert direkt aus dem Transkript · Zeitstempel sind anklickbar
-    </p>
-  </div>
-</div>
 
 <!-- ─── MODAL: Mind Map ──────────────────────────── -->
 <div class="modal-backdrop" id="mindmapModal">
@@ -3006,57 +3072,7 @@
   </div>
 </div>
 
-<!-- ─── MODAL: Google Kalender ──────────────────── -->
-<div class="modal-backdrop" id="calModal">
-  <div class="modal" style="max-width:680px; width:96%; max-height:92vh; display:flex; flex-direction:column;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-shrink:0">
-      <div>
-        <h3 style="margin:0; font-size:1.05rem; display:flex;align-items:center;gap:7px"><i data-lucide="calendar" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Google Kalender</h3>
-        <div id="calSessionName" style="font-size:0.78rem; color:var(--muted); margin-top:2px"></div>
-      </div>
-      <button onclick="closeCalendarModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">×</button>
-    </div>
-    <div id="calSummary" style="font-size:0.82rem; color:var(--muted); margin-bottom:10px; padding:8px 12px; background:var(--surface2); border-radius:6px; display:none"></div>
-    <div style="display:flex; gap:8px; margin-bottom:14px; flex-shrink:0">
-      <button id="calExtractBtn" class="btn btn-primary" onclick="extractCalendarEvents(calendarSession)" style="flex:1; justify-content:center; display:flex;align-items:center;gap:6px">
-        <i data-lucide="search" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Termine extrahieren
-      </button>
-      <button class="btn btn-ghost" onclick="renderCalendarEvents(calendarEvents)" title="Ansicht neu laden" style="padding:7px 12px">↺</button>
-    </div>
-    <div id="calEventsList" style="flex:1; overflow-y:auto">
-      <div class="cal-empty">Klicke auf „Termine extrahieren" um das Transkript zu analysieren.</div>
-    </div>
-    <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); flex-shrink:0; font-size:0.75rem; color:var(--muted)">
-      <i data-lucide="info" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;display:inline-block;vertical-align:middle;margin-right:4px"></i> Termine werden direkt in deinen primären Google Kalender eingetragen. Du musst Google-Kalender-Berechtigungen beim nächsten Login erteilen.
-    </div>
-  </div>
-</div>
 
-<!-- ─── MODAL: Gmail ─────────────────────────────── -->
-<div class="modal-backdrop" id="mailModal">
-  <div class="modal" style="max-width:680px; width:96%; max-height:92vh; display:flex; flex-direction:column;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-shrink:0">
-      <div>
-        <h3 style="margin:0; font-size:1.05rem; display:flex;align-items:center;gap:7px"><i data-lucide="mail" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Gmail Entwürfe</h3>
-        <div id="mailSessionName" style="font-size:0.78rem; color:var(--muted); margin-top:2px"></div>
-      </div>
-      <button onclick="closeGmailModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">×</button>
-    </div>
-    <div id="mailSummary" style="font-size:0.82rem; color:var(--muted); margin-bottom:10px; padding:8px 12px; background:var(--surface2); border-radius:6px"></div>
-    <div style="display:flex; gap:8px; margin-bottom:14px; flex-shrink:0">
-      <button id="mailExtractBtn" class="btn btn-primary" onclick="extractEmailDrafts(calendarSession)" style="flex:1; justify-content:center; display:flex;align-items:center;gap:6px">
-        <i data-lucide="file-text" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mails ableiten
-      </button>
-      <button class="btn btn-ghost" onclick="renderGmailDrafts(gmailDrafts)" title="Ansicht neu laden" style="padding:7px 12px">↺</button>
-    </div>
-    <div id="mailDraftsList" style="flex:1; overflow-y:auto">
-      <div class="cal-empty">Klicke auf „E-Mails ableiten" um das Transkript zu analysieren.</div>
-    </div>
-    <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); flex-shrink:0; font-size:0.75rem; color:var(--muted)">
-      <i data-lucide="info" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;display:inline-block;vertical-align:middle;margin-right:4px"></i> E-Mails werden als Entwürfe in Gmail gespeichert – du sendest sie selbst ab. Gmail-Compose-Berechtigungen erforderlich.
-    </div>
-  </div>
-</div>
 
 <!-- Floating Audio-Stop-Button (immer sichtbar wenn Audio läuft) -->
 <button id="audioStopBtnFloat" onclick="stopAudio()" title="Audio stoppen"

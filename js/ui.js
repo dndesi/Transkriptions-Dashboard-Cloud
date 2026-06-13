@@ -469,7 +469,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 4.73</span>
+          <span style="color:var(--accent); font-weight:600">Version 4.74</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -510,7 +510,7 @@ function renderArchView() {
 
       <!-- Lokaler Speicher + Proxy + Auth -->
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px">
-        ${archBox(icon('lock',18,'color:#60a5fa'), 'localStorage', 'API-Keys · Theme · Akkordeon-Status · Einstellungen · distill_has_sessions-Flag', '#60a5fa', 'Nur lokal – nie in der Cloud')}
+        ${archBox(icon('lock',18,'color:#60a5fa'), 'localStorage', 'API-Keys · Theme · Einstellungen · distill_has_sessions-Flag', '#60a5fa', 'Nur lokal – nie in der Cloud')}
         ${archBox(icon('database',18,'color:#a78bfa'), 'IndexedDB', 'Sessions + Projekte (js/storage.js) · kein Größenlimit · automatische Migration aus localStorage', '#a78bfa', 'distill_voice_db')}
         ${archBox(icon('key',18,'color:#34d399'), 'Google OAuth 2.0', 'GIS Client · Drive + Calendar + Gmail · Token-Refresh', '#34d399', 'accounts.google.com/gsi')}
         ${archBox(icon('zap',18,'color:#f472b6'), 'Cloudflare Worker', 'CORS-Proxy für DELETE-Requests', '#f472b6', 'Optional – workers.dev')}
@@ -533,7 +533,7 @@ function renderArchView() {
       ${flowCard('search.js', 'Globale Suche', 'Instant-Textsuche über alle Felder + Claude-Semantiksuche', '#6ee7b7')}
       ${flowCard('calendar.js', 'Kalender & Mail', 'Termine via Claude extrahieren → Google Calendar API · E-Mail-Entwürfe → Gmail API', '#f472b6')}
       ${flowCard('persons.js', 'Personen-Profile', 'Profil-Synthese, Selbst-Synthese, Beziehungskontext, Kosten-Übersicht, Ausblenden/Einblenden (toggleHiddenPersons/unhidePerson)', '#f472b6')}
-      ${flowCard('ui.js', 'UI-Rendering', 'Session-Browser, Zeitstrahl, Personen, Kosten, Systemarchitektur, Responsive/Hamburger', '#c084fc')}
+      ${flowCard('ui.js', 'UI-Rendering', 'Session-Browser, Zeitstrahl, Personen, Kosten, Systemarchitektur, Responsive/Hamburger · v4.74: switchSessionTab(), toggleSessionSidebar(), setSidebarMode() für Tab+Sidebar-Layout', '#c084fc')}
       ${flowCard('audio.js', 'Audio & Zeitstrahl', 'Audio-Player, Sync zu Utterances, Zeitstrahl-Ansicht nach Monat gruppiert', '#34d399')}
       ${flowCard('recorder.js', 'Audio-Aufnahme', 'MediaRecorder API, Mikrofon-Zugriff, WebM-Aufnahme direkt im Browser', '#34d399')}
       ${flowCard('sessions.js', 'Session-Verwaltung', 'Session speichern, Google Drive Archiv, Sitzungstypen (privat/arbeit/gedanken) · editAnalysisItem/Field, addAnalysisItem, saveAnalysisItem/Field', '#60a5fa')}
@@ -661,3 +661,123 @@ window.addEventListener('resize', () => {
     closeSidebar();
   }
 });
+
+
+// ═══════════════════════════════════════════════════
+// v4.74 – SESSION DETAIL: TABS + SIDEBAR
+// ═══════════════════════════════════════════════════
+
+let _currentSessionTab = 'transkript';
+let _sidebarOpen = false;
+let _currentSidebarMode = 'fragen';
+
+function switchSessionTab(name) {
+  _currentSessionTab = name;
+
+  // Tab-Buttons
+  document.querySelectorAll('.sdc-tab').forEach(btn => {
+    btn.classList.toggle('sdc-tab-active', btn.id === 'sdcTab-' + name);
+  });
+
+  // Tab-Panels
+  document.querySelectorAll('.sdc-panel[id^="sdc-panel-"]').forEach(panel => {
+    panel.classList.toggle('sdc-panel-active', panel.id === 'sdc-panel-' + name);
+  });
+
+  // Bei Analysen-Tab: Sub-Tabs aktualisieren
+  if (name === 'analysen') _refreshAnalysenSubtabs();
+}
+
+function _refreshAnalysenSubtabs() {
+  const container = document.getElementById('analysenSubtabs');
+  if (!container) return;
+  const blockMap = [
+    { id: 'privateBlock',  label: 'Gespräch' },
+    { id: 'workBlock',     label: 'Arbeit' },
+    { id: 'sentimentBlock',label: 'Stimmung' },
+    { id: 'chaptersBlock', label: 'Kapitel' },
+    { id: 'topicsBlock',   label: 'Themen' },
+    { id: 'block360',      label: '360°' },
+  ];
+  const visible = blockMap.filter(b => {
+    const el = document.getElementById(b.id);
+    return el && el.style.display !== 'none';
+  });
+  if (!visible.length) { container.innerHTML = ''; return; }
+  container.innerHTML = visible.map(b =>
+    `<button class="sdc-subtab" onclick="document.getElementById('${b.id}')?.scrollIntoView({behavior:'smooth',block:'start'})">${b.label}</button>`
+  ).join('');
+}
+
+function toggleSessionSidebar() {
+  const isMobile = window.innerWidth <= 768;
+  const sidebar = document.getElementById('sdcSidebar');
+  const overlay = document.getElementById('sdcOverlay');
+  const toggle  = document.getElementById('sdcSidebarToggle');
+
+  _sidebarOpen = !_sidebarOpen;
+
+  if (isMobile) {
+    sidebar?.classList.toggle('sdc-sidebar-open', _sidebarOpen);
+    sidebar?.classList.toggle('sdc-sidebar-collapsed', !_sidebarOpen);
+    if (overlay) overlay.classList.toggle('active', _sidebarOpen);
+  } else {
+    sidebar?.classList.toggle('sdc-sidebar-collapsed', !_sidebarOpen);
+    if (overlay) overlay.classList.remove('active');
+  }
+  if (toggle) toggle.classList.toggle('active', _sidebarOpen);
+
+  // Lucide neu rendern nach Übergang
+  setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 250);
+}
+
+function openSessionSidebar() {
+  if (!_sidebarOpen) toggleSessionSidebar();
+}
+
+function closeSessionSidebar() {
+  if (_sidebarOpen) toggleSessionSidebar();
+}
+
+function setSidebarMode(mode) {
+  _currentSidebarMode = mode;
+
+  // Sidebar öffnen falls geschlossen
+  openSessionSidebar();
+
+  // Mode-Buttons
+  document.querySelectorAll('.sdc-mode-btn').forEach(btn => {
+    btn.classList.toggle('sdc-mode-active', btn.id === 'sdcMode-' + mode);
+  });
+
+  // Sidebar-Panels
+  document.querySelectorAll('.sdc-sidebar-panel').forEach(panel => {
+    panel.classList.toggle('sdc-panel-active', panel.id === 'sdc-sb-' + mode);
+  });
+
+  // Chat-Input: bei Fragen/Folgefragen anzeigen, sonst verstecken
+  const inputWrap  = document.getElementById('sdcSidebarInput');
+  const askInput   = document.getElementById('askInput');
+  const followInput = document.getElementById('followUpInput');
+  const sendBtn    = document.getElementById('askSendBtn');
+
+  if (inputWrap) {
+    const showInput = mode === 'fragen' || mode === 'folgefragen';
+    inputWrap.classList.toggle('hidden', !showInput);
+
+    if (askInput)    askInput.style.display    = (mode === 'fragen')      ? 'block' : 'none';
+    if (followInput) followInput.style.display = (mode === 'folgefragen') ? 'block' : 'none';
+
+    if (sendBtn) {
+      sendBtn.onclick = mode === 'folgefragen'
+        ? () => askFollowUp()
+        : () => sendAskQuestion();
+    }
+  }
+
+  // Fokus auf aktives Input
+  setTimeout(() => {
+    if (mode === 'fragen' && askInput) askInput.focus();
+    else if (mode === 'folgefragen' && followInput) followInput.focus();
+  }, 300);
+}

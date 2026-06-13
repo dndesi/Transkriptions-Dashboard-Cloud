@@ -125,12 +125,13 @@ function openAskModal() {
   renderAskHistory();
   const inp = document.getElementById('askInput');
   if (inp) inp.value = '';
-  document.getElementById('askModal').classList.add('open');
-  setTimeout(() => { if (inp) inp.focus(); }, 100);
+  // v4.74: Sidebar statt Modal
+  if (typeof setSidebarMode === 'function') setSidebarMode('fragen');
 }
 
 function closeAskModal() {
-  document.getElementById('askModal').classList.remove('open');
+  // v4.74: Sidebar schließen statt Modal
+  if (typeof closeSessionSidebar === 'function') closeSessionSidebar();
 }
 
 async function sendAskQuestion() {

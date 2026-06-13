@@ -248,15 +248,19 @@ function openCalendarModal(session) {
 
   // Reset
   calendarEvents = [];
-  document.getElementById('calEventsList').innerHTML =
-    '<div class="cal-empty">Klicke auf „Termine extrahieren" um das Transkript zu analysieren.</div>';
-  document.getElementById('calSummary').textContent = '';
-  document.getElementById('calSessionName').textContent = calendarSession.label || 'Unbenannt';
-  document.getElementById('calModal').classList.add('open');
+  const listEl = document.getElementById('calEventsList');
+  if (listEl) listEl.innerHTML = '<div class="cal-empty">Klicke auf „Termine extrahieren" um das Transkript zu analysieren.</div>';
+  const sumEl = document.getElementById('calSummary');
+  if (sumEl) sumEl.textContent = '';
+  const nameEl = document.getElementById('calSessionName');
+  if (nameEl) nameEl.textContent = calendarSession.label || 'Unbenannt';
+  // v4.74: Sidebar statt Modal
+  if (typeof setSidebarMode === 'function') setSidebarMode('kalender');
 }
 
 function closeCalendarModal() {
-  document.getElementById('calModal').classList.remove('open');
+  // v4.74: Sidebar schließen statt Modal
+  if (typeof closeSessionSidebar === 'function') closeSessionSidebar();
 }
 
 // Direkt extrahieren & öffnen
@@ -467,18 +471,21 @@ function openGmailModal(session) {
 
   // Reset
   gmailDrafts = [];
-  document.getElementById('mailDraftsList').innerHTML =
-    '<div class="cal-empty">Klicke auf „E-Mails ableiten" um das Transkript zu analysieren.</div>';
-  document.getElementById('mailSummary').textContent = '';
-  document.getElementById('mailSessionName').textContent = s.label || 'Unbenannt';
-  document.getElementById('mailModal').classList.add('open');
-
+  const listEl = document.getElementById('mailDraftsList');
+  if (listEl) listEl.innerHTML = '<div class="cal-empty">Klicke auf „E-Mails ableiten" um das Transkript zu analysieren.</div>';
+  const sumEl = document.getElementById('mailSummary');
+  if (sumEl) sumEl.textContent = '';
+  const nameEl = document.getElementById('mailSessionName');
+  if (nameEl) nameEl.textContent = s.label || 'Unbenannt';
   // Session für Extraktion merken
   calendarSession = s;
+  // v4.74: Sidebar statt Modal
+  if (typeof setSidebarMode === 'function') setSidebarMode('email');
 }
 
 function closeGmailModal() {
-  document.getElementById('mailModal').classList.remove('open');
+  // v4.74: Sidebar schließen statt Modal
+  if (typeof closeSessionSidebar === 'function') closeSessionSidebar();
 }
 
 function openGmailModalAndExtract(session) {
