@@ -692,6 +692,9 @@ function switchSessionTab(name) {
   if (name === 'analysen') _refreshAnalysenSubtabs();
 }
 
+// v4.82: Welche Analyse-Blöcke aktuell Inhalt haben (für switchAnalysenSubtab)
+let _analysenVisibleBlocks = [];
+
 function _refreshAnalysenSubtabs() {
   const container = document.getElementById('analysenSubtabs');
   if (!container) return;
@@ -707,10 +710,27 @@ function _refreshAnalysenSubtabs() {
     const el = document.getElementById(b.id);
     return el && el.style.display !== 'none';
   });
+  _analysenVisibleBlocks = visible.map(b => b.id);
+
   if (!visible.length) { container.innerHTML = ''; return; }
-  container.innerHTML = visible.map(b =>
-    `<button class="sdc-subtab" onclick="document.getElementById('${b.id}')?.scrollIntoView({behavior:'smooth',block:'start'})">${b.label}</button>`
+
+  // v4.82: echte Tabs statt Anker – erster Tab direkt aktiv
+  container.innerHTML = visible.map((b, i) =>
+    `<button class="sdc-subtab${i === 0 ? ' sdc-subtab-active' : ''}" data-block="${b.id}" onclick="switchAnalysenSubtab('${b.id}')">${b.label}</button>`
   ).join('');
+
+  switchAnalysenSubtab(visible[0].id);
+}
+
+// v4.82: Zeigt nur den gewählten Analyse-Block, blendet alle anderen aus
+function switchAnalysenSubtab(id) {
+  _analysenVisibleBlocks.forEach(bid => {
+    const el = document.getElementById(bid);
+    if (el) el.style.display = bid === id ? 'block' : 'none';
+  });
+  document.querySelectorAll('#analysenSubtabs .sdc-subtab').forEach(btn => {
+    btn.classList.toggle('sdc-subtab-active', btn.dataset.block === id);
+  });
 }
 
 function toggleSessionSidebar() {
