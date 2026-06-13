@@ -56,12 +56,30 @@ function setSidenavActive(el) {
 function showHero() {
   const hero = document.getElementById('heroView');
   const browser = document.getElementById('browserView');
+  const transcript = document.getElementById('transcriptCard');
   if (hero) hero.classList.remove('hidden');
   if (browser) browser.classList.remove('visible');
+  if (transcript) transcript.classList.remove('visible');
+  // Alle Overlays schließen
+  ['costsView','personsView','archView','promptsView','projectsView'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+  // Fähnchen + Sidebar verstecken
+  const flap = document.getElementById('sdcFlap');
+  if (flap) flap.classList.add('hidden');
+  if (typeof closeSessionSidebar === 'function') closeSessionSidebar();
+  // Sidenav-Aktiv zurücksetzen
+  document.querySelectorAll('.sidenav-item.active').forEach(el => el.classList.remove('active'));
 }
 function hideHero() {
   const hero = document.getElementById('heroView');
   if (hero) hero.classList.add('hidden');
+  // browserView einblenden falls noch nicht sichtbar
+  const browser = document.getElementById('browserView');
+  if (browser && !browser.classList.contains('visible')) {
+    browser.classList.add('visible');
+    renderBrowser();
+  }
 }
 
 function showBrowser() {
