@@ -74,12 +74,6 @@ function showHero() {
 function hideHero() {
   const hero = document.getElementById('heroView');
   if (hero) hero.classList.add('hidden');
-  // browserView einblenden falls noch nicht sichtbar
-  const browser = document.getElementById('browserView');
-  if (browser && !browser.classList.contains('visible')) {
-    browser.classList.add('visible');
-    renderBrowser();
-  }
 }
 
 function showBrowser() {
