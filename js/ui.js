@@ -52,7 +52,20 @@ function setSidenavActive(el) {
 // ═══════════════════════════════════════════════════
 // SESSION BROWSER
 // ═══════════════════════════════════════════════════
+// v4.83: Hero-Startseite ein-/ausblenden
+function showHero() {
+  const hero = document.getElementById('heroView');
+  const browser = document.getElementById('browserView');
+  if (hero) hero.classList.remove('hidden');
+  if (browser) browser.classList.remove('visible');
+}
+function hideHero() {
+  const hero = document.getElementById('heroView');
+  if (hero) hero.classList.add('hidden');
+}
+
 function showBrowser() {
+  hideHero(); // v4.83: Hero verstecken
   document.getElementById('browserView').classList.add('visible');
   document.getElementById('transcriptCard').classList.remove('visible');
   // Alle Overlay-Views schliessen
@@ -344,6 +357,7 @@ function clearSelection() {
 // ═══════════════════════════════════════════════════
 let currentView = 'timeline';
 function setView(v) {
+  hideHero(); // v4.83: Hero verstecken beim View-Wechsel
   currentView = v;
   document.getElementById('viewGrid').classList.toggle('active', v === 'grid');
   document.getElementById('viewTimeline').classList.toggle('active', v === 'timeline');
