@@ -86,7 +86,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.74</button>
+        onmouseout="this.style.color='var(--muted)'">v4.75</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -481,7 +481,6 @@
         <div class="sdh-top">
           <button class="back-btn" onclick="showBrowser()">← Zurück zum Archiv</button>
           <div class="sdh-actions">
-            <button class="btn btn-ghost sdh-btn" onclick="exportTxt()" title="TXT exportieren"><i data-lucide="download" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> TXT</button>
             <button class="btn btn-ghost sdh-btn" onclick="openDeleteModal(currentSessionId)" title="Sitzung löschen"><i data-lucide="trash-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i></button>
             <!-- Senden an Claude: versteckt, aber im DOM aktiv -->
             <div class="claude-btn-wrap" id="claudeBtnWrap" style="display:none">
@@ -555,7 +554,7 @@
       </div>
 
       <!-- ── AKKORDEON ── -->
-      <!-- ── TABS + SIDEBAR LAYOUT (v4.74) ── -->
+      <!-- ── TABS + SIDEBAR LAYOUT (v4.75) ── -->
       <div class="sdc-layout" id="sdcLayout">
 
         <!-- LINKE SEITE: Tab-Leiste + Panels -->
@@ -661,75 +660,69 @@
             <div class="insights-section" id="insightsSection">
               <!-- Gesprächsanalyse -->
               <div class="insights-block" id="privateBlock" style="display:none">
-                <div class="insights-block-title" onclick="toggleInsightsBlock('privateBlock')">
+                <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="message-circle" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Gesprächsanalyse</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('private','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('private','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
-                <div class="insights-block-body"><div id="privateContent"></div></div>
+                <div class="insights-block-body" style="display:block"><div id="privateContent"></div></div>
               </div>
               <!-- Arbeitsanalyse -->
               <div class="insights-block" id="workBlock" style="display:none">
-                <div class="insights-block-title" onclick="toggleInsightsBlock('workBlock')">
+                <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="briefcase" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Arbeitsanalyse</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('work','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('work','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
-                <div class="insights-block-body"><div id="workContent"></div></div>
+                <div class="insights-block-body" style="display:block"><div id="workContent"></div></div>
               </div>
               <!-- Stimmungsanalyse -->
               <div class="insights-block" id="sentimentBlock" style="display:none">
-                <div class="insights-block-title" onclick="toggleInsightsBlock('sentimentBlock')">
+                <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="activity" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Stimmungsanalyse</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('sentiment','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('sentiment','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
-                <div class="insights-block-body"><div id="sentimentContent"></div></div>
+                <div class="insights-block-body" style="display:block"><div id="sentimentContent"></div></div>
               </div>
               <!-- Kapitel -->
               <div class="insights-block" id="chaptersBlock" style="display:none">
-                <div class="insights-block-title" onclick="toggleInsightsBlock('chaptersBlock')">
+                <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="book-open" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Kapitel</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('chapters','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('chapters','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
-                <div class="insights-block-body"><div id="chaptersContent"></div></div>
+                <div class="insights-block-body" style="display:block"><div id="chaptersContent"></div></div>
               </div>
               <!-- Themen -->
               <div class="insights-block" id="topicsBlock" style="display:none">
-                <div class="insights-block-title" onclick="toggleInsightsBlock('topicsBlock')">
+                <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="tag" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Themen</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('topics','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('topics','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
-                <div class="insights-block-body"><div id="topicsContent"></div></div>
+                <div class="insights-block-body" style="display:block"><div id="topicsContent"></div></div>
               </div>
               <!-- 360°-Auswertung -->
               <div class="insights-block" id="block360" style="display:none">
-                <div class="insights-block-title" onclick="toggleInsightsBlock('block360')">
+                <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="refresh-cw" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> 360°-Auswertung</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('360','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('360','pdf')" title="PDF">PDF</button>
-                    <span class="insights-block-chevron">&#9660;</span>
                   </span>
                 </div>
-                <div class="insights-block-body"><div id="content360"></div></div>
+                <div class="insights-block-body" style="display:block"><div id="content360"></div></div>
               </div>
               <!-- Eigene Prompts (dynamisch) -->
               <div id="customResultsContainer"></div>
@@ -952,11 +945,11 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
-      <!-- ── v4.74 ── -->
-      <!-- ── v4.74 ── -->
+      <!-- ── v4.75 ── -->
+      <!-- ── v4.75 ── -->
       <div class="cl-entry">
         <div class="cl-header">
-          <span class="cl-version">v4.74</span>
+          <span class="cl-version">v4.75</span>
           <span class="cl-date">13.06.2026</span>
           <span class="cl-tag cl-tag-feat">Feature</span>
           <span class="cl-tag cl-tag-ux">UX</span>
@@ -973,8 +966,8 @@
           <span class="cl-tag cl-tag-fix">Bugfix</span>
         </div>
         <div class="cl-title">Ordner-Dropdown: Unterordner werden wieder angezeigt</div>
-        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.74 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
-        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.74 Cache-Busting.</div>
+        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.75 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
+        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.75 Cache-Busting.</div>
       </div>
 
       <!-- ── v4.72 ── -->
@@ -2967,29 +2960,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=4.74"></script>
-<script src="js/storage.js?v=4.74"></script>
-<script src="js/config.js?v=4.74"></script>
-<script src="js/auth.js?v=4.74"></script>
-<script src="js/drive.js?v=4.74"></script>
-<script src="js/sessions.js?v=4.74"></script>
-<script src="js/assemblyai.js?v=4.74"></script>
-<script src="js/claude.js?v=4.74"></script>
-<script src="js/ui.js?v=4.74"></script>
-<script src="js/tags.js?v=4.74"></script>
-<script src="js/notes.js?v=4.74"></script>
-<script src="js/persons.js?v=4.74"></script>
-<script src="js/audio.js?v=4.74"></script>
-<script src="js/recorder.js?v=4.74"></script>
-<script src="js/app.js?v=4.74"></script>
+<script src="js/icons.js?v=4.75"></script>
+<script src="js/storage.js?v=4.75"></script>
+<script src="js/config.js?v=4.75"></script>
+<script src="js/auth.js?v=4.75"></script>
+<script src="js/drive.js?v=4.75"></script>
+<script src="js/sessions.js?v=4.75"></script>
+<script src="js/assemblyai.js?v=4.75"></script>
+<script src="js/claude.js?v=4.75"></script>
+<script src="js/ui.js?v=4.75"></script>
+<script src="js/tags.js?v=4.75"></script>
+<script src="js/notes.js?v=4.75"></script>
+<script src="js/persons.js?v=4.75"></script>
+<script src="js/audio.js?v=4.75"></script>
+<script src="js/recorder.js?v=4.75"></script>
+<script src="js/app.js?v=4.75"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=4.74"></script>
-<script src="js/search.js?v=4.74"></script>
-<script src="js/calendar.js?v=4.74"></script>
-<script src="js/prompts.js?v=4.74"></script>
-<script src="js/projects.js?v=4.74"></script>
-<script src="js/import.js?v=4.74"></script>
+<script src="js/features.js?v=4.75"></script>
+<script src="js/search.js?v=4.75"></script>
+<script src="js/calendar.js?v=4.75"></script>
+<script src="js/prompts.js?v=4.75"></script>
+<script src="js/projects.js?v=4.75"></script>
+<script src="js/import.js?v=4.75"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>if(window.mermaid) mermaid.initialize({ startOnLoad: false });</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -3126,6 +3119,13 @@
     </div>
   </div>
 </div>
+
+
+  <!-- Sidebar-Fähnchen (Desktop: rechter Rand; Mobile: FAB) -->
+  <div class="sdc-flap" id="sdcFlap" onclick="toggleSessionSidebar()" title="Assistent öffnen">
+    <i data-lucide="panel-right" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i>
+    <span>Assistent</span>
+  </div>
 
 </body>
 </html>
