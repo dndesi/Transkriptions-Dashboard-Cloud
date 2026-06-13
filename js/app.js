@@ -14,8 +14,7 @@ async function init() {
   renderBrowser();
   setupAudioSync();
   setDateInputToNow();
-  // Startansicht: chronologische Liste
-  setView('timeline');
+  // Startansicht: Hero-Seite (v4.87) – kein setView('timeline') mehr beim Init
 
   // Drag & Drop
   const zone = document.getElementById('uploadZone');
