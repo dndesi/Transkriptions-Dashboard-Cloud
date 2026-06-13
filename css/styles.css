@@ -3104,26 +3104,29 @@ mark.search-highlight {
   margin: 0;
 }
 
-/* 4-Spalten-Grid */
+/* 4-Spalten-Grid – separierte Karten */
 .hero-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  border-left: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-  border-radius: 0 0 14px 14px;
-  overflow: hidden;
-  background: var(--surface);
+  gap: 12px;
+  background: transparent;
+  padding: 16px 0 4px;
 }
 .hero-card {
-  padding: 1.4rem 1.25rem 1.25rem;
-  border-right: 1px solid var(--border);
+  padding: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-.hero-card:last-child {
-  border-right: none;
+
+/* Icon + Titel nebeneinander */
+.hero-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* Icons */
@@ -3180,17 +3183,6 @@ mark.search-highlight {
   .hero-cards {
     grid-template-columns: repeat(2, 1fr);
   }
-  .hero-card:nth-child(2) {
-    border-right: none;
-  }
-  .hero-card:nth-child(3) {
-    border-top: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-  }
-  .hero-card:nth-child(4) {
-    border-top: 1px solid var(--border);
-    border-right: none;
-  }
 }
 @media (max-width: 540px) {
   .hero-banner {
@@ -3199,14 +3191,6 @@ mark.search-highlight {
   }
   .hero-cards {
     grid-template-columns: 1fr;
-    border-radius: 0 0 12px 12px;
-  }
-  .hero-card {
-    border-right: none;
-    border-top: 1px solid var(--border);
-    padding: 1rem;
-  }
-  .hero-card:first-child {
-    border-top: none;
+    gap: 8px;
   }
 }

@@ -4,8 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Distill Voice</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c63ff' stroke-width='2'><path d='M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z'/><path d='M19 10v2a7 7 0 0 1-14 0v-2'/><line x1='12' y1='19' x2='12' y2='23'/><line x1='8' y1='23' x2='16' y2='23'/></svg>" />
-  <link rel="stylesheet" href="css/styles.css?v=4.87" />
+  <link rel="icon" href="img/icon-192.png" />
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Distill Voice" />
+  <meta name="theme-color" content="#6c63ff" />
+  <link rel="stylesheet" href="css/styles.css?v=4.89" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -86,7 +92,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.87</button>
+        onmouseout="this.style.color='var(--muted)'">v4.89</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -361,7 +367,7 @@
     <!-- + Neue Aufnahme -->
     <button class="sidenav-new" onclick="openUploadPanel()">
       <i data-lucide="plus" style="width:15px;height:15px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0"></i>
-      Neue Aufnahme
+      Neue Sitzung
     </button>
 
     <!-- Aktives Projekt Badge -->
@@ -450,34 +456,42 @@
       </div>
       <div class="hero-cards">
         <div class="hero-card">
-          <div class="hero-card-icon hero-icon-purple">
-            <i data-lucide="folder" style="width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none"></i>
+          <div class="hero-card-header">
+            <div class="hero-card-icon hero-icon-coral">
+              <i data-lucide="mic" style="width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none"></i>
+            </div>
+            <h3 class="hero-card-title">Neue Sitzung</h3>
           </div>
-          <h3 class="hero-card-title">Projekte</h3>
-          <p class="hero-card-desc">Organisiere deine Sitzungen in Projekten und behalte den Überblick über Themen, Personen und Aufgaben.</p>
-          <button class="hero-card-btn" onclick="hideHero(); toggleProjectsView()">Weiter →</button>
-        </div>
-        <div class="hero-card">
-          <div class="hero-card-icon hero-icon-teal">
-            <i data-lucide="archive" style="width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none"></i>
-          </div>
-          <h3 class="hero-card-title">Sitzungen</h3>
-          <p class="hero-card-desc">Alle bisherigen Aufnahmen und Analysen auf einen Blick – durchsuchen, filtern und öffnen.</p>
-          <button class="hero-card-btn" onclick="hideHero(); showBrowser()">Weiter →</button>
-        </div>
-        <div class="hero-card">
-          <div class="hero-card-icon hero-icon-coral">
-            <i data-lucide="mic" style="width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none"></i>
-          </div>
-          <h3 class="hero-card-title">Neue Sitzung</h3>
           <p class="hero-card-desc">Starte eine neue Aufnahme, lade eine Audiodatei hoch und lass die KI die Analyse übernehmen.</p>
           <button class="hero-card-btn" onclick="hideHero(); openUploadPanel()">Weiter →</button>
         </div>
         <div class="hero-card">
-          <div class="hero-card-icon hero-icon-amber">
-            <i data-lucide="book-open" style="width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none"></i>
+          <div class="hero-card-header">
+            <div class="hero-card-icon hero-icon-purple">
+              <i data-lucide="folder" style="width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none"></i>
+            </div>
+            <h3 class="hero-card-title">Projekte</h3>
           </div>
-          <h3 class="hero-card-title">Promptbibliothek</h3>
+          <p class="hero-card-desc">Organisiere deine Sitzungen in Projekten und behalte den Überblick über Themen, Personen und Aufgaben.</p>
+          <button class="hero-card-btn" onclick="hideHero(); toggleProjectsView()">Weiter →</button>
+        </div>
+        <div class="hero-card">
+          <div class="hero-card-header">
+            <div class="hero-card-icon hero-icon-teal">
+              <i data-lucide="archive" style="width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none"></i>
+            </div>
+            <h3 class="hero-card-title">Sitzungen</h3>
+          </div>
+          <p class="hero-card-desc">Alle bisherigen Aufnahmen und Analysen auf einen Blick – durchsuchen, filtern und öffnen.</p>
+          <button class="hero-card-btn" onclick="hideHero(); showBrowser()">Weiter →</button>
+        </div>
+        <div class="hero-card">
+          <div class="hero-card-header">
+            <div class="hero-card-icon hero-icon-amber">
+              <i data-lucide="book-open" style="width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none"></i>
+            </div>
+            <h3 class="hero-card-title">Promptbibliothek</h3>
+          </div>
           <p class="hero-card-desc">Verwalte und passe KI-Analyse-Vorlagen an – für Meetings, Interviews, persönliche Gespräche und mehr.</p>
           <button class="hero-card-btn" onclick="hideHero(); togglePromptsView(); setSidenavActive(document.getElementById('navPrompts'))">Weiter →</button>
         </div>
@@ -998,6 +1012,20 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
+      <!-- ── v4.89 ── -->
+      <div class="cl-entry">
+        <div class="cl-header">
+          <span class="cl-version">v4.89</span>
+          <span class="cl-date">13.06.2026</span>
+        </div>
+        <div class="cl-title">Hero-Karten redesign + PWA-Icon</div>
+        <div class="cl-body">Icon und Titel stehen jetzt nebeneinander in jeder Karte. Karten sind voneinander getrennt (gap, runde Ecken, transparenter Hintergrund). PWA-Support: App kann zum iPhone-Homescreen hinzugefügt werden (apple-touch-icon, manifest.json, theme-color).</div>
+        <div class="cl-tech">css/styles.css: .hero-cards gap statt Randlinien, .hero-card border-radius 14px, .hero-card-header flex-row. index.html: apple-touch-icon + manifest-Link im Head. img/: icon-192.png, icon-512.png, apple-touch-icon.png. manifest.json neu.</div>
+      </div>
+
+      <!-- ── v4.88 ── -->
+      <div class="cl-entry"><div class="cl-header"><span class="cl-version">v4.88</span><span class="cl-date">13.06.2026</span></div><div class="cl-title">Hero-Grid: Neue Sitzung an erster Stelle</div><div class="cl-body">Reihenfolge der Hero-Kacheln geändert: Neue Sitzung steht jetzt an erster Stelle. Sidenav-Button „Neue Aufnahme“ in „Neue Sitzung“ umbenannt.</div></div>
+
       <!-- ── v4.87 ── -->
       <div class="cl-entry">
         <div class="cl-header"><span class="cl-version">v4.87</span><span class="cl-date">13.06.2026</span></div>
@@ -1096,7 +1124,7 @@
           <span class="cl-version">v4.77</span>
           <span class="cl-date">13.06.2026</span>
         </div>
-        <div class="cl-body">Bugfix: (1) styles.css hatte kein Cache-Busting &ndash; Browser nutzte alte CSS auf Mobile, Sidebar-Bottom-Sheet-Animation fehlte. Fix: ?v=4.87 an styles.css. (2) askFollowUp() referenzierte &lsquo;followUpSendBtn&rsquo; (altes Modal-Element) statt &lsquo;askSendBtn&rsquo; (neue Sidebar) &ndash; TypeError crashte Folgefragen-Funktion.</div>
+        <div class="cl-body">Bugfix: (1) styles.css hatte kein Cache-Busting &ndash; Browser nutzte alte CSS auf Mobile, Sidebar-Bottom-Sheet-Animation fehlte. Fix: ?v=4.89 an styles.css. (2) askFollowUp() referenzierte &lsquo;followUpSendBtn&rsquo; (altes Modal-Element) statt &lsquo;askSendBtn&rsquo; (neue Sidebar) &ndash; TypeError crashte Folgefragen-Funktion.</div>
       </div>
       <!-- ── v4.76 ── -->
       <div class="cl-entry">
@@ -1127,8 +1155,8 @@
           <span class="cl-tag cl-tag-fix">Bugfix</span>
         </div>
         <div class="cl-title">Ordner-Dropdown: Unterordner werden wieder angezeigt</div>
-        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.87 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
-        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.87 Cache-Busting.</div>
+        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.89 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
+        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.89 Cache-Busting.</div>
       </div>
 
       <!-- ── v4.72 ── -->
@@ -3121,29 +3149,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=4.87"></script>
-<script src="js/storage.js?v=4.87"></script>
-<script src="js/config.js?v=4.87"></script>
-<script src="js/auth.js?v=4.87"></script>
-<script src="js/drive.js?v=4.87"></script>
-<script src="js/sessions.js?v=4.87"></script>
-<script src="js/assemblyai.js?v=4.87"></script>
-<script src="js/claude.js?v=4.87"></script>
-<script src="js/ui.js?v=4.87"></script>
-<script src="js/tags.js?v=4.87"></script>
-<script src="js/notes.js?v=4.87"></script>
-<script src="js/persons.js?v=4.87"></script>
-<script src="js/audio.js?v=4.87"></script>
-<script src="js/recorder.js?v=4.87"></script>
-<script src="js/app.js?v=4.87"></script>
+<script src="js/icons.js?v=4.89"></script>
+<script src="js/storage.js?v=4.89"></script>
+<script src="js/config.js?v=4.89"></script>
+<script src="js/auth.js?v=4.89"></script>
+<script src="js/drive.js?v=4.89"></script>
+<script src="js/sessions.js?v=4.89"></script>
+<script src="js/assemblyai.js?v=4.89"></script>
+<script src="js/claude.js?v=4.89"></script>
+<script src="js/ui.js?v=4.89"></script>
+<script src="js/tags.js?v=4.89"></script>
+<script src="js/notes.js?v=4.89"></script>
+<script src="js/persons.js?v=4.89"></script>
+<script src="js/audio.js?v=4.89"></script>
+<script src="js/recorder.js?v=4.89"></script>
+<script src="js/app.js?v=4.89"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=4.87"></script>
-<script src="js/search.js?v=4.87"></script>
-<script src="js/calendar.js?v=4.87"></script>
-<script src="js/prompts.js?v=4.87"></script>
-<script src="js/projects.js?v=4.87"></script>
-<script src="js/import.js?v=4.87"></script>
+<script src="js/features.js?v=4.89"></script>
+<script src="js/search.js?v=4.89"></script>
+<script src="js/calendar.js?v=4.89"></script>
+<script src="js/prompts.js?v=4.89"></script>
+<script src="js/projects.js?v=4.89"></script>
+<script src="js/import.js?v=4.89"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>if(window.mermaid) mermaid.initialize({ startOnLoad: false });</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
