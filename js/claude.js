@@ -1127,6 +1127,9 @@ function renderInsights(session) {
   }
 
   section.style.display = anyVisible ? 'block' : 'none';
+
+  // v4.81: Subtabs immer nach renderInsights aktualisieren (nicht nur beim Tab-Klick)
+  if (typeof _refreshAnalysenSubtabs === 'function') _refreshAnalysenSubtabs();
 }
 
 function showTranscript(session) {
