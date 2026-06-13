@@ -55,10 +55,14 @@ function setSidenavActive(el) {
 function showBrowser() {
   document.getElementById('browserView').classList.add('visible');
   document.getElementById('transcriptCard').classList.remove('visible');
-  // Alle Overlay-Views schließen
+  // Alle Overlay-Views schliessen
   ['costsView','personsView','archView','promptsView','projectsView'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
+  // v4.76: Fahnchen ausblenden + Sidebar zuklappen
+  const flap = document.getElementById('sdcFlap');
+  if (flap) flap.classList.add('hidden');
+  if (typeof closeSessionSidebar === 'function') closeSessionSidebar();
   currentSessionId = null;
   renderBrowser();
 }
@@ -441,7 +445,7 @@ function toggleArchView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v4.38';
+  const title = 'Distill Voice – Systemarchitektur v4.76';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }
@@ -727,7 +731,14 @@ function toggleSessionSidebar() {
     if (overlay) overlay.classList.remove('active');
   }
   if (toggle) toggle.classList.toggle('active', _sidebarOpen);
-  if (flap)   flap.classList.toggle('hidden', _sidebarOpen);
+  // v4.76: Fahnchen als einziger Toggle – Icon und Text wechseln statt verstecken
+  if (flap) {
+    flap.classList.toggle('sdc-flap-open', _sidebarOpen);
+    const iconEl = flap.querySelector('[data-lucide]');
+    if (iconEl) iconEl.setAttribute('data-lucide', _sidebarOpen ? 'panel-right-close' : 'panel-right-open');
+    const spanEl = flap.querySelector('span');
+    if (spanEl) spanEl.textContent = _sidebarOpen ? 'Schliessen' : 'Assistent';
+  }
 
   // Lucide neu rendern nach Übergang
   setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 250);
@@ -774,6 +785,15 @@ function setSidebarMode(mode) {
       sendBtn.onclick = mode === 'folgefragen'
         ? () => askFollowUp()
         : () => sendAskQuestion();
+    }
+  }
+
+  // v4.76: Modus-spezifische Initialisierung
+  if (mode === 'folgefragen') {
+    // Bestehende Folgefragen aus der Session rendern
+    const s = typeof getSession === 'function' ? getSession() : null;
+    if (s && typeof renderFollowUpMessages === 'function') {
+      renderFollowUpMessages(s);
     }
   }
 

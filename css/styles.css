@@ -2940,7 +2940,7 @@ mark.search-highlight {
     pointer-events: auto !important;
   }
   .sdc-sidebar.sdc-sidebar-open { transform: translateY(0); }
-  .sdc-sidebar.sdc-sidebar-collapsed { transform: translateY(100%) !important; }
+  .sdc-sidebar.sdc-sidebar-collapsed { transform: translateY(100%) !important; pointer-events: none !important; }
   .sdc-mobile-fab { display: flex !important; }
 }
 
@@ -2993,7 +2993,7 @@ mark.search-highlight {
   border-radius: 10px 0 0 10px;
   padding: 14px 6px;
   cursor: pointer;
-  z-index: 150;
+  z-index: 202;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3010,9 +3010,12 @@ mark.search-highlight {
   writing-mode: vertical-rl;
 }
 .sdc-flap:hover { background: var(--accent2, #7c6fdf); }
+/* v4.76: Fahnchen im offenen Zustand */
+.sdc-flap.sdc-flap-open { background: var(--accent2, #7c6fdf); }
+.sdc-flap.sdc-flap-open:hover { background: #c0392b; }
 
 /* Fähnchen ausblenden wenn Sidebar offen ist (JS setzt Klasse) */
-.sdc-flap.hidden { opacity: 0; pointer-events: none; }
+.sdc-flap.hidden { display: none !important; }
 
 /* Auf Mobile: Fähnchen anders – als kleiner FAB unten rechts */
 @media (max-width: 768px) {

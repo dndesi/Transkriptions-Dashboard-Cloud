@@ -1188,6 +1188,10 @@ function showTranscript(session) {
     renderDesignLinks(session);
   }
   _restoreAccState(session.id);
+  // v4.76: Faehnchen einblenden, Sidebar-Modus zuruecksetzen
+  const flap = document.getElementById('sdcFlap');
+  if (flap) flap.classList.remove('hidden');
+  if (typeof closeSessionSidebar === 'function') closeSessionSidebar();
 }
 
 
