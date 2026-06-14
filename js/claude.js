@@ -1881,7 +1881,56 @@ async function exportPresentationPptx() {
   showToast('.pptx heruntergeladen', 'success');
 }
 
+let _transcriptEditMode = false; // v4.93: Transkript-Editor
+
+// ── Transkript-Editor: Bearbeiten / Abbrechen ────────────────────────────
+function toggleTranscriptEdit() {
+  const session = sessions.find(s => s.id === currentSessionId);
+  if (!session) return;
+  _transcriptEditMode = !_transcriptEditMode;
+  if (_transcriptEditMode) {
+    // Alle .utterance-text Divs durch Textareas ersetzen
+    document.querySelectorAll('#utterancesContainer .utterance-text').forEach((el, idx) => {
+      const rawText = el.dataset.rawText || el.textContent;
+      const ta = document.createElement('textarea');
+      ta.className = 'utterance-edit-ta';
+      ta.value = rawText;
+      ta.dataset.idx = idx;
+      ta.rows = Math.max(2, Math.ceil(rawText.length / 60));
+      el.replaceWith(ta);
+    });
+    const btn = document.getElementById('transcriptEditBtn');
+    const saveBtn = document.getElementById('transcriptSaveBtn');
+    if (btn) { btn.textContent = 'Abbrechen'; btn.style.color = 'var(--muted)'; }
+    if (saveBtn) saveBtn.style.display = 'inline-flex';
+  } else {
+    // Abbrechen: unverändert neu rendern
+    renderUtterances(session);
+  }
+}
+
+// ── Transkript-Editor: Speichern ─────────────────────────────────────────
+async function saveTranscriptEdits() {
+  const session = sessions.find(s => s.id === currentSessionId);
+  if (!session) return;
+  let changed = 0;
+  document.querySelectorAll('#utterancesContainer .utterance-edit-ta').forEach(ta => {
+    const idx = parseInt(ta.dataset.idx, 10);
+    if (!isNaN(idx) && session.utterances[idx] !== undefined) {
+      const newText = ta.value.trim();
+      if (newText !== session.utterances[idx].text) changed++;
+      session.utterances[idx].text = newText;
+    }
+  });
+  _transcriptEditMode = false;
+  await saveSessions();
+  saveToArchive(session).catch(() => {});
+  renderUtterances(session);
+  showToast(changed > 0 ? `${changed} Abschnitt${changed === 1 ? '' : 'e'} gespeichert ✓` : 'Keine Änderungen.', 'ok');
+}
+
 function renderUtterances(session) {
+  _transcriptEditMode = false; // Edit-Modus beim Neu-Rendern zurücksetzen
   const container = document.getElementById('utterancesContainer');
   const tBlock = document.getElementById('transcriptBlock');
   container.innerHTML = '';
@@ -1937,6 +1986,11 @@ function renderUtterances(session) {
   // Suchfeld leeren wenn neue Sitzung geladen
   const searchInput = document.getElementById('transcriptSearch');
   if (searchInput) searchInput.value = '';
+  // Edit-Button zurücksetzen (v4.93)
+  const editBtn = document.getElementById('transcriptEditBtn');
+  const saveBtn = document.getElementById('transcriptSaveBtn');
+  if (editBtn) { editBtn.textContent = 'Bearbeiten'; editBtn.style.color = 'var(--accent)'; }
+  if (saveBtn) saveBtn.style.display = 'none';
 }
 
 function filterTranscript(query) {

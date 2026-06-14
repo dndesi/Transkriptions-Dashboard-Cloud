@@ -500,7 +500,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 4.82</span>
+          <span style="color:var(--accent); font-weight:600">Version 4.93</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -569,7 +569,7 @@ function renderArchView() {
       ${flowCard('recorder.js', 'Audio-Aufnahme', 'MediaRecorder API, Mikrofon-Zugriff, WebM-Aufnahme direkt im Browser', '#34d399')}
       ${flowCard('sessions.js', 'Session-Verwaltung', 'Session speichern, Google Drive Archiv, Sitzungstypen (privat/arbeit/gedanken) · editAnalysisItem/Field, addAnalysisItem, saveAnalysisItem/Field', '#60a5fa')}
       ${flowCard('tags.js', 'Tags', 'Tag-System für Sitzungen, Chips-UI, Filter', '#f59e0b')}
-      ${flowCard('import.js', 'Samsung-Import', 'parseSamsungTranscript() (UTF-16 BOM-Erkennung), renderImportSpeakerFields() für multi-speaker (A–Z), startSamsungImport() erstellt Session mit status:done ohne AssemblyAI', '#34d399')}
+      ${flowCard('import.js', 'Datei-Import', 'parseSamsungTranscript() (UTF-16 BOM), parsePlainText(), extractPdfText() (PDF.js). Multi-File: _importParsedDataList[], handleImportFileSelect() iteriert alle Dateien, startSamsungImport() erstellt eine Session pro Datei. Transkript-Editor: toggleTranscriptEdit(), saveTranscriptEdits() in claude.js', '#34d399')}
       ${flowCard('notes.js', 'Notizen', 'Persönliche Notizen pro Sitzung, Auto-Save', '#94a3b8')}
       ${flowCard('projects.js', 'Projektarbeit', 'Projekt-Browser (Kacheln, Anlegen/Bearbeiten/Archivieren), Detailansicht, Dashboard mit Statistiken, Aufgaben-Tracking (checklistItem), Projekt-Analyse via Claude (builtin_project_analysis) · BUILTIN_PROJECT_ID = Allgemeines Projekt', '#f59e0b')}
       ${flowCard('app.js', 'Initialisierung', 'async init() → await initStorage() → IndexedDB laden vor UI-Start · Theme-Toggle · Upload-Schrittvalidierung · Drag & Drop', '#c084fc')}

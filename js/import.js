@@ -4,7 +4,7 @@
 // und erstellt eine fertige Session ohne AssemblyAI.
 // ═══════════════════════════════════════════════════
 
-let _importParsedData = null; // { speakers, utterances, duration }
+let _importParsedDataList = []; // [{ filename, parsed }]  (v4.93: multi-file)
 let _importAudioFile  = null;
 
 // ── Tab-Umschalter ──────────────────────────────────
@@ -28,69 +28,76 @@ function openImportTab() {
   if (window.lucide) lucide.createIcons();
 }
 
-// ── Datei ausgewählt (TXT oder PDF) ─────────────────
+// ── Datei(en) ausgewählt (TXT oder PDF, mehrere möglich) ─────────────────
 async function handleImportFileSelect(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
 
   const statusEl = document.getElementById('importTxtStatus');
   statusEl.style.color = 'var(--muted)';
-  statusEl.textContent = '⏳ Wird geladen…';
+  statusEl.textContent = `⏳ ${files.length > 1 ? files.length + ' Dateien werden' : '1 Datei wird'} geladen…`;
 
-  try {
-    let parsed;
+  _importParsedDataList = [];
+  let totalUtterances = 0;
+  let errors = 0;
 
-    if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
-      // ── PDF ──────────────────────────────────────────
-      const text = await extractPdfText(file);
-      parsed = parsePlainText(text);
-      if (!parsed || parsed.utterances.length === 0) {
-        showToast('PDF konnte nicht gelesen werden oder ist leer.', 'warning');
-        statusEl.textContent = '';
-        return;
-      }
-    } else {
-      // ── TXT (Samsung oder Fließtext) ─────────────────
-      const buffer = await file.arrayBuffer();
-      const bytes  = new Uint8Array(buffer);
-      let text;
-      if (bytes[0] === 0xFF && bytes[1] === 0xFE) {
-        text = new TextDecoder('utf-16le').decode(buffer);
-      } else if (bytes[0] === 0xFE && bytes[1] === 0xFF) {
-        text = new TextDecoder('utf-16be').decode(buffer);
-      } else {
-        text = new TextDecoder('utf-8').decode(buffer);
-      }
-
-      // Autoerkennung: Samsung-Format oder Fließtext
-      const samsungParsed = parseSamsungTranscript(text);
-      if (samsungParsed && samsungParsed.utterances.length > 0) {
-        parsed = samsungParsed;
-      } else {
+  for (const file of files) {
+    try {
+      let parsed;
+      if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
+        const text = await extractPdfText(file);
         parsed = parsePlainText(text);
+      } else {
+        const buffer = await file.arrayBuffer();
+        const bytes  = new Uint8Array(buffer);
+        let text;
+        if (bytes[0] === 0xFF && bytes[1] === 0xFE) {
+          text = new TextDecoder('utf-16le').decode(buffer);
+        } else if (bytes[0] === 0xFE && bytes[1] === 0xFF) {
+          text = new TextDecoder('utf-16be').decode(buffer);
+        } else {
+          text = new TextDecoder('utf-8').decode(buffer);
+        }
+        const samsungParsed = parseSamsungTranscript(text);
+        parsed = (samsungParsed && samsungParsed.utterances.length > 0)
+          ? samsungParsed
+          : parsePlainText(text);
       }
 
       if (!parsed || parsed.utterances.length === 0) {
-        showToast('Datei ist leer oder konnte nicht gelesen werden.', 'warning');
-        statusEl.textContent = '';
-        return;
+        errors++;
+        continue;
       }
+      _importParsedDataList.push({ filename: file.name, parsed });
+      totalUtterances += parsed.utterances.length;
+    } catch (e) {
+      errors++;
+      console.warn('[import] Fehler bei Datei', file.name, e.message);
     }
-
-    _importParsedData = parsed;
-    const speakerInfo = parsed.speakers.length > 1
-      ? `${parsed.speakers.length} Sprecher`
-      : '1 Sprecher';
-    statusEl.style.color = 'var(--green)';
-    statusEl.textContent = `✓ ${file.name} · ${parsed.utterances.length} Absätze · ${speakerInfo}`;
-    renderImportSpeakerFields(parsed.speakers);
-    document.getElementById('importStartBtn').removeAttribute('disabled');
-    document.getElementById('importStartBtn').style.opacity = '1';
-    document.getElementById('importStartBtn').style.pointerEvents = '';
-  } catch (err) {
-    showToast('Fehler beim Lesen der Datei: ' + err.message, 'error');
-    statusEl.textContent = '';
   }
+
+  if (_importParsedDataList.length === 0) {
+    showToast('Keine Datei konnte gelesen werden.', 'warning');
+    statusEl.textContent = '';
+    return;
+  }
+
+  const count = _importParsedDataList.length;
+  const errNote = errors > 0 ? ` (${errors} fehlerhaft)` : '';
+  statusEl.style.color = 'var(--green)';
+  if (count === 1) {
+    const { filename, parsed } = _importParsedDataList[0];
+    const spInfo = parsed.speakers.length > 1 ? `${parsed.speakers.length} Sprecher` : '1 Sprecher';
+    statusEl.textContent = `✓ ${filename} · ${parsed.utterances.length} Absätze · ${spInfo}${errNote}`;
+  } else {
+    statusEl.textContent = `✓ ${count} Dateien · ${totalUtterances} Absätze gesamt${errNote}`;
+  }
+
+  // Sprecher-Felder aus der ersten Datei zeigen
+  renderImportSpeakerFields(_importParsedDataList[0].parsed.speakers);
+  document.getElementById('importStartBtn').removeAttribute('disabled');
+  document.getElementById('importStartBtn').style.opacity = '1';
+  document.getElementById('importStartBtn').style.pointerEvents = '';
 }
 
 // ── PDF-Text extrahieren (PDF.js) ───────────────────
@@ -242,9 +249,11 @@ function renderImportSpeakerFields(speakers) {
 }
 
 function updateImportSpeakerName(id, name) {
-  if (!_importParsedData) return;
-  const sp = _importParsedData.speakers.find(s => s.id === id);
-  if (sp) sp.name = name.trim();
+  // Sprecher-Umbenennung für alle geladenen Dateien übernehmen (v4.93)
+  for (const entry of _importParsedDataList) {
+    const sp = entry.parsed.speakers.find(s => s.id === id);
+    if (sp) sp.name = name.trim();
+  }
 }
 
 // ── Optionale M4A-Datei ─────────────────────────────
@@ -255,61 +264,72 @@ function handleImportAudioSelect(event) {
   }
 }
 
-// ── Session erstellen + speichern ───────────────────
+// ── Session(s) erstellen + speichern (v4.93: multi-file) ────────────────
 async function startSamsungImport() {
-  if (!_importParsedData || _importParsedData.utterances.length === 0) return;
+  if (!_importParsedDataList.length) return;
 
-  const label = document.getElementById('importLabel').value.trim()
-    || `Gespräch ${new Date().toLocaleDateString('de-DE', { day:'numeric', month:'long', year:'numeric' })}`;
-  const dateInputVal  = document.getElementById('importDate').value;
-  const sessionDate   = dateInputVal ? new Date(dateInputVal).toISOString() : new Date().toISOString();
-  const sessionType   = document.getElementById('importType')?.value || 'privat';
-  const personsRaw    = document.getElementById('importPersons')?.value || '';
+  const customLabel = document.getElementById('importLabel').value.trim();
+  const dateInputVal   = document.getElementById('importDate').value;
+  const sessionDate    = dateInputVal ? new Date(dateInputVal).toISOString() : new Date().toISOString();
+  const sessionType    = document.getElementById('importType')?.value || 'privat';
+  const personsRaw     = document.getElementById('importPersons')?.value || '';
   const sessionPersons = personsRaw.split(',').map(p => p.trim()).filter(Boolean);
 
-  // Sprecher mit finalem Namen
-  const speakers = _importParsedData.speakers.map(sp => ({
-    id:    sp.id,
-    label: sp.label,
-    name:  sp.name || sp.label,
-  }));
+  const createdSessions = [];
+  const baseTimestamp   = Date.now();
 
-  const spA = speakers.find(s => s.id === 'A');
-  const spB = speakers.find(s => s.id === 'B');
+  for (let i = 0; i < _importParsedDataList.length; i++) {
+    const { filename, parsed } = _importParsedDataList[i];
 
-  const srcFile = document.getElementById('importTxtInput').files[0];
-  const isPdf   = srcFile?.name?.toLowerCase().endsWith('.pdf');
-  const isPlain = srcFile && !isPdf && _importParsedData?.speakers?.length === 1;
-  const source  = isPdf ? 'pdf_import' : isPlain ? 'txt_import' : 'samsung_import';
+    // Label: Freitextfeld nur bei Einzeldatei; sonst Dateiname ohne Extension
+    const label = (_importParsedDataList.length === 1 && customLabel)
+      ? customLabel
+      : filename.replace(/\.[^.]+$/, '');
 
-  const session = {
-    id:           Date.now().toString(),
-    label,
-    filename:     _importAudioFile ? _importAudioFile.name : (srcFile?.name || 'import.txt'),
-    speakerA:     spA?.name || 'Sprecher A',
-    speakerB:     spB?.name || 'Sprecher B',
-    speakers,                          // multi-speaker Array
-    type:         sessionType,
-    persons:      sessionPersons,
-    date:         sessionDate,
-    status:       'done',
-    source,                            // samsung_import | txt_import | pdf_import
-    utterances:   _importParsedData.utterances,
-    transcriptId: null,
-    duration:     _importParsedData.duration,
-    processedAt:  new Date().toISOString(),
-  };
+    const speakers = parsed.speakers.map(sp => ({
+      id:    sp.id,
+      label: sp.label,
+      name:  sp.name || sp.label,
+    }));
 
-  sessions.unshift(session);
-  saveSessions();
+    const spA = speakers.find(s => s.id === 'A');
+    const spB = speakers.find(s => s.id === 'B');
 
-  // Audio optional in Drive archivieren
-  if (_importAudioFile) {
-    saveToArchive(session, _importAudioFile).catch(() => {});
+    const isPdf   = filename.toLowerCase().endsWith('.pdf');
+    const isPlain = !isPdf && parsed.speakers.length === 1;
+    const source  = isPdf ? 'pdf_import' : isPlain ? 'txt_import' : 'samsung_import';
+
+    const session = {
+      id:           (baseTimestamp + i).toString(),
+      label,
+      filename,
+      speakerA:     spA?.name || 'Sprecher A',
+      speakerB:     spB?.name || 'Sprecher B',
+      speakers,
+      type:         sessionType,
+      persons:      sessionPersons,
+      date:         sessionDate,
+      status:       'done',
+      source,
+      utterances:   parsed.utterances,
+      transcriptId: null,
+      duration:     parsed.duration,
+      processedAt:  new Date().toISOString(),
+    };
+
+    sessions.unshift(session);
+    createdSessions.push(session);
+  }
+
+  await saveSessions();
+
+  // Audio (nur bei Einzeldatei) in Drive archivieren
+  if (_importAudioFile && createdSessions.length === 1) {
+    saveToArchive(createdSessions[0], _importAudioFile).catch(() => {});
   }
 
   // Zurücksetzen
-  _importParsedData = null;
+  _importParsedDataList = [];
   _importAudioFile  = null;
   document.getElementById('importTxtInput').value = '';
   document.getElementById('importTxtStatus').textContent = '';
@@ -319,9 +339,16 @@ async function startSamsungImport() {
   document.getElementById('importStartBtn').style.opacity = '0.4';
   document.getElementById('importStartBtn').style.pointerEvents = 'none';
 
-  currentSessionId = session.id;
   closeUploadPanel();
   renderSessionsList();
-  showSession(session.id);
-  showToast(`„${label}" importiert ✓`, 'success');
+
+  const lastSession = createdSessions[0]; // neueste (unshifted zuerst)
+  currentSessionId = lastSession.id;
+  showSession(lastSession.id);
+
+  if (createdSessions.length === 1) {
+    showToast(`„${lastSession.label}" importiert ✓`, 'success');
+  } else {
+    showToast(`${createdSessions.length} Sitzungen importiert ✓`, 'success');
+  }
 }
