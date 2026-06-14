@@ -91,8 +91,141 @@ async function loadFromDrive() {
     updateFolderDropdown();
     renderBrowser();
     if (loaded.length > 0) showToast(`${loaded.length} Sitzung(en) aus Drive geladen`, 'success');
+
+    // Settings laden (Projekte, Prompts, Beziehungskontext) – v4.92
+    await loadSettingsFromDrive();
   } catch(e) {
     showToast('Drive laden fehlgeschlagen: ' + e.message, 'error');
+  }
+}
+
+// ── Settings-Sync via Drive (v4.92) ──────────────────────────────────────────
+// Eine einzige Datei „distill_settings.json" speichert:
+// Projekte, eigene Prompts, bearbeitete Systemprompts, Beziehungskontext
+
+let _settingsFileId = null; // Drive-File-ID für distill_settings.json
+let _settingsSaveTimer = null;
+
+// Verzögertes Speichern (2 s Debounce) — verhindert zu viele Drive-Requests
+function queueSettingsSave() {
+  clearTimeout(_settingsSaveTimer);
+  _settingsSaveTimer = setTimeout(() => saveSettingsToDrive(), 2000);
+}
+
+async function saveSettingsToDrive() {
+  if (!driveToken || !driveFolderId) return;
+  try {
+    const data = {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      projects: (typeof projects !== 'undefined') ? projects : [],
+      customPrompts: (typeof getCustomPrompts === 'function') ? getCustomPrompts() : [],
+      editablePrompts: (typeof getEditablePrompts === 'function') ? getEditablePrompts() : {},
+      personRelationships: (() => {
+        try { return JSON.parse(localStorage.getItem('personRelationships') || '{}'); } catch { return {}; }
+      })(),
+    };
+    const result = await driveUploadJSON(
+      'distill_settings.json', data, _settingsFileId || null, driveFolderId
+    );
+    _settingsFileId = result?.id || _settingsFileId;
+  } catch(e) {
+    console.warn('[settings] Drive-Sync fehlgeschlagen:', e.message);
+  }
+}
+
+async function loadSettingsFromDrive() {
+  if (!driveToken || !driveFolderId) return;
+  try {
+    // Datei suchen
+    const res = await driveGet('/files', {
+      q: `name='distill_settings.json' and '${driveFolderId}' in parents and trashed=false`,
+      fields: 'files(id,modifiedTime)',
+      spaces: 'drive',
+    });
+    const files = res.files || [];
+
+    if (!files.length) {
+      // Noch keine Settings-Datei → aktuellen lokalen Stand hochladen
+      await saveSettingsToDrive();
+      return;
+    }
+
+    _settingsFileId = files[0].id;
+    const data = await driveDownloadJSON(_settingsFileId);
+    if (!data || typeof data !== 'object') return;
+
+    // ── Projekte: Union (Drive + lokal, kein Datenverlust) ──
+    if (Array.isArray(data.projects) && data.projects.length > 0) {
+      const localMap = new Map((projects || []).map(p => [p.id, p]));
+      data.projects.forEach(dp => {
+        if (!localMap.has(dp.id)) {
+          projects.push(dp);
+        } else {
+          // Drive-Version übernehmen, builtin-Flag lokal erhalten
+          const local = localMap.get(dp.id);
+          localMap.set(dp.id, { ...dp, builtin: local.builtin ?? dp.builtin });
+        }
+      });
+      // Map zurück in Array: Reihenfolge aus Drive bevorzugen
+      const driveIds = data.projects.map(p => p.id);
+      const driveMap = new Map(data.projects.map(p => [p.id, p]));
+      const localOnly = (projects || []).filter(p => !driveMap.has(p.id));
+      projects = [
+        ...data.projects.map(dp => {
+          const local = (projects || []).find(p => p.id === dp.id);
+          return local ? { ...dp, builtin: local.builtin ?? dp.builtin } : dp;
+        }),
+        ...localOnly,
+      ];
+      // Builtin-Projekt immer vorne sicherstellen
+      if (typeof BUILTIN_PROJECT_ID !== 'undefined') {
+        const bi = projects.find(p => p.id === BUILTIN_PROJECT_ID);
+        if (bi) {
+          projects = [bi, ...projects.filter(p => p.id !== BUILTIN_PROJECT_ID)];
+        }
+      }
+      await saveProjects();
+      if (typeof renderBrowser === 'function') renderBrowser();
+      if (typeof updateProjectBadge === 'function') updateProjectBadge();
+    }
+
+    // ── Eigene Prompts: Drive gewinnt wenn mehr Einträge ──
+    if (Array.isArray(data.customPrompts)) {
+      const local = (typeof getCustomPrompts === 'function') ? getCustomPrompts() : [];
+      // Union: alle IDs zusammenführen
+      const mergedMap = new Map(local.map(p => [p.id, p]));
+      data.customPrompts.forEach(dp => {
+        if (!mergedMap.has(dp.id)) mergedMap.set(dp.id, dp);
+        else mergedMap.set(dp.id, { ...mergedMap.get(dp.id), ...dp });
+      });
+      if (typeof saveCustomPrompts === 'function') {
+        saveCustomPrompts([...mergedMap.values()]);
+      }
+      // Persona-Dropdowns aktualisieren
+      if (typeof populatePersonaSelects === 'function') populatePersonaSelects();
+    }
+
+    // ── Bearbeitete Systemprompts: zusammenführen (lokal hat Priorität) ──
+    if (data.editablePrompts && typeof data.editablePrompts === 'object'
+        && typeof EDITABLE_PROMPTS_KEY !== 'undefined') {
+      const local = (typeof getEditablePrompts === 'function') ? getEditablePrompts() : {};
+      const merged = { ...data.editablePrompts, ...local };
+      localStorage.setItem(EDITABLE_PROMPTS_KEY, JSON.stringify(merged));
+    }
+
+    // ── Beziehungskontext: zusammenführen (lokal hat Priorität) ──
+    if (data.personRelationships && typeof data.personRelationships === 'object') {
+      const local = (() => {
+        try { return JSON.parse(localStorage.getItem('personRelationships') || '{}'); } catch { return {}; }
+      })();
+      const merged = { ...data.personRelationships, ...local };
+      localStorage.setItem('personRelationships', JSON.stringify(merged));
+    }
+
+    console.log('[settings] Von Drive geladen ✓');
+  } catch(e) {
+    console.warn('[settings] Laden von Drive fehlgeschlagen:', e.message);
   }
 }
 

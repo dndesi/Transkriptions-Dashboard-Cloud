@@ -59,6 +59,7 @@ function saveRelationship(name, context) {
   const trimmed = context.trim();
   if (trimmed) rels[name] = trimmed; else delete rels[name];
   localStorage.setItem('personRelationships', JSON.stringify(rels));
+  if (typeof queueSettingsSave === 'function') queueSettingsSave(); // Drive-Sync (v4.92)
   showToast(`Beziehung gespeichert`, 'ok');
 }
 function getRelationship(name) {

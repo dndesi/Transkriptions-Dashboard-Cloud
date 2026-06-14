@@ -12,6 +12,8 @@ function getCustomPrompts() {
 
 function saveCustomPrompts(arr) {
   localStorage.setItem(PROMPTS_KEY, JSON.stringify(arr));
+  // Drive-Sync (v4.92)
+  if (typeof queueSettingsSave === 'function') queueSettingsSave();
 }
 
 function genPromptId() {
@@ -667,12 +669,14 @@ function saveEditablePromptText(id, text) {
     saved[id] = text;
   }
   localStorage.setItem(EDITABLE_PROMPTS_KEY, JSON.stringify(saved));
+  if (typeof queueSettingsSave === 'function') queueSettingsSave(); // Drive-Sync (v4.92)
 }
 
 function resetEditablePrompt(id) {
   const saved = getEditablePrompts();
   delete saved[id];
   localStorage.setItem(EDITABLE_PROMPTS_KEY, JSON.stringify(saved));
+  if (typeof queueSettingsSave === 'function') queueSettingsSave(); // Drive-Sync (v4.92)
 }
 
 // ── System-Prompts (read-only) ────────────────────

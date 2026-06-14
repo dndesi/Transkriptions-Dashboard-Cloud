@@ -98,6 +98,8 @@ async function saveSessions() {
 async function saveProjects() {
   try {
     await _idbSet('projects', projects);
+    // Drive-Sync (v4.92) – debounced, nur wenn Drive verbunden
+    if (typeof queueSettingsSave === 'function') queueSettingsSave();
   } catch(e) {
     console.error('[storage] saveProjects Fehler:', e);
   }

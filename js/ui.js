@@ -400,6 +400,7 @@ function _setHeaderBtn(id, active) {
 }
 
 function _showOverlay(viewId, btnId, renderFn) {
+  hideHero(); // v4.92: Hero beim Öffnen jeder Overlay-View verstecken
   const isProjects = viewId === 'projectsView';
 
   // Andere Overlay-Views (innerhalb browserView) schließen
