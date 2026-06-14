@@ -775,6 +775,15 @@ function toggleSessionSidebar() {
     if (overlay) overlay.classList.toggle('active', _sidebarOpen);
   } else {
     sidebar?.classList.toggle('sdc-sidebar-collapsed', !_sidebarOpen);
+    if (sidebar) {
+      if (_sidebarOpen) {
+        // Gespeicherte Breite wiederherstellen (v4.90)
+        const savedW = parseInt(localStorage.getItem('sidebarWidth'), 10);
+        sidebar.style.width = (savedW >= 280) ? savedW + 'px' : '';
+      } else {
+        sidebar.style.width = '';
+      }
+    }
     if (overlay) overlay.classList.remove('active');
   }
   if (toggle) toggle.classList.toggle('active', _sidebarOpen);
@@ -849,4 +858,63 @@ function setSidebarMode(mode) {
     if (mode === 'fragen' && askInput) askInput.focus();
     else if (mode === 'folgefragen' && followInput) followInput.focus();
   }, 300);
+
+  // Persona-Dropdown aktuell halten (v4.90)
+  if (typeof populatePersonaSelects === 'function') populatePersonaSelects();
 }
+
+// ── Sidebar Resize (v4.90, Desktop only) ──────────────────────────────────────
+function initSidebarResize() {
+  const sidebar = document.getElementById('sdcSidebar');
+  const handle  = document.getElementById('sdcResizeHandle');
+  if (!sidebar || !handle) return;
+
+  const SIDEBAR_WIDTH_KEY = 'sidebarWidth';
+  const MIN_W = 280;
+  const MAX_W = () => Math.floor(window.innerWidth * 0.6);
+
+  // Gespeicherte Breite wiederherstellen
+  const saved = parseInt(localStorage.getItem(SIDEBAR_WIDTH_KEY), 10);
+  if (saved >= MIN_W) sidebar.style.setProperty('--sidebar-custom-width', saved + 'px');
+
+  let dragging = false;
+  let startX   = 0;
+  let startW   = 0;
+
+  handle.addEventListener('mousedown', e => {
+    if (window.innerWidth <= 768) return;   // Mobile: kein Resize
+    dragging = true;
+    startX   = e.clientX;
+    startW   = sidebar.offsetWidth;
+    handle.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor     = 'col-resize';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const delta = startX - e.clientX;   // nach links ziehen → breiter
+    const newW  = Math.min(MAX_W(), Math.max(MIN_W, startW + delta));
+    sidebar.style.width = newW + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove('dragging');
+    document.body.style.userSelect = '';
+    document.body.style.cursor     = '';
+    const currentW = sidebar.offsetWidth;
+    if (currentW >= MIN_W) localStorage.setItem(SIDEBAR_WIDTH_KEY, currentW);
+  });
+}
+
+// Resize beim Laden initialisieren
+(function() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebarResize);
+  } else {
+    initSidebarResize();
+  }
+})();

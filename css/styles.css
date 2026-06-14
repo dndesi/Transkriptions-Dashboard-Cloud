@@ -2857,6 +2857,47 @@ mark.search-highlight {
 .sdc-subtab:hover { color: var(--accent); border-color: var(--accent); }
 .sdc-subtab.sdc-subtab-active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
+/* ── Persona Select Bar (v4.90) ── */
+.persona-select-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.persona-select-bar select {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 3px 7px;
+  font-size: 0.76rem;
+  outline: none;
+  cursor: pointer;
+  min-width: 0;
+}
+
+/* ── Sidebar Resize Handle (v4.90) ── */
+.sdc-resize-handle {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 20;
+  transition: background 0.15s;
+}
+.sdc-resize-handle:hover,
+.sdc-resize-handle.dragging {
+  background: rgba(108,99,255,0.35);
+}
+@media (max-width: 768px) {
+  .sdc-resize-handle { display: none; }
+}
+
 /* ── Rechte Sidebar ── */
 .sdc-sidebar {
   width: 300px;

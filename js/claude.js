@@ -1594,7 +1594,9 @@ async function askFollowUp() {
   const { forward, reverse } = buildAnonMap(session);
   const transcript = buildTranscriptText(session);
 
-  const prompt = getEditablePromptText('builtin_followup')
+  const personaId = document.getElementById('followupPersonaSelect')?.value || '';
+  const personaPrefix = typeof _buildPersonaPrefix === 'function' ? _buildPersonaPrefix(personaId) : '';
+  const prompt = personaPrefix + getEditablePromptText('builtin_followup')
     .replace(/\{\{analyseContext\}\}/g, analysisContext)
     .replace(/\{\{transcript\}\}/g, trimTranscript(transcript, 100000))
     .replace(/\{\{question\}\}/g, question);

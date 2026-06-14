@@ -157,7 +157,9 @@ async function sendAskQuestion() {
       .map(h => `${h.role === 'user' ? 'Frage' : 'Antwort'}: ${h.text}`)
       .join('\n');
 
-    const basePrompt = getEditablePromptText('builtin_ask')
+    const personaId = document.getElementById('askPersonaSelect')?.value || '';
+    const personaPrefix = _buildPersonaPrefix(personaId);
+    const basePrompt = personaPrefix + getEditablePromptText('builtin_ask')
       .replace(/\{\{sessionLabel\}\}/g, s.label)
       .replace(/\{\{transkript\}\}/g, trimTranscript(transcript, 300000));
     const prompt = basePrompt +
@@ -622,7 +624,37 @@ async function sendToClaudeCustom(templateId) {
   }
 }
 
+// ── Persona / Rollen-Auswahl (v4.90) ─────────────────────────────────────────
+
+// Baut den Persona-Prefix aus einem Custom Prompt (rolle, tonalitaet, grenzen, kontext)
+function _buildPersonaPrefix(promptId) {
+  if (!promptId) return '';
+  const prompts = typeof getCustomPrompts === 'function' ? getCustomPrompts() : [];
+  const p = prompts.find(x => x.id === promptId);
+  if (!p) return '';
+  const parts = [];
+  if (p.rolle)      parts.push(`Rolle: ${p.rolle}`);
+  if (p.tonalitaet) parts.push(`Tonalität: ${p.tonalitaet}`);
+  if (p.grenzen)    parts.push(`Grenzen: ${p.grenzen}`);
+  if (p.kontext)    parts.push(`Kontext: ${p.kontext}`);
+  return parts.length
+    ? `[Persona / Systemrolle]\n${parts.join('\n')}\n\n`
+    : '';
+}
+
+// Befüllt beide Persona-Dropdowns mit den Custom Prompts aus der Bibliothek
+function populatePersonaSelects() {
+  const prompts = typeof getCustomPrompts === 'function' ? getCustomPrompts() : [];
+  const opts = '<option value="">Standard (Systemprompt)</option>' +
+    prompts.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('');
+  ['askPersonaSelect', 'followupPersonaSelect'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+}
+
 // Beim App-Start: Popovers mit gespeicherten Vorlagen befüllen
 function initFeatures() {
   updateCustomTemplatePopovers();
+  populatePersonaSelects();
 }
