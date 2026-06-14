@@ -185,9 +185,12 @@ async function loadSettingsFromDrive() {
           projects = [bi, ...projects.filter(p => p.id !== BUILTIN_PROJECT_ID)];
         }
       }
-      await saveProjects();
+      // skipDriveSync=true: kein Re-Upload direkt nach Download (v4.94)
+      await saveProjects({ skipDriveSync: true });
       if (typeof renderBrowser === 'function') renderBrowser();
       if (typeof updateProjectBadge === 'function') updateProjectBadge();
+      const newCount = projects.length - 1; // minus Builtin
+      if (newCount > 0) showToast(`${projects.length} Projekte aus Drive geladen ✓`, 'ok');
     }
 
     // ── Eigene Prompts: Drive gewinnt wenn mehr Einträge ──

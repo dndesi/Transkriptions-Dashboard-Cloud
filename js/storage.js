@@ -95,11 +95,13 @@ async function saveSessions() {
   }
 }
 
-async function saveProjects() {
+async function saveProjects({ skipDriveSync = false } = {}) {
   try {
     await _idbSet('projects', projects);
-    // Drive-Sync (v4.92) – debounced, nur wenn Drive verbunden
-    if (typeof queueSettingsSave === 'function') queueSettingsSave();
+    // Drive-Sync sofort (kein Debounce – Projekte ändern sich selten, v4.94)
+    if (!skipDriveSync && typeof saveSettingsToDrive === 'function' && typeof driveToken !== 'undefined' && driveToken && typeof driveFolderId !== 'undefined' && driveFolderId) {
+      saveSettingsToDrive().catch(e => console.warn('[projects] Drive-Sync:', e.message));
+    }
   } catch(e) {
     console.error('[storage] saveProjects Fehler:', e);
   }
