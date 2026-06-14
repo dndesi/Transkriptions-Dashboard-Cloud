@@ -28,39 +28,119 @@ function openImportTab() {
   if (window.lucide) lucide.createIcons();
 }
 
-// ── TXT-Datei ausgewählt ────────────────────────────
-function handleImportTxtSelect(event) {
+// ── Datei ausgewählt (TXT oder PDF) ─────────────────
+async function handleImportFileSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const bytes = new Uint8Array(e.target.result);
-    let text;
-    // BOM-Erkennung: FF FE → UTF-16 LE, FE FF → UTF-16 BE, sonst UTF-8
-    if (bytes[0] === 0xFF && bytes[1] === 0xFE) {
-      text = new TextDecoder('utf-16le').decode(e.target.result);
-    } else if (bytes[0] === 0xFE && bytes[1] === 0xFF) {
-      text = new TextDecoder('utf-16be').decode(e.target.result);
-    } else {
-      text = new TextDecoder('utf-8').decode(e.target.result);
-    }
+  const statusEl = document.getElementById('importTxtStatus');
+  statusEl.style.color = 'var(--muted)';
+  statusEl.textContent = '⏳ Wird geladen…';
 
-    const parsed = parseSamsungTranscript(text);
-    if (!parsed || parsed.utterances.length === 0) {
-      showToast('Format nicht erkannt – bitte Samsung-TXT wählen.', 'warning');
-      return;
+  try {
+    let parsed;
+
+    if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
+      // ── PDF ──────────────────────────────────────────
+      const text = await extractPdfText(file);
+      parsed = parsePlainText(text);
+      if (!parsed || parsed.utterances.length === 0) {
+        showToast('PDF konnte nicht gelesen werden oder ist leer.', 'warning');
+        statusEl.textContent = '';
+        return;
+      }
+    } else {
+      // ── TXT (Samsung oder Fließtext) ─────────────────
+      const buffer = await file.arrayBuffer();
+      const bytes  = new Uint8Array(buffer);
+      let text;
+      if (bytes[0] === 0xFF && bytes[1] === 0xFE) {
+        text = new TextDecoder('utf-16le').decode(buffer);
+      } else if (bytes[0] === 0xFE && bytes[1] === 0xFF) {
+        text = new TextDecoder('utf-16be').decode(buffer);
+      } else {
+        text = new TextDecoder('utf-8').decode(buffer);
+      }
+
+      // Autoerkennung: Samsung-Format oder Fließtext
+      const samsungParsed = parseSamsungTranscript(text);
+      if (samsungParsed && samsungParsed.utterances.length > 0) {
+        parsed = samsungParsed;
+      } else {
+        parsed = parsePlainText(text);
+      }
+
+      if (!parsed || parsed.utterances.length === 0) {
+        showToast('Datei ist leer oder konnte nicht gelesen werden.', 'warning');
+        statusEl.textContent = '';
+        return;
+      }
     }
 
     _importParsedData = parsed;
-    document.getElementById('importTxtStatus').textContent =
-      `✓ ${file.name} · ${parsed.utterances.length} Absätze · ${parsed.speakers.length} Sprecher`;
+    const speakerInfo = parsed.speakers.length > 1
+      ? `${parsed.speakers.length} Sprecher`
+      : '1 Sprecher';
+    statusEl.style.color = 'var(--green)';
+    statusEl.textContent = `✓ ${file.name} · ${parsed.utterances.length} Absätze · ${speakerInfo}`;
     renderImportSpeakerFields(parsed.speakers);
     document.getElementById('importStartBtn').removeAttribute('disabled');
     document.getElementById('importStartBtn').style.opacity = '1';
     document.getElementById('importStartBtn').style.pointerEvents = '';
-  };
-  reader.readAsArrayBuffer(file);
+  } catch (err) {
+    showToast('Fehler beim Lesen der Datei: ' + err.message, 'error');
+    statusEl.textContent = '';
+  }
+}
+
+// ── PDF-Text extrahieren (PDF.js) ───────────────────
+async function extractPdfText(file) {
+  if (!window.pdfjsLib) throw new Error('PDF.js nicht geladen.');
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const pageTexts = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page    = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageStr = content.items.map(item => item.str).join(' ');
+    pageTexts.push(pageStr);
+  }
+  return pageTexts.join('\n\n');
+}
+
+// ── Fließtext parsen (ein Sprecher, Absätze = Utterances) ──
+function parsePlainText(text) {
+  text = text.replace(/^﻿/, '').trim(); // BOM entfernen
+
+  // Absätze: durch Leerzeilen getrennt; fallback: alle 500 Zeichen splitten
+  let paragraphs = text.split(/\n{2,}/).map(p => p.replace(/\n/g, ' ').trim()).filter(p => p.length > 0);
+
+  // Wenn nur ein langer Block (keine Leerzeilen) → nach Satzenden splitten
+  if (paragraphs.length === 1 && paragraphs[0].length > 800) {
+    const sentences = paragraphs[0].match(/[^.!?]+[.!?]+/g) || [paragraphs[0]];
+    // Sätze zu ~300-Zeichen-Chunks zusammenfassen
+    const chunks = [];
+    let buf = '';
+    for (const s of sentences) {
+      if (buf.length + s.length > 300 && buf.length > 0) { chunks.push(buf.trim()); buf = ''; }
+      buf += ' ' + s;
+    }
+    if (buf.trim()) chunks.push(buf.trim());
+    paragraphs = chunks;
+  }
+
+  const INTERVAL_MS = 5000; // 5 Sekunden pro Absatz (fiktiv, kein Audio)
+  const utterances = paragraphs.map((p, i) => ({
+    speaker: 'A',
+    text:    p,
+    start:   i * INTERVAL_MS,
+    end:     (i + 1) * INTERVAL_MS,
+  }));
+
+  const speakers = [{ id: 'A', label: 'Sprecher 1', name: '' }];
+  const duration = utterances.length * INTERVAL_MS / 1000;
+
+  return { speakers, utterances, duration };
 }
 
 // ── Parser ──────────────────────────────────────────
@@ -197,12 +277,15 @@ async function startSamsungImport() {
   const spA = speakers.find(s => s.id === 'A');
   const spB = speakers.find(s => s.id === 'B');
 
-  const txtFile = document.getElementById('importTxtInput').files[0];
+  const srcFile = document.getElementById('importTxtInput').files[0];
+  const isPdf   = srcFile?.name?.toLowerCase().endsWith('.pdf');
+  const isPlain = srcFile && !isPdf && _importParsedData?.speakers?.length === 1;
+  const source  = isPdf ? 'pdf_import' : isPlain ? 'txt_import' : 'samsung_import';
 
   const session = {
     id:           Date.now().toString(),
     label,
-    filename:     _importAudioFile ? _importAudioFile.name : (txtFile?.name || 'samsung_import.txt'),
+    filename:     _importAudioFile ? _importAudioFile.name : (srcFile?.name || 'import.txt'),
     speakerA:     spA?.name || 'Sprecher A',
     speakerB:     spB?.name || 'Sprecher B',
     speakers,                          // multi-speaker Array
@@ -210,7 +293,7 @@ async function startSamsungImport() {
     persons:      sessionPersons,
     date:         sessionDate,
     status:       'done',
-    source:       'samsung_import',    // kein AssemblyAI / Drive
+    source,                            // samsung_import | txt_import | pdf_import
     utterances:   _importParsedData.utterances,
     transcriptId: null,
     duration:     _importParsedData.duration,
