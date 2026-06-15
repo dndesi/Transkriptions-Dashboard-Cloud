@@ -770,6 +770,12 @@ function renderPromptsView() {
   if (!el.querySelector('#promptsToolbar')) {
     el.innerHTML = `
     <div style="max-width:960px; margin:0 auto; padding:8px 0 48px">
+      <div style="display:flex; align-items:center; margin-bottom:16px">
+        <h2 style="font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:7px">
+          ${icon('sparkles',16)} Analyse-Prompts
+          <button class="help-icon" data-help="Verwalte und erstelle eigene KI-Analyse-Vorlagen. Standard-Prompts (Zusammenfassung, Arbeit, Gesprächsanalyse…) sind immer verfügbar. Eigene Prompts können strukturierte Felder (Schema) haben – das Ergebnis erscheint dann formatiert im Analysen-Tab." onclick="showHelpTooltip(this)">?</button>
+        </h2>
+      </div>
       <div id="promptsToolbar" style="display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
         <div class="search-box" style="flex:1; min-width:180px;">
           ${icon('search',14,'color:var(--muted);flex-shrink:0')}

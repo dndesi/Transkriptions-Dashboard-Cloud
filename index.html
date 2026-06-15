@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=4.98" />
+  <link rel="stylesheet" href="css/styles.css?v=4.99" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -92,7 +92,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.98</button>
+        onmouseout="this.style.color='var(--muted)'">v4.99</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -377,17 +377,14 @@
     <button class="sidenav-item" id="navProjects" onclick="toggleProjectsView(); setSidenavActive(this)">
       <i data-lucide="layers" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Projekte
-      <button class="help-icon" data-help="Gruppiere Sitzungen nach Themen oder Beziehungen. Jedes Projekt hat ein Dashboard mit aggregierten Analysen, Aufgaben und Zeitstrahl." onclick="showHelpTooltip(this)">?</button>
     </button>
     <button class="sidenav-item" id="navGrid" onclick="setView('grid'); showBrowser(); setSidenavActive(this)">
       <i data-lucide="layout-grid" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Sitzungen
-      <button class="help-icon" data-help="Alle gespeicherten Sitzungen als Kachelansicht. Klicke eine Kachel um Transkript, Analyse und Notizen zu öffnen." onclick="showHelpTooltip(this)">?</button>
     </button>
     <button class="sidenav-item" id="navTimeline" onclick="setView('timeline'); showBrowser(); setSidenavActive(this)">
       <i data-lucide="list" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Sitzungschronik
-      <button class="help-icon" data-help="Alle Sitzungen chronologisch als Liste – nach Datum sortiert. Gut für einen schnellen Überblick über den zeitlichen Verlauf." onclick="showHelpTooltip(this)">?</button>
     </button>
 
     <div class="sidenav-sep"></div>
@@ -395,17 +392,14 @@
     <button class="sidenav-item" id="navPersons" id="headerPersonsBtn" onclick="togglePersonsView(); setSidenavActive(this)">
       <i data-lucide="users" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Personen
-      <button class="help-icon" data-help="Automatisch erkannte Personen aus allen Gesprächen. Klicke auf eine Person um alle Sitzungen mit ihr, Wünsche, Vereinbarungen und Verlauf zu sehen." onclick="showHelpTooltip(this)">?</button>
     </button>
     <button class="sidenav-item" id="navCosts" id="headerCostsBtn" onclick="toggleCostsView(); setSidenavActive(this)">
       <i data-lucide="bar-chart-2" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Kosten
-      <button class="help-icon" data-help="Übersicht der API-Nutzungskosten – AssemblyAI (Transkription) und Anthropic Claude (Analyse)." onclick="showHelpTooltip(this)">?</button>
     </button>
     <button class="sidenav-item" id="navPrompts" id="headerPromptsBtn" onclick="togglePromptsView(); setSidenavActive(this)">
       <i data-lucide="sparkles" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Prompts
-      <button class="help-icon" data-help="Erstelle eigene Analyse-Vorlagen mit strukturiertem Output (z.B. 'Medizinische Zusammenfassung'). Diese Prompts erscheinen dann in jeder Sitzung unter 'Analysen'." onclick="showHelpTooltip(this)">?</button>
     </button>
 
     <div class="sidenav-sep"></div>
@@ -504,7 +498,7 @@
     <!-- Session-Browser -->
     <div class="browser-view" id="browserView">
       <div class="browser-toolbar" id="browserToolbar">
-        <h2 style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="folder" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Sitzungs-Archiv</h2>
+        <h2 style="display:inline-flex;align-items:center;gap:7px"><i data-lucide="folder" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Sitzungs-Archiv <button class="help-icon" data-help="Alle gespeicherten Sitzungen – als Kacheln (Sitzungen) oder Zeitliste (Sitzungschronik). Klicke eine Sitzung um Transkript, Analysen, Notizen und Tags zu öffnen." onclick="showHelpTooltip(this)">?</button></h2>
         <select id="folderFilter" onchange="filterBrowser()">
           <option value="">Alle Ordner</option>
         </select>
@@ -729,6 +723,7 @@
                 disabled style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;font-size:0.85rem">
                 <i data-lucide="play" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Starten
               </button>
+              <button class="help-icon" data-help="Wähle eine Analyse-Vorlage und klicke 'Starten'. Standard-Analysen (Zusammenfassung, Arbeits-/Gesprächsanalyse, Themen…) oder eigene Prompts. Das Ergebnis erscheint im Analysen-Tab dieser Sitzung." onclick="showHelpTooltip(this)">?</button>
             </div>
 
             <!-- Sub-Tabs bestehender Analysen -->
@@ -910,15 +905,19 @@
           <div class="sdc-sidebar-modes">
             <button class="sdc-mode-btn sdc-mode-active" id="sdcMode-fragen" onclick="openAskModal()">
               <i data-lucide="message-circle" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Fragen
+              <button class="help-icon" data-help="Stelle beliebige Fragen zum Transkript. Claude antwortet mit Kontext aus dieser Sitzung – z.B. 'Was wurde bezüglich X entschieden?'" onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
             </button>
             <button class="sdc-mode-btn" id="sdcMode-folgefragen" onclick="setSidebarMode('folgefragen')">
               <i data-lucide="messages-square" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Folge
+              <button class="help-icon" data-help="Führe ein freies Chat-Gespräch mit Claude über diese Sitzung. Claude kennt alle bisherigen Analyse-Ergebnisse als Kontext und erinnert sich an den Gesprächsverlauf." onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
             </button>
             <button class="sdc-mode-btn" id="sdcMode-email" onclick="openGmailModal()">
               <i data-lucide="mail" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mail
+              <button class="help-icon" data-help="Erstelle eine E-Mail auf Basis dieser Sitzung und sende sie direkt über Gmail. Claude formuliert einen Entwurf – du kannst ihn vor dem Senden bearbeiten." onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
             </button>
             <button class="sdc-mode-btn" id="sdcMode-kalender" onclick="openCalendarModal()">
               <i data-lucide="calendar" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Kalender
+              <button class="help-icon" data-help="Erkannte Termine aus dem Transkript werden als Kalendereinträge vorgeschlagen. Mit einem Klick direkt in deinen Google Kalender eintragen." onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
             </button>
           </div>
 
@@ -1047,6 +1046,14 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v4.99 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v4.99</span><span class="cl-date">15.06.2026</span></div>
+        <div class="cl-title">Hilfe-Icons umgezogen + Neue ?-Icons + 2 Bugfixes</div>
+        <div class="cl-body">? Icons aus der Sidebar entfernt – stattdessen direkt auf den jeweiligen Seiten über der Seitenüberschrift (Projekte, Sitzungen-Archiv, Personen, API-Kosten, Analyse-Prompts). Neue ? Icons: Fragen, Folgefragen, E-Mail, Kalender (Sidebar-Modus-Buttons), Analyse-Starten-Bar, Projekt-Dashboard-Button. Bugfix: Sitzungen im Projekt-Detail-View nicht klickbar – projectsView-Overlay wurde nicht geschlossen bevor transcriptCard geöffnet wurde (jetzt: _openSessionFromProject schließt Overlay zuerst). Bugfix Projekte-Sync: beim Öffnen der Projekte-Ansicht wird loadSettingsFromDrive() ausgelöst – so sieht man auf Gerät B immer frische Daten ohne Neustart.</div>
+        <div class="cl-tech">index.html: Sidenav-?-Buttons entfernt, ?-Button am Sitzungs-Archiv-Heading + Analyse-Bar + Sidebar-Mode-Buttons. js/projects.js: _openSessionFromProject(id), toggleProjectsView öffnet Drive-Sync. js/sessions.js: loadSettingsFromDrive ruft renderProjectBrowser wenn projectsView sichtbar. js/persons.js: Überschriften in renderPersonsView + renderCostsView. js/prompts.js: Überschrift in renderPromptsView.</div>
+      </div>
 
       <!-- ── v4.98 ── -->
       <div class="cl-entry">
@@ -1232,7 +1239,7 @@
           <span class="cl-version">v4.77</span>
           <span class="cl-date">13.06.2026</span>
         </div>
-        <div class="cl-body">Bugfix: (1) styles.css hatte kein Cache-Busting &ndash; Browser nutzte alte CSS auf Mobile, Sidebar-Bottom-Sheet-Animation fehlte. Fix: ?v=4.98 an styles.css. (2) askFollowUp() referenzierte &lsquo;followUpSendBtn&rsquo; (altes Modal-Element) statt &lsquo;askSendBtn&rsquo; (neue Sidebar) &ndash; TypeError crashte Folgefragen-Funktion.</div>
+        <div class="cl-body">Bugfix: (1) styles.css hatte kein Cache-Busting &ndash; Browser nutzte alte CSS auf Mobile, Sidebar-Bottom-Sheet-Animation fehlte. Fix: ?v=4.99 an styles.css. (2) askFollowUp() referenzierte &lsquo;followUpSendBtn&rsquo; (altes Modal-Element) statt &lsquo;askSendBtn&rsquo; (neue Sidebar) &ndash; TypeError crashte Folgefragen-Funktion.</div>
       </div>
       <!-- ── v4.76 ── -->
       <div class="cl-entry">
@@ -1263,8 +1270,8 @@
           <span class="cl-tag cl-tag-fix">Bugfix</span>
         </div>
         <div class="cl-title">Ordner-Dropdown: Unterordner werden wieder angezeigt</div>
-        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.98 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
-        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.98 Cache-Busting.</div>
+        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.99 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
+        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.99 Cache-Busting.</div>
       </div>
 
       <!-- ── v4.72 ── -->
@@ -3257,29 +3264,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=4.98"></script>
-<script src="js/storage.js?v=4.98"></script>
-<script src="js/config.js?v=4.98"></script>
-<script src="js/auth.js?v=4.98"></script>
-<script src="js/drive.js?v=4.98"></script>
-<script src="js/sessions.js?v=4.98"></script>
-<script src="js/assemblyai.js?v=4.98"></script>
-<script src="js/claude.js?v=4.98"></script>
-<script src="js/ui.js?v=4.98"></script>
-<script src="js/tags.js?v=4.98"></script>
-<script src="js/notes.js?v=4.98"></script>
-<script src="js/persons.js?v=4.98"></script>
-<script src="js/audio.js?v=4.98"></script>
-<script src="js/recorder.js?v=4.98"></script>
-<script src="js/app.js?v=4.98"></script>
+<script src="js/icons.js?v=4.99"></script>
+<script src="js/storage.js?v=4.99"></script>
+<script src="js/config.js?v=4.99"></script>
+<script src="js/auth.js?v=4.99"></script>
+<script src="js/drive.js?v=4.99"></script>
+<script src="js/sessions.js?v=4.99"></script>
+<script src="js/assemblyai.js?v=4.99"></script>
+<script src="js/claude.js?v=4.99"></script>
+<script src="js/ui.js?v=4.99"></script>
+<script src="js/tags.js?v=4.99"></script>
+<script src="js/notes.js?v=4.99"></script>
+<script src="js/persons.js?v=4.99"></script>
+<script src="js/audio.js?v=4.99"></script>
+<script src="js/recorder.js?v=4.99"></script>
+<script src="js/app.js?v=4.99"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=4.98"></script>
-<script src="js/search.js?v=4.98"></script>
-<script src="js/calendar.js?v=4.98"></script>
-<script src="js/prompts.js?v=4.98"></script>
-<script src="js/projects.js?v=4.98"></script>
-<script src="js/import.js?v=4.98"></script>
+<script src="js/features.js?v=4.99"></script>
+<script src="js/search.js?v=4.99"></script>
+<script src="js/calendar.js?v=4.99"></script>
+<script src="js/prompts.js?v=4.99"></script>
+<script src="js/projects.js?v=4.99"></script>
+<script src="js/import.js?v=4.99"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

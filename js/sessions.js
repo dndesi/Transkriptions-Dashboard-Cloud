@@ -176,6 +176,11 @@ async function loadSettingsFromDrive() {
       await saveProjects({ skipDriveSync: true });
       if (typeof renderBrowser === 'function') renderBrowser();
       if (typeof updateProjectBadge === 'function') updateProjectBadge();
+      // Projekt-Browser aktualisieren falls er gerade geöffnet ist (v4.99)
+      const pvEl = document.getElementById('projectsView');
+      if (pvEl && pvEl.style.display !== 'none' && typeof renderProjectBrowser === 'function') {
+        renderProjectBrowser();
+      }
       const newCount = projects.length - 1; // minus Builtin
       if (newCount > 0) showToast(`${projects.length} Projekte aus Drive geladen ✓`, 'ok');
     }

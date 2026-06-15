@@ -27,6 +27,18 @@ function updateProjectBadge() {
   badge.querySelector('.spb-name').textContent = active.name;
 }
 
+// ── Sitzung aus Projekt-View öffnen (v4.99) ──────────────────────────────
+// Schließt das projectsView-Overlay zuerst, dann öffnet die Session.
+// Ohne diesen Schritt bleibt der fixe Overlay oben und verdeckt das transcriptCard.
+function _openSessionFromProject(id) {
+  const pv = document.getElementById('projectsView');
+  if (pv) pv.style.display = 'none';
+  const s = (typeof sessions !== 'undefined') ? sessions.find(x => x.id === id) : null;
+  if (!s) return;
+  if (typeof currentSessionId !== 'undefined') currentSessionId = id;
+  if (typeof showTranscript === 'function') showTranscript(s);
+}
+
 // ── Projekt-Browser ein-/ausblenden ─────────────────────────────────────
 function toggleProjectsView() {
   const el = document.getElementById('projectsView');
@@ -40,6 +52,10 @@ function toggleProjectsView() {
   } else {
     // Öffnen
     _showOverlay('projectsView', 'navProjects', renderProjectBrowser);
+    // Projekte aus Drive aktualisieren (v4.99) – silent im Hintergrund
+    if (typeof loadSettingsFromDrive === 'function') {
+      loadSettingsFromDrive().catch(() => {});
+    }
   }
 }
 
@@ -67,7 +83,7 @@ function renderProjectBrowser() {
   el.innerHTML = `
     <div class="projects-browser">
       <div class="projects-browser-header">
-        <h2>${icon('layers',18)} Projekte</h2>
+        <h2>${icon('layers',18)} Projekte <button class="help-icon" data-help="Gruppiere Sitzungen nach Themen oder Beziehungen. Jedes Projekt hat eine Sitzungsliste und ein Dashboard mit aggregierten Aufgaben, Themen und Analysen." onclick="showHelpTooltip(this)">?</button></h2>
         <button class="btn btn-primary" onclick="openCreateProjectModal()" style="margin-left:auto">
           ${icon('plus',14)} Neues Projekt
         </button>
@@ -155,7 +171,7 @@ function renderProjectDetail(id, searchVal = '', sortVal = 'date-desc') {
         </div>
         <div style="display:flex;gap:8px;margin-left:auto">
           <button class="btn btn-ghost" style="font-size:0.82rem" onclick="showProjectDashboard('${proj.id}')">
-            ${icon('bar-chart-2',13)} Dashboard
+            ${icon('bar-chart-2',13)} Dashboard <button class="help-icon" data-help="Überblick über alle Sitzungen dieses Projekts: Aufgaben-Tracking, beteiligte Personen, häufige Themen und KI-Analyse über alle Sitzungen hinweg." onclick="showHelpTooltip(this)">?</button>
           </button>
           <button class="btn btn-ghost" style="font-size:0.82rem" onclick="openEditProjectModal('${proj.id}')">
             ${icon('edit-2',13)} Bearbeiten
@@ -204,7 +220,7 @@ function renderProjectSessionCard(s) {
     : `${icon('x-circle',11,'margin-right:3px;color:var(--red)')} Fehler`;
   const tagsHtml = (s.tags||[]).map(t => `<span class="sc-tag">${escHtml(t)}</span>`).join('');
   return `
-    <div class="session-card card-${t}" onclick="showTranscript(sessions.find(x=>x.id==='${s.id}'))">
+    <div class="session-card card-${t}" onclick="_openSessionFromProject('${s.id}')">
       <div class="sc-icon">${icon(typeIconMap[t]||'message-circle',17)}</div>
       <div class="sc-body">
         <span class="sc-type ${typeCls[t]||'sc-type-privat'}">${icon(typeIconMap[t]||'message-circle',11)} ${typeLabel[t]||'Privat'}</span>

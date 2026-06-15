@@ -129,7 +129,7 @@ function renderPersonsView() {
 
   el.innerHTML = `<div style="max-width:900px; margin:0 auto; padding:4px 0 32px">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px">
-      <h2 style="font-size:1.1rem; font-weight:700; display:flex;align-items:center;gap:7px">${icon('users',16)} Personen-Profile</h2>
+      <h2 style="font-size:1.1rem; font-weight:700; display:flex;align-items:center;gap:7px">${icon('users',16)} Personen-Profile <button class="help-icon" data-help="Automatisch erkannte Gesprächspartner aus allen Sitzungen. Jede Person hat ein Profil mit Wünschen, Vereinbarungen, offenen Themen und Sitzungsverlauf." onclick="showHelpTooltip(this)">?</button></h2>
       <div style="display:flex;gap:8px;align-items:center">
         ${hidden.length ? `<button onclick="toggleHiddenPersons()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:0.78rem;color:var(--muted);cursor:pointer">
           ${showHidden ? 'Ausgeblendete verbergen' : `${hidden.length} ausgeblendet`}
@@ -501,6 +501,13 @@ function renderCostsView() {
 
   el.innerHTML = `
   <div style="max-width:820px; margin:0 auto; padding:8px 0 32px">
+
+    <div style="display:flex; align-items:center; margin-bottom:20px">
+      <h2 style="font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:7px">
+        ${icon('bar-chart-2',16)} API-Kosten
+        <button class="help-icon" data-help="Übersicht deiner API-Nutzungskosten. AssemblyAI für Transkription, Anthropic Claude für Analysen – aufgeschlüsselt nach Monat und Sitzung. Preise werden in Euro angezeigt." onclick="showHelpTooltip(this)">?</button>
+      </h2>
+    </div>
 
     <!-- Gesamtübersicht -->
     <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:28px">
