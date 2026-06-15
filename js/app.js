@@ -195,6 +195,74 @@ async function processShareOverlay() {
   window._pendingShareBlobs = {};
 }
 
+// Verarbeitet einen per Share-Target empfangenen Text (mit optionalem Audio-Blob)
+async function processImportedText(text, label, audioBlob = null, audioName = 'aufnahme.mp3') {
+  // 1. Text parsen – Samsung-Format bevorzugen, Fallback auf Plaintext
+  let parsed = null;
+  try {
+    if (typeof parseSamsungTranscript === 'function') {
+      const sp = parseSamsungTranscript(text);
+      if (sp && sp.utterances.length > 0) parsed = sp;
+    }
+    if (!parsed && typeof parsePlainText === 'function') {
+      parsed = parsePlainText(text);
+    }
+  } catch (e) {
+    console.warn('[share] Textparsing fehlgeschlagen:', e);
+  }
+
+  if (!parsed || !parsed.utterances.length) {
+    showToast('Inhalt konnte nicht gelesen werden.', 'warning');
+    return;
+  }
+
+  // 2. Session-Objekt erstellen
+  const speakers = (parsed.speakers || []).map(sp => ({
+    id:    sp.id,
+    label: sp.label,
+    name:  sp.name || sp.label,
+  }));
+  const spA    = speakers.find(s => s.id === 'A');
+  const spB    = speakers.find(s => s.id === 'B');
+  const isPlain = speakers.length <= 1;
+  const source  = isPlain ? 'txt_import' : 'samsung_import';
+
+  const session = {
+    id:           Date.now().toString(),
+    label:        label || 'Geteilte Aufnahme',
+    filename:     audioName || label || 'share',
+    speakerA:     spA?.name || 'Sprecher A',
+    speakerB:     spB?.name || 'Sprecher B',
+    speakers,
+    type:         'privat',
+    persons:      [],
+    date:         new Date().toISOString(),
+    status:       'done',
+    source,
+    utterances:   parsed.utterances,
+    transcriptId: null,
+    duration:     parsed.duration || 0,
+    processedAt:  new Date().toISOString(),
+  };
+
+  sessions.unshift(session);
+  await saveSessions();
+
+  // 3. In Drive archivieren (TXT allein reicht für Metadaten; Audio wenn vorhanden)
+  if (audioBlob) {
+    const audioFile = new File([audioBlob], audioName, { type: audioBlob.type || 'audio/mpeg' });
+    saveToArchive(session, audioFile).catch(() => {});
+  } else {
+    saveToArchive(session).catch(() => {});
+  }
+
+  // 4. UI: Sitzungsliste neu rendern + direkt in neue Sitzung springen
+  renderSessionsList();
+  currentSessionId = session.id;
+  showSession(session.id);
+  showToast(`„${session.label}" importiert ✓`, 'success');
+}
+
 async function createShareDriveFolder() {
   const name = prompt('Name für den neuen Unterordner:');
   if (!name || !name.trim()) return;
