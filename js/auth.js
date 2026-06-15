@@ -1,15 +1,10 @@
-// Google Auth separat initialisieren (unabhängig von init())
-window.addEventListener('load', function() {
-  // Nur für wiederkehrende Nutzer (mit gecachten Sessions) Login-Overlay überspringen
-  // Neue Nutzer (kein Cache) sehen weiterhin den Login-Screen
-  const overlay = document.getElementById('loginOverlay');
-  const hasCachedSessions = localStorage.getItem('distill_has_sessions') === '1';
-  const hasKnownFolder  = !!localStorage.getItem('drive_folder_id');
-  if (overlay && (hasCachedSessions || hasKnownFolder)) {
-    overlay.style.display = 'none';
-  }
+// ═══════════════════════════════════════════════════
+// GOOGLE AUTH – Progressive Auth (v5.8)
+// App startet ohne Login. Anmeldung über Header-Button.
+// ═══════════════════════════════════════════════════
 
-  // Stille Auth im Hintergrund versuchen
+window.addEventListener('load', function() {
+  // GIS laden und stille Auth versuchen (wiederkehrende Nutzer)
   const check = setInterval(() => {
     if (window.google?.accounts?.oauth2) {
       clearInterval(check);
@@ -23,14 +18,22 @@ window.addEventListener('load', function() {
   setTimeout(() => {
     clearInterval(check);
     if (!driveTokenClient) {
-      _showDriveBanner('Google API nicht geladen – Werbeblocker deaktivieren?');
+      console.warn('[auth] Google API nicht geladen (Werbeblocker?)');
     }
   }, 15000);
 });
 
-// ═══════════════════════════════════════════════════
-// GOOGLE AUTH
-// ═══════════════════════════════════════════════════
+// ── Hilfsfunktionen für Sign-In-Button ─────────────
+function _showSignInBtn() {
+  const btn = document.getElementById('signInBtn');
+  if (btn) btn.style.display = 'flex';
+}
+function _hideSignInBtn() {
+  const btn = document.getElementById('signInBtn');
+  if (btn) btn.style.display = 'none';
+}
+
+// ── Google Auth initialisieren ──────────────────────
 function initGoogleAuth() {
   driveTokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
@@ -39,50 +42,57 @@ function initGoogleAuth() {
   });
 }
 
+// ── Sign-In: vom Nutzer aktiv ausgelöst ────────────
 function signInWithGoogle() {
-  // Falls GIS inzwischen geladen aber tokenClient noch nicht init
+  const btn = document.getElementById('signInBtn');
+
   if (!driveTokenClient && window.google?.accounts?.oauth2) {
     try { initGoogleAuth(); } catch(e) { console.error('initGoogleAuth Fehler:', e); }
   }
 
   if (!driveTokenClient) {
-    // GIS noch nicht bereit – warten und nach erfolgreichem Laden direkt anmelden
-    const btn = document.querySelector('#loginOverlay button');
-    const orig = btn ? btn.innerHTML : '';
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Google API lädt…'; }
-
+    // GIS noch nicht bereit – kurz warten
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Lädt…'; }
     const wait = setInterval(() => {
       if (window.google?.accounts?.oauth2) {
         clearInterval(wait);
         try {
           if (!driveTokenClient) initGoogleAuth();
-          if (btn) { btn.innerHTML = orig; btn.disabled = false; }
+          if (btn) { btn.disabled = false; btn.innerHTML = _signInBtnInner(); }
           driveTokenClient.requestAccessToken({ prompt: 'consent' });
         } catch(e) {
-          if (btn) { btn.innerHTML = orig; btn.disabled = false; }
+          if (btn) { btn.disabled = false; btn.innerHTML = _signInBtnInner(); }
           showToast('Google Auth Fehler: ' + e.message, 'error');
         }
       }
     }, 200);
     setTimeout(() => {
       clearInterval(wait);
-      if (btn) { btn.innerHTML = orig; btn.disabled = false; }
-      if (!driveTokenClient) {
-        const err = document.getElementById('loginError');
-        if (err) { err.style.display = 'block'; err.textContent = 'Google API nicht erreichbar. Werbeblocker deaktivieren oder Seite neu laden.'; }
-      }
+      if (btn) { btn.disabled = false; btn.innerHTML = _signInBtnInner(); }
+      if (!driveTokenClient) showToast('Google API nicht erreichbar – Werbeblocker deaktivieren?', 'warning');
     }, 12000);
     return;
   }
   driveTokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
+function _signInBtnInner() {
+  return `<svg width="14" height="14" viewBox="0 0 48 48" style="flex-shrink:0">
+    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+  </svg>Anmelden`;
+}
+
+// ── Token empfangen (nach Auth) ────────────────────
 async function onTokenReceived(resp) {
   if (resp.error) {
-    // Stille Auth fehlgeschlagen → kleinen Banner zeigen (nicht blockierend)
+    // Stille Auth fehlgeschlagen → Sign-In-Button bleibt sichtbar, kein Popup
     if (resp.error !== 'user_cancelled') {
-      _showDriveBanner('Drive nicht verbunden – Klicken um zu verbinden', true);
+      console.info('[auth] Stille Auth fehlgeschlagen:', resp.error);
     }
+    _showSignInBtn();
     return;
   }
   driveToken = resp.access_token;
@@ -98,20 +108,19 @@ async function onTokenReceived(resp) {
   await enterApp();
 }
 
+// ── App mit eingeloggtem Nutzer starten ────────────
 async function enterApp() {
-  // Overlay verstecken (falls noch sichtbar) + Drive-Banner wegräumen
-  const overlay = document.getElementById('loginOverlay');
-  if (overlay) overlay.style.display = 'none';
+  _hideSignInBtn();
   _hideDriveBanner();
   setDateInputToNow();
 
   if (driveUser) {
-    const badge = document.getElementById('userBadge');
+    const badge  = document.getElementById('userBadge');
     const avatar = document.getElementById('userAvatar');
     const email  = document.getElementById('userEmail');
-    if (badge) badge.style.display = 'flex';
-    if (avatar) avatar.textContent = (driveUser.given_name || driveUser.name || '?')[0].toUpperCase();
-    if (email)  email.textContent  = driveUser.email || driveUser.name || '';
+    if (badge)  badge.style.display  = 'flex';
+    if (avatar) avatar.textContent   = (driveUser.given_name || driveUser.name || '?')[0].toUpperCase();
+    if (email)  email.textContent    = driveUser.email || driveUser.name || '';
   }
 
   try {
@@ -131,7 +140,7 @@ async function enterApp() {
   await loadFromDrive();
 }
 
-// ── Drive-Banner (nicht blockierend) ─────────────────────────────────────
+// ── Drive-Banner (nicht blockierend) ──────────────
 function _showDriveBanner(msg, clickable = false) {
   let banner = document.getElementById('driveBanner');
   if (!banner) {
@@ -156,14 +165,14 @@ function _hideDriveBanner() {
   if (banner) banner.style.display = 'none';
 }
 
+// ── Abmelden ──────────────────────────────────────
 function signOut() {
   if (!confirm('Wirklich abmelden?')) return;
   if (driveToken) google.accounts.oauth2.revoke(driveToken, () => {});
   driveToken = null; driveUser = null; driveFolderId = null;
   localStorage.removeItem('drive_folder_id');
-  document.getElementById('loginOverlay').style.display = 'flex';
   const badge = document.getElementById('userBadge');
   if (badge) badge.style.display = 'none';
+  _showSignInBtn();
   showToast('Abgemeldet', 'info');
 }
-
