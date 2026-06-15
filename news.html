@@ -160,11 +160,11 @@
       color: #fff;
       margin-top: 4px;
     }
-    .news-tile-hero::after {
-      content: '';
+    .news-tile-hero svg {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+      width: 100%;
+      height: 100%;
     }
 
     /* ── Feature-Liste ── */
@@ -218,7 +218,7 @@
 <header class="news-header">
   <a href="index.html" class="back">← Zurück zur App</a>
   <h1>📰 Was ist neu?</h1>
-  <span class="badge">v5.3</span>
+  <span class="badge">v5.5</span>
 </header>
 
 <!-- ── Artikel-Feed ── -->
@@ -235,8 +235,27 @@
       <span class="news-category">Feature</span>
     </div>
 
-    <div class="news-tile-hero"
-      style="background:linear-gradient(135deg,#1a1040 0%,#3b1d8a 50%,#6c43e0 100%)">
+    <div class="news-tile-hero" style="background:#1a1040">
+      <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+        <circle cx="440" cy="105" r="160" fill="#6c43e0" opacity="0.15"/>
+        <rect x="240" y="65" width="90" height="145" rx="12" fill="#2d1f6e" stroke="#6c43e0" stroke-width="2"/>
+        <rect x="252" y="82" width="66" height="108" rx="4" fill="#1a1040"/>
+        <circle cx="285" cy="200" r="5.5" fill="#6c43e0" opacity="0.5"/>
+        <line x1="180" y1="137" x2="240" y2="137" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4 3"/>
+        <polygon points="235,131 248,137 235,143" fill="#a78bfa"/>
+        <line x1="330" y1="115" x2="390" y2="95" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4 3"/>
+        <polygon points="385,90 398,100 384,104" fill="#a78bfa"/>
+        <line x1="330" y1="160" x2="390" y2="182" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4 3"/>
+        <polygon points="383,175 397,187 388,163" fill="#a78bfa"/>
+        <rect x="395" y="78" width="42" height="42" rx="9" fill="#3b1d8a" stroke="#6c43e0" stroke-width="1.5"/>
+        <text x="416" y="106" text-anchor="middle" font-size="20" fill="#a78bfa" font-family="sans-serif">D</text>
+        <rect x="395" y="162" width="42" height="36" rx="9" fill="#3b1d8a" stroke="#6c43e0" stroke-width="1.5"/>
+        <text x="416" y="184" text-anchor="middle" font-size="14" fill="#a78bfa" font-family="sans-serif">.txt</text>
+        <rect x="135" y="118" width="42" height="38" rx="6" fill="#3b1d8a" stroke="#6c43e0" stroke-width="1.5"/>
+        <text x="156" y="141" text-anchor="middle" font-size="13" fill="#c4b5fd" font-family="sans-serif">MP3</text>
+        <defs><linearGradient id="nh1" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#1a1040" stop-opacity="0"/><stop offset="100%" stop-color="#1a1040" stop-opacity="0.95"/></linearGradient></defs>
+        <rect x="0" y="0" width="640" height="280" fill="url(#nh1)"/>
+      </svg>
       <div class="news-tile-hero-text">
         <span>Neu in v5.2</span>
         <h3>Android Share Target</h3>
@@ -274,8 +293,29 @@
       <span class="news-category">Datenschutz</span>
     </div>
 
-    <div class="news-tile-hero"
-      style="background:linear-gradient(135deg,#0f2a1a 0%,#1a5c3a 50%,#22c55e 100%)">
+    <div class="news-tile-hero" style="background:#0f2a1a">
+      <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+        <circle cx="360" cy="100" r="150" fill="#22c55e" opacity="0.08"/>
+        <circle cx="280" cy="130" r="80" fill="#0f2a1a" stroke="#22c55e" stroke-width="2.5"/>
+        <circle cx="280" cy="130" r="70" fill="#1a5c3a" opacity="0.3"/>
+        <line x1="280" y1="130" x2="280" y2="80" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="280" y1="130" x2="318" y2="148" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="280" cy="130" r="5" fill="#22c55e"/>
+        <line x1="280" y1="54" x2="280" y2="64" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+        <line x1="280" y1="196" x2="280" y2="206" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+        <line x1="204" y1="130" x2="214" y2="130" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+        <line x1="346" y1="130" x2="356" y2="130" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+        <rect x="390" y="152" width="52" height="58" rx="6" fill="#1a5c3a" stroke="#22c55e" stroke-width="1.8"/>
+        <rect x="384" y="145" width="64" height="9" rx="3" fill="#22c55e" opacity="0.7"/>
+        <rect x="396" y="140" width="32" height="7" rx="2" fill="#22c55e" opacity="0.4"/>
+        <line x1="404" y1="160" x2="404" y2="202" stroke="#22c55e" stroke-width="1.5" opacity="0.4"/>
+        <line x1="416" y1="160" x2="416" y2="202" stroke="#22c55e" stroke-width="1.5" opacity="0.4"/>
+        <line x1="428" y1="160" x2="428" y2="202" stroke="#22c55e" stroke-width="1.5" opacity="0.4"/>
+        <path d="M 362 148 Q 388 135 396 148" stroke="#22c55e" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
+        <polygon points="392,142 402,150 395,158" fill="#22c55e" opacity="0.8"/>
+        <defs><linearGradient id="nh2" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#0f2a1a" stop-opacity="0"/><stop offset="100%" stop-color="#0f2a1a" stop-opacity="0.95"/></linearGradient></defs>
+        <rect x="0" y="0" width="640" height="280" fill="url(#nh2)"/>
+      </svg>
       <div class="news-tile-hero-text">
         <span>Neu in v5.1</span>
         <h3>Audio Auto-Delete</h3>
@@ -313,8 +353,36 @@
       <span class="news-category">Synchronisation</span>
     </div>
 
-    <div class="news-tile-hero"
-      style="background:linear-gradient(135deg,#1a1500 0%,#5c4200 50%,#f59e0b 100%)">
+    <div class="news-tile-hero" style="background:#1a1500">
+      <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+        <circle cx="320" cy="110" r="140" fill="#f59e0b" opacity="0.07"/>
+        <rect x="90" y="90" width="135" height="88" rx="8" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
+        <rect x="104" y="104" width="107" height="62" rx="3" fill="#1a1500"/>
+        <rect x="122" y="186" width="32" height="8" rx="2" fill="#f59e0b" opacity="0.35"/>
+        <rect x="110" y="194" width="56" height="5" rx="2" fill="#5c4200" opacity="0.6"/>
+        <rect x="112" y="112" width="60" height="5" rx="2" fill="#f59e0b" opacity="0.55"/>
+        <rect x="112" y="122" width="84" height="4" rx="2" fill="#5c4200"/>
+        <rect x="112" y="130" width="70" height="4" rx="2" fill="#5c4200"/>
+        <rect x="112" y="138" width="78" height="4" rx="2" fill="#5c4200"/>
+        <rect x="416" y="84" width="78" height="128" rx="11" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
+        <rect x="428" y="100" width="54" height="96" rx="4" fill="#1a1500"/>
+        <circle cx="455" cy="96" r="4" fill="#f59e0b" opacity="0.35"/>
+        <rect x="433" y="108" width="40" height="4" rx="2" fill="#f59e0b" opacity="0.55"/>
+        <rect x="433" y="118" width="32" height="3.5" rx="2" fill="#5c4200"/>
+        <rect x="433" y="127" width="36" height="3.5" rx="2" fill="#5c4200"/>
+        <rect x="433" y="136" width="28" height="3.5" rx="2" fill="#5c4200"/>
+        <!-- Cloud in centre -->
+        <ellipse cx="320" cy="118" rx="38" ry="24" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
+        <ellipse cx="306" cy="112" rx="17" ry="14" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
+        <ellipse cx="332" cy="110" rx="13" ry="12" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
+        <!-- Arrows -->
+        <line x1="227" y1="130" x2="277" y2="122" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5 3"/>
+        <polygon points="273,117 283,124 272,129" fill="#f59e0b" opacity="0.85"/>
+        <line x1="364" y1="122" x2="414" y2="130" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5 3"/>
+        <polygon points="410,125 420,133 411,138" fill="#f59e0b" opacity="0.85"/>
+        <defs><linearGradient id="nh3" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#1a1500" stop-opacity="0"/><stop offset="100%" stop-color="#1a1500" stop-opacity="0.95"/></linearGradient></defs>
+        <rect x="0" y="0" width="640" height="280" fill="url(#nh3)"/>
+      </svg>
       <div class="news-tile-hero-text">
         <span>Neu in v5.0</span>
         <h3>Prompts-Sync geräteübergreifend</h3>
@@ -342,8 +410,29 @@
       <span class="news-category">Installation</span>
     </div>
 
-    <div class="news-tile-hero"
-      style="background:linear-gradient(135deg,#0f1a2a 0%,#1a3a5c 50%,#3b82f6 100%)">
+    <div class="news-tile-hero" style="background:#0f1a2a">
+      <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+        <circle cx="360" cy="105" r="160" fill="#3b82f6" opacity="0.1"/>
+        <rect x="246" y="65" width="110" height="188" rx="14" fill="#0f1a2a" stroke="#3b82f6" stroke-width="2.2"/>
+        <rect x="261" y="84" width="80" height="134" rx="4" fill="#1a3a5c" opacity="0.4"/>
+        <rect x="280" y="115" width="52" height="52" rx="12" fill="#1a3a5c" stroke="#3b82f6" stroke-width="2"/>
+        <text x="306" y="150" text-anchor="middle" font-size="24" fill="#60a5fa" font-family="sans-serif" font-weight="700">D</text>
+        <!-- Download arrow above phone -->
+        <line x1="306" y1="68" x2="306" y2="108" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <polygon points="298,106 306,118 314,106" fill="#3b82f6"/>
+        <!-- App icons in grid -->
+        <rect x="266" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
+        <rect x="285" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
+        <rect x="304" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
+        <rect x="323" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
+        <circle cx="306" cy="234" r="7.5" fill="#1a3a5c" stroke="#3b82f6" stroke-width="1.5"/>
+        <!-- Plus badge top-right -->
+        <circle cx="370" cy="96" r="20" fill="#1a3a5c" stroke="#3b82f6" stroke-width="2"/>
+        <line x1="370" y1="88" x2="370" y2="104" stroke="#3b82f6" stroke-width="2.5"/>
+        <line x1="362" y1="96" x2="378" y2="96" stroke="#3b82f6" stroke-width="2.5"/>
+        <defs><linearGradient id="nh4" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#0f1a2a" stop-opacity="0"/><stop offset="100%" stop-color="#0f1a2a" stop-opacity="0.95"/></linearGradient></defs>
+        <rect x="0" y="0" width="640" height="280" fill="url(#nh4)"/>
+      </svg>
       <div class="news-tile-hero-text">
         <span>Neu in v4.89</span>
         <h3>PWA-Installation</h3>
