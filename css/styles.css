@@ -190,7 +190,19 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── APP-LEFT: Header + Sidenav + Main (Desktop) ─ */
+    .app-left {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      height: 100vh;
     }
 
     /* ─── HEADER ─────────────────────────────────── */
@@ -201,8 +213,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
+      position: relative;
+      flex-shrink: 0;
       z-index: 100;
     }
 
@@ -271,7 +283,9 @@
     .layout {
       display: grid;
       grid-template-columns: 230px 1fr;
-      min-height: calc(100vh - 53px);
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
     }
 
     /* ─── LINKE SIDENAV ──────────────────────────── */
@@ -282,9 +296,13 @@
       flex-direction: column;
       padding: 12px 8px;
       overflow-y: auto;
-      position: sticky;
-      top: 53px;
-      height: calc(100vh - 53px);
+      min-height: 0;
+    }
+
+    /* ─── HAUPT-INHALT (scrollt eigenständig) ───── */
+    #mainContent {
+      min-height: 0;
+      overflow-y: auto;
     }
 
     .sidenav-new {
@@ -1968,8 +1986,15 @@
 
     @media (max-width: 768px) {
 
+      /* ── v5.9: Desktop-Flex-Layout auf Mobile zurücksetzen ── */
+      body { display: block; height: auto; overflow-y: auto; }
+      .app-left { display: block; height: auto; overflow: visible; }
+      .layout { flex: none; min-height: calc(100vh - 53px); overflow: visible; }
+      #mainContent { overflow-y: visible; }
+      .sdc-tabs { top: 53px; }
+
       /* ── Header ── */
-      header { padding: 10px 16px; }
+      header { padding: 10px 16px; position: sticky; top: 0; }
 
       /* App-Name: Untertitel auf Mobile ausblenden */
       #appSubtitle { display: none; }
@@ -2773,7 +2798,7 @@ mark.search-highlight {
   border-bottom: 2px solid var(--border);
   background: var(--surface);
   position: sticky;
-  top: 53px;
+  top: 0;
   z-index: 10;
   overflow-x: auto;
   scrollbar-width: none;
@@ -2907,11 +2932,11 @@ mark.search-highlight {
   box-shadow: 0 0 0 2px rgba(108,99,255,0.2);
 }
 
-/* ── Sidebar Resize Handle (v4.90) ── */
+/* ── Sidebar Resize Handle (v5.9) ── */
 .sdc-resize-handle {
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
+  flex-shrink: 0;
   width: 5px;
+  height: 100vh;
   cursor: col-resize;
   background: transparent;
   z-index: 20;
@@ -2930,7 +2955,7 @@ mark.search-highlight {
   #projectsView { left: 0 !important; }
 }
 
-/* ── Rechte Sidebar ── */
+/* ── Rechte Sidebar (v5.9: body-level, volle Höhe) ── */
 .sdc-sidebar {
   width: 300px;
   flex-shrink: 0;
@@ -2938,9 +2963,7 @@ mark.search-highlight {
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  position: sticky;
-  top: 53px;
-  height: calc(100vh - 53px);
+  height: 100vh;
   overflow: hidden;
   transition: width 0.22s ease, opacity 0.2s ease, border-color 0.2s;
 }
