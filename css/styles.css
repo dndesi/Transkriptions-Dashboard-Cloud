@@ -3001,6 +3001,8 @@ mark.search-highlight {
   background: var(--surface);
 }
 .sdc-sidebar-input.hidden { display: none; }
+#askSendBtn:hover { opacity: 0.82; }
+#askSendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 
 /* ── Mobile Bottom-Sheet Handle (v4.78) ── */
