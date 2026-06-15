@@ -191,18 +191,18 @@
       background: var(--bg);
       color: var(--text);
       display: flex;
+      flex-direction: column;
       height: 100vh;
       overflow: hidden;
     }
 
-    /* ─── APP-LEFT: Header + Sidenav + Main (Desktop) ─ */
+    /* ─── CONTENT-ROW: Sidenav + Main + Sidebar (Desktop) ─ */
     .app-left {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       flex: 1;
-      min-width: 0;
+      min-height: 0;
       overflow: hidden;
-      height: 100vh;
     }
 
     /* ─── HEADER ─────────────────────────────────── */
@@ -2936,7 +2936,6 @@ mark.search-highlight {
 .sdc-resize-handle {
   flex-shrink: 0;
   width: 5px;
-  height: 100vh;
   cursor: col-resize;
   background: transparent;
   z-index: 20;
@@ -2955,7 +2954,7 @@ mark.search-highlight {
   #projectsView { left: 0 !important; }
 }
 
-/* ── Rechte Sidebar (v5.9: body-level, volle Höhe) ── */
+/* ── Rechte Sidebar (v5.9: content-row-level, flex-stretch) ── */
 .sdc-sidebar {
   width: 300px;
   flex-shrink: 0;
@@ -2963,7 +2962,6 @@ mark.search-highlight {
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  height: 100vh;
   overflow: hidden;
   transition: width 0.22s ease, opacity 0.2s ease, border-color 0.2s;
 }

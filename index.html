@@ -20,9 +20,6 @@
 <!-- loginOverlay entfernt in v5.8 – Anmeldung jetzt über Header-Button -->
 
 
-<!-- ─── APP-LEFT: Header + Sidenav + Main ─────────── -->
-<div class="app-left">
-
 <!-- ─── HEADER ───────────────────────────────────── -->
 <header>
   <!-- App-Name: klickbar → Projektübersicht -->
@@ -346,6 +343,9 @@
     </div>
     </div><!-- /importTabContent -->
   </div>
+
+<!-- ─── CONTENT-ROW: Sidenav + Main + Sidebar ─────── -->
+<div class="app-left">
 
 <!-- ─── LAYOUT ───────────────────────────────────── -->
 <div class="layout">
@@ -1035,12 +1035,10 @@
   </main>
 </div>
 
-</div><!-- /app-left -->
-
 <!-- ─── RESIZE HANDLE (Desktop, v5.9) ──────────────── -->
 <div class="sdc-resize-handle" id="sdcResizeHandle"></div>
 
-<!-- ─── RECHTE SIDEBAR (v5.9: body-level, volle Höhe) ─ -->
+<!-- ─── RECHTE SIDEBAR (v5.9: content-row-level) ─ -->
 <div class="sdc-sidebar sdc-sidebar-collapsed" id="sdcSidebar">
 
   <!-- Mobile Schliessen-Leiste (nur auf Smartphone sichtbar) -->
@@ -1166,6 +1164,8 @@
 
 </div>
 <!-- /sdc-sidebar -->
+
+</div><!-- /app-left (content-row) -->
 
 <!-- ─── PROJEKTE PANEL (außerhalb browserView, eigenes Full-Panel) ─── -->
 <div id="projectsView" style="display:none; position:fixed; top:53px; left:230px; right:0; bottom:0; overflow-y:auto; background:var(--bg); z-index:10; padding-bottom:40px"></div>
