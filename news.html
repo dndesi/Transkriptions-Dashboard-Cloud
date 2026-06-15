@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Was ist neu – Distill Voice</title>
+  <style>
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --surface2: #22263a;
+      --border:   #2e3347;
+      --text:     #e8eaf0;
+      --muted:    #7a7f9a;
+      --accent:   #6c63ff;
+      --accent2:  #a78bfa;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    /* ── Header ── */
+    .news-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .news-header a.back {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .news-header a.back:hover { color: var(--text); }
+    .news-header h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .news-header .badge {
+      margin-left: auto;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    /* ── Layout ── */
+    .news-container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* ── Artikel ── */
+    .news-article {
+      margin-bottom: 64px;
+      padding-bottom: 64px;
+      border-bottom: 1px solid var(--border);
+    }
+    .news-article:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .news-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .news-version {
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+    .news-date {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .news-category {
+      color: var(--muted);
+      font-size: 0.78rem;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .news-article h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .news-article .lead {
+      font-size: 1.05rem;
+      color: var(--accent2);
+      margin-bottom: 24px;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .news-article p {
+      color: #c8cad8;
+      margin-bottom: 16px;
+      font-size: 0.97rem;
+    }
+
+    /* ── Hero-Bild der Kachel ── */
+    .news-tile-hero {
+      width: 100%;
+      border-radius: 14px;
+      margin-bottom: 28px;
+      aspect-ratio: 16/7;
+      display: flex;
+      align-items: flex-end;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .news-tile-hero-text {
+      position: relative;
+      z-index: 1;
+    }
+    .news-tile-hero-text span {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+    }
+    .news-tile-hero-text h3 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 4px;
+    }
+    .news-tile-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+    }
+
+    /* ── Feature-Liste ── */
+    .news-feature-list {
+      list-style: none;
+      margin: 20px 0;
+    }
+    .news-feature-list li {
+      display: flex;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.93rem;
+      color: #c8cad8;
+      align-items: flex-start;
+    }
+    .news-feature-list li:last-child { border-bottom: none; }
+    .news-feature-list li::before {
+      content: '→';
+      color: var(--accent);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Info-Box ── */
+    .news-info-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 14px 18px;
+      margin: 20px 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .news-info-box strong { color: var(--text); }
+
+    /* ── Separator ── */
+    hr.news-sep {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 32px 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="news-header">
+  <a href="index.html" class="back">← Zurück zur App</a>
+  <h1>📰 Was ist neu?</h1>
+  <span class="badge">v5.3</span>
+</header>
+
+<!-- ── Artikel-Feed ── -->
+<main class="news-container">
+
+
+  <!-- ════════════════════════════════════════
+       ARTIKEL: Android Share Target (v5.2)
+       ════════════════════════════════════════ -->
+  <article class="news-article" id="share-target">
+    <div class="news-meta">
+      <span class="news-version">v5.2</span>
+      <span class="news-date">15. Juni 2026</span>
+      <span class="news-category">Feature</span>
+    </div>
+
+    <div class="news-tile-hero"
+      style="background:linear-gradient(135deg,#1a1040 0%,#3b1d8a 50%,#6c43e0 100%)">
+      <div class="news-tile-hero-text">
+        <span>Neu in v5.2</span>
+        <h3>Android Share Target</h3>
+      </div>
+    </div>
+
+    <h2>Dateien direkt aus Android-Apps teilen</h2>
+    <p class="lead">Du kannst Distill Voice jetzt als Ziel beim Android-Teilen auswählen – genau wie WhatsApp oder Dropbox. TXT-Dateien, MP3-Aufnahmen oder beides gleichzeitig lassen sich aus jeder App heraus direkt in eine neue Sitzung überführen.</p>
+
+    <p>Wer mit einer Diktier-App auf Android arbeitet – wie Samsung Voice Recorder, Google Recorder oder ähnlichen – kennt das Problem: Die Aufnahme liegt als TXT oder MP3 auf dem Gerät, muss aber manuell in Distill Voice importiert werden. Das entfällt jetzt.</p>
+
+    <p>Distill Voice erkennt automatisch, welche Dateien ankommen, und wählt den richtigen Verarbeitungsmodus:</p>
+
+    <ul class="news-feature-list">
+      <li><strong>TXT + MP3 zusammen:</strong> Das Transkript aus der TXT-Datei wird direkt übernommen, das MP3 wird gespeichert – keine erneute Transkription nötig.</li>
+      <li><strong>Nur MP3:</strong> Die Audiodatei wird an AssemblyAI weitergeleitet und automatisch transkribiert.</li>
+      <li><strong>Nur TXT:</strong> Der Text wird als fertiges Transkript importiert.</li>
+    </ul>
+
+    <p>Nach dem Empfang erscheint ein Overlay mit Datei-Vorschau, Sitzungsname und Projekt-Auswahl. Erst dann wird die Datei verarbeitet – du behältst die volle Kontrolle.</p>
+
+    <div class="news-info-box">
+      <strong>Einrichtung:</strong> Die App muss nach diesem Update einmal neu installiert werden (als PWA). Danach erscheint „Distill Voice" im Android-Teilen-Dialog unter Apps. Beim ersten Teilen kann es 5–10 Sekunden dauern, bis das Overlay erscheint – der Service Worker muss einmalig starten.
+    </div>
+  </article>
+
+
+  <!-- ════════════════════════════════════════
+       ARTIKEL: Audio Auto-Delete (v5.1)
+       ════════════════════════════════════════ -->
+  <article class="news-article" id="audio-delete">
+    <div class="news-meta">
+      <span class="news-version">v5.1</span>
+      <span class="news-date">15. Juni 2026</span>
+      <span class="news-category">Datenschutz</span>
+    </div>
+
+    <div class="news-tile-hero"
+      style="background:linear-gradient(135deg,#0f2a1a 0%,#1a5c3a 50%,#22c55e 100%)">
+      <div class="news-tile-hero-text">
+        <span>Neu in v5.1</span>
+        <h3>Audio Auto-Delete</h3>
+      </div>
+    </div>
+
+    <h2>Audiodateien automatisch löschen</h2>
+    <p class="lead">Audiodateien verbrauchen überproportional viel Speicherplatz in Google Drive. Seit v5.1 löscht Distill Voice sie automatisch nach einer konfigurierbaren Frist – Transkripte und Analysen bleiben selbstverständlich erhalten.</p>
+
+    <p>Der Standard ist 14 Tage. Das bedeutet: Direkt nach der Transkription steht die Aufnahme noch zwei Wochen für eventuelle Rückfragen bereit. Danach wird sie still aus Drive entfernt.</p>
+
+    <p>Die Aufbewahrungsfrist ist im API-Modal einstellbar:</p>
+
+    <ul class="news-feature-list">
+      <li>7 Tage – für sehr aktive Nutzer mit vielen Sitzungen</li>
+      <li>14 Tage – Standard, gute Balance</li>
+      <li>30 Tage – für Projekte mit langer Laufzeit</li>
+      <li>90 Tage – für seltene Archivierungsfälle</li>
+      <li>Niemals – Audio dauerhaft behalten</li>
+    </ul>
+
+    <div class="news-info-box">
+      <strong>Was bleibt erhalten?</strong> Transkript, alle KI-Analysen, Notizen, Tags, Personen und Projektdaten sind nie betroffen. Nur die Rohdatei des Audios wird gelöscht.
+    </div>
+  </article>
+
+
+  <!-- ════════════════════════════════════════
+       ARTIKEL: Prompts-Sync (v5.0)
+       ════════════════════════════════════════ -->
+  <article class="news-article" id="prompts-sync">
+    <div class="news-meta">
+      <span class="news-version">v5.0</span>
+      <span class="news-date">15. Juni 2026</span>
+      <span class="news-category">Synchronisation</span>
+    </div>
+
+    <div class="news-tile-hero"
+      style="background:linear-gradient(135deg,#1a1500 0%,#5c4200 50%,#f59e0b 100%)">
+      <div class="news-tile-hero-text">
+        <span>Neu in v5.0</span>
+        <h3>Prompts-Sync geräteübergreifend</h3>
+      </div>
+    </div>
+
+    <h2>Analyse-Vorlagen auf allen Geräten</h2>
+    <p class="lead">Eigene Analyse-Prompts, die auf einem Gerät erstellt wurden, sind jetzt sofort auf allen anderen Geräten sichtbar – ohne Neustart und ohne manuelles Synchronisieren.</p>
+
+    <p>Bis v4.99 war die Prompt-Bibliothek lokal: Ein Prompt, der auf dem Desktop erstellt wurde, war auf dem Smartphone nicht vorhanden. Seit v5.0 lädt die App beim Öffnen der Promptbibliothek automatisch den aktuellen Stand aus Google Drive.</p>
+
+    <div class="news-info-box">
+      <strong>Voraussetzung:</strong> Google Drive muss verbunden sein. Die Synchronisation läuft nur wenn Drive aktiv ist.
+    </div>
+  </article>
+
+
+  <!-- ════════════════════════════════════════
+       ARTIKEL: PWA (v4.89)
+       ════════════════════════════════════════ -->
+  <article class="news-article" id="pwa">
+    <div class="news-meta">
+      <span class="news-version">v4.89</span>
+      <span class="news-date">Juni 2026</span>
+      <span class="news-category">Installation</span>
+    </div>
+
+    <div class="news-tile-hero"
+      style="background:linear-gradient(135deg,#0f1a2a 0%,#1a3a5c 50%,#3b82f6 100%)">
+      <div class="news-tile-hero-text">
+        <span>Neu in v4.89</span>
+        <h3>PWA-Installation</h3>
+      </div>
+    </div>
+
+    <h2>Distill Voice als App installieren</h2>
+    <p class="lead">Distill Voice ist jetzt eine Progressive Web App (PWA). Das bedeutet: Du kannst die App auf dem Startbildschirm deines Smartphones oder auf dem Desktop installieren – ohne App Store, ohne Download.</p>
+
+    <p>Die installierte Version öffnet sich wie eine native App, ohne Browser-Adressleiste, im Vollbild. Auf Android nutzt die PWA-Installation auch die Grundlage für den neuen Share Target (v5.2).</p>
+
+    <ul class="news-feature-list">
+      <li><strong>Android (Chrome):</strong> „Zum Startbildschirm hinzufügen" im Browser-Menü</li>
+      <li><strong>iPhone (Safari):</strong> Teilen → „Zum Home-Bildschirm"</li>
+      <li><strong>Desktop (Chrome/Edge):</strong> Installations-Symbol in der Adressleiste</li>
+    </ul>
+  </article>
+
+
+</main>
+</body>
+</html>

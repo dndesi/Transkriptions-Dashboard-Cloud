@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.2" />
+  <link rel="stylesheet" href="css/styles.css?v=5.3" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -92,7 +92,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.2</button>
+        onmouseout="this.style.color='var(--muted)'">v5.3</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -493,6 +493,56 @@
           <button class="hero-card-btn" onclick="hideHero(); togglePromptsView(); setSidenavActive(document.getElementById('navPrompts'))">Weiter →</button>
         </div>
       </div>
+
+      <!-- ─── NEWS-SEKTION (v5.3) ─────────────────────── -->
+      <div class="hero-news-section">
+        <a href="news.html" class="hero-news-heading">
+          <i data-lucide="rss" style="width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+          Was ist neu?
+          <i data-lucide="arrow-right" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;margin-left:auto;opacity:0.6"></i>
+        </a>
+        <div class="hero-news-grid">
+
+          <!-- Kachel 1 -->
+          <a href="news.html#share-target" class="hero-news-tile" style="--tile-bg:linear-gradient(135deg,#1a1040 0%,#3b1d8a 50%,#6c43e0 100%)">
+            <div class="hero-news-tile-overlay">
+              <span class="hero-news-tile-label">v5.2</span>
+              <h4 class="hero-news-tile-title">Android Share Target</h4>
+              <p class="hero-news-tile-teaser">Dateien direkt aus jeder Android-App an Distill Voice senden – TXT, MP3 oder beides.</p>
+            </div>
+          </a>
+
+          <!-- Kachel 2 -->
+          <a href="news.html#audio-delete" class="hero-news-tile" style="--tile-bg:linear-gradient(135deg,#0f2a1a 0%,#1a5c3a 50%,#22c55e 100%)">
+            <div class="hero-news-tile-overlay">
+              <span class="hero-news-tile-label">v5.1</span>
+              <h4 class="hero-news-tile-title">Audio Auto-Delete</h4>
+              <p class="hero-news-tile-teaser">Audiodateien werden nach 14 Tagen automatisch aus Drive gelöscht. Transkripte bleiben erhalten.</p>
+            </div>
+          </a>
+
+          <!-- Kachel 3 -->
+          <a href="news.html#prompts-sync" class="hero-news-tile" style="--tile-bg:linear-gradient(135deg,#1a1500 0%,#5c4200 50%,#f59e0b 100%)">
+            <div class="hero-news-tile-overlay">
+              <span class="hero-news-tile-label">v5.0</span>
+              <h4 class="hero-news-tile-title">Prompts-Sync</h4>
+              <p class="hero-news-tile-teaser">Eigene Analyse-Vorlagen werden jetzt geräteübergreifend via Google Drive synchronisiert.</p>
+            </div>
+          </a>
+
+          <!-- Kachel 4 -->
+          <a href="news.html#pwa" class="hero-news-tile" style="--tile-bg:linear-gradient(135deg,#0f1a2a 0%,#1a3a5c 50%,#3b82f6 100%)">
+            <div class="hero-news-tile-overlay">
+              <span class="hero-news-tile-label">v4.89</span>
+              <h4 class="hero-news-tile-title">PWA-Installation</h4>
+              <p class="hero-news-tile-teaser">Distill Voice kann jetzt als App installiert werden – auf Android, iOS und Desktop.</p>
+            </div>
+          </a>
+
+        </div>
+      </div>
+      <!-- ─── END NEWS-SEKTION ─────────────────────────── -->
+
     </div>
 
     <!-- Session-Browser -->
@@ -1046,6 +1096,14 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.3 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.3</span><span class="cl-date">15.06.2026</span></div>
+        <div class="cl-title">News-Seite + Hero-Highlights</div>
+        <div class="cl-body">News-Sektion auf der Hero-Startseite: anklickbare Überschrift „Was ist neu?" + 4 Highlight-Kacheln mit fotorealistischem Farbverlauf-Hintergrund, Version-Badge, Titel und Teaser. Kacheln verweisen auf Anker in der neuen news.html. news.html: vollständige Blog-Seite im App-Design mit 4 ausführlichen Artikeln zu v5.2, v5.1, v5.0 und v4.89.</div>
+        <div class="cl-tech">index.html: .hero-news-section + .hero-news-heading + .hero-news-grid + 4× .hero-news-tile in #heroView. css/styles.css: .hero-news-* Klassen inkl. Responsive (2-Spalten ab 900px). news.html (neu): eigenständige Blog-Seite mit eigenem CSS, News-Header, 4 Artikeln mit Hero-Bild, Lead-Text, Feature-Listen und Info-Boxen.</div>
+      </div>
 
       <!-- ── v5.2 ── -->
       <div class="cl-entry">
@@ -3075,7 +3133,7 @@
         Echte Namen werden durch „Person_A", „Person_B" usw. ersetzt, bevor Transkripte an Claude gesendet werden. Nur du siehst die echten Namen im Dashboard.
       </p>
     </div>
-    <!-- Audio Auto-Delete (v5.2) -->
+    <!-- Audio Auto-Delete (v5.3) -->
     <div class="field" style="margin-top:18px; padding:12px 14px; background:var(--surface2); border-radius:8px; border:1px solid var(--border)">
       <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; font-weight:600; color:var(--text); margin-bottom:4px">
         <i data-lucide="trash-2" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
@@ -3307,7 +3365,7 @@
   </div>
 </div>
 
-<!-- ─── OVERLAY: Web Share Target Empfang (v5.2) ─── -->
+<!-- ─── OVERLAY: Web Share Target Empfang (v5.3) ─── -->
 <div id="shareOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9000;
   align-items:center; justify-content:center; padding:16px;">
   <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px;
@@ -3358,29 +3416,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.2"></script>
-<script src="js/storage.js?v=5.2"></script>
-<script src="js/config.js?v=5.2"></script>
-<script src="js/auth.js?v=5.2"></script>
-<script src="js/drive.js?v=5.2"></script>
-<script src="js/sessions.js?v=5.2"></script>
-<script src="js/assemblyai.js?v=5.2"></script>
-<script src="js/claude.js?v=5.2"></script>
-<script src="js/ui.js?v=5.2"></script>
-<script src="js/tags.js?v=5.2"></script>
-<script src="js/notes.js?v=5.2"></script>
-<script src="js/persons.js?v=5.2"></script>
-<script src="js/audio.js?v=5.2"></script>
-<script src="js/recorder.js?v=5.2"></script>
-<script src="js/app.js?v=5.2"></script>
+<script src="js/icons.js?v=5.3"></script>
+<script src="js/storage.js?v=5.3"></script>
+<script src="js/config.js?v=5.3"></script>
+<script src="js/auth.js?v=5.3"></script>
+<script src="js/drive.js?v=5.3"></script>
+<script src="js/sessions.js?v=5.3"></script>
+<script src="js/assemblyai.js?v=5.3"></script>
+<script src="js/claude.js?v=5.3"></script>
+<script src="js/ui.js?v=5.3"></script>
+<script src="js/tags.js?v=5.3"></script>
+<script src="js/notes.js?v=5.3"></script>
+<script src="js/persons.js?v=5.3"></script>
+<script src="js/audio.js?v=5.3"></script>
+<script src="js/recorder.js?v=5.3"></script>
+<script src="js/app.js?v=5.3"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.2"></script>
-<script src="js/search.js?v=5.2"></script>
-<script src="js/calendar.js?v=5.2"></script>
-<script src="js/prompts.js?v=5.2"></script>
-<script src="js/projects.js?v=5.2"></script>
-<script src="js/import.js?v=5.2"></script>
+<script src="js/features.js?v=5.3"></script>
+<script src="js/search.js?v=5.3"></script>
+<script src="js/calendar.js?v=5.3"></script>
+<script src="js/prompts.js?v=5.3"></script>
+<script src="js/projects.js?v=5.3"></script>
+<script src="js/import.js?v=5.3"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
