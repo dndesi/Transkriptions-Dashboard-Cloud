@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=4.97" />
+  <link rel="stylesheet" href="css/styles.css?v=4.98" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -92,7 +92,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.97</button>
+        onmouseout="this.style.color='var(--muted)'">v4.98</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -125,9 +125,11 @@
     <div class="upload-tabs">
       <button id="audioTabBtn" class="upload-tab upload-tab-active" onclick="openAudioTab()">
         <i data-lucide="mic" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Transkribieren
+        <button class="help-icon" data-help="Lade eine Audiodatei hoch (MP3, WAV, M4A) oder nimm direkt auf. AssemblyAI wandelt das Audio automatisch in Text um." onclick="showHelpTooltip(this)">?</button>
       </button>
       <button id="importTabBtn" class="upload-tab" onclick="openImportTab()">
         <i data-lucide="file-text" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Importieren
+        <button class="help-icon" data-help="Importiere ein fertiges Transkript (TXT vom Samsung-Rekorder, Fließtext oder PDF). Es wird direkt als Sitzung gespeichert – ohne AssemblyAI." onclick="showHelpTooltip(this)">?</button>
       </button>
     </div>
 
@@ -139,7 +141,7 @@
       <div class="step-block" id="step1">
         <div class="step-header" style="cursor:pointer" onclick="openApiModal()">
           <span class="step-number">1</span>
-          <span class="step-title">API-Key</span>
+          <span class="step-title">API-Key <button class="help-icon" data-help="Du brauchst einen AssemblyAI-Key um Audio in Text umzuwandeln. Kostenlos erhältlich auf app.assemblyai.com. Optional: Anthropic-Key für KI-Analyse." onclick="showHelpTooltip(this)">?</button></span>
           <span class="step-check" id="step1Check"></span>
         </div>
         <div class="step-body" id="step1Body" style="display:none">
@@ -154,7 +156,7 @@
       <div class="step-block locked" id="step2">
         <div class="step-header">
           <span class="step-number">2</span>
-          <span class="step-title">Sitzungsname</span>
+          <span class="step-title">Sitzungsname <button class="help-icon" data-help="Gib dem Gespräch einen aussagekräftigen Namen. Datum, Typ (Privat/Arbeit/Gedanken) und Beteiligte helfen dir, Sitzungen später schnell zu finden und zu analysieren." onclick="showHelpTooltip(this)">?</button></span>
           <span class="step-check" id="step2Check"></span>
         </div>
         <div class="step-body">
@@ -190,7 +192,7 @@
       <div class="step-block locked" id="step3">
         <div class="step-header">
           <span class="step-number">3</span>
-          <span class="step-title">Google Drive</span>
+          <span class="step-title">Google Drive <button class="help-icon" data-help="Verbinde dein Google Drive um Sitzungen automatisch zu archivieren. Audio, Transkript und Analyse werden in deinem gewählten Unterordner gespeichert." onclick="showHelpTooltip(this)">?</button></span>
           <span class="step-check" id="step3Check"></span>
         </div>
         <div class="step-body">
@@ -222,7 +224,7 @@
       <div class="step-block locked" id="step4">
         <div class="step-header">
           <span class="step-number">4</span>
-          <span class="step-title">Aufnahme hochladen</span>
+          <span class="step-title">Aufnahme hochladen <button class="help-icon" data-help="Wähle eine Audiodatei (MP3, WAV, M4A, OGG bis 2 GB) oder nimm direkt über das Mikrofon auf. Die Transkription startet automatisch." onclick="showHelpTooltip(this)">?</button></span>
         </div>
         <div class="step-body">
           <div id="speakerSummary" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; font-size:0.82rem; color:var(--muted);">
@@ -255,7 +257,7 @@
       <div class="step-block" id="importStep1">
         <div class="step-header">
           <span class="step-number">1</span>
-          <span class="step-title">Sitzungsname</span>
+          <span class="step-title">Sitzungsname <button class="help-icon" data-help="Name, Datum, Typ und beteiligte Personen der Sitzung. Bei mehreren Dateien gelten diese Angaben für alle importierten Sitzungen." onclick="showHelpTooltip(this)">?</button></span>
         </div>
         <div class="step-body">
           <div class="field" style="margin-bottom:10px">
@@ -285,7 +287,7 @@
       <div class="step-block" id="importStep2">
         <div class="step-header">
           <span class="step-number">2</span>
-          <span class="step-title">Google Drive (optional)</span>
+          <span class="step-title">Google Drive (optional) <button class="help-icon" data-help="Das Sitzungs-JSON wird in deinem Drive-Archiv gespeichert. Audiodatei optional. Ohne Drive-Verbindung wird nur lokal (IndexedDB) gespeichert." onclick="showHelpTooltip(this)">?</button></span>
         </div>
         <div class="step-body">
           <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.82rem;margin-bottom:8px">
@@ -311,7 +313,7 @@
       <div class="step-block" id="importStep3">
         <div class="step-header">
           <span class="step-number">3</span>
-          <span class="step-title">Transkript-Datei hochladen</span>
+          <span class="step-title">Transkript-Datei hochladen <button class="help-icon" data-help="Wähle eine oder mehrere TXT- oder PDF-Dateien. Unterstützte Formate: Samsung Voice Recorder (TXT mit Sprecher-Labels), Fließtext und PDF. Mehrere Dateien werden als separate Sitzungen angelegt." onclick="showHelpTooltip(this)">?</button></span>
         </div>
         <div class="step-body">
           <div class="upload-zone" id="importUploadZone" onclick="document.getElementById('importTxtInput').click()" style="cursor:pointer">
@@ -375,14 +377,17 @@
     <button class="sidenav-item" id="navProjects" onclick="toggleProjectsView(); setSidenavActive(this)">
       <i data-lucide="layers" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Projekte
+      <button class="help-icon" data-help="Gruppiere Sitzungen nach Themen oder Beziehungen. Jedes Projekt hat ein Dashboard mit aggregierten Analysen, Aufgaben und Zeitstrahl." onclick="showHelpTooltip(this)">?</button>
     </button>
     <button class="sidenav-item" id="navGrid" onclick="setView('grid'); showBrowser(); setSidenavActive(this)">
       <i data-lucide="layout-grid" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Sitzungen
+      <button class="help-icon" data-help="Alle gespeicherten Sitzungen als Kachelansicht. Klicke eine Kachel um Transkript, Analyse und Notizen zu öffnen." onclick="showHelpTooltip(this)">?</button>
     </button>
     <button class="sidenav-item" id="navTimeline" onclick="setView('timeline'); showBrowser(); setSidenavActive(this)">
       <i data-lucide="list" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Sitzungschronik
+      <button class="help-icon" data-help="Alle Sitzungen chronologisch als Liste – nach Datum sortiert. Gut für einen schnellen Überblick über den zeitlichen Verlauf." onclick="showHelpTooltip(this)">?</button>
     </button>
 
     <div class="sidenav-sep"></div>
@@ -390,14 +395,17 @@
     <button class="sidenav-item" id="navPersons" id="headerPersonsBtn" onclick="togglePersonsView(); setSidenavActive(this)">
       <i data-lucide="users" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Personen
+      <button class="help-icon" data-help="Automatisch erkannte Personen aus allen Gesprächen. Klicke auf eine Person um alle Sitzungen mit ihr, Wünsche, Vereinbarungen und Verlauf zu sehen." onclick="showHelpTooltip(this)">?</button>
     </button>
     <button class="sidenav-item" id="navCosts" id="headerCostsBtn" onclick="toggleCostsView(); setSidenavActive(this)">
       <i data-lucide="bar-chart-2" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Kosten
+      <button class="help-icon" data-help="Übersicht der API-Nutzungskosten – AssemblyAI (Transkription) und Anthropic Claude (Analyse)." onclick="showHelpTooltip(this)">?</button>
     </button>
     <button class="sidenav-item" id="navPrompts" id="headerPromptsBtn" onclick="togglePromptsView(); setSidenavActive(this)">
       <i data-lucide="sparkles" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Prompts
+      <button class="help-icon" data-help="Erstelle eigene Analyse-Vorlagen mit strukturiertem Output (z.B. 'Medizinische Zusammenfassung'). Diese Prompts erscheinen dann in jeder Sitzung unter 'Analysen'." onclick="showHelpTooltip(this)">?</button>
     </button>
 
     <div class="sidenav-sep"></div>
@@ -618,21 +626,27 @@
           <div class="sdc-tabs">
             <button class="sdc-tab sdc-tab-active" id="sdcTab-transkript" onclick="switchSessionTab('transkript')">
               <i data-lucide="align-left" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Transkript
+              <button class="help-icon" data-help="Das vollständige Gesprächsprotokoll mit Sprecher-Labels. Du kannst einzelne Abschnitte direkt bearbeiten (Bearbeiten-Button rechts oben)." onclick="showHelpTooltip(this)">?</button>
             </button>
             <button class="sdc-tab" id="sdcTab-analysen" onclick="switchSessionTab('analysen')">
               <i data-lucide="bar-chart-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Analysen
+              <button class="help-icon" data-help="KI-gestützte Auswertung der Sitzung: Vereinbarungen, Wünsche, offene Themen, Nächste Schritte. Starte eine Analyse über die rechte Sidebar." onclick="showHelpTooltip(this)">?</button>
             </button>
             <button class="sdc-tab" id="sdcTab-mindmap" onclick="switchSessionTab('mindmap')">
               <i data-lucide="git-branch" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Mindmap
+              <button class="help-icon" data-help="Visuelle Mindmap der Gesprächsthemen – automatisch aus dem Transkript generiert. Hilft dabei, Zusammenhänge auf einen Blick zu erfassen." onclick="showHelpTooltip(this)">?</button>
             </button>
             <button class="sdc-tab" id="sdcTab-design" onclick="switchSessionTab('design')">
               <i data-lucide="layout" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Design
+              <button class="help-icon" data-help="Exportiere die Sitzung als strukturierte Canva-Präsentation oder ein anderes visuelles Format." onclick="showHelpTooltip(this)">?</button>
             </button>
             <button class="sdc-tab" id="sdcTab-notizen" onclick="switchSessionTab('notizen')">
               <i data-lucide="file-text" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Notizen
+              <button class="help-icon" data-help="Freie persönliche Notizen zur Sitzung – für alles was nicht ins Transkript gehört." onclick="showHelpTooltip(this)">?</button>
             </button>
             <button class="sdc-tab" id="sdcTab-tags" onclick="switchSessionTab('tags')">
               <i data-lucide="tag" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Tags
+              <button class="help-icon" data-help="Verschlagworte die Sitzung mit Tags um sie später schnell filtern und wiederfinden zu können." onclick="showHelpTooltip(this)">?</button>
             </button>
             <!-- Sidebar-Toggle -->
             <button class="sdc-sidebar-toggle" id="sdcSidebarToggle" onclick="toggleSessionSidebar()" title="Assistent-Sidebar öffnen">
@@ -1034,6 +1048,14 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
+      <!-- ── v4.98 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v4.98</span><span class="cl-date">15.06.2026</span></div>
+        <div class="cl-title">Kontextuelles Hilfe-System mit ?-Tooltips</div>
+        <div class="cl-body">Neues Hilfe-System: Kleine ?-Icons an allen wichtigen UI-Elementen (Tabs, Schritte, Navigationspunkte). Klick auf ? öffnet einen kontextuellen Erklärungstext direkt neben dem Element. Klick außerhalb oder Escape schließt den Tooltip. Keine separate Hilfeseite nötig – Erklärungen erscheinen genau dort wo sie relevant sind. Abgedeckt: Transkribieren/Importieren-Tabs, alle Schritte in beiden Workflows, Session-Tabs (Transkript/Analysen/Mindmap/Design/Notizen/Tags), Sidenav (Projekte/Sitzungen/Sitzungschronik/Personen/Kosten/Prompts).</div>
+        <div class="cl-tech">css/styles.css: .help-icon, #helpTooltip. js/app.js: showHelpTooltip(btn) – stopPropagation, viewport-bewusstes Positioning, close-on-click-outside + Escape. index.html: data-help-Attribute an ~15 Stellen.</div>
+      </div>
+
       <!-- ── v4.97 ── -->
       <div class="cl-entry">
         <div class="cl-header"><span class="cl-version">v4.97</span><span class="cl-date">15.06.2026</span></div>
@@ -1210,7 +1232,7 @@
           <span class="cl-version">v4.77</span>
           <span class="cl-date">13.06.2026</span>
         </div>
-        <div class="cl-body">Bugfix: (1) styles.css hatte kein Cache-Busting &ndash; Browser nutzte alte CSS auf Mobile, Sidebar-Bottom-Sheet-Animation fehlte. Fix: ?v=4.97 an styles.css. (2) askFollowUp() referenzierte &lsquo;followUpSendBtn&rsquo; (altes Modal-Element) statt &lsquo;askSendBtn&rsquo; (neue Sidebar) &ndash; TypeError crashte Folgefragen-Funktion.</div>
+        <div class="cl-body">Bugfix: (1) styles.css hatte kein Cache-Busting &ndash; Browser nutzte alte CSS auf Mobile, Sidebar-Bottom-Sheet-Animation fehlte. Fix: ?v=4.98 an styles.css. (2) askFollowUp() referenzierte &lsquo;followUpSendBtn&rsquo; (altes Modal-Element) statt &lsquo;askSendBtn&rsquo; (neue Sidebar) &ndash; TypeError crashte Folgefragen-Funktion.</div>
       </div>
       <!-- ── v4.76 ── -->
       <div class="cl-entry">
@@ -1241,8 +1263,8 @@
           <span class="cl-tag cl-tag-fix">Bugfix</span>
         </div>
         <div class="cl-title">Ordner-Dropdown: Unterordner werden wieder angezeigt</div>
-        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.97 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
-        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.97 Cache-Busting.</div>
+        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.98 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
+        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.98 Cache-Busting.</div>
       </div>
 
       <!-- ── v4.72 ── -->
@@ -3235,29 +3257,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=4.97"></script>
-<script src="js/storage.js?v=4.97"></script>
-<script src="js/config.js?v=4.97"></script>
-<script src="js/auth.js?v=4.97"></script>
-<script src="js/drive.js?v=4.97"></script>
-<script src="js/sessions.js?v=4.97"></script>
-<script src="js/assemblyai.js?v=4.97"></script>
-<script src="js/claude.js?v=4.97"></script>
-<script src="js/ui.js?v=4.97"></script>
-<script src="js/tags.js?v=4.97"></script>
-<script src="js/notes.js?v=4.97"></script>
-<script src="js/persons.js?v=4.97"></script>
-<script src="js/audio.js?v=4.97"></script>
-<script src="js/recorder.js?v=4.97"></script>
-<script src="js/app.js?v=4.97"></script>
+<script src="js/icons.js?v=4.98"></script>
+<script src="js/storage.js?v=4.98"></script>
+<script src="js/config.js?v=4.98"></script>
+<script src="js/auth.js?v=4.98"></script>
+<script src="js/drive.js?v=4.98"></script>
+<script src="js/sessions.js?v=4.98"></script>
+<script src="js/assemblyai.js?v=4.98"></script>
+<script src="js/claude.js?v=4.98"></script>
+<script src="js/ui.js?v=4.98"></script>
+<script src="js/tags.js?v=4.98"></script>
+<script src="js/notes.js?v=4.98"></script>
+<script src="js/persons.js?v=4.98"></script>
+<script src="js/audio.js?v=4.98"></script>
+<script src="js/recorder.js?v=4.98"></script>
+<script src="js/app.js?v=4.98"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=4.97"></script>
-<script src="js/search.js?v=4.97"></script>
-<script src="js/calendar.js?v=4.97"></script>
-<script src="js/prompts.js?v=4.97"></script>
-<script src="js/projects.js?v=4.97"></script>
-<script src="js/import.js?v=4.97"></script>
+<script src="js/features.js?v=4.98"></script>
+<script src="js/search.js?v=4.98"></script>
+<script src="js/calendar.js?v=4.98"></script>
+<script src="js/prompts.js?v=4.98"></script>
+<script src="js/projects.js?v=4.98"></script>
+<script src="js/import.js?v=4.98"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

@@ -312,3 +312,69 @@ async function testApiKeys() {
 
 // START
 init();
+
+// ═══════════════════════════════════════════════════
+// HILFE-TOOLTIP (v4.98)
+// ═══════════════════════════════════════════════════
+(function () {
+  let _activeHelp = null;
+
+  function _createTooltip() {
+    const el = document.createElement('div');
+    el.id = 'helpTooltip';
+    el.innerHTML = '<button class="help-tooltip-close" onclick="document.getElementById(\'helpTooltip\').classList.remove(\'visible\')">✕</button><span id="helpTooltipText"></span>';
+    document.body.appendChild(el);
+    return el;
+  }
+
+  window.showHelpTooltip = function (btn) {
+    // Klick nicht an Parent-Elemente weitergeben
+    if (event) event.stopPropagation();
+
+    const tip = document.getElementById('helpTooltip') || _createTooltip();
+    const text = btn.getAttribute('data-help') || '';
+
+    // Gleichen Button zweimal → schließen
+    if (_activeHelp === btn && tip.classList.contains('visible')) {
+      tip.classList.remove('visible');
+      _activeHelp = null;
+      return;
+    }
+    _activeHelp = btn;
+    document.getElementById('helpTooltipText').textContent = text;
+
+    // Positionierung: unter dem Button, viewport-bewusst
+    tip.classList.remove('visible');
+    requestAnimationFrame(() => {
+      const rect  = btn.getBoundingClientRect();
+      const tw    = tip.offsetWidth  || 270;
+      const th    = tip.offsetHeight || 80;
+      const vw    = window.innerWidth;
+      const vh    = window.innerHeight;
+      let left = rect.left;
+      let top  = rect.bottom + 6;
+      if (left + tw > vw - 8)  left = vw - tw - 8;
+      if (left < 8)            left = 8;
+      if (top + th > vh - 8)   top  = rect.top - th - 6;
+      tip.style.left = left + 'px';
+      tip.style.top  = top  + 'px';
+      tip.classList.add('visible');
+    });
+  };
+
+  // Klick außerhalb schließt Tooltip
+  document.addEventListener('click', () => {
+    const tip = document.getElementById('helpTooltip');
+    if (tip) tip.classList.remove('visible');
+    _activeHelp = null;
+  }, true);
+
+  // Escape schließt Tooltip
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      const tip = document.getElementById('helpTooltip');
+      if (tip) tip.classList.remove('visible');
+      _activeHelp = null;
+    }
+  });
+})();

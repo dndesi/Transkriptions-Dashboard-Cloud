@@ -3264,3 +3264,71 @@ mark.search-highlight {
     gap: 8px;
   }
 }
+
+/* ═══════════════════════════════════════════════════
+   HILFE-SYSTEM (v4.98)
+   ════════════════════════════════════════════════════ */
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  font-family: -apple-system, sans-serif;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  padding: 0;
+  vertical-align: middle;
+  margin-left: 5px;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  position: relative;
+  z-index: 1;
+}
+.help-icon:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(108,99,255,0.08);
+}
+
+#helpTooltip {
+  position: fixed;
+  z-index: 9999;
+  max-width: 270px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.15s, transform 0.15s;
+}
+#helpTooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+#helpTooltip .help-tooltip-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+}
+#helpTooltip .help-tooltip-close:hover { color: var(--text); }
