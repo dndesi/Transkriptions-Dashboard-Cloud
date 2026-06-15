@@ -18,6 +18,7 @@ async function saveToArchive(session, audioFile = null) {
         pct => setProgress(92 + Math.round(pct * 0.04), 'Audio hochladen…', icon('cloud',12,'margin-right:5px') + ` ${pct}% hochgeladen…`),
         targetFolder);
       session._audioId = audioId;
+      session.audioUploadedAt = Date.now();
     }
     // JSON speichern / aktualisieren
     const filename = 'session_' + session.id + '.json';
@@ -94,8 +95,39 @@ async function loadFromDrive() {
 
     // Settings laden (Projekte, Prompts, Beziehungskontext) – v4.92
     await loadSettingsFromDrive();
+    // Audio Auto-Delete prüfen – v5.1
+    checkAndDeleteExpiredAudio().catch(() => {});
   } catch(e) {
     showToast('Drive laden fehlgeschlagen: ' + e.message, 'error');
+  }
+}
+
+// ── Audio Auto-Delete (v5.1) ─────────────────────────────────────────────────
+async function checkAndDeleteExpiredAudio() {
+  const days = parseInt(localStorage.getItem('audioRetentionDays') ?? '14');
+  if (days === 0) return; // 0 = niemals löschen
+  if (!driveToken) return;
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  const expired = sessions.filter(s => s._audioId && s.audioUploadedAt && s.audioUploadedAt < cutoff);
+  if (expired.length === 0) return;
+  let deleted = 0;
+  for (const s of expired) {
+    try {
+      await driveDeleteFile(s._audioId).catch(() => {});
+      s._audioId = null;
+      s.audioFilename = null;
+      s.audioUploadedAt = null;
+      // Session-JSON in Drive aktualisieren
+      if (s._fileId) {
+        const fname = 'session_' + s.id + '.json';
+        await driveUploadJSON(fname, s, s._fileId, driveFolderId).catch(() => {});
+      }
+      deleted++;
+    } catch(e) { /* silent */ }
+  }
+  if (deleted > 0) {
+    saveSessions();
+    showToast(`${deleted} Audio-Datei${deleted > 1 ? 'en' : ''} automatisch gelöscht (${days}-Tage-Aufbewahrung)`, 'info');
   }
 }
 

@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.0" />
+  <link rel="stylesheet" href="css/styles.css?v=5.1" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -92,7 +92,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.0</button>
+        onmouseout="this.style.color='var(--muted)'">v5.1</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1046,6 +1046,14 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.1 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.1</span><span class="cl-date">15.06.2026</span></div>
+        <div class="cl-title">Audio Auto-Delete</div>
+        <div class="cl-body">Audiodateien werden nach einer konfigurierbaren Aufbewahrungsfrist automatisch aus Google Drive gelöscht. Standard: 14 Tage. Einstellbar im API-Modal (7 / 14 / 30 / 90 Tage oder Niemals). Transkript und Analysen bleiben dauerhaft erhalten. Prüfung läuft beim App-Start nach dem Drive-Login automatisch.</div>
+        <div class="cl-tech">js/sessions.js: checkAndDeleteExpiredAudio() — löscht Drive-Audio wenn audioUploadedAt älter als Aufbewahrungsfrist; saveToArchive() speichert audioUploadedAt beim Upload. js/app.js: openApiModal() lädt audioRetentionDays aus localStorage. index.html: Audio-Aufbewahrung Select im API-Modal mit ? Help-Icon.</div>
+      </div>
 
       <!-- ── v5.0 ── -->
       <div class="cl-entry">
@@ -3059,6 +3067,27 @@
         Echte Namen werden durch „Person_A", „Person_B" usw. ersetzt, bevor Transkripte an Claude gesendet werden. Nur du siehst die echten Namen im Dashboard.
       </p>
     </div>
+    <!-- Audio Auto-Delete (v5.1) -->
+    <div class="field" style="margin-top:18px; padding:12px 14px; background:var(--surface2); border-radius:8px; border:1px solid var(--border)">
+      <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; font-weight:600; color:var(--text); margin-bottom:4px">
+        <i data-lucide="trash-2" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        Audio automatisch löschen
+        <button class="help-icon" data-help="Audiodateien werden nach der gewählten Zeit automatisch aus Google Drive gelöscht. Das Transkript und alle Analysen bleiben dauerhaft erhalten. Empfehlung: 14 Tage — genug Zeit um bei Bedarf nochmal reinzuhören." onclick="showHelpTooltip(this)">?</button>
+      </label>
+      <p style="font-size:0.77rem; color:var(--muted); margin-bottom:8px; line-height:1.5">
+        Audiodateien brauchen viel Drive-Speicher. Transkript und Analysen bleiben immer erhalten.
+      </p>
+      <select id="audioRetentionSelect"
+        onchange="localStorage.setItem('audioRetentionDays', this.value)"
+        style="width:100%; box-sizing:border-box; padding:7px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:0.85rem">
+        <option value="7">Nach 7 Tagen löschen</option>
+        <option value="14" selected>Nach 14 Tagen löschen (Standard)</option>
+        <option value="30">Nach 30 Tagen löschen</option>
+        <option value="90">Nach 90 Tagen löschen</option>
+        <option value="0">Niemals löschen</option>
+      </select>
+    </div>
+
     <!-- Lokale Transkription (Whisper) -->
     <div class="field" style="margin-top:18px; padding:12px 14px; background:var(--surface2); border-radius:8px; border:1px solid var(--border)">
       <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; font-weight:600; color:var(--text); margin-bottom:4px">
@@ -3272,29 +3301,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.0"></script>
-<script src="js/storage.js?v=5.0"></script>
-<script src="js/config.js?v=5.0"></script>
-<script src="js/auth.js?v=5.0"></script>
-<script src="js/drive.js?v=5.0"></script>
-<script src="js/sessions.js?v=5.0"></script>
-<script src="js/assemblyai.js?v=5.0"></script>
-<script src="js/claude.js?v=5.0"></script>
-<script src="js/ui.js?v=5.0"></script>
-<script src="js/tags.js?v=5.0"></script>
-<script src="js/notes.js?v=5.0"></script>
-<script src="js/persons.js?v=5.0"></script>
-<script src="js/audio.js?v=5.0"></script>
-<script src="js/recorder.js?v=5.0"></script>
-<script src="js/app.js?v=5.0"></script>
+<script src="js/icons.js?v=5.1"></script>
+<script src="js/storage.js?v=5.1"></script>
+<script src="js/config.js?v=5.1"></script>
+<script src="js/auth.js?v=5.1"></script>
+<script src="js/drive.js?v=5.1"></script>
+<script src="js/sessions.js?v=5.1"></script>
+<script src="js/assemblyai.js?v=5.1"></script>
+<script src="js/claude.js?v=5.1"></script>
+<script src="js/ui.js?v=5.1"></script>
+<script src="js/tags.js?v=5.1"></script>
+<script src="js/notes.js?v=5.1"></script>
+<script src="js/persons.js?v=5.1"></script>
+<script src="js/audio.js?v=5.1"></script>
+<script src="js/recorder.js?v=5.1"></script>
+<script src="js/app.js?v=5.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.0"></script>
-<script src="js/search.js?v=5.0"></script>
-<script src="js/calendar.js?v=5.0"></script>
-<script src="js/prompts.js?v=5.0"></script>
-<script src="js/projects.js?v=5.0"></script>
-<script src="js/import.js?v=5.0"></script>
+<script src="js/features.js?v=5.1"></script>
+<script src="js/search.js?v=5.1"></script>
+<script src="js/calendar.js?v=5.1"></script>
+<script src="js/prompts.js?v=5.1"></script>
+<script src="js/projects.js?v=5.1"></script>
+<script src="js/import.js?v=5.1"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

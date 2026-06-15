@@ -202,6 +202,8 @@ function openApiModal() {
   document.getElementById('anonymizeToggle').checked = !!settings.anonymize;
   const whisperEl = document.getElementById('whisperUrlInput');
   if (whisperEl) whisperEl.value = localStorage.getItem('whisperUrl') || '';
+  const retEl = document.getElementById('audioRetentionSelect');
+  if (retEl) retEl.value = localStorage.getItem('audioRetentionDays') ?? '14';
   document.getElementById('apiModal').classList.add('open');
 }
 function closeApiModal() { document.getElementById('apiModal').classList.remove('open'); }
