@@ -286,6 +286,11 @@
       height: calc(100vh - 53px);
     }
 
+    /* ─── HAUPT-INHALT ───────────────────────────── */
+    #mainContent {
+      transition: padding-right 0.22s ease;
+    }
+
     .sidenav-new {
       display: flex;
       align-items: center;
@@ -2908,15 +2913,14 @@ mark.search-highlight {
 
 /* ── Sidebar Resize Handle ── */
 .sdc-resize-handle {
-  flex-shrink: 0;
+  position: fixed;
+  top: 53px;
   width: 5px;
+  height: calc(100vh - 53px);
   cursor: col-resize;
   background: transparent;
-  z-index: 20;
-  position: sticky;
-  top: 53px;
-  height: calc(100vh - 53px);
-  align-self: flex-start;
+  z-index: 201;
+  display: none;
   transition: background 0.15s;
 }
 .sdc-resize-handle:hover,
@@ -2932,19 +2936,19 @@ mark.search-highlight {
   #projectsView { left: 0 !important; }
 }
 
-/* ── Rechte Sidebar (sticky im sdc-layout) ── */
+/* ── Rechte Sidebar (position:fixed, direkt unter Header) ── */
 .sdc-sidebar {
+  position: fixed;
+  top: 53px;
+  right: 0;
   width: 300px;
-  flex-shrink: 0;
+  height: calc(100vh - 53px);
   border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   background: var(--surface);
   overflow: hidden;
-  position: sticky;
-  top: 53px;
-  height: calc(100vh - 53px);
-  align-self: flex-start;
+  z-index: 200;
   transition: width 0.22s ease, opacity 0.2s ease, border-color 0.2s;
 }
 .sdc-sidebar.sdc-sidebar-collapsed {

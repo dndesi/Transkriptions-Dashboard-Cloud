@@ -472,7 +472,7 @@ function toggleArchView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v5.10';
+  const title = 'Distill Voice – Systemarchitektur v5.11';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }
@@ -776,13 +776,20 @@ function toggleSessionSidebar() {
     if (overlay) overlay.classList.toggle('active', _sidebarOpen);
   } else {
     sidebar?.classList.toggle('sdc-sidebar-collapsed', !_sidebarOpen);
+    const handle = document.getElementById('sdcResizeHandle');
+    const mainContent = document.getElementById('mainContent');
     if (sidebar) {
       if (_sidebarOpen) {
         // Gespeicherte Breite wiederherstellen (v4.90)
         const savedW = parseInt(localStorage.getItem('sidebarWidth'), 10);
-        sidebar.style.width = (savedW >= 280) ? savedW + 'px' : '';
+        const sidebarW = (savedW >= 280) ? savedW : 300;
+        sidebar.style.width = sidebarW + 'px';
+        if (handle) { handle.style.right = sidebarW + 'px'; handle.style.display = 'block'; }
+        if (mainContent) mainContent.style.paddingRight = sidebarW + 'px';
       } else {
         sidebar.style.width = '';
+        if (handle) { handle.style.display = 'none'; handle.style.right = ''; }
+        if (mainContent) mainContent.style.paddingRight = '';
       }
     }
     if (overlay) overlay.classList.remove('active');
@@ -898,6 +905,9 @@ function initSidebarResize() {
     const delta = startX - e.clientX;   // nach links ziehen → breiter
     const newW  = Math.min(MAX_W(), Math.max(MIN_W, startW + delta));
     sidebar.style.width = newW + 'px';
+    handle.style.right = newW + 'px';
+    const mainContent = document.getElementById('mainContent');
+    if (mainContent) mainContent.style.paddingRight = newW + 'px';
   });
 
   document.addEventListener('mouseup', () => {
