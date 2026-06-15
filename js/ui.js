@@ -472,7 +472,7 @@ function toggleArchView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v5.11';
+  const title = 'Distill Voice – Systemarchitektur v5.12';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }
@@ -783,9 +783,10 @@ function toggleSessionSidebar() {
         // Gespeicherte Breite wiederherstellen (v4.90)
         const savedW = parseInt(localStorage.getItem('sidebarWidth'), 10);
         const sidebarW = (savedW >= 280) ? savedW : 300;
+        const GAP = 12; // Abstand zwischen Content und Sidebar
         sidebar.style.width = sidebarW + 'px';
         if (handle) { handle.style.right = sidebarW + 'px'; handle.style.display = 'block'; }
-        if (mainContent) mainContent.style.paddingRight = sidebarW + 'px';
+        if (mainContent) mainContent.style.paddingRight = (sidebarW + GAP) + 'px';
       } else {
         sidebar.style.width = '';
         if (handle) { handle.style.display = 'none'; handle.style.right = ''; }
@@ -907,7 +908,7 @@ function initSidebarResize() {
     sidebar.style.width = newW + 'px';
     handle.style.right = newW + 'px';
     const mainContent = document.getElementById('mainContent');
-    if (mainContent) mainContent.style.paddingRight = newW + 'px';
+    if (mainContent) mainContent.style.paddingRight = (newW + 12) + 'px';
   });
 
   document.addEventListener('mouseup', () => {
