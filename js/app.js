@@ -32,6 +32,164 @@ async function init() {
 
   // Neue Features initialisieren (eigene Vorlagen in Popovers laden)
   if (typeof initFeatures === 'function') initFeatures();
+
+  // Service Worker registrieren (v5.2 – Web Share Target)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/Transkriptions-Dashboard-Cloud/sw.js')
+      .catch(e => console.warn('[SW] Registrierung fehlgeschlagen:', e));
+  }
+
+  // Geteilte Dateien prüfen (wenn App über Share-Intent geöffnet wurde)
+  if (location.search.includes('shared=1')) {
+    history.replaceState({}, '', location.pathname);
+    setTimeout(() => checkPendingShares(), 500); // kurze Pause damit UI aufgebaut ist
+  }
+}
+
+
+// ═══════════════════════════════════════════════════
+// WEB SHARE TARGET – Dateiempfang (v5.2)
+// ═══════════════════════════════════════════════════
+const _SHARE_DB    = 'distill_share_db';
+const _SHARE_STORE = 'pendingShares';
+
+function _openShareDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(_SHARE_DB, 1);
+    req.onupgradeneeded = e => {
+      e.target.result.createObjectStore(_SHARE_STORE, { keyPath: 'id', autoIncrement: true });
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function _loadPendingShares() {
+  try {
+    const db = await _openShareDB();
+    return new Promise((resolve, reject) => {
+      const tx    = db.transaction(_SHARE_STORE, 'readonly');
+      const store = tx.objectStore(_SHARE_STORE);
+      const req   = store.getAll();
+      req.onsuccess = () => { db.close(); resolve(req.result || []); };
+      req.onerror   = () => { db.close(); reject(req.error); };
+    });
+  } catch(e) { return []; }
+}
+
+async function _clearPendingShares() {
+  try {
+    const db = await _openShareDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(_SHARE_STORE, 'readwrite');
+      tx.objectStore(_SHARE_STORE).clear();
+      tx.oncomplete = () => { db.close(); resolve(); };
+    });
+  } catch(e) { /* silent */ }
+}
+
+async function checkPendingShares() {
+  const shares = await _loadPendingShares();
+  if (!shares || shares.length === 0) return;
+  await _clearPendingShares();
+  openShareOverlay(shares);
+}
+
+function openShareOverlay(shares) {
+  // Dateitypen klassifizieren
+  const txtFiles   = shares.filter(f => f.type === 'text/plain' || f.name.endsWith('.txt'));
+  const audioFiles = shares.filter(f => f.type.startsWith('audio/') || f.name.match(/\.(mp3|m4a|wav|ogg)$/i));
+
+  // Modus bestimmen
+  let modus = 'audio';   // nur Audio → AssemblyAI
+  if (txtFiles.length > 0 && audioFiles.length > 0) modus = 'komplett';  // TXT+Audio → direkt
+  if (txtFiles.length > 0 && audioFiles.length === 0) modus = 'text';    // nur TXT → direkt
+
+  const modusLabel = {
+    komplett: '📄+🎵 TXT+Audio empfangen – Transkript wird direkt übernommen',
+    text:     '📄 TXT empfangen – wird als Transkript importiert',
+    audio:    '🎵 Audiodatei empfangen – wird transkribiert (AssemblyAI)',
+  }[modus];
+
+  // Projektnamen sammeln
+  const projectOptions = projects.map(p =>
+    `<option value="${p.id}">${p.name}</option>`
+  ).join('');
+
+  const overlay = document.getElementById('shareOverlay');
+  if (!overlay) return;
+
+  document.getElementById('shareModusInfo').textContent = modusLabel;
+  document.getElementById('shareProjectSelect').innerHTML = projectOptions;
+
+  // Dateinamen anzeigen
+  const nameEl = document.getElementById('shareFilenames');
+  nameEl.innerHTML = shares.map(f =>
+    `<span style="display:block;font-size:0.8rem;color:var(--muted)">${f.name} (${(f.size/1024).toFixed(0)} KB)</span>`
+  ).join('');
+
+  // Sitzungsname vorbelegen (aus Dateinamen)
+  const baseName = (shares[0]?.name || '').replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ');
+  document.getElementById('shareSessionLabel').value = baseName;
+
+  // Modus merken für Verarbeitung
+  overlay.dataset.modus = modus;
+  overlay.dataset.shares = JSON.stringify(shares.map(s => ({ ...s, data: null }))); // ohne Blob-Daten
+
+  // Blob-Referenzen separat (ArrayBuffer → Blob)
+  window._pendingShareBlobs = {};
+  shares.forEach(s => {
+    window._pendingShareBlobs[s.name] = new Blob([s.data], { type: s.type });
+  });
+
+  overlay.style.display = 'flex';
+}
+
+async function processShareOverlay() {
+  const overlay   = document.getElementById('shareOverlay');
+  const label     = document.getElementById('shareSessionLabel').value.trim() || 'Geteilte Sitzung';
+  const projectId = document.getElementById('shareProjectSelect').value;
+  const modus     = overlay.dataset.modus;
+
+  const blobs     = window._pendingShareBlobs || {};
+  const txtBlob   = Object.entries(blobs).find(([n]) => n.endsWith('.txt'))?.[1];
+  const audioBlob = Object.entries(blobs).find(([n]) => n.match(/\.(mp3|m4a|wav|ogg)$/i))?.[1];
+  const audioName = Object.keys(blobs).find(n => n.match(/\.(mp3|m4a|wav|ogg)$/i)) || 'aufnahme.mp3';
+
+  overlay.style.display = 'none';
+
+  if (modus === 'text' || modus === 'komplett') {
+    // TXT direkt als Transkript verwenden
+    const text = await txtBlob.text();
+    document.getElementById('sessionLabel').value = label;
+    // Projekt setzen
+    const pSelect = document.getElementById('projectSelect');
+    if (pSelect) pSelect.value = projectId;
+    // Transkript einfügen und Sitzung anlegen
+    if (typeof processImportedText === 'function') {
+      processImportedText(text, label, modus === 'komplett' ? audioBlob : null, audioName);
+    } else {
+      // Fallback: direkt ins Formular
+      setView('new');
+      document.getElementById('sessionLabel').value = label;
+      showToast('Transkript empfangen – bitte manuell speichern', 'info');
+    }
+  } else if (modus === 'audio') {
+    // Audio → AssemblyAI
+    setView('new');
+    document.getElementById('sessionLabel').value = label;
+    if (audioBlob && typeof processFile === 'function') {
+      const audioFile = new File([audioBlob], audioName, { type: audioBlob.type });
+      processFile(audioFile);
+    }
+  }
+
+  window._pendingShareBlobs = {};
+}
+
+function closeShareOverlay() {
+  document.getElementById('shareOverlay').style.display = 'none';
+  window._pendingShareBlobs = {};
 }
 
 
