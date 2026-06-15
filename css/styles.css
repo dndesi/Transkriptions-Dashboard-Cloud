@@ -1648,6 +1648,9 @@
     .timeline-item .ti-meta { font-size: 0.72rem; color: var(--muted); }
 
     /* ─── AUFNAHME ────────────────────────────────── */
+    /* v4.95: Lucide SVGs in Buttons sollen Klicks durchlassen */
+    button svg { pointer-events: none; }
+
     .record-btn {
       width: 100%; display: flex; align-items: center; justify-content: center;
       gap: 8px; padding: 10px; border-radius: 8px; font-size: 0.85rem;

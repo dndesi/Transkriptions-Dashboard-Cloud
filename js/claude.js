@@ -1099,15 +1099,21 @@ function renderInsights(session) {
     const customResults = session.customResults || {};
     const keys = Object.keys(customResults);
     if (keys.length > 0) {
-      customContainer.innerHTML = keys.map(pid => {
+      // v4.95: leere Ergebnisse (kein Text, keine strukturierten Daten) werden übersprungen
+      const blocks = keys.map(pid => {
         const res  = customResults[pid];
         const bid  = 'customBlock_' + pid;
         const icoName = (typeof getCustomPrompts === 'function'
           ? (getCustomPrompts().find(p => p.id === pid)?.icon || 'sparkles')
           : 'sparkles');
-        const bodyHtml = (res.structured && res.schema)
-          ? renderCustomSchemaResult(session, pid, res.structured, res.schema)
-          : `<div class="custom-result-text" style="white-space:pre-wrap">${escHtml(res.text || '')}</div>`;
+        let bodyHtml = '';
+        if (res.structured && res.schema) {
+          bodyHtml = renderCustomSchemaResult(session, pid, res.structured, res.schema);
+        }
+        if (!bodyHtml && res.text) {
+          bodyHtml = `<div class="custom-result-text" style="white-space:pre-wrap">${escHtml(res.text)}</div>`;
+        }
+        if (!bodyHtml) return ''; // Kein Inhalt → Block überspringen
         return `
           <div class="insights-block" id="${bid}">
             <div class="insights-block-title" onclick="toggleInsightsBlock('${bid}')">
@@ -1119,9 +1125,13 @@ function renderInsights(session) {
             </div>
             <div class="insights-block-body">${bodyHtml}</div>
           </div>`;
-      }).join('');
-      showInsightsBlock(customContainer.querySelector('.insights-block'));
-      anyVisible = true;
+      }).filter(Boolean).join('');
+      customContainer.innerHTML = blocks;
+      const firstBlock = customContainer.querySelector('.insights-block');
+      if (firstBlock) {
+        showInsightsBlock(firstBlock);
+        anyVisible = true;
+      }
     } else {
       customContainer.innerHTML = '';
     }
@@ -1312,7 +1322,7 @@ function renderCustomSchemaResult(session, promptId, data, schema) {
     }
   });
 
-  return html || '<div style="color:var(--muted);font-size:0.85rem">Keine strukturierten Daten vorhanden.</div>';
+  return html; // leer wenn keine Felder Daten lieferten (v4.95)
 }
 
 // Baut reinen Text für einen Analysebereich

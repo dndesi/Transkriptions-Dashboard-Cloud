@@ -155,33 +155,20 @@ async function loadSettingsFromDrive() {
     const data = await driveDownloadJSON(_settingsFileId);
     if (!data || typeof data !== 'object') return;
 
-    // ── Projekte: Union (Drive + lokal, kein Datenverlust) ──
+    // ── Projekte: Drive ist autoritativ (v4.95 – gelöschte Projekte bleiben gelöscht) ──
+    // Lokal-only Projekte werden NICHT mehr hinzugefügt – Drive gewinnt.
+    // saveProjects() lädt sofort hoch, daher sollten neue Projekte schon in Drive sein.
     if (Array.isArray(data.projects) && data.projects.length > 0) {
-      const localMap = new Map((projects || []).map(p => [p.id, p]));
-      data.projects.forEach(dp => {
-        if (!localMap.has(dp.id)) {
-          projects.push(dp);
-        } else {
-          // Drive-Version übernehmen, builtin-Flag lokal erhalten
-          const local = localMap.get(dp.id);
-          localMap.set(dp.id, { ...dp, builtin: local.builtin ?? dp.builtin });
-        }
+      projects = data.projects.map(dp => {
+        const local = (projects || []).find(p => p.id === dp.id);
+        return local ? { ...dp, builtin: local.builtin ?? dp.builtin } : dp;
       });
-      // Map zurück in Array: Reihenfolge aus Drive bevorzugen
-      const driveIds = data.projects.map(p => p.id);
-      const driveMap = new Map(data.projects.map(p => [p.id, p]));
-      const localOnly = (projects || []).filter(p => !driveMap.has(p.id));
-      projects = [
-        ...data.projects.map(dp => {
-          const local = (projects || []).find(p => p.id === dp.id);
-          return local ? { ...dp, builtin: local.builtin ?? dp.builtin } : dp;
-        }),
-        ...localOnly,
-      ];
       // Builtin-Projekt immer vorne sicherstellen
       if (typeof BUILTIN_PROJECT_ID !== 'undefined') {
-        const bi = projects.find(p => p.id === BUILTIN_PROJECT_ID);
-        if (bi) {
+        if (!projects.find(p => p.id === BUILTIN_PROJECT_ID)) {
+          projects.unshift(_defaultProjects()[0]);
+        } else {
+          const bi = projects.find(p => p.id === BUILTIN_PROJECT_ID);
           projects = [bi, ...projects.filter(p => p.id !== BUILTIN_PROJECT_ID)];
         }
       }
