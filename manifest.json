@@ -18,7 +18,7 @@
       "files": [
         {
           "name": "files",
-          "accept": ["audio/mpeg", "audio/mp4", "audio/m4a", ".mp3", ".m4a", "text/plain", ".txt"]
+          "accept": ["audio/mpeg", "audio/mp4", "audio/m4a", "audio/x-m4a", "text/plain", "application/octet-stream", "*/*"]
         }
       ]
     }
