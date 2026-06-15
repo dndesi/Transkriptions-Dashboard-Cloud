@@ -98,12 +98,13 @@ async function checkPendingShares() {
 function openShareOverlay(shares) {
   // Dateitypen klassifizieren
   const txtFiles   = shares.filter(f => f.type === 'text/plain' || f.name.endsWith('.txt'));
-  const audioFiles = shares.filter(f => f.type.startsWith('audio/') || f.name.match(/\.(mp3|m4a|wav|ogg)$/i));
+  const audioFiles = shares.filter(f =>
+    f.type.startsWith('audio/') || f.name.match(/\.(mp3|m4a|wav|ogg)$/i));
 
   // Modus bestimmen
-  let modus = 'audio';   // nur Audio → AssemblyAI
-  if (txtFiles.length > 0 && audioFiles.length > 0) modus = 'komplett';  // TXT+Audio → direkt
-  if (txtFiles.length > 0 && audioFiles.length === 0) modus = 'text';    // nur TXT → direkt
+  let modus = 'audio';
+  if (txtFiles.length > 0 && audioFiles.length > 0) modus = 'komplett';
+  if (txtFiles.length > 0 && audioFiles.length === 0) modus = 'text';
 
   const modusLabel = {
     komplett: '📄+🎵 TXT+Audio empfangen – Transkript wird direkt übernommen',
@@ -111,32 +112,36 @@ function openShareOverlay(shares) {
     audio:    '🎵 Audiodatei empfangen – wird transkribiert (AssemblyAI)',
   }[modus];
 
-  // Projektnamen sammeln
-  const projectOptions = projects.map(p =>
-    `<option value="${p.id}">${p.name}</option>`
-  ).join('');
-
   const overlay = document.getElementById('shareOverlay');
   if (!overlay) return;
 
   document.getElementById('shareModusInfo').textContent = modusLabel;
-  document.getElementById('shareProjectSelect').innerHTML = projectOptions;
 
   // Dateinamen anzeigen
-  const nameEl = document.getElementById('shareFilenames');
-  nameEl.innerHTML = shares.map(f =>
+  document.getElementById('shareFilenames').innerHTML = shares.map(f =>
     `<span style="display:block;font-size:0.8rem;color:var(--muted)">${f.name} (${(f.size/1024).toFixed(0)} KB)</span>`
   ).join('');
 
-  // Sitzungsname vorbelegen (aus Dateinamen)
+  // Sitzungsname vorbelegen
   const baseName = (shares[0]?.name || '').replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ');
   document.getElementById('shareSessionLabel').value = baseName;
 
-  // Modus merken für Verarbeitung
-  overlay.dataset.modus = modus;
-  overlay.dataset.shares = JSON.stringify(shares.map(s => ({ ...s, data: null }))); // ohne Blob-Daten
+  // Drive-Ordner-Selector befüllen
+  const folderSel = document.getElementById('shareFolderSelect');
+  if (folderSel) {
+    folderSel.innerHTML = '<option value="">– Hauptordner –</option>';
+    (rememberedFolders || []).forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.id;
+      opt.textContent = f.name;
+      folderSel.appendChild(opt);
+    });
+    // Aktuell gesetzten Ordner vorauswählen
+    if (driveSubfolderId) folderSel.value = driveSubfolderId;
+  }
 
-  // Blob-Referenzen separat (ArrayBuffer → Blob)
+  // Modus + Blobs merken
+  overlay.dataset.modus = modus;
   window._pendingShareBlobs = {};
   shares.forEach(s => {
     window._pendingShareBlobs[s.name] = new Blob([s.data], { type: s.type });
@@ -148,34 +153,37 @@ function openShareOverlay(shares) {
 async function processShareOverlay() {
   const overlay   = document.getElementById('shareOverlay');
   const label     = document.getElementById('shareSessionLabel').value.trim() || 'Geteilte Sitzung';
-  const projectId = document.getElementById('shareProjectSelect').value;
   const modus     = overlay.dataset.modus;
 
+  // Drive-Ordner aus Overlay-Auswahl setzen
+  const folderSel = document.getElementById('shareFolderSelect');
+  if (folderSel) {
+    driveSubfolderId   = folderSel.value || '';
+    driveSubfolderName = folderSel.value
+      ? folderSel.options[folderSel.selectedIndex]?.text || ''
+      : '';
+  }
+
   const blobs     = window._pendingShareBlobs || {};
-  const txtBlob   = Object.entries(blobs).find(([n]) => n.endsWith('.txt'))?.[1];
-  const audioBlob = Object.entries(blobs).find(([n]) => n.match(/\.(mp3|m4a|wav|ogg)$/i))?.[1];
-  const audioName = Object.keys(blobs).find(n => n.match(/\.(mp3|m4a|wav|ogg)$/i)) || 'aufnahme.mp3';
+  const txtEntry  = Object.entries(blobs).find(([n]) => n.endsWith('.txt'));
+  const audioEntry= Object.entries(blobs).find(([n]) => n.match(/\.(mp3|m4a|wav|ogg)$/i));
+  const txtBlob   = txtEntry?.[1];
+  const audioBlob = audioEntry?.[1];
+  const audioName = audioEntry?.[0] || 'aufnahme.mp3';
 
   overlay.style.display = 'none';
 
   if (modus === 'text' || modus === 'komplett') {
-    // TXT direkt als Transkript verwenden
     const text = await txtBlob.text();
     document.getElementById('sessionLabel').value = label;
-    // Projekt setzen
-    const pSelect = document.getElementById('projectSelect');
-    if (pSelect) pSelect.value = projectId;
-    // Transkript einfügen und Sitzung anlegen
     if (typeof processImportedText === 'function') {
       processImportedText(text, label, modus === 'komplett' ? audioBlob : null, audioName);
     } else {
-      // Fallback: direkt ins Formular
       setView('new');
       document.getElementById('sessionLabel').value = label;
       showToast('Transkript empfangen – bitte manuell speichern', 'info');
     }
   } else if (modus === 'audio') {
-    // Audio → AssemblyAI
     setView('new');
     document.getElementById('sessionLabel').value = label;
     if (audioBlob && typeof processFile === 'function') {
@@ -185,6 +193,27 @@ async function processShareOverlay() {
   }
 
   window._pendingShareBlobs = {};
+}
+
+async function createShareDriveFolder() {
+  const name = prompt('Name für den neuen Unterordner:');
+  if (!name || !name.trim()) return;
+  try {
+    const f = await drivePost('/files', {
+      name: name.trim(),
+      mimeType: 'application/vnd.google-apps.folder',
+      parents: [driveFolderId]
+    });
+    // Ordner setzen + Selects aktualisieren
+    driveSubfolderId   = f.id;
+    driveSubfolderName = name.trim();
+    await loadDriveSubfolders(); // befüllt alle Selects inkl. shareFolderSelect
+    const folderSel = document.getElementById('shareFolderSelect');
+    if (folderSel) folderSel.value = f.id;
+    showToast(`Ordner „${name.trim()}" angelegt und ausgewählt`, 'success');
+  } catch(e) {
+    showToast('Anlegen fehlgeschlagen: ' + e.message, 'error');
+  }
 }
 
 function closeShareOverlay() {

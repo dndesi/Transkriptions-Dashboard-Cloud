@@ -177,6 +177,7 @@ async function loadDriveSubfolders() {
 function renderSubfolderList(folders) {
   _populateFolderSelect('driveSubfolderSelect', folders);
   _populateFolderSelect('importFolderSelect', folders);
+  _populateFolderSelect('shareFolderSelect', folders);
 }
 
 // Befüllt ein <select>-Element mit Unterordnern
@@ -219,8 +220,10 @@ function selectDriveSubfolder(id, name) {
   // Beide Selects synchronisieren
   const selA = document.getElementById('driveSubfolderSelect');
   const selB = document.getElementById('importFolderSelect');
+  const selC = document.getElementById('shareFolderSelect');
   if (selA) selA.value = id;
   if (selB) selB.value = id;
+  if (selC) selC.value = id;
   updateFolderDropdown();
   checkUploadReady();
   showToast(`Ordner „${name}" ausgewählt`, 'success');
