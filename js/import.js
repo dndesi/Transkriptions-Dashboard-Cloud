@@ -93,7 +93,9 @@ async function handleImportFileSelect(event) {
     statusEl.textContent = `✓ ${count} Dateien · ${totalUtterances} Absätze gesamt${errNote}`;
   }
 
-  // Sprecher-Felder aus der ersten Datei zeigen
+  // Sprecher-Felder aus der ersten Datei zeigen (v4.97: im gleichen Step wie Upload)
+  const spSection = document.getElementById('importSpeakerSection');
+  if (spSection) spSection.style.display = '';
   renderImportSpeakerFields(_importParsedDataList[0].parsed.speakers);
   document.getElementById('importStartBtn').removeAttribute('disabled');
   document.getElementById('importStartBtn').style.opacity = '1';
@@ -334,7 +336,8 @@ async function startSamsungImport() {
   document.getElementById('importTxtInput').value = '';
   document.getElementById('importTxtStatus').textContent = '';
   document.getElementById('importSpeakerFields').innerHTML = '';
-  document.getElementById('importSpeakerFields').style.display = 'none';
+  const spSec = document.getElementById('importSpeakerSection');
+  if (spSec) spSec.style.display = 'none';
   document.getElementById('importStartBtn').setAttribute('disabled', '');
   document.getElementById('importStartBtn').style.opacity = '0.4';
   document.getElementById('importStartBtn').style.pointerEvents = 'none';

@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=4.95" />
+  <link rel="stylesheet" href="css/styles.css?v=4.97" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -92,7 +92,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v4.95</button>
+        onmouseout="this.style.color='var(--muted)'">v4.97</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -281,50 +281,10 @@
         </div>
       </div>
 
-      <!-- Import Schritt 2: Dateien -->
+      <!-- Import Schritt 2: Google Drive (optional) — v4.97: nach oben verschoben -->
       <div class="step-block" id="importStep2">
         <div class="step-header">
           <span class="step-number">2</span>
-          <span class="step-title">Transkript-Datei</span>
-        </div>
-        <div class="step-body">
-          <div class="upload-zone" id="importUploadZone" onclick="document.getElementById('importTxtInput').click()" style="cursor:pointer">
-            <div class="upload-icon"><i data-lucide="file-text" style="width:28px;height:28px;stroke:var(--muted);stroke-width:1.5;fill:none"></i></div>
-            <p><span>Datei(en) auswählen</span></p>
-            <p style="font-size:0.75rem;margin-top:4px;color:var(--muted)">TXT (Samsung / Fließtext) · PDF · Mehrfachauswahl möglich</p>
-          </div>
-          <p id="importTxtStatus" style="font-size:0.78rem;color:var(--green);margin-top:8px;min-height:18px;line-height:1.5"></p>
-          <input type="file" id="importTxtInput" accept=".txt,.pdf,text/plain,application/pdf" onchange="handleImportFileSelect(event)" multiple style="display:none" />
-
-          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-            <label style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Audiodatei (optional)</label>
-            <div onclick="document.getElementById('importAudioInput').click()" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.82rem;color:var(--muted);cursor:pointer">
-              <i data-lucide="music" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-              M4A / MP3 auswählen…
-            </div>
-            <p id="importAudioStatus" style="font-size:0.78rem;color:var(--muted);margin-top:6px;min-height:16px"></p>
-            <input type="file" id="importAudioInput" accept="audio/*" onchange="handleImportAudioSelect(event)" style="display:none" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Import Schritt 3: Sprecher -->
-      <div class="step-block" id="importStep3">
-        <div class="step-header">
-          <span class="step-number">3</span>
-          <span class="step-title">Sprecher benennen</span>
-        </div>
-        <div class="step-body">
-          <p id="importSpeakerLabel" style="display:none;font-size:0.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">Erkannte Sprecher aus der Datei:</p>
-          <div id="importSpeakerFields" style="display:none"></div>
-          <p style="font-size:0.73rem;color:var(--muted);margin-top:6px">Namen können auch nach dem Import geändert werden.</p>
-        </div>
-      </div>
-
-      <!-- Import Schritt 4: Google Drive Ordner (optional) -->
-      <div class="step-block" id="importStep4">
-        <div class="step-header">
-          <span class="step-number">4</span>
           <span class="step-title">Google Drive (optional)</span>
         </div>
         <div class="step-body">
@@ -347,12 +307,47 @@
         </div>
       </div>
 
-      <!-- Start-Button -->
-      <button id="importStartBtn" onclick="startSamsungImport()" disabled
-        style="width:100%;margin-top:4px;padding:11px 0;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;opacity:0.4;pointer-events:none">
-        <i data-lucide="download" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i>
-        Sitzung importieren
-      </button>
+      <!-- Import Schritt 3: Datei hochladen + Sprecher — v4.97: letzter Schritt (Datenübergabe) -->
+      <div class="step-block" id="importStep3">
+        <div class="step-header">
+          <span class="step-number">3</span>
+          <span class="step-title">Transkript-Datei hochladen</span>
+        </div>
+        <div class="step-body">
+          <div class="upload-zone" id="importUploadZone" onclick="document.getElementById('importTxtInput').click()" style="cursor:pointer">
+            <div class="upload-icon"><i data-lucide="file-text" style="width:28px;height:28px;stroke:var(--muted);stroke-width:1.5;fill:none"></i></div>
+            <p><span>Datei(en) auswählen</span></p>
+            <p style="font-size:0.75rem;margin-top:4px;color:var(--muted)">TXT (Samsung / Fließtext) · PDF · Mehrfachauswahl möglich</p>
+          </div>
+          <p id="importTxtStatus" style="font-size:0.78rem;color:var(--green);margin-top:8px;min-height:18px;line-height:1.5"></p>
+          <input type="file" id="importTxtInput" accept=".txt,.pdf,text/plain,application/pdf" onchange="handleImportFileSelect(event)" multiple style="display:none" />
+
+          <!-- Sprecher benennen (erscheint nach Dateiauswahl) -->
+          <div id="importSpeakerSection" style="display:none;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+            <p id="importSpeakerLabel" style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5">Erkannte Sprecher aus der Datei:</p>
+            <div id="importSpeakerFields"></div>
+            <p style="font-size:0.73rem;color:var(--muted);margin-top:6px">Namen können auch nach dem Import geändert werden.</p>
+          </div>
+
+          <!-- Audiodatei optional -->
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+            <label style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Audiodatei (optional)</label>
+            <div onclick="document.getElementById('importAudioInput').click()" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.82rem;color:var(--muted);cursor:pointer">
+              <i data-lucide="music" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+              M4A / MP3 auswählen…
+            </div>
+            <p id="importAudioStatus" style="font-size:0.78rem;color:var(--muted);margin-top:6px;min-height:16px"></p>
+            <input type="file" id="importAudioInput" accept="audio/*" onchange="handleImportAudioSelect(event)" style="display:none" />
+          </div>
+
+          <!-- Start-Button am Ende des letzten Schritts -->
+          <button id="importStartBtn" onclick="startSamsungImport()" disabled
+            style="width:100%;margin-top:16px;padding:11px 0;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;opacity:0.4;pointer-events:none">
+            <i data-lucide="download" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i>
+            Sitzung importieren
+          </button>
+        </div>
+      </div>
 
     </div>
     </div><!-- /importTabContent -->
@@ -1039,6 +1034,22 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
+      <!-- ── v4.97 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v4.97</span><span class="cl-date">15.06.2026</span></div>
+        <div class="cl-title">Import-Workflow neu geordnet + v4.96 Bugfixes</div>
+        <div class="cl-body">Import-Workflow: Reihenfolge an Transkribieren angeglichen — Schritt 1: Sitzungsname, Schritt 2: Google Drive (optional), Schritt 3: Datei hochladen (Datenübergabe als letzter Schritt). Sprecher-Benennung wurde in Schritt 3 integriert (erscheint automatisch nach Dateiauswahl). Bugfix v4.96: Mobile Projekte-View mit left:0 auf ≤768px. Bugfix v4.96: Leere structured-Ergebnisse werden nicht mehr als Geister-Einträge gespeichert.</div>
+        <div class="cl-tech">index.html: importStep2/3 umstrukturiert – Drive auf Schritt 2, Datei+Sprecher als Schritt 3 zusammengeführt. js/import.js: importSpeakerSection show/hide statt importSpeakerFields direkt. css/styles.css: #projectsView left:0 auf Mobile. js/prompts.js: hasData-Validierung.</div>
+      </div>
+
+      <!-- ── v4.96 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v4.96</span><span class="cl-date">15.06.2026</span></div>
+        <div class="cl-title">Bugfix: Mobile Projekte-Vollbild + Analyse-Geister</div>
+        <div class="cl-body">Bug 5: Auf Smartphones zeigte der Projekte-Screen nur die rechte Hälfte des Displays – Ursache: #projectsView hatte left:230px (Sidebar-Breite) hardcodiert, auf Mobile ist die Sidebar aber unsichtbar. Fix: Media Query setzt left:0 auf Geräten ≤768px. Bug 6: Bei einem fehlgeschlagenen Struktur-Parse speicherte der Code trotzdem ein leeres {}  als structured-Ergebnis. Fix: Nach dem JSON-Parse wird geprüft ob mindestens ein Schema-Feld Daten enthält – sonst wird structured=null gesetzt und Claude's Rohantwort als Freitext angezeigt.</div>
+        <div class="cl-tech">css/styles.css: @media (max-width:768px) { #projectsView { left:0 !important } }. js/prompts.js: hasData-Check nach JSON.parse – structured=null wenn alle Schema-Felder leer.</div>
+      </div>
+
       <!-- ── v4.95 ── -->
       <div class="cl-entry">
         <div class="cl-header"><span class="cl-version">v4.95</span><span class="cl-date">15.06.2026</span></div>
@@ -1199,7 +1210,7 @@
           <span class="cl-version">v4.77</span>
           <span class="cl-date">13.06.2026</span>
         </div>
-        <div class="cl-body">Bugfix: (1) styles.css hatte kein Cache-Busting &ndash; Browser nutzte alte CSS auf Mobile, Sidebar-Bottom-Sheet-Animation fehlte. Fix: ?v=4.95 an styles.css. (2) askFollowUp() referenzierte &lsquo;followUpSendBtn&rsquo; (altes Modal-Element) statt &lsquo;askSendBtn&rsquo; (neue Sidebar) &ndash; TypeError crashte Folgefragen-Funktion.</div>
+        <div class="cl-body">Bugfix: (1) styles.css hatte kein Cache-Busting &ndash; Browser nutzte alte CSS auf Mobile, Sidebar-Bottom-Sheet-Animation fehlte. Fix: ?v=4.97 an styles.css. (2) askFollowUp() referenzierte &lsquo;followUpSendBtn&rsquo; (altes Modal-Element) statt &lsquo;askSendBtn&rsquo; (neue Sidebar) &ndash; TypeError crashte Folgefragen-Funktion.</div>
       </div>
       <!-- ── v4.76 ── -->
       <div class="cl-entry">
@@ -1230,8 +1241,8 @@
           <span class="cl-tag cl-tag-fix">Bugfix</span>
         </div>
         <div class="cl-title">Ordner-Dropdown: Unterordner werden wieder angezeigt</div>
-        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.95 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
-        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.95 Cache-Busting.</div>
+        <div class="cl-body">Bugfix: Der Unterordner-Dropdown zeigte nach v4.72 nur „Hauptordner". Ursache: Browser-Cache lieferte alte JS-Version → renderSubfolderList() suchte altes div#driveSubfolderList → früher Return → Select blieb leer. Fix: (1) Cache-Busting durch ?v=4.97 an allen Script-Tags. (2) openUploadPanel() befüllt Selects sofort aus rememberedFolders und triggert loadDriveSubfolders() zur Aktualisierung. (3) Fehler in loadDriveSubfolders() jetzt als Toast sichtbar.</div>
+        <div class="cl-tech">js/ui.js: openUploadPanel() ruft renderSubfolderList(rememberedFolders) + loadDriveSubfolders(). js/drive.js: catch-Block zeigt showToast statt nur console.warn. index.html: alle lokalen script-Tags mit ?v=4.97 Cache-Busting.</div>
       </div>
 
       <!-- ── v4.72 ── -->
@@ -3224,29 +3235,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=4.95"></script>
-<script src="js/storage.js?v=4.95"></script>
-<script src="js/config.js?v=4.95"></script>
-<script src="js/auth.js?v=4.95"></script>
-<script src="js/drive.js?v=4.95"></script>
-<script src="js/sessions.js?v=4.95"></script>
-<script src="js/assemblyai.js?v=4.95"></script>
-<script src="js/claude.js?v=4.95"></script>
-<script src="js/ui.js?v=4.95"></script>
-<script src="js/tags.js?v=4.95"></script>
-<script src="js/notes.js?v=4.95"></script>
-<script src="js/persons.js?v=4.95"></script>
-<script src="js/audio.js?v=4.95"></script>
-<script src="js/recorder.js?v=4.95"></script>
-<script src="js/app.js?v=4.95"></script>
+<script src="js/icons.js?v=4.97"></script>
+<script src="js/storage.js?v=4.97"></script>
+<script src="js/config.js?v=4.97"></script>
+<script src="js/auth.js?v=4.97"></script>
+<script src="js/drive.js?v=4.97"></script>
+<script src="js/sessions.js?v=4.97"></script>
+<script src="js/assemblyai.js?v=4.97"></script>
+<script src="js/claude.js?v=4.97"></script>
+<script src="js/ui.js?v=4.97"></script>
+<script src="js/tags.js?v=4.97"></script>
+<script src="js/notes.js?v=4.97"></script>
+<script src="js/persons.js?v=4.97"></script>
+<script src="js/audio.js?v=4.97"></script>
+<script src="js/recorder.js?v=4.97"></script>
+<script src="js/app.js?v=4.97"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=4.95"></script>
-<script src="js/search.js?v=4.95"></script>
-<script src="js/calendar.js?v=4.95"></script>
-<script src="js/prompts.js?v=4.95"></script>
-<script src="js/projects.js?v=4.95"></script>
-<script src="js/import.js?v=4.95"></script>
+<script src="js/features.js?v=4.97"></script>
+<script src="js/search.js?v=4.97"></script>
+<script src="js/calendar.js?v=4.97"></script>
+<script src="js/prompts.js?v=4.97"></script>
+<script src="js/projects.js?v=4.97"></script>
+<script src="js/import.js?v=4.97"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

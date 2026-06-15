@@ -2922,6 +2922,11 @@ mark.search-highlight {
   .sdc-resize-handle { display: none; }
 }
 
+/* v4.96: Projekte-Panel auf Mobile vollbildschirmig (kein Split-Screen) */
+@media (max-width: 768px) {
+  #projectsView { left: 0 !important; }
+}
+
 /* ── Rechte Sidebar ── */
 .sdc-sidebar {
   width: 300px;

@@ -1131,10 +1131,21 @@ async function runCustomPrompt(session, promptObj, transcript) {
     } catch(e) {
       console.warn('[customPrompt] JSON-Parse fehlgeschlagen, Fallback auf Freitext:', e.message);
     }
+    // v4.96: structured nur behalten wenn mindestens ein Schema-Feld Daten enthält
+    if (structured && Array.isArray(schema)) {
+      const hasData = schema.some(s => {
+        const v = structured[s.field];
+        return v !== undefined && v !== null && v !== '' && !(Array.isArray(v) && v.length === 0);
+      });
+      if (!hasData) {
+        console.warn('[customPrompt] Strukturiertes JSON ohne Daten → Fallback auf Freitext');
+        structured = null;
+      }
+    }
     session.customResults[promptObj.id] = {
       text:       result,       // Fallback Freitext
-      structured: structured,   // Strukturiertes Ergebnis (null bei Parse-Fehler)
-      schema:     schema,       // Schema für Renderer
+      structured: structured,   // null wenn Parse-Fehler ODER leeres Ergebnis
+      schema:     schema,
       promptName: promptObj.name,
       icon:       promptObj.icon || 'sparkles',
       createdAt:  new Date().toISOString()
