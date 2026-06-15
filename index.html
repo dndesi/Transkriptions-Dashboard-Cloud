@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.15" />
+  <link rel="stylesheet" href="css/styles.css?v=5.16" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -81,7 +81,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.15</button>
+        onmouseout="this.style.color='var(--muted)'">v5.16</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1174,6 +1174,14 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.16 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.16</span><span class="cl-date">16.06.2026</span></div>
+        <div class="cl-title">Bugfix: Cursor-Hand auf allen Buttons (globaler Safari-Fix)</div>
+        <div class="cl-body">Safari setzt intern -webkit-appearance:button auf alle button-Elemente und erzwingt dabei cursor:default – das überschreibt sowohl Inline-Styles als auch CSS-Klassen. Betroffen waren alle Buttons in fixed Containern (Sidebar, Upload-Panel, Transkribieren, Import, Direktaufnahme, Senden). Fix: globale Regel button { -webkit-appearance:none; cursor:pointer; } ganz oben im Stylesheet.</div>
+        <div class="cl-tech">styles.css: button { -webkit-appearance:none; cursor:pointer; } direkt nach * { box-sizing... }.</div>
+      </div>
 
       <!-- ── v5.15 ── -->
       <div class="cl-entry">
@@ -3597,29 +3605,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.15"></script>
-<script src="js/storage.js?v=5.15"></script>
-<script src="js/config.js?v=5.15"></script>
-<script src="js/auth.js?v=5.15"></script>
-<script src="js/drive.js?v=5.15"></script>
-<script src="js/sessions.js?v=5.15"></script>
-<script src="js/assemblyai.js?v=5.15"></script>
-<script src="js/claude.js?v=5.15"></script>
-<script src="js/ui.js?v=5.15"></script>
-<script src="js/tags.js?v=5.15"></script>
-<script src="js/notes.js?v=5.15"></script>
-<script src="js/persons.js?v=5.15"></script>
-<script src="js/audio.js?v=5.15"></script>
-<script src="js/recorder.js?v=5.15"></script>
-<script src="js/app.js?v=5.15"></script>
+<script src="js/icons.js?v=5.16"></script>
+<script src="js/storage.js?v=5.16"></script>
+<script src="js/config.js?v=5.16"></script>
+<script src="js/auth.js?v=5.16"></script>
+<script src="js/drive.js?v=5.16"></script>
+<script src="js/sessions.js?v=5.16"></script>
+<script src="js/assemblyai.js?v=5.16"></script>
+<script src="js/claude.js?v=5.16"></script>
+<script src="js/ui.js?v=5.16"></script>
+<script src="js/tags.js?v=5.16"></script>
+<script src="js/notes.js?v=5.16"></script>
+<script src="js/persons.js?v=5.16"></script>
+<script src="js/audio.js?v=5.16"></script>
+<script src="js/recorder.js?v=5.16"></script>
+<script src="js/app.js?v=5.16"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.15"></script>
-<script src="js/search.js?v=5.15"></script>
-<script src="js/calendar.js?v=5.15"></script>
-<script src="js/prompts.js?v=5.15"></script>
-<script src="js/projects.js?v=5.15"></script>
-<script src="js/import.js?v=5.15"></script>
+<script src="js/features.js?v=5.16"></script>
+<script src="js/search.js?v=5.16"></script>
+<script src="js/calendar.js?v=5.16"></script>
+<script src="js/prompts.js?v=5.16"></script>
+<script src="js/projects.js?v=5.16"></script>
+<script src="js/import.js?v=5.16"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
