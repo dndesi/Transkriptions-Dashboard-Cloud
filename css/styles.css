@@ -190,19 +190,6 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* ─── CONTENT-ROW: Sidenav + Main + Sidebar (Desktop) ─ */
-    .app-left {
-      display: flex;
-      flex-direction: row;
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
     }
 
     /* ─── HEADER ─────────────────────────────────── */
@@ -213,8 +200,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: relative;
-      flex-shrink: 0;
+      position: sticky;
+      top: 0;
       z-index: 100;
     }
 
@@ -283,9 +270,7 @@
     .layout {
       display: grid;
       grid-template-columns: 230px 1fr;
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
+      min-height: calc(100vh - 53px);
     }
 
     /* ─── LINKE SIDENAV ──────────────────────────── */
@@ -296,13 +281,9 @@
       flex-direction: column;
       padding: 12px 8px;
       overflow-y: auto;
-      min-height: 0;
-    }
-
-    /* ─── HAUPT-INHALT (scrollt eigenständig) ───── */
-    #mainContent {
-      min-height: 0;
-      overflow-y: auto;
+      position: sticky;
+      top: 53px;
+      height: calc(100vh - 53px);
     }
 
     .sidenav-new {
@@ -1986,13 +1967,6 @@
 
     @media (max-width: 768px) {
 
-      /* ── v5.9: Desktop-Flex-Layout auf Mobile zurücksetzen ── */
-      body { display: block; height: auto; overflow-y: auto; }
-      .app-left { display: block; height: auto; overflow: visible; }
-      .layout { flex: none; min-height: calc(100vh - 53px); overflow: visible; }
-      #mainContent { overflow-y: visible; }
-      .sdc-tabs { top: 53px; }
-
       /* ── Header ── */
       header { padding: 10px 16px; position: sticky; top: 0; }
 
@@ -2798,7 +2772,7 @@ mark.search-highlight {
   border-bottom: 2px solid var(--border);
   background: var(--surface);
   position: sticky;
-  top: 0;
+  top: 53px;
   z-index: 10;
   overflow-x: auto;
   scrollbar-width: none;
@@ -2932,13 +2906,17 @@ mark.search-highlight {
   box-shadow: 0 0 0 2px rgba(108,99,255,0.2);
 }
 
-/* ── Sidebar Resize Handle (v5.9) ── */
+/* ── Sidebar Resize Handle ── */
 .sdc-resize-handle {
   flex-shrink: 0;
   width: 5px;
   cursor: col-resize;
   background: transparent;
   z-index: 20;
+  position: sticky;
+  top: 53px;
+  height: calc(100vh - 53px);
+  align-self: flex-start;
   transition: background 0.15s;
 }
 .sdc-resize-handle:hover,
@@ -2954,7 +2932,7 @@ mark.search-highlight {
   #projectsView { left: 0 !important; }
 }
 
-/* ── Rechte Sidebar (v5.9: content-row-level, flex-stretch) ── */
+/* ── Rechte Sidebar (sticky im sdc-layout) ── */
 .sdc-sidebar {
   width: 300px;
   flex-shrink: 0;
@@ -2963,6 +2941,10 @@ mark.search-highlight {
   flex-direction: column;
   background: var(--surface);
   overflow: hidden;
+  position: sticky;
+  top: 53px;
+  height: calc(100vh - 53px);
+  align-self: flex-start;
   transition: width 0.22s ease, opacity 0.2s ease, border-color 0.2s;
 }
 .sdc-sidebar.sdc-sidebar-collapsed {

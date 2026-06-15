@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.9" />
+  <link rel="stylesheet" href="css/styles.css?v=5.10" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -81,7 +81,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.9</button>
+        onmouseout="this.style.color='var(--muted)'">v5.10</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -343,9 +343,6 @@
     </div>
     </div><!-- /importTabContent -->
   </div>
-
-<!-- ─── CONTENT-ROW: Sidenav + Main + Sidebar ─────── -->
-<div class="app-left">
 
 <!-- ─── LAYOUT ───────────────────────────────────── -->
 <div class="layout">
@@ -1017,6 +1014,136 @@
         </div>
         <!-- /sdc-main -->
 
+        <!-- ─── RESIZE HANDLE ──────────────────────── -->
+        <div class="sdc-resize-handle" id="sdcResizeHandle"></div>
+
+        <!-- ─── RECHTE SIDEBAR ─────────────────────── -->
+        <div class="sdc-sidebar sdc-sidebar-collapsed" id="sdcSidebar">
+
+          <!-- Mobile Schliessen-Leiste (nur auf Smartphone sichtbar) -->
+          <div class="sdc-mobile-handle">
+            <div class="sdc-mobile-grip"></div>
+            <button class="sdc-mobile-close-btn" onclick="closeSessionSidebar()" title="Schliessen">
+              <i data-lucide="x" style="width:18px;height:18px;stroke:currentColor;stroke-width:2.5;fill:none"></i>
+            </button>
+          </div>
+
+          <!-- Mode-Buttons -->
+          <div class="sdc-sidebar-modes">
+            <button class="sdc-mode-btn sdc-mode-active" id="sdcMode-fragen" onclick="openAskModal()">
+              <i data-lucide="message-circle" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Fragen
+              <button class="help-icon" data-help="Stelle beliebige Fragen zum Transkript. Claude antwortet mit Kontext aus dieser Sitzung – z.B. 'Was wurde bezüglich X entschieden?'" onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
+            </button>
+            <button class="sdc-mode-btn" id="sdcMode-folgefragen" onclick="setSidebarMode('folgefragen')">
+              <i data-lucide="messages-square" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Folge
+              <button class="help-icon" data-help="Führe ein freies Chat-Gespräch mit Claude über diese Sitzung. Claude kennt alle bisherigen Analyse-Ergebnisse als Kontext und erinnert sich an den Gesprächsverlauf." onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
+            </button>
+            <button class="sdc-mode-btn" id="sdcMode-email" onclick="openGmailModal()">
+              <i data-lucide="mail" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mail
+              <button class="help-icon" data-help="Erstelle eine E-Mail auf Basis dieser Sitzung und sende sie direkt über Gmail. Claude formuliert einen Entwurf – du kannst ihn vor dem Senden bearbeiten." onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
+            </button>
+            <button class="sdc-mode-btn" id="sdcMode-kalender" onclick="openCalendarModal()">
+              <i data-lucide="calendar" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Kalender
+              <button class="help-icon" data-help="Erkannte Termine aus dem Transkript werden als Kalendereinträge vorgeschlagen. Mit einem Klick direkt in deinen Google Kalender eintragen." onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
+            </button>
+          </div>
+
+          <!-- Content-Panels -->
+          <div class="sdc-sidebar-content">
+
+            <!-- Fragen-Panel -->
+            <div class="sdc-sidebar-panel sdc-panel-active" id="sdc-sb-fragen">
+              <!-- Rollen-Auswahl (v4.90) -->
+              <div class="persona-select-bar">
+                <label style="font-size:0.75rem;color:var(--muted);flex-shrink:0">Rolle:</label>
+                <select id="askPersonaSelect">
+                  <option value="">Standard (Systemprompt)</option>
+                </select>
+              </div>
+              <div id="askChatHistory" style="flex:1;overflow-y:auto;padding:14px;min-height:80px">
+                <div style="text-align:center;color:var(--muted);padding:24px 12px;font-size:0.85rem">
+                  Stelle eine Frage zum Transkript.<br>
+                  <span style="font-size:0.78rem;opacity:0.7">z.B. „Was hat Max über das Budget gesagt?"</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Folgefragen-Panel -->
+            <div class="sdc-sidebar-panel" id="sdc-sb-folgefragen">
+              <div style="padding:10px 12px 8px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)">
+                <span style="font-size:0.78rem;color:var(--muted);flex:1">Claude kennt alle Analyse-Ergebnisse als Kontext.</span>
+                <button onclick="clearFollowUp()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;font-size:0.75rem;cursor:pointer">Löschen</button>
+              </div>
+              <!-- Rollen-Auswahl (v4.90) -->
+              <div class="persona-select-bar">
+                <label style="font-size:0.75rem;color:var(--muted);flex-shrink:0">Rolle:</label>
+                <select id="followupPersonaSelect">
+                  <option value="">Standard (Systemprompt)</option>
+                </select>
+              </div>
+              <div id="followUpMessages" style="flex:1;overflow-y:auto;padding:14px;min-height:80px">
+                <span style="color:var(--muted);font-size:0.85rem">Noch keine Folgefragen gestellt.</span>
+              </div>
+            </div>
+
+            <!-- E-Mail-Panel -->
+            <div class="sdc-sidebar-panel" id="sdc-sb-email">
+              <div style="padding:14px;flex-shrink:0">
+                <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">Sitzung: <span id="mailSessionName" style="font-weight:600;color:var(--text)"></span></div>
+                <button onclick="extractEmailDrafts(calendarSession)" class="btn btn-primary" style="width:100%;justify-content:center;display:flex;align-items:center;gap:6px" id="mailExtractBtn">
+                  <i data-lucide="file-text" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mails ableiten
+                </button>
+                <button class="btn btn-ghost" onclick="renderGmailDrafts(gmailDrafts)" style="width:100%;justify-content:center;display:flex;align-items:center;gap:4px;margin-top:6px;font-size:0.8rem">&#8635; Neu laden</button>
+                <p style="font-size:0.72rem;color:var(--muted);line-height:1.5;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+                  E-Mails werden als Entwürfe in Gmail gespeichert – du sendest sie selbst ab.
+                </p>
+              </div>
+              <div id="mailSummary" style="padding:4px 14px;font-size:0.8rem;color:var(--muted)"></div>
+              <div id="mailDraftsList" style="flex:1;overflow-y:auto;padding:0 14px 14px">
+                <div class="cal-empty">Klicke auf „E-Mails ableiten" um das Transkript zu analysieren.</div>
+              </div>
+            </div>
+
+            <!-- Kalender-Panel -->
+            <div class="sdc-sidebar-panel" id="sdc-sb-kalender">
+              <div style="padding:14px;flex-shrink:0">
+                <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">Sitzung: <span id="calSessionName" style="font-weight:600;color:var(--text)"></span></div>
+                <button onclick="extractCalendarEvents(calendarSession)" class="btn btn-primary" style="width:100%;justify-content:center;display:flex;align-items:center;gap:6px" id="calExtractBtn">
+                  <i data-lucide="search" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Termine extrahieren
+                </button>
+                <button class="btn btn-ghost" onclick="renderCalendarEvents(calendarEvents)" style="width:100%;justify-content:center;display:flex;align-items:center;gap:4px;margin-top:6px;font-size:0.8rem">&#8635; Neu laden</button>
+                <p style="font-size:0.72rem;color:var(--muted);line-height:1.5;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+                  Termine werden direkt in deinen primären Google Kalender eingetragen.
+                </p>
+              </div>
+              <div id="calSummary" style="padding:4px 14px;font-size:0.8rem;color:var(--muted)"></div>
+              <div id="calEventsList" style="flex:1;overflow-y:auto;padding:0 14px 14px">
+                <div class="cal-empty">Klicke auf „Termine extrahieren" um das Transkript zu analysieren.</div>
+              </div>
+            </div>
+
+          </div>
+          <!-- /sdc-sidebar-content -->
+
+          <!-- Einheitliches Chat-Input (Fragen + Folgefragen) -->
+          <div class="sdc-sidebar-input" id="sdcSidebarInput">
+            <textarea id="askInput" rows="2"
+              placeholder="Frage zum Transkript… (Strg+Enter)"
+              onkeydown="askInputKeydown(event)"
+              style="flex:1;resize:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-family:inherit;line-height:1.5;outline:none"></textarea>
+            <textarea id="followUpInput" rows="2"
+              placeholder="Folgefrage… (Strg+Enter)"
+              onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){askFollowUp()}"
+              style="display:none;flex:1;resize:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-family:inherit;line-height:1.5;outline:none"></textarea>
+            <button id="askSendBtn" onclick="sendAskQuestion()"
+              style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0">
+              <i data-lucide="send" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
+            </button>
+          </div>
+
+        </div>
+        <!-- /sdc-sidebar -->
+
       </div>
       <!-- /sdc-layout -->
 
@@ -1035,138 +1162,6 @@
   </main>
 </div>
 
-<!-- ─── RESIZE HANDLE (Desktop, v5.9) ──────────────── -->
-<div class="sdc-resize-handle" id="sdcResizeHandle"></div>
-
-<!-- ─── RECHTE SIDEBAR (v5.9: content-row-level) ─ -->
-<div class="sdc-sidebar sdc-sidebar-collapsed" id="sdcSidebar">
-
-  <!-- Mobile Schliessen-Leiste (nur auf Smartphone sichtbar) -->
-  <div class="sdc-mobile-handle">
-    <div class="sdc-mobile-grip"></div>
-    <button class="sdc-mobile-close-btn" onclick="closeSessionSidebar()" title="Schliessen">
-      <i data-lucide="x" style="width:18px;height:18px;stroke:currentColor;stroke-width:2.5;fill:none"></i>
-    </button>
-  </div>
-
-  <!-- Mode-Buttons -->
-  <div class="sdc-sidebar-modes">
-    <button class="sdc-mode-btn sdc-mode-active" id="sdcMode-fragen" onclick="openAskModal()">
-      <i data-lucide="message-circle" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Fragen
-      <button class="help-icon" data-help="Stelle beliebige Fragen zum Transkript. Claude antwortet mit Kontext aus dieser Sitzung – z.B. 'Was wurde bezüglich X entschieden?'" onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
-    </button>
-    <button class="sdc-mode-btn" id="sdcMode-folgefragen" onclick="setSidebarMode('folgefragen')">
-      <i data-lucide="messages-square" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Folge
-      <button class="help-icon" data-help="Führe ein freies Chat-Gespräch mit Claude über diese Sitzung. Claude kennt alle bisherigen Analyse-Ergebnisse als Kontext und erinnert sich an den Gesprächsverlauf." onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
-    </button>
-    <button class="sdc-mode-btn" id="sdcMode-email" onclick="openGmailModal()">
-      <i data-lucide="mail" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mail
-      <button class="help-icon" data-help="Erstelle eine E-Mail auf Basis dieser Sitzung und sende sie direkt über Gmail. Claude formuliert einen Entwurf – du kannst ihn vor dem Senden bearbeiten." onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
-    </button>
-    <button class="sdc-mode-btn" id="sdcMode-kalender" onclick="openCalendarModal()">
-      <i data-lucide="calendar" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Kalender
-      <button class="help-icon" data-help="Erkannte Termine aus dem Transkript werden als Kalendereinträge vorgeschlagen. Mit einem Klick direkt in deinen Google Kalender eintragen." onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
-    </button>
-  </div>
-
-  <!-- Content-Panels -->
-  <div class="sdc-sidebar-content">
-
-    <!-- Fragen-Panel -->
-    <div class="sdc-sidebar-panel sdc-panel-active" id="sdc-sb-fragen">
-      <!-- Rollen-Auswahl (v4.90) -->
-      <div class="persona-select-bar">
-        <label style="font-size:0.75rem;color:var(--muted);flex-shrink:0">Rolle:</label>
-        <select id="askPersonaSelect">
-          <option value="">Standard (Systemprompt)</option>
-        </select>
-      </div>
-      <div id="askChatHistory" style="flex:1;overflow-y:auto;padding:14px;min-height:80px">
-        <div style="text-align:center;color:var(--muted);padding:24px 12px;font-size:0.85rem">
-          Stelle eine Frage zum Transkript.<br>
-          <span style="font-size:0.78rem;opacity:0.7">z.B. „Was hat Max über das Budget gesagt?"</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Folgefragen-Panel -->
-    <div class="sdc-sidebar-panel" id="sdc-sb-folgefragen">
-      <div style="padding:10px 12px 8px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)">
-        <span style="font-size:0.78rem;color:var(--muted);flex:1">Claude kennt alle Analyse-Ergebnisse als Kontext.</span>
-        <button onclick="clearFollowUp()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;font-size:0.75rem;cursor:pointer">Löschen</button>
-      </div>
-      <!-- Rollen-Auswahl (v4.90) -->
-      <div class="persona-select-bar">
-        <label style="font-size:0.75rem;color:var(--muted);flex-shrink:0">Rolle:</label>
-        <select id="followupPersonaSelect">
-          <option value="">Standard (Systemprompt)</option>
-        </select>
-      </div>
-      <div id="followUpMessages" style="flex:1;overflow-y:auto;padding:14px;min-height:80px">
-        <span style="color:var(--muted);font-size:0.85rem">Noch keine Folgefragen gestellt.</span>
-      </div>
-    </div>
-
-    <!-- E-Mail-Panel -->
-    <div class="sdc-sidebar-panel" id="sdc-sb-email">
-      <div style="padding:14px;flex-shrink:0">
-        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">Sitzung: <span id="mailSessionName" style="font-weight:600;color:var(--text)"></span></div>
-        <button onclick="extractEmailDrafts(calendarSession)" class="btn btn-primary" style="width:100%;justify-content:center;display:flex;align-items:center;gap:6px" id="mailExtractBtn">
-          <i data-lucide="file-text" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mails ableiten
-        </button>
-        <button class="btn btn-ghost" onclick="renderGmailDrafts(gmailDrafts)" style="width:100%;justify-content:center;display:flex;align-items:center;gap:4px;margin-top:6px;font-size:0.8rem">&#8635; Neu laden</button>
-        <p style="font-size:0.72rem;color:var(--muted);line-height:1.5;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-          E-Mails werden als Entwürfe in Gmail gespeichert – du sendest sie selbst ab.
-        </p>
-      </div>
-      <div id="mailSummary" style="padding:4px 14px;font-size:0.8rem;color:var(--muted)"></div>
-      <div id="mailDraftsList" style="flex:1;overflow-y:auto;padding:0 14px 14px">
-        <div class="cal-empty">Klicke auf „E-Mails ableiten" um das Transkript zu analysieren.</div>
-      </div>
-    </div>
-
-    <!-- Kalender-Panel -->
-    <div class="sdc-sidebar-panel" id="sdc-sb-kalender">
-      <div style="padding:14px;flex-shrink:0">
-        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">Sitzung: <span id="calSessionName" style="font-weight:600;color:var(--text)"></span></div>
-        <button onclick="extractCalendarEvents(calendarSession)" class="btn btn-primary" style="width:100%;justify-content:center;display:flex;align-items:center;gap:6px" id="calExtractBtn">
-          <i data-lucide="search" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Termine extrahieren
-        </button>
-        <button class="btn btn-ghost" onclick="renderCalendarEvents(calendarEvents)" style="width:100%;justify-content:center;display:flex;align-items:center;gap:4px;margin-top:6px;font-size:0.8rem">&#8635; Neu laden</button>
-        <p style="font-size:0.72rem;color:var(--muted);line-height:1.5;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-          Termine werden direkt in deinen primären Google Kalender eingetragen.
-        </p>
-      </div>
-      <div id="calSummary" style="padding:4px 14px;font-size:0.8rem;color:var(--muted)"></div>
-      <div id="calEventsList" style="flex:1;overflow-y:auto;padding:0 14px 14px">
-        <div class="cal-empty">Klicke auf „Termine extrahieren" um das Transkript zu analysieren.</div>
-      </div>
-    </div>
-
-  </div>
-  <!-- /sdc-sidebar-content -->
-
-  <!-- Einheitliches Chat-Input (Fragen + Folgefragen) -->
-  <div class="sdc-sidebar-input" id="sdcSidebarInput">
-    <textarea id="askInput" rows="2"
-      placeholder="Frage zum Transkript… (Strg+Enter)"
-      onkeydown="askInputKeydown(event)"
-      style="flex:1;resize:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-family:inherit;line-height:1.5;outline:none"></textarea>
-    <textarea id="followUpInput" rows="2"
-      placeholder="Folgefrage… (Strg+Enter)"
-      onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){askFollowUp()}"
-      style="display:none;flex:1;resize:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-family:inherit;line-height:1.5;outline:none"></textarea>
-    <button id="askSendBtn" onclick="sendAskQuestion()"
-      style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0">
-      <i data-lucide="send" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
-    </button>
-  </div>
-
-</div>
-<!-- /sdc-sidebar -->
-
-</div><!-- /app-left (content-row) -->
-
 <!-- ─── PROJEKTE PANEL (außerhalb browserView, eigenes Full-Panel) ─── -->
 <div id="projectsView" style="display:none; position:fixed; top:53px; left:230px; right:0; bottom:0; overflow-y:auto; background:var(--bg); z-index:10; padding-bottom:40px"></div>
 
@@ -1178,6 +1173,14 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.10 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.10</span><span class="cl-date">15.06.2026</span></div>
+        <div class="cl-title">Layout-Fix: Sidebar und Sidenav jetzt korrekt sticky, kein Flex-Layout auf Body</div>
+        <div class="cl-body">v5.9-Layout-Bug behoben: Body wieder als Block-Element, Header sticky top:0, Sidenav sticky top:53px. Sidebar und Resize-Handle zurück in sdc-layout verschoben, beide sticky. Transkript scrollt seitenbreit, Sidebar und Sidenav bleiben sichtbar. Mobile unverändert.</div>
+        <div class="cl-tech">css/styles.css: body→display:block, header→sticky top:0, .layout→min-height:calc(100vh-53px), .sidenav→sticky top:53px, .sdc-tabs→top:53px, .sdc-sidebar→sticky top:53px height:calc(100vh-53px), .sdc-resize-handle→sticky. index.html: app-left wrapper entfernt, sdc-resize-handle + sdc-sidebar in sdc-layout verschoben.</div>
+      </div>
 
       <!-- ── v5.9 ── -->
       <div class="cl-entry">
@@ -3553,29 +3556,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.9"></script>
-<script src="js/storage.js?v=5.9"></script>
-<script src="js/config.js?v=5.9"></script>
-<script src="js/auth.js?v=5.9"></script>
-<script src="js/drive.js?v=5.9"></script>
-<script src="js/sessions.js?v=5.9"></script>
-<script src="js/assemblyai.js?v=5.9"></script>
-<script src="js/claude.js?v=5.9"></script>
-<script src="js/ui.js?v=5.9"></script>
-<script src="js/tags.js?v=5.9"></script>
-<script src="js/notes.js?v=5.9"></script>
-<script src="js/persons.js?v=5.9"></script>
-<script src="js/audio.js?v=5.9"></script>
-<script src="js/recorder.js?v=5.9"></script>
-<script src="js/app.js?v=5.9"></script>
+<script src="js/icons.js?v=5.10"></script>
+<script src="js/storage.js?v=5.10"></script>
+<script src="js/config.js?v=5.10"></script>
+<script src="js/auth.js?v=5.10"></script>
+<script src="js/drive.js?v=5.10"></script>
+<script src="js/sessions.js?v=5.10"></script>
+<script src="js/assemblyai.js?v=5.10"></script>
+<script src="js/claude.js?v=5.10"></script>
+<script src="js/ui.js?v=5.10"></script>
+<script src="js/tags.js?v=5.10"></script>
+<script src="js/notes.js?v=5.10"></script>
+<script src="js/persons.js?v=5.10"></script>
+<script src="js/audio.js?v=5.10"></script>
+<script src="js/recorder.js?v=5.10"></script>
+<script src="js/app.js?v=5.10"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.9"></script>
-<script src="js/search.js?v=5.9"></script>
-<script src="js/calendar.js?v=5.9"></script>
-<script src="js/prompts.js?v=5.9"></script>
-<script src="js/projects.js?v=5.9"></script>
-<script src="js/import.js?v=5.9"></script>
+<script src="js/features.js?v=5.10"></script>
+<script src="js/search.js?v=5.10"></script>
+<script src="js/calendar.js?v=5.10"></script>
+<script src="js/prompts.js?v=5.10"></script>
+<script src="js/projects.js?v=5.10"></script>
+<script src="js/import.js?v=5.10"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
