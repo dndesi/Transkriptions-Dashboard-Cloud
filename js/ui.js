@@ -3,6 +3,7 @@ function openUploadPanel() {
   document.getElementById('uploadPanel')?.classList.add('open');
   document.getElementById('uploadOverlay')?.classList.add('open');
   closeSidenav();
+  if (typeof closeSessionSidebar === 'function') closeSessionSidebar(); // v5.17: Chat-Sidebar zuerst schließen (z-index 200 > 150)
   // Ordner-Selects sofort aus Cache befüllen, dann frisch aus Drive nachladen
   if (typeof renderSubfolderList === 'function') renderSubfolderList(rememberedFolders || []);
   if (typeof loadDriveSubfolders === 'function' && driveToken && driveFolderId) loadDriveSubfolders();
@@ -443,6 +444,7 @@ function togglePersonsView() {
     _setHeaderBtn('headerPersonsBtn', false);
     setView(currentView === 'persons' ? 'grid' : currentView);
   } else {
+    if (typeof closeSessionSidebar === 'function') closeSessionSidebar(); // v5.17
     _showOverlay('personsView', 'headerPersonsBtn', renderPersonsView);
   }
 }
@@ -454,6 +456,7 @@ function toggleCostsView() {
     _setHeaderBtn('headerCostsBtn', false);
     setView(currentView === 'costs' ? 'grid' : currentView);
   } else {
+    if (typeof closeSessionSidebar === 'function') closeSessionSidebar(); // v5.17
     _showOverlay('costsView', 'headerCostsBtn', renderCostsView);
   }
 }
@@ -465,6 +468,7 @@ function toggleArchView() {
     _setHeaderBtn('headerArchBtn', false);
     setView(currentView === 'arch' ? 'grid' : currentView);
   } else {
+    if (typeof closeSessionSidebar === 'function') closeSessionSidebar(); // v5.17
     _showOverlay('archView', 'headerArchBtn', renderArchView);
   }
 }
@@ -472,7 +476,7 @@ function toggleArchView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v5.13';
+  const title = 'Distill Voice – Systemarchitektur v5.17';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }
@@ -500,7 +504,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 4.94</span>
+          <span style="color:var(--accent); font-weight:600">Version 5.17</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">

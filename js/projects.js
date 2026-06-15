@@ -51,6 +51,7 @@ function toggleProjectsView() {
     if (bt) bt.style.display = '';
   } else {
     // Öffnen
+    if (typeof closeSessionSidebar === 'function') closeSessionSidebar(); // v5.17: Chat-Sidebar schließen
     _showOverlay('projectsView', 'navProjects', renderProjectBrowser);
     // Projekte aus Drive aktualisieren (v4.99) – silent im Hintergrund
     if (typeof loadSettingsFromDrive === 'function') {

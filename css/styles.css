@@ -3002,7 +3002,7 @@ mark.search-highlight {
   background: var(--surface);
 }
 .sdc-sidebar-input.hidden { display: none; }
-#askSendBtn { cursor: pointer !important; pointer-events: auto !important; }
+#askSendBtn { cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 2; user-select: none; } /* v5.17: z-index über Textarea, kein Text-Cursor */
 #askSendBtn:hover { opacity: 0.82; }
 #askSendBtn:disabled { opacity: 0.5; cursor: not-allowed !important; }
 

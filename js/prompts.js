@@ -734,6 +734,7 @@ function togglePromptsView() {
     _setHeaderBtn('headerPromptsBtn', false);
     setView(currentView === 'prompts' ? 'grid' : currentView);
   } else {
+    if (typeof closeSessionSidebar === 'function') closeSessionSidebar(); // v5.17
     _showOverlay('promptsView', 'headerPromptsBtn', renderPromptsView);
     // Prompts aus Drive aktualisieren (v5.0) – silent im Hintergrund
     if (typeof loadSettingsFromDrive === 'function') {
