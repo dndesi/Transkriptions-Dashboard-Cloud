@@ -735,6 +735,10 @@ function togglePromptsView() {
     setView(currentView === 'prompts' ? 'grid' : currentView);
   } else {
     _showOverlay('promptsView', 'headerPromptsBtn', renderPromptsView);
+    // Prompts aus Drive aktualisieren (v5.0) – silent im Hintergrund
+    if (typeof loadSettingsFromDrive === 'function') {
+      loadSettingsFromDrive().catch(() => {});
+    }
   }
 }
 

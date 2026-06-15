@@ -199,6 +199,11 @@ async function loadSettingsFromDrive() {
       }
       // Persona-Dropdowns aktualisieren
       if (typeof populatePersonaSelects === 'function') populatePersonaSelects();
+      // Prompts-View aktualisieren falls gerade geöffnet (v5.0)
+      const pvpEl = document.getElementById('promptsView');
+      if (pvpEl && pvpEl.style.display !== 'none' && typeof renderPromptsView === 'function') {
+        renderPromptsView();
+      }
     }
 
     // ── Bearbeitete Systemprompts: zusammenführen (lokal hat Priorität) ──
