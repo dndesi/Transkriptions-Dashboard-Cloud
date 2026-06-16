@@ -1861,48 +1861,131 @@ function _genSave() {
   showToast(`"${s.name}" wurde erstellt ✓`, 'success');
 }
 
-// ── Feldtypen-Hilfe (v5.32) ───────────────────────────────────────────────────
+// ── Feldtypen-Hilfe (v5.34) ───────────────────────────────────────────────────
+const FIELD_TYPE_EXAMPLES = {
+  text: {
+    title: 'Zusammenfassung eines Gesprächs',
+    problem: 'Du willst nach dem Meeting schnell wissen worum es ging.',
+    promptGoal: '„Fasse das Meeting in 3–4 Sätzen zusammen. Kein Bulletpoint, fließender Text."',
+    outputHtml: '<p style="font-size:0.78rem;line-height:1.5;margin:0;color:var(--text)">Das Meeting drehte sich um die Q3-Planung. Das Team einigte sich auf drei Prioritäten…</p>'
+  },
+  boolean: {
+    title: 'Entscheidung getroffen?',
+    problem: 'Du willst wissen ob im Meeting eine klare Entscheidung gefallen ist.',
+    promptGoal: '„War eine eindeutige Entscheidung erkennbar? Antworte nur mit true oder false."',
+    outputHtml: '<span style="display:inline-block;padding:3px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;background:rgba(52,211,153,0.15);color:#10b981">Ja</span>'
+  },
+  rating: {
+    title: 'Stimmung im Meeting',
+    problem: 'Du willst die Gesprächsqualität auf einen Blick erfassen.',
+    promptGoal: '„Bewerte die Gesprächsatmosphäre auf einer Skala von 1–5 mit kurzer Begründung."',
+    outputHtml: '<div style="font-size:1rem;color:var(--accent2,#f59e0b);letter-spacing:2px">★★★★☆ <span style="font-size:0.78rem;color:var(--muted);vertical-align:middle">4/5</span></div><div style="font-size:0.76rem;color:var(--muted);margin-top:3px">Konstruktive Diskussion, klare Ergebnisse.</div>'
+  },
+  list: {
+    title: 'Besprochene Themen',
+    problem: 'Du willst die Kernthemen auf einen Blick sehen.',
+    promptGoal: '„Liste alle besprochenen Themen auf. Maximal 6, kurze Stichpunkte."',
+    outputHtml: '<ul style="margin:0;padding-left:16px;font-size:0.78rem;line-height:1.9;color:var(--text)"><li>Q3-Budget freigabe</li><li>Neue Kundenpräsentation</li><li>Teamstruktur ab Juli</li></ul>'
+  },
+  checklist: {
+    title: 'Vorbereitung für nächstes Meeting',
+    problem: 'Du willst Punkte abhaken können – direkt in der App.',
+    promptGoal: '„Erstelle eine Checkliste mit allem was vor dem nächsten Meeting erledigt sein muss."',
+    outputHtml: '<div style="font-size:0.78rem;line-height:2;color:var(--text)"><div>☐ Angebot bis Do. einreichen</div><div style="color:var(--muted);text-decoration:line-through">☑ Präsentation aktualisieren</div><div>☐ Protokoll versenden</div></div>'
+  },
+  tag_list: {
+    title: 'Themen-Tags',
+    problem: 'Du willst das Gespräch schnell kategorisieren.',
+    promptGoal: '„Vergib 3–6 kurze Tags die das Gespräch beschreiben."',
+    outputHtml: '<div style="display:flex;flex-wrap:wrap;gap:5px"><span style="background:rgba(108,99,255,0.12);color:var(--accent);border-radius:20px;padding:2px 10px;font-size:0.76rem">Strategie</span><span style="background:rgba(108,99,255,0.12);color:var(--accent);border-radius:20px;padding:2px 10px;font-size:0.76rem">Q3</span><span style="background:rgba(108,99,255,0.12);color:var(--accent);border-radius:20px;padding:2px 10px;font-size:0.76rem">Planung</span></div>'
+  },
+  list_with_person: {
+    title: 'Todos mit Verantwortlichkeit',
+    problem: 'Wer macht was? Nicht mehr nach dem Meeting fragen müssen.',
+    promptGoal: '„Weise jede Aufgabe einer Person zu. Nur wenn eindeutig genannt."',
+    outputHtml: '<div style="font-size:0.78rem;line-height:2;color:var(--text)"><div style="display:flex;align-items:center;gap:6px"><span style="background:rgba(108,99,255,0.15);color:var(--accent);border-radius:4px;padding:1px 7px;font-size:0.72rem;font-weight:600">Anna</span>Angebot finalisieren bis Fr.</div><div style="display:flex;align-items:center;gap:6px"><span style="background:rgba(108,99,255,0.15);color:var(--accent);border-radius:4px;padding:1px 7px;font-size:0.72rem;font-weight:600">Max</span>Design-Review einplanen</div></div>'
+  },
+  list_with_date: {
+    title: 'Termine & Deadlines',
+    problem: 'Du willst alle genannten Termine im Überblick haben.',
+    promptGoal: '„Extrahiere alle Termine mit Datum und Beschreibung."',
+    outputHtml: '<div style="font-size:0.78rem;line-height:2;color:var(--text)"><div style="display:flex;align-items:center;gap:6px"><span style="background:rgba(250,174,52,0.15);color:var(--accent2,#f59e0b);border-radius:4px;padding:1px 6px;font-size:0.7rem">15.07.2026</span>Angebot einreichen</div><div style="display:flex;align-items:center;gap:6px"><span style="background:rgba(250,174,52,0.15);color:var(--accent2,#f59e0b);border-radius:4px;padding:1px 6px;font-size:0.7rem">01.08.2026</span>Projektstart</div></div>'
+  },
+  quote: {
+    title: 'Wichtige Aussagen',
+    problem: 'Du willst wörtliche Zitate aus dem Gespräch festhalten.',
+    promptGoal: '„Extrahiere die wichtigsten wörtlichen Aussagen mit Sprecher."',
+    outputHtml: '<div style="border-left:2px solid var(--accent);padding-left:8px;font-size:0.78rem;color:var(--text)"><div style="font-style:italic">„Das Budget steht, wir müssen jetzt liefern."</div><div style="font-size:0.7rem;color:var(--muted);margin-top:2px">— Anna</div></div>'
+  },
+  key_value: {
+    title: 'Kennzahlen & Fakten',
+    problem: 'Du willst strukturierte Fakten auf einen Blick.',
+    promptGoal: '„Liste alle genannten Zahlen und Fakten als Begriff-Wert-Paare."',
+    outputHtml: '<div style="font-size:0.78rem;line-height:2;color:var(--text)"><div style="display:flex;gap:10px"><span style="font-weight:600;color:var(--muted);min-width:65px">Budget</span><span>€ 50.000</span></div><div style="display:flex;gap:10px"><span style="font-weight:600;color:var(--muted);min-width:65px">Deadline</span><span>15. Juli</span></div></div>'
+  },
+  table: {
+    title: 'Vergleich von Optionen',
+    problem: 'Im Meeting wurden Anbieter verglichen. Du willst die Daten strukturiert sehen.',
+    promptGoal: '„Erstelle eine Tabelle mit Anbieter, Preis und Stärken."',
+    outputHtml: '<table style="font-size:0.74rem;border-collapse:collapse;width:100%;color:var(--text)"><tr style="color:var(--muted);font-weight:700"><td style="padding:2px 8px 4px 0">Anbieter</td><td style="padding:2px 8px 4px">Preis</td><td style="padding:2px 8px 4px">Stärke</td></tr><tr><td style="padding:2px 8px 2px 0">Firma A</td><td style="padding:2px 8px">€ 500</td><td style="padding:2px 8px">Support</td></tr><tr style="color:var(--muted)"><td style="padding:2px 8px 2px 0">Firma B</td><td style="padding:2px 8px">€ 320</td><td style="padding:2px 8px">Preis</td></tr></table>'
+  },
+};
+
 function showFieldTypeHelp() {
   let overlay = document.getElementById('fieldTypeHelpOverlay');
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = 'fieldTypeHelpOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.45);display:flex;align-items:flex-start;justify-content:center;padding:16px;box-sizing:border-box;overflow-y:auto';
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.style.display = 'none'; });
     document.body.appendChild(overlay);
   }
 
-  const groupsHtml = FIELD_TYPE_GROUPS.map(g => {
+  const cardsHtml = FIELD_TYPE_GROUPS.map(g => {
     const types = Object.entries(FIELD_TYPE_CONFIG).filter(([, c]) => c.group === g.key);
     if (!types.length) return '';
     return `
-      <div style="margin-bottom:18px">
-        <div style="font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)">${g.label}</div>
-        ${types.map(([, cfg]) => `
-          <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);margin-bottom:6px">
-            <span style="color:var(--accent);flex-shrink:0;margin-top:1px">${icon(cfg.icon, 15)}</span>
-            <div style="flex:1;min-width:0">
-              <div style="font-weight:600;font-size:0.83rem;margin-bottom:2px">${cfg.label}</div>
-              <div style="font-size:0.76rem;color:var(--muted);margin-bottom:5px;line-height:1.4">${cfg.claudeHint}</div>
-              <pre style="font-size:0.7rem;color:var(--muted);background:var(--bg,#f8f9fa);border:1px solid var(--border);border-radius:6px;padding:5px 8px;margin:0;overflow-x:auto;white-space:pre-wrap;word-break:break-word;line-height:1.4">${escHtml(JSON.stringify(cfg.jsonExample(['Spalte 1', 'Spalte 2']), null, 1))}</pre>
+      <div style="margin-bottom:6px">
+        <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)">${g.label}</div>
+        ${types.map(([key, cfg]) => {
+          const ex = FIELD_TYPE_EXAMPLES[key] || {};
+          return `
+          <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px">
+            <div style="padding:12px 14px;background:var(--surface2)">
+              <div style="display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:0.72rem;font-weight:600;color:var(--accent);margin-bottom:7px">
+                ${icon(cfg.icon, 12, 'color:var(--accent)')} ${cfg.label}
+              </div>
+              <div style="font-weight:700;font-size:0.88rem;margin-bottom:3px;color:var(--text)">${ex.title || cfg.label}</div>
+              <div style="font-size:0.75rem;color:var(--muted);line-height:1.4">${ex.problem ? 'Problem: ' + ex.problem : cfg.claudeHint}</div>
             </div>
-          </div>`).join('')}
+            <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border)">
+              <div style="padding:10px 12px;border-right:1px solid var(--border)">
+                <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:7px;display:flex;align-items:center;gap:4px">${icon('target', 11)} Prompt-Ziel</div>
+                <div style="font-size:0.76rem;color:var(--muted);line-height:1.5;font-style:italic">${ex.promptGoal || '–'}</div>
+              </div>
+              <div style="padding:10px 12px">
+                <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:7px;display:flex;align-items:center;gap:4px">${icon('eye', 11)} Ausgabe</div>
+                ${ex.outputHtml || '<span style="font-size:0.76rem;color:var(--muted)">–</span>'}
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
       </div>`;
   }).join('');
 
   overlay.innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:540px;width:100%;max-height:88vh;overflow-y:auto;padding:20px 20px 16px;box-sizing:border-box">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:640px;width:100%;padding:20px 20px 16px;box-sizing:border-box;margin:auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
         <h3 style="margin:0;font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:8px">
           ${icon('help-circle', 16, 'color:var(--accent)')} Ausgabe-Feld-Typen
         </h3>
         <button onclick="document.getElementById('fieldTypeHelpOverlay').style.display='none'"
           style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;padding:0 4px">×</button>
       </div>
-      <p style="font-size:0.79rem;color:var(--muted);margin:0 0 16px;line-height:1.5">
-        Wähle den Typ passend zur gewünschten Ausgabestruktur. Claude nutzt ihn als Anweisung für das JSON-Format.
+      <p style="font-size:0.78rem;color:var(--muted);margin:0 0 4px;line-height:1.5">
+        Wähle den Typ passend zur gewünschten Ausgabestruktur.
       </p>
-      ${groupsHtml}
+      ${cardsHtml}
     </div>`;
 
   overlay.style.display = 'flex';
