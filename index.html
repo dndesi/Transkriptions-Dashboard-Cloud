@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.32</button>
+        onmouseout="this.style.color='var(--muted)'">v5.33</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1175,6 +1175,16 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.33 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.33</span><span class="cl-date">17.06.2026</span></div>
+        <ul>
+          <li><strong>Ausgabe-Felder im Editor bearbeitbar</strong> – Der Prompt-Editor zeigt jetzt einen vollständigen Schema-Builder (Feldname + Typ-Dropdown) statt nur JSON-Code. Felder können direkt hinzugefügt, geändert und gelöscht werden. Die JSON-Vorschau aktualisiert sich live beim Tippen.</li>
+          <li><strong>Fix: outputSchema wurde nie gespeichert</strong> – <code>savePromptFromEditor()</code> liest jetzt die Schema-Felder aus dem Builder und speichert sie korrekt. Beim Löschen aller Felder wird das Schema explizit entfernt.</li>
+        </ul>
+        <div class="cl-tech">index.html: promptEditorSchemaPreview ersetzt durch promptEditorSchemaSection mit promptEditorSchemaList + promptEditorSchemaJsonPreview. js/prompts.js: _editorSchema[], _renderEditorSchema(), _editorSyncSchema(), _editorAddField(), _editorRemoveField() neu. openPromptEditorModal() lädt Schema in Builder. savePromptFromEditor() liest Schema, löscht altes explizit via delete.</div>
+      </div>
 
       <!-- ── v5.32 ── -->
       <div class="cl-entry">
@@ -3625,8 +3635,23 @@
       <p style="font-size:0.7rem; color:var(--muted); margin-top:3px;">Kommagetrennt – für Suche und Filterung in der Bibliothek.</p>
     </div>
 
-    <!-- JSON-Vorschau für Prompts mit Ausgabe-Schema (v5.29) -->
-    <div id="promptEditorSchemaPreview" style="display:none; margin-bottom:16px;"></div>
+    <!-- Ausgabe-Felder-Builder (v5.33) -->
+    <div id="promptEditorSchemaSection" style="margin-bottom:16px;">
+      <div style="border-top:1px solid var(--border); margin:0 0 14px; position:relative;">
+        <span style="position:absolute; top:-9px; left:12px; background:var(--surface); padding:0 8px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--muted);">Ausgabe-Felder</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px">
+        <p style="font-size:0.78rem;color:var(--muted);margin:0;line-height:1.4">Optional: Definiere strukturierte Felder für die KI-Ausgabe. Ohne Felder antwortet Claude als Freitext.</p>
+        <button onclick="showFieldTypeHelp()" style="background:none;border:1px solid var(--border);border-radius:20px;color:var(--muted);cursor:pointer;padding:3px 10px;font-size:0.75rem;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:4px" title="Alle Feldtypen anzeigen">
+          <i data-lucide="help-circle" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Feldtypen
+        </button>
+      </div>
+      <div id="promptEditorSchemaList"></div>
+      <button onclick="_editorAddField()" style="background:none;border:1px dashed var(--border);border-radius:8px;color:var(--muted);cursor:pointer;padding:7px 14px;font-size:0.82rem;width:100%;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:5px">
+        <i data-lucide="plus" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Feld hinzufügen
+      </button>
+      <div id="promptEditorSchemaJsonPreview" style="display:none;margin-top:10px;"></div>
+    </div>
 
     <div id="promptEditorError" style="display:none; margin-bottom:12px; padding:9px 12px; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); border-radius:8px; font-size:0.82rem; color:var(--red);"></div>
 
@@ -3779,29 +3804,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.32"></script>
-<script src="js/storage.js?v=5.32"></script>
-<script src="js/config.js?v=5.32"></script>
-<script src="js/auth.js?v=5.32"></script>
-<script src="js/drive.js?v=5.32"></script>
-<script src="js/sessions.js?v=5.32"></script>
-<script src="js/assemblyai.js?v=5.32"></script>
-<script src="js/claude.js?v=5.32"></script>
-<script src="js/ui.js?v=5.32"></script>
-<script src="js/tags.js?v=5.32"></script>
-<script src="js/notes.js?v=5.32"></script>
-<script src="js/persons.js?v=5.32"></script>
-<script src="js/audio.js?v=5.32"></script>
-<script src="js/recorder.js?v=5.32"></script>
-<script src="js/app.js?v=5.32"></script>
+<script src="js/icons.js?v=5.33"></script>
+<script src="js/storage.js?v=5.33"></script>
+<script src="js/config.js?v=5.33"></script>
+<script src="js/auth.js?v=5.33"></script>
+<script src="js/drive.js?v=5.33"></script>
+<script src="js/sessions.js?v=5.33"></script>
+<script src="js/assemblyai.js?v=5.33"></script>
+<script src="js/claude.js?v=5.33"></script>
+<script src="js/ui.js?v=5.33"></script>
+<script src="js/tags.js?v=5.33"></script>
+<script src="js/notes.js?v=5.33"></script>
+<script src="js/persons.js?v=5.33"></script>
+<script src="js/audio.js?v=5.33"></script>
+<script src="js/recorder.js?v=5.33"></script>
+<script src="js/app.js?v=5.33"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.32"></script>
-<script src="js/search.js?v=5.32"></script>
-<script src="js/calendar.js?v=5.32"></script>
-<script src="js/prompts.js?v=5.32"></script>
-<script src="js/projects.js?v=5.32"></script>
-<script src="js/import.js?v=5.32"></script>
+<script src="js/features.js?v=5.33"></script>
+<script src="js/search.js?v=5.33"></script>
+<script src="js/calendar.js?v=5.33"></script>
+<script src="js/prompts.js?v=5.33"></script>
+<script src="js/projects.js?v=5.33"></script>
+<script src="js/import.js?v=5.33"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

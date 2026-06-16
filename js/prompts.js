@@ -1103,6 +1103,100 @@ function openSystemPromptView(id) {
   if (window.lucide) lucide.createIcons({ nodes: [modal] });
 }
 
+// ── Editor-Schema-Builder (v5.33) ─────────────────────────────────────────────
+let _editorSchema = [];
+
+function _renderEditorSchema() {
+  const listEl    = document.getElementById('promptEditorSchemaList');
+  const previewEl = document.getElementById('promptEditorSchemaJsonPreview');
+  if (!listEl) return;
+
+  if (_editorSchema.length === 0) {
+    listEl.innerHTML = '';
+    if (previewEl) previewEl.style.display = 'none';
+    return;
+  }
+
+  listEl.innerHTML = _editorSchema.map(f => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <input id="pefl_${f.id}" type="text" placeholder="Feldname (z.B. Kernpunkte)" value="${escHtml(f.label)}"
+        oninput="_editorSyncSchema()" onchange="_editorSyncSchema()"
+        style="flex:1;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;outline:none">
+      <select id="peft_${f.id}" onchange="_editorSyncSchema()"
+        style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;outline:none;max-width:160px">
+        ${genFieldTypeDropdown(f.type)}
+      </select>
+      <button onclick="_editorRemoveField('${f.id}')"
+        style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0" title="Entfernen">
+        ${icon('x', 14)}
+      </button>
+    </div>`).join('');
+
+  // JSON-Vorschau aktualisieren
+  const valid = _editorSchema.filter(f => f.label);
+  if (previewEl) {
+    if (valid.length > 0) {
+      previewEl.style.display = '';
+      previewEl.innerHTML = `<details>
+        <summary style="font-size:0.75rem;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;list-style:none;outline:none">
+          ${icon('chevron-right', 12)} JSON-Vorschau – wird beim Ausführen automatisch ergänzt
+        </summary>
+        <pre style="margin:6px 0 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word">${escHtml(_buildJsonPreview(valid.map(f => ({
+          label: f.label, type: f.type,
+          field: f.label.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'') || 'field'
+        }))))}</pre>
+      </details>`;
+    } else {
+      previewEl.style.display = 'none';
+    }
+  }
+
+  if (window.lucide) lucide.createIcons({ nodes: [listEl, previewEl].filter(Boolean) });
+}
+
+function _editorSyncSchema() {
+  // Werte aus DOM zurück in _editorSchema schreiben (für Live-Preview)
+  _editorSchema.forEach(f => {
+    const lblEl  = document.getElementById('pefl_' + f.id);
+    const typEl  = document.getElementById('peft_' + f.id);
+    if (lblEl) f.label = lblEl.value;
+    if (typEl) f.type  = typEl.value;
+  });
+  // JSON-Vorschau neu rendern ohne Feldliste neu zu bauen (verhindert Cursor-Verlust)
+  const previewEl = document.getElementById('promptEditorSchemaJsonPreview');
+  const valid = _editorSchema.filter(f => f.label);
+  if (previewEl) {
+    if (valid.length > 0) {
+      previewEl.style.display = '';
+      previewEl.innerHTML = `<details>
+        <summary style="font-size:0.75rem;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;list-style:none;outline:none">
+          ${icon('chevron-right', 12)} JSON-Vorschau – wird beim Ausführen automatisch ergänzt
+        </summary>
+        <pre style="margin:6px 0 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word">${escHtml(_buildJsonPreview(valid.map(f => ({
+          label: f.label, type: f.type,
+          field: f.label.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'') || 'field'
+        }))))}</pre>
+      </details>`;
+      if (window.lucide) lucide.createIcons({ nodes: [previewEl] });
+    } else {
+      previewEl.style.display = 'none';
+    }
+  }
+}
+
+function _editorAddField() {
+  _editorSchema.push({ id: 'pe' + Date.now(), label: '', type: 'list' });
+  _renderEditorSchema();
+  // Fokus auf neues Feld setzen
+  const last = _editorSchema[_editorSchema.length - 1];
+  setTimeout(() => document.getElementById('pefl_' + last.id)?.focus(), 50);
+}
+
+function _editorRemoveField(id) {
+  _editorSchema = _editorSchema.filter(f => f.id !== id);
+  _renderEditorSchema();
+}
+
 function openPromptEditorModal(id) {
   const prompts  = getCustomPrompts();
   const existing = id ? prompts.find(p => p.id === id) : null;
@@ -1134,30 +1228,12 @@ function openPromptEditorModal(id) {
   const resetBtn = document.getElementById('promptEditorResetBtn');
   if (resetBtn) resetBtn.style.display = 'none';
 
-  // v5.29: JSON-Vorschau bei Prompts mit outputSchema
-  const schemaPreviewEl = document.getElementById('promptEditorSchemaPreview');
-  if (schemaPreviewEl) {
-    const schema = existing?.outputSchema;
-    if (Array.isArray(schema) && schema.length > 0) {
-      schemaPreviewEl.style.display = '';
-      schemaPreviewEl.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <details style="flex:1">
-            <summary style="font-size:0.75rem;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;list-style:none;outline:none">
-              ${icon('chevron-right', 12)} JSON-Format – wird beim Ausführen automatisch ergänzt
-            </summary>
-            <pre style="margin:6px 0 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word">${escHtml(_buildJsonPreview(schema))}</pre>
-          </details>
-          <button onclick="showFieldTypeHelp()" style="background:none;border:1px solid var(--border);border-radius:20px;color:var(--muted);cursor:pointer;padding:3px 10px;font-size:0.75rem;white-space:nowrap;flex-shrink:0;margin-left:8px;display:flex;align-items:center;gap:4px" title="Alle Feldtypen anzeigen">
-            ${icon('help-circle', 12)} Feldtypen
-          </button>
-        </div>`;
-      if (window.lucide) lucide.createIcons({ nodes: [schemaPreviewEl] });
-    } else {
-      schemaPreviewEl.style.display = 'none';
-      schemaPreviewEl.innerHTML = '';
-    }
-  }
+  // v5.33: Schema-Builder mit vorhandenen Feldern befüllen
+  const existingSchema = existing?.outputSchema;
+  _editorSchema = Array.isArray(existingSchema) && existingSchema.length > 0
+    ? existingSchema.map((f, i) => ({ id: 'pe' + i, label: f.label || '', type: f.type || 'list' }))
+    : [];
+  _renderEditorSchema();
 
   const modal = document.getElementById('promptEditorModal');
   modal.style.display = 'flex';
@@ -1184,11 +1260,36 @@ function savePromptFromEditor() {
   if (!name)    { errEl.textContent = 'Bitte einen Namen eingeben.';   errEl.style.display = 'block'; return; }
   if (!kontext) { errEl.textContent = 'Bitte einen Kontext eingeben.'; errEl.style.display = 'block'; return; }
 
+  // v5.33: Schema aus Builder lesen (aktuelle DOM-Werte holen)
+  _editorSchema.forEach(f => {
+    const lblEl = document.getElementById('pefl_' + f.id);
+    const typEl = document.getElementById('peft_' + f.id);
+    if (lblEl) f.label = lblEl.value.trim();
+    if (typEl) f.type  = typEl.value;
+  });
+  const schema = _editorSchema
+    .filter(f => f.label)
+    .map((f, i) => ({
+      label: f.label,
+      type:  f.type,
+      field: f.label.toLowerCase()
+              .normalize('NFD').replace(/[̀-ͯ]/g, '')
+              .replace(/[^a-z0-9]+/g, '_')
+              .replace(/^_|_$/g, '') || 'field_' + i
+    }));
+
   const obj = { name, description: desc, icon: iconName, rolle, tonalitaet, grenzen, kontext, tags };
+  // outputSchema explizit setzen oder entfernen (nicht vom alten Objekt erben)
+  if (schema.length > 0) obj.outputSchema = schema;
+
   const prompts = getCustomPrompts();
   if (id) {
     const idx = prompts.findIndex(p => p.id === id);
-    if (idx >= 0) prompts[idx] = { ...prompts[idx], ...obj };
+    if (idx >= 0) {
+      const old = { ...prompts[idx] };
+      delete old.outputSchema; // altes Schema immer entfernen, neues wird ggf. in obj gesetzt
+      prompts[idx] = { ...old, ...obj };
+    }
   } else {
     prompts.push({ id: genPromptId(), ...obj });
   }
