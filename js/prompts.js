@@ -1141,12 +1141,17 @@ function openPromptEditorModal(id) {
     if (Array.isArray(schema) && schema.length > 0) {
       schemaPreviewEl.style.display = '';
       schemaPreviewEl.innerHTML = `
-        <details>
-          <summary style="font-size:0.75rem;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;list-style:none;outline:none">
-            ${icon('chevron-right', 12)} JSON-Format – wird beim Ausführen automatisch ergänzt
-          </summary>
-          <pre style="margin:6px 0 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word">${escHtml(_buildJsonPreview(schema))}</pre>
-        </details>`;
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <details style="flex:1">
+            <summary style="font-size:0.75rem;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;list-style:none;outline:none">
+              ${icon('chevron-right', 12)} JSON-Format – wird beim Ausführen automatisch ergänzt
+            </summary>
+            <pre style="margin:6px 0 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word">${escHtml(_buildJsonPreview(schema))}</pre>
+          </details>
+          <button onclick="showFieldTypeHelp()" style="background:none;border:1px solid var(--border);border-radius:20px;color:var(--muted);cursor:pointer;padding:3px 10px;font-size:0.75rem;white-space:nowrap;flex-shrink:0;margin-left:8px;display:flex;align-items:center;gap:4px" title="Alle Feldtypen anzeigen">
+            ${icon('help-circle', 12)} Feldtypen
+          </button>
+        </div>`;
       if (window.lucide) lucide.createIcons({ nodes: [schemaPreviewEl] });
     } else {
       schemaPreviewEl.style.display = 'none';
@@ -1755,6 +1760,54 @@ function _genSave() {
   showToast(`"${s.name}" wurde erstellt ✓`, 'success');
 }
 
+// ── Feldtypen-Hilfe (v5.32) ───────────────────────────────────────────────────
+function showFieldTypeHelp() {
+  let overlay = document.getElementById('fieldTypeHelpOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'fieldTypeHelpOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box';
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.style.display = 'none'; });
+    document.body.appendChild(overlay);
+  }
+
+  const groupsHtml = FIELD_TYPE_GROUPS.map(g => {
+    const types = Object.entries(FIELD_TYPE_CONFIG).filter(([, c]) => c.group === g.key);
+    if (!types.length) return '';
+    return `
+      <div style="margin-bottom:18px">
+        <div style="font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)">${g.label}</div>
+        ${types.map(([, cfg]) => `
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);margin-bottom:6px">
+            <span style="color:var(--accent);flex-shrink:0;margin-top:1px">${icon(cfg.icon, 15)}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:600;font-size:0.83rem;margin-bottom:2px">${cfg.label}</div>
+              <div style="font-size:0.76rem;color:var(--muted);margin-bottom:5px;line-height:1.4">${cfg.claudeHint}</div>
+              <pre style="font-size:0.7rem;color:var(--muted);background:var(--bg,#f8f9fa);border:1px solid var(--border);border-radius:6px;padding:5px 8px;margin:0;overflow-x:auto;white-space:pre-wrap;word-break:break-word;line-height:1.4">${escHtml(JSON.stringify(cfg.jsonExample(['Spalte 1', 'Spalte 2']), null, 1))}</pre>
+            </div>
+          </div>`).join('')}
+      </div>`;
+  }).join('');
+
+  overlay.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:540px;width:100%;max-height:88vh;overflow-y:auto;padding:20px 20px 16px;box-sizing:border-box">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <h3 style="margin:0;font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:8px">
+          ${icon('help-circle', 16, 'color:var(--accent)')} Ausgabe-Feld-Typen
+        </h3>
+        <button onclick="document.getElementById('fieldTypeHelpOverlay').style.display='none'"
+          style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;padding:0 4px">×</button>
+      </div>
+      <p style="font-size:0.79rem;color:var(--muted);margin:0 0 16px;line-height:1.5">
+        Wähle den Typ passend zur gewünschten Ausgabestruktur. Claude nutzt ihn als Anweisung für das JSON-Format.
+      </p>
+      ${groupsHtml}
+    </div>`;
+
+  overlay.style.display = 'flex';
+  if (window.lucide) lucide.createIcons({ nodes: [overlay] });
+}
+
 // ── Step-6-Formular (v5.31) ───────────────────────────────────────────────────
 // Gemeinsam für Wizard- und KI-Modus – zeigt 4 Felder statt einer Textarea
 function _buildGen6Form(s, validSchema) {
@@ -1919,7 +1972,12 @@ function _renderGenModal() {
 
     else if (s.step === 5) {
       html = `
-        <p style="font-size:0.78rem;color:var(--muted);margin:0 0 14px">Optional: Definiere strukturierte Ausgabe-Felder. Ohne Felder → Claude antwortet als Freitext.</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px">
+          <p style="font-size:0.78rem;color:var(--muted);margin:0">Optional: Definiere strukturierte Ausgabe-Felder. Ohne Felder → Claude antwortet als Freitext.</p>
+          <button onclick="showFieldTypeHelp()" style="background:none;border:1px solid var(--border);border-radius:20px;color:var(--muted);cursor:pointer;padding:3px 10px;font-size:0.75rem;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:4px" title="Alle Feldtypen anzeigen">
+            ${icon('help-circle', 12)} Feldtypen
+          </button>
+        </div>
         <div id="genSchemaList">
           ${s.schema.map(f => `
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">

@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.31</button>
+        onmouseout="this.style.color='var(--muted)'">v5.32</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1175,6 +1175,15 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.32 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.32</span><span class="cl-date">17.06.2026</span></div>
+        <ul>
+          <li><strong>Feldtypen-Hilfe</strong> – Neuer „Feldtypen"-Button (mit ?-Icon) im Generator Schritt 5 und im Prompt-Editor. Öffnet ein Overlay mit allen 11 Ausgabe-Feld-Typen, gruppiert nach Kategorie (Einfach / Listen / Strukturiert / Komplex). Jeder Typ zeigt Label, Beschreibung und JSON-Beispiel.</li>
+        </ul>
+        <div class="cl-tech">js/prompts.js: showFieldTypeHelp() neu – Overlay wird dynamisch erstellt, schließt bei Klick außerhalb. FIELD_TYPE_CONFIG + FIELD_TYPE_GROUPS als Datenquelle. ? Buttons in Step-5-Render und openPromptEditorModal() (bei vorhandenem Schema) ergänzt.</div>
+      </div>
 
       <!-- ── v5.31 ── -->
       <div class="cl-entry">
@@ -3770,29 +3779,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.31"></script>
-<script src="js/storage.js?v=5.31"></script>
-<script src="js/config.js?v=5.31"></script>
-<script src="js/auth.js?v=5.31"></script>
-<script src="js/drive.js?v=5.31"></script>
-<script src="js/sessions.js?v=5.31"></script>
-<script src="js/assemblyai.js?v=5.31"></script>
-<script src="js/claude.js?v=5.31"></script>
-<script src="js/ui.js?v=5.31"></script>
-<script src="js/tags.js?v=5.31"></script>
-<script src="js/notes.js?v=5.31"></script>
-<script src="js/persons.js?v=5.31"></script>
-<script src="js/audio.js?v=5.31"></script>
-<script src="js/recorder.js?v=5.31"></script>
-<script src="js/app.js?v=5.31"></script>
+<script src="js/icons.js?v=5.32"></script>
+<script src="js/storage.js?v=5.32"></script>
+<script src="js/config.js?v=5.32"></script>
+<script src="js/auth.js?v=5.32"></script>
+<script src="js/drive.js?v=5.32"></script>
+<script src="js/sessions.js?v=5.32"></script>
+<script src="js/assemblyai.js?v=5.32"></script>
+<script src="js/claude.js?v=5.32"></script>
+<script src="js/ui.js?v=5.32"></script>
+<script src="js/tags.js?v=5.32"></script>
+<script src="js/notes.js?v=5.32"></script>
+<script src="js/persons.js?v=5.32"></script>
+<script src="js/audio.js?v=5.32"></script>
+<script src="js/recorder.js?v=5.32"></script>
+<script src="js/app.js?v=5.32"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.31"></script>
-<script src="js/search.js?v=5.31"></script>
-<script src="js/calendar.js?v=5.31"></script>
-<script src="js/prompts.js?v=5.31"></script>
-<script src="js/projects.js?v=5.31"></script>
-<script src="js/import.js?v=5.31"></script>
+<script src="js/features.js?v=5.32"></script>
+<script src="js/search.js?v=5.32"></script>
+<script src="js/calendar.js?v=5.32"></script>
+<script src="js/prompts.js?v=5.32"></script>
+<script src="js/projects.js?v=5.32"></script>
+<script src="js/import.js?v=5.32"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
