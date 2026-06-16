@@ -54,9 +54,17 @@ function genPromptId() {
 // ── Aus den 4 Teilen einen vollständigen Prompt zusammenbauen ──
 function assemblePromptText(promptObj) {
   const parts = [];
-  if (promptObj.rolle?.trim())      parts.push(`Du bist ${promptObj.rolle.trim()}.`);
-  if (promptObj.tonalitaet?.trim()) parts.push(`Tonalität: ${promptObj.tonalitaet.trim()}.`);
-  if (promptObj.grenzen?.trim())    parts.push(`Was du NICHT tun sollst: ${promptObj.grenzen.trim()}.`);
+  // v5.27: Strip "Du bist" Prefix (falls KI es trotzdem schreibt) + trailing periods
+  if (promptObj.rolle?.trim()) {
+    const rolle = promptObj.rolle.trim().replace(/^Du bist\s+/i, '').replace(/\.+$/, '');
+    parts.push(`Du bist ${rolle}.`);
+  }
+  if (promptObj.tonalitaet?.trim()) {
+    parts.push(`Tonalität: ${promptObj.tonalitaet.trim().replace(/\.+$/, '')}.`);
+  }
+  if (promptObj.grenzen?.trim()) {
+    parts.push(`Was du NICHT tun sollst: ${promptObj.grenzen.trim().replace(/\.+$/, '')}.`);
+  }
   const kontext = (promptObj.kontext || promptObj.prompt || '').trim();
   if (kontext) parts.push(kontext);
   return parts.join('\n\n');
@@ -1565,10 +1573,10 @@ Erstelle einen vollständigen, professionellen Prompt. Antworte NUR mit einem JS
   "name": "Prompt-Name auf Deutsch (3-5 Wörter)",
   "icon": "lucide-icon-name (Englisch, z.B. target, briefcase, heart)",
   "description": "Kurze Beschreibung (max. 8 Wörter)",
-  "rolle": "Du bist... (optional, leer wenn nicht sinnvoll)",
-  "tonalitaet": "Tonalität (optional)",
-  "grenzen": "Was der Prompt NICHT tun soll (optional)",
-  "kontext": "Der Prompt-Text. Nutze {{transkript}} als Platzhalter. Enthält die eigentliche Analyse-Anweisung.",
+  "rolle": "Rollen-Beschreibung OHNE 'Du bist' Prefix und OHNE abschließenden Punkt (z.B. 'ein erfahrener Coach') – leer lassen wenn nicht sinnvoll",
+  "tonalitaet": "Tonalität OHNE abschließenden Punkt (optional)",
+  "grenzen": "Was der Prompt NICHT tun soll, OHNE abschließenden Punkt (optional)",
+  "kontext": "Der Prompt-Text. Nutze {{transkript}} als Platzhalter. Enthält die eigentliche Analyse-Anweisung. KEINE JSON-Format-Anweisungen einfügen – werden automatisch ergänzt.",
   "schema": [
     {"id": "f0", "label": "Feldname auf Deutsch", "type": "text|list|checklist|list_with_person"}
   ],
@@ -1642,6 +1650,26 @@ function _genSave() {
   closePromptGeneratorModal();
   _renderPromptsResults();
   showToast(`"${s.name}" wurde erstellt ✓`, 'success');
+}
+
+// ── JSON-Vorschau für Step 6 ──────────────────────────────────────────────────
+// Baut exakt dasselbe JSON-Template wie runCustomPrompt() zur Laufzeit
+function _buildJsonPreview(validSchema) {
+  const tpl = {};
+  validSchema.forEach((f, i) => {
+    const field = (f.label || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_|_$/g, '') || 'field_' + i;
+    if (f.type === 'text')             tpl[field] = 'Text...';
+    else if (f.type === 'list')        tpl[field] = ['Eintrag 1', 'Eintrag 2'];
+    else if (f.type === 'checklist')   tpl[field] = ['Schritt 1', 'Schritt 2'];
+    else if (f.type === 'list_with_person') tpl[field] = [{ person: 'Name', text: 'Inhalt' }];
+    else if (f.type === 'table')       tpl[field] = [['...', '...']];
+    else                               tpl[field] = 'Text...';
+  });
+  return JSON.stringify(tpl, null, 2);
 }
 
 // ── Modal rendern ─────────────────────────────────────────────────────────────
@@ -1800,6 +1828,12 @@ function _renderGenModal() {
           </label>
           <textarea id="genFinalPrompt" rows="14"
             style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;resize:vertical;box-sizing:border-box;font-family:monospace;line-height:1.6;outline:none">${escHtml(previewText)}</textarea>
+          ${validSchema.length > 0 ? `<details style="margin-top:8px">
+            <summary style="font-size:0.75rem;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;list-style:none;outline:none">
+              ${icon('chevron-right', 12, 'transition:transform 0.15s')} JSON-Format – wird beim Ausführen automatisch ergänzt
+            </summary>
+            <pre style="margin:6px 0 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word">${escHtml(_buildJsonPreview(validSchema))}</pre>
+          </details>` : ''}
         </div>`;
     }
   }
@@ -1844,6 +1878,12 @@ function _renderGenModal() {
           </label>
           <textarea id="genFinalPrompt" rows="14"
             style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;resize:vertical;box-sizing:border-box;font-family:monospace;line-height:1.6;outline:none">${escHtml(previewText)}</textarea>
+          ${validSchema.length > 0 ? `<details style="margin-top:8px">
+            <summary style="font-size:0.75rem;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;list-style:none;outline:none">
+              ${icon('chevron-right', 12, 'transition:transform 0.15s')} JSON-Format – wird beim Ausführen automatisch ergänzt
+            </summary>
+            <pre style="margin:6px 0 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word">${escHtml(_buildJsonPreview(validSchema))}</pre>
+          </details>` : ''}
         </div>`;
     }
   }

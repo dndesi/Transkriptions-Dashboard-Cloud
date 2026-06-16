@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.26</button>
+        onmouseout="this.style.color='var(--muted)'">v5.28</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1175,6 +1175,26 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.28 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.28</span><span class="cl-date">16.06.2026</span></div>
+        <ul>
+          <li><strong>JSON-Format-Vorschau im Generator</strong> – In Schritt 6 (Wizard &amp; KI-Modus) erscheint bei Prompts mit Ausgabe-Feldern ein ausklappbares „JSON-Format"-Element. Es zeigt exakt das JSON-Template, das <code>runCustomPrompt()</code> beim Ausführen automatisch ergänzt – mit abgeleiteten Feldnamen und Beispielwerten je Typ.</li>
+        </ul>
+        <div class="cl-tech">js/prompts.js: _buildJsonPreview(validSchema) neu – spiegelt JSON-Template-Logik aus runCustomPrompt(). Step-6-Render (Wizard + KI-Modus): info-div ersetzt durch &lt;details&gt;-Element mit &lt;pre&gt;-Block.</div>
+      </div>
+
+      <!-- ── v5.27 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.27</span><span class="cl-date">16.06.2026</span></div>
+        <ul>
+          <li><strong>Bugfix: „Du bist Du bist" + Doppelpunkte</strong> – Der KI-Generator schrieb „Du bist …" in das rolle-Feld, <code>assemblePromptText()</code> ergänzte dann nochmals „Du bist" am Anfang. Fix: Prefix und abschließende Punkte werden jetzt defensiv in <code>assemblePromptText()</code> gestripped. KI-Prompt-Anweisungen korrigiert.</li>
+          <li><strong>Kein JSON-Overlap im KI-Modus</strong> – Der KI-Generator fügte keine JSON-Format-Anweisungen mehr in <code>kontext</code> ein, da <code>runCustomPrompt()</code> diese automatisch ergänzt. Entsprechende Anweisung im Prompt klargestellt.</li>
+          <li><strong>JSON-Hinweis in Schritt 6</strong> – Bei Prompts mit Ausgabe-Feldern erscheint unter der Textarea ein Info-Hinweis, dass die JSON-Format-Anweisung beim Ausführen automatisch ergänzt wird.</li>
+        </ul>
+        <div class="cl-tech">js/prompts.js: assemblePromptText() mit replace(/^Du bist\s+/i,'') + replace(/\.+$/,'') für rolle/ton/grenzen. _genGenerateWithAI() Prompt-Instruktionen für rolle/tonalitaet/grenzen/kontext angepasst. Step-6-Render: JSON-Hinweis bei validSchema.length > 0 ergänzt (Wizard + KI-Modus).</div>
+      </div>
 
       <!-- ── v5.26 ── -->
       <div class="cl-entry">
@@ -3719,29 +3739,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.26"></script>
-<script src="js/storage.js?v=5.26"></script>
-<script src="js/config.js?v=5.26"></script>
-<script src="js/auth.js?v=5.26"></script>
-<script src="js/drive.js?v=5.26"></script>
-<script src="js/sessions.js?v=5.26"></script>
-<script src="js/assemblyai.js?v=5.26"></script>
-<script src="js/claude.js?v=5.26"></script>
-<script src="js/ui.js?v=5.26"></script>
-<script src="js/tags.js?v=5.26"></script>
-<script src="js/notes.js?v=5.26"></script>
-<script src="js/persons.js?v=5.26"></script>
-<script src="js/audio.js?v=5.26"></script>
-<script src="js/recorder.js?v=5.26"></script>
-<script src="js/app.js?v=5.26"></script>
+<script src="js/icons.js?v=5.28"></script>
+<script src="js/storage.js?v=5.28"></script>
+<script src="js/config.js?v=5.28"></script>
+<script src="js/auth.js?v=5.28"></script>
+<script src="js/drive.js?v=5.28"></script>
+<script src="js/sessions.js?v=5.28"></script>
+<script src="js/assemblyai.js?v=5.28"></script>
+<script src="js/claude.js?v=5.28"></script>
+<script src="js/ui.js?v=5.28"></script>
+<script src="js/tags.js?v=5.28"></script>
+<script src="js/notes.js?v=5.28"></script>
+<script src="js/persons.js?v=5.28"></script>
+<script src="js/audio.js?v=5.28"></script>
+<script src="js/recorder.js?v=5.28"></script>
+<script src="js/app.js?v=5.28"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.26"></script>
-<script src="js/search.js?v=5.26"></script>
-<script src="js/calendar.js?v=5.26"></script>
-<script src="js/prompts.js?v=5.26"></script>
-<script src="js/projects.js?v=5.26"></script>
-<script src="js/import.js?v=5.26"></script>
+<script src="js/features.js?v=5.28"></script>
+<script src="js/search.js?v=5.28"></script>
+<script src="js/calendar.js?v=5.28"></script>
+<script src="js/prompts.js?v=5.28"></script>
+<script src="js/projects.js?v=5.28"></script>
+<script src="js/import.js?v=5.28"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
