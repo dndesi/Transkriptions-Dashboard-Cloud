@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.22</button>
+        onmouseout="this.style.color='var(--muted)'">v5.23</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1190,6 +1190,17 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.23 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.23</span><span class="cl-date">16.06.2026</span></div>
+        <ul>
+          <li><strong>Phase 5b: Prompt-Generator</strong> – Neuer „Generator"-Button in der Prompt-Bibliothek. Zwei Modi: Wizard (5 Schritte: Grundlagen → Charakter → Kontext → Ausgabe-Format → Fertig) und KI-Assistent (Freitext-Beschreibung → Claude baut den Prompt vollständig).</li>
+          <li><strong>Ausgabe-Schema-Builder</strong> – Im Wizard-Schritt 4 können strukturierte Ausgabe-Felder per Klick definiert werden: Freitext, Aufzählung, Checkliste, Aufgaben (Person + Text), Tabelle. Schema wird als <code>outputSchema</code> gespeichert und automatisch gerendert.</li>
+          <li><strong>KI-Modus</strong> – Claude analysiert die Beschreibung und generiert Name, Rolle, Tonalität, Grenzen, Kontext und Ausgabe-Felder automatisch. Ergebnis ist vor dem Speichern prüfbar.</li>
+        </ul>
+        <div class="cl-tech">index.html: promptGeneratorModal neu. js/prompts.js: _genState, GEN_FIELD_TYPES, openPromptGeneratorModal(), closePromptGeneratorModal(), _genSetMode(), _genSaveStep(), _genNext(), _genBack(), _genAddField(), _genRemoveField(), _genGenerateWithAI() (callClaudeAPI), _genSave(), _renderGenModal(); Generator-Button in renderPromptsView() Toolbar.</div>
+      </div>
 
       <!-- ── v5.22 ── -->
       <div class="cl-entry">
@@ -3553,6 +3564,22 @@
         <i data-lucide="save" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i> Speichern
       </button>
     </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: Prompt-Generator (v5.23) ─────────── -->
+<div class="modal-backdrop" id="promptGeneratorModal" style="display:none">
+  <div class="modal" style="max-width:600px; width:95%; max-height:90vh; overflow-y:auto;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+      <h3 id="genModalTitle" style="margin:0; font-size:1rem; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="wand-2" style="width:16px;height:16px;stroke:var(--accent);stroke-width:2;fill:none"></i>
+        Prompt generieren
+      </h3>
+      <button onclick="closePromptGeneratorModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div id="genProgressBar" style="margin-bottom:18px; min-height:32px;"></div>
+    <div id="genStepContent" style="min-height:160px;"></div>
+    <div id="genNavigation" style="display:flex; gap:8px; justify-content:space-between; margin-top:20px; padding-top:16px; border-top:1px solid var(--border);"></div>
   </div>
 </div>
 

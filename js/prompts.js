@@ -835,6 +835,9 @@ function renderPromptsView() {
           <option value="feature">Feature</option>
           <option value="custom">Eigene</option>
         </select>
+        <button class="btn btn-ghost" onclick="openPromptGeneratorModal()" style="gap:6px;flex-shrink:0" title="Prompt per Wizard oder KI erstellen">
+          ${icon('wand-2',14)} Generator
+        </button>
         <button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;flex-shrink:0">
           ${icon('plus',14)} Neuer Prompt
         </button>
@@ -1425,6 +1428,433 @@ function importPrompts(event) {
   reader.readAsText(file);
   // Input zurücksetzen damit dieselbe Datei nochmal importiert werden kann
   event.target.value = '';
+}
+
+// ═══════════════════════════════════════════════════
+// PROMPT-GENERATOR WIZARD (v5.23)
+// Wizard-Modus: 5 Schritte | KI-Modus: Beschreiben → Claude baut
+// ═══════════════════════════════════════════════════
+
+let _genState = null;
+
+const GEN_FIELD_TYPES = [
+  { value: 'text',             label: 'Freitext' },
+  { value: 'list',             label: 'Aufzählung' },
+  { value: 'checklist',        label: 'Checkliste' },
+  { value: 'list_with_person', label: 'Aufgaben (Person + Text)' },
+  { value: 'table',            label: 'Tabelle' },
+];
+
+function openPromptGeneratorModal() {
+  _genState = {
+    mode: null, step: 1,
+    name: '', icon: 'sparkles', description: '',
+    rolle: '', tonalitaet: '', grenzen: '',
+    kontext: '', schema: [], tags: [], aiDesc: ''
+  };
+  _renderGenModal();
+  document.getElementById('promptGeneratorModal').style.display = 'flex';
+}
+
+function closePromptGeneratorModal() {
+  document.getElementById('promptGeneratorModal').style.display = 'none';
+  _genState = null;
+}
+
+function _genSetMode(mode) {
+  _genState.mode = mode;
+  _genState.step = 2;
+  _renderGenModal();
+}
+
+// ── DOM → State lesen beim Navigieren ────────────────────────────────────────
+function _genSaveStep() {
+  if (!_genState) return;
+  const s   = _genState;
+  const val = (id) => (document.getElementById(id)?.value || '');
+
+  if (s.mode === 'wizard') {
+    if (s.step === 2) {
+      s.name        = val('genName').trim();
+      s.icon        = val('genIcon').trim() || 'sparkles';
+      s.description = val('genDesc').trim();
+    }
+    if (s.step === 3) {
+      s.rolle      = val('genRolle').trim();
+      s.tonalitaet = val('genTon').trim();
+      s.grenzen    = val('genGrenzen').trim();
+    }
+    if (s.step === 4) { s.kontext = val('genKontext').trim(); }
+    if (s.step === 5) {
+      s.schema.forEach(f => {
+        f.label = (document.getElementById('gfl_' + f.id)?.value || '').trim();
+        f.type  =  document.getElementById('gft_' + f.id)?.value || 'list';
+      });
+    }
+    if (s.step === 6) {
+      s.tags = val('genTags').split(',').map(t => t.trim()).filter(Boolean);
+    }
+  } else {
+    if (s.step === 2) { s.aiDesc = val('genAiDesc').trim(); }
+    if (s.step === 6) {
+      s.tags = val('genTags').split(',').map(t => t.trim()).filter(Boolean);
+    }
+  }
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function _genNext() {
+  _genSaveStep();
+  const s = _genState;
+
+  if (s.mode === 'wizard') {
+    if (s.step === 2 && !s.name)   { showToast('Bitte einen Namen eingeben.', 'warning'); return; }
+    if (s.step === 4 && !s.kontext){ showToast('Bitte einen Kontext eingeben.', 'warning'); return; }
+    if (s.step === 6) { _genSave(); return; }
+    s.step++;
+  } else {
+    if (s.step === 2 && !s.aiDesc) { showToast('Bitte beschreibe was der Prompt tun soll.', 'warning'); return; }
+    if (s.step === 2) { _genGenerateWithAI(); return; }
+    if (s.step === 6) { _genSave(); return; }
+    s.step++;
+  }
+  _renderGenModal();
+}
+
+function _genBack() {
+  _genSaveStep();
+  const s = _genState;
+  if (s.mode === 'ai' && s.step === 6) { s.step = 2; }
+  else if (s.step === 2)               { s.step = 1; s.mode = null; }
+  else if (s.step > 1)                 { s.step--; }
+  _renderGenModal();
+}
+
+// ── Schema-Builder ────────────────────────────────────────────────────────────
+function _genAddField() {
+  _genSaveStep();
+  _genState.schema.push({ id: 'f' + Date.now(), label: '', type: 'list' });
+  _renderGenModal();
+}
+
+function _genRemoveField(id) {
+  _genSaveStep();
+  _genState.schema = _genState.schema.filter(f => f.id !== id);
+  _renderGenModal();
+}
+
+// ── KI-Generierung ────────────────────────────────────────────────────────────
+async function _genGenerateWithAI() {
+  const s = _genState;
+  document.getElementById('genStepContent').innerHTML = `
+    <div style="text-align:center; padding:48px 24px">
+      <div style="margin-bottom:14px">${icon('loader-2', 32, 'color:var(--accent)')}</div>
+      <div style="font-size:0.88rem; color:var(--muted)">Claude erstellt deinen Prompt…</div>
+    </div>`;
+  document.getElementById('genNavigation').innerHTML = '';
+  if (window.lucide) lucide.createIcons({ nodes: [document.getElementById('promptGeneratorModal')] });
+
+  const promptText = `Du bist ein Prompt-Engineer für "Distill Voice", eine App die Gespräche transkribiert und mit KI analysiert.
+
+Der Nutzer möchte folgenden Analyse-Prompt: ${s.aiDesc}
+
+Erstelle einen vollständigen, professionellen Prompt. Antworte NUR mit einem JSON-Objekt, kein Markdown:
+{
+  "name": "Prompt-Name auf Deutsch (3-5 Wörter)",
+  "icon": "lucide-icon-name (Englisch, z.B. target, briefcase, heart)",
+  "description": "Kurze Beschreibung (max. 8 Wörter)",
+  "rolle": "Du bist... (optional, leer wenn nicht sinnvoll)",
+  "tonalitaet": "Tonalität (optional)",
+  "grenzen": "Was der Prompt NICHT tun soll (optional)",
+  "kontext": "Der Prompt-Text. Nutze {{transkript}} als Platzhalter. Enthält die eigentliche Analyse-Anweisung.",
+  "schema": [
+    {"id": "f0", "label": "Feldname auf Deutsch", "type": "text|list|checklist|list_with_person"}
+  ],
+  "tags": ["tag1"]
+}`;
+
+  try {
+    const { text } = await callClaudeAPI(promptText);
+    const jsonStr = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    const data    = JSON.parse(jsonStr);
+
+    s.name        = data.name        || '';
+    s.icon        = data.icon        || 'sparkles';
+    s.description = data.description || '';
+    s.rolle       = data.rolle       || '';
+    s.tonalitaet  = data.tonalitaet  || '';
+    s.grenzen     = data.grenzen     || '';
+    s.kontext     = data.kontext     || '';
+    s.schema      = (data.schema || []).map((f, i) => ({
+      id: 'f' + i, label: f.label || '', type: f.type || 'list'
+    }));
+    s.tags        = data.tags || [];
+    s.step        = 6;
+    _renderGenModal();
+  } catch(e) {
+    showToast('KI-Generierung fehlgeschlagen: ' + e.message, 'error');
+    s.step = 2;
+    _renderGenModal();
+  }
+}
+
+// ── Speichern ─────────────────────────────────────────────────────────────────
+function _genSave() {
+  _genSaveStep();
+  const s = _genState;
+  if (!s.name)   { showToast('Name fehlt.', 'warning'); return; }
+  if (!s.kontext){ showToast('Kontext fehlt.', 'warning'); return; }
+
+  // Schema bereinigen: nur Felder mit Label behalten, field-Key ableiten
+  const schema = s.schema
+    .filter(f => f.label && f.type)
+    .map((f, i) => ({
+      label: f.label,
+      type:  f.type,
+      field: f.label.toLowerCase()
+              .normalize('NFD').replace(/[̀-ͯ]/g, '')
+              .replace(/[^a-z0-9]+/g, '_')
+              .replace(/^_|_$/g, '') || 'field_' + i
+    }));
+
+  const obj = {
+    id:          genPromptId(),
+    name:        s.name,
+    icon:        s.icon || 'sparkles',
+    description: s.description,
+    rolle:       s.rolle,
+    tonalitaet:  s.tonalitaet,
+    grenzen:     s.grenzen,
+    kontext:     s.kontext,
+    tags:        s.tags,
+    ...(schema.length > 0 ? { outputSchema: schema } : {})
+  };
+
+  const prompts = getCustomPrompts();
+  prompts.push(obj);
+  saveCustomPrompts(prompts);
+  closePromptGeneratorModal();
+  _renderPromptsResults();
+  showToast(`"${s.name}" wurde erstellt ✓`, 'success');
+}
+
+// ── Modal rendern ─────────────────────────────────────────────────────────────
+function _renderGenModal() {
+  const s = _genState;
+  if (!s) return;
+  const titleEl    = document.getElementById('genModalTitle');
+  const progressEl = document.getElementById('genProgressBar');
+  const contentEl  = document.getElementById('genStepContent');
+  const navEl      = document.getElementById('genNavigation');
+  if (!contentEl || !navEl) return;
+
+  // Fortschritts-Leiste
+  if (s.mode && progressEl) {
+    const steps  = s.mode === 'wizard'
+      ? ['Grundlagen', 'Charakter', 'Kontext', 'Ausgabe', 'Fertig']
+      : ['Beschreiben', 'Ergebnis'];
+    const curIdx = s.mode === 'wizard' ? (s.step - 2) : (s.step === 2 ? 0 : 1);
+    progressEl.innerHTML = `<div style="display:flex;align-items:center;gap:4px;justify-content:center;flex-wrap:wrap">
+      ${steps.map((label, i) => `
+        <div style="display:flex;align-items:center;gap:4px">
+          <div style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;
+            background:${i <= curIdx ? 'var(--accent)' : 'var(--surface2)'};
+            color:${i <= curIdx ? '#fff' : 'var(--muted)'};
+            border:${i > curIdx ? '1px solid var(--border)' : 'none'}">
+            ${i < curIdx ? '✓' : i + 1}
+          </div>
+          <span style="font-size:0.64rem;color:${i === curIdx ? 'var(--accent)' : 'var(--muted)'};white-space:nowrap">${label}</span>
+          ${i < steps.length - 1 ? `<div style="width:20px;height:1px;background:var(--border)"></div>` : ''}
+        </div>`).join('')}
+    </div>`;
+  } else if (progressEl) {
+    progressEl.innerHTML = '';
+  }
+
+  let html = '';
+
+  // ── Schritt 1: Modus wählen ────────────────────────────────────────────────
+  if (s.step === 1) {
+    if (titleEl) titleEl.querySelector('span') && (titleEl.lastChild.textContent = 'Prompt generieren');
+    html = `
+      <p style="font-size:0.85rem;color:var(--muted);margin:0 0 16px">Wie möchtest du vorgehen?</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <button onclick="_genSetMode('wizard')" style="text-align:left;padding:16px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);cursor:pointer">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            ${icon('list-ordered', 20, 'color:var(--accent)')}
+            <span style="font-weight:700;font-size:0.9rem;color:var(--text)">Wizard</span>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);line-height:1.5">Schritt für Schritt: Rolle, Tonalität, Kontext und Ausgabe-Format selbst definieren.</div>
+        </button>
+        <button onclick="_genSetMode('ai')" style="text-align:left;padding:16px;border-radius:12px;border:1px solid rgba(108,99,255,0.3);background:rgba(108,99,255,0.05);cursor:pointer">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            ${icon('sparkles', 20, 'color:var(--accent)')}
+            <span style="font-weight:700;font-size:0.9rem;color:var(--text)">KI-Assistent</span>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);line-height:1.5">Beschreibe kurz was der Prompt tun soll – Claude baut ihn vollständig für dich.</div>
+        </button>
+      </div>`;
+    navEl.innerHTML = '';
+  }
+
+  // ── Wizard-Schritte ────────────────────────────────────────────────────────
+  else if (s.mode === 'wizard') {
+
+    if (s.step === 2) {
+      html = `
+        <div style="margin-bottom:14px">
+          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px">Name *</label>
+          <input id="genName" type="text" placeholder="z.B. Team-Feedback-Analyse" value="${escHtml(s.name)}"
+            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;outline:none;box-sizing:border-box">
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px">Kurzbeschreibung</label>
+          <input id="genDesc" type="text" placeholder="Was macht dieser Prompt?" value="${escHtml(s.description)}"
+            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;outline:none;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px">Icon (Lucide-Name)</label>
+          <input id="genIcon" type="text" placeholder="sparkles" value="${escHtml(s.icon)}"
+            style="width:160px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;outline:none">
+        </div>`;
+    }
+
+    else if (s.step === 3) {
+      html = `
+        <p style="font-size:0.78rem;color:var(--muted);margin:0 0 14px">Alle Felder optional – leer lassen wenn nicht nötig.</p>
+        <div style="margin-bottom:12px">
+          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:4px">Rolle</label>
+          <textarea id="genRolle" rows="2" placeholder="Du bist ein erfahrener Kommunikationscoach…"
+            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.85rem;resize:vertical;box-sizing:border-box;font-family:inherit">${escHtml(s.rolle)}</textarea>
+          <p style="font-size:0.68rem;color:var(--muted);margin:3px 0 0">→ Wird zu: „Du bist [Rolle]."</p>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:4px">Tonalität</label>
+          <input id="genTon" type="text" placeholder="sachlich, direkt, in Du-Form…" value="${escHtml(s.tonalitaet)}"
+            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.85rem;outline:none;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:4px">Grenzen</label>
+          <textarea id="genGrenzen" rows="2" placeholder="Keine medizinischen Diagnosen. Nur aus dem Transkript ableiten."
+            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.85rem;resize:vertical;box-sizing:border-box;font-family:inherit">${escHtml(s.grenzen)}</textarea>
+        </div>`;
+    }
+
+    else if (s.step === 4) {
+      html = `
+        <p style="font-size:0.78rem;color:var(--muted);margin:0 0 10px">Was soll dieser Prompt analysieren oder tun? Nutze <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">{{transkript}}</code> als Platzhalter.</p>
+        <textarea id="genKontext" rows="10" placeholder="Analysiere das folgende Transkript auf offene Fragen und ungelöste Konflikte.\n\n{{transkript}}\n\nAntworte NUR mit einem JSON-Objekt…"
+          style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.84rem;resize:vertical;box-sizing:border-box;font-family:monospace;line-height:1.5">${escHtml(s.kontext)}</textarea>`;
+    }
+
+    else if (s.step === 5) {
+      html = `
+        <p style="font-size:0.78rem;color:var(--muted);margin:0 0 14px">Optional: Definiere strukturierte Ausgabe-Felder. Ohne Felder → Claude antwortet als Freitext.</p>
+        <div id="genSchemaList">
+          ${s.schema.map(f => `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <input id="gfl_${f.id}" type="text" placeholder="Feldname (z.B. Kernpunkte)" value="${escHtml(f.label)}"
+                style="flex:1;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;outline:none">
+              <select id="gft_${f.id}" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;outline:none">
+                ${GEN_FIELD_TYPES.map(t => `<option value="${t.value}"${f.type === t.value ? ' selected' : ''}>${t.label}</option>`).join('')}
+              </select>
+              <button onclick="_genRemoveField('${f.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0" title="Entfernen">
+                ${icon('x', 14)}
+              </button>
+            </div>`).join('')}
+        </div>
+        <button onclick="_genAddField()" class="btn btn-ghost" style="gap:6px;margin-top:4px">
+          ${icon('plus', 13)} Feld hinzufügen
+        </button>`;
+    }
+
+    else if (s.step === 6) {
+      const preview = assemblePromptText({ rolle: s.rolle, tonalitaet: s.tonalitaet, grenzen: s.grenzen, kontext: s.kontext });
+      const validSchema = s.schema.filter(f => f.label);
+      html = `
+        <div style="margin-bottom:14px">
+          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px">Tags (kommagetrennt)</label>
+          <input id="genTags" type="text" placeholder="feedback, team, wöchentlich" value="${escHtml(s.tags.join(', '))}"
+            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;outline:none;box-sizing:border-box">
+        </div>
+        ${validSchema.length > 0 ? `
+        <div style="margin-bottom:14px;padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:8px">Ausgabe-Felder</div>
+          ${validSchema.map(f => `<div style="font-size:0.8rem;color:var(--text);padding:3px 0;display:flex;align-items:center;gap:6px">
+            ${icon('corner-down-right', 11, 'color:var(--muted);flex-shrink:0')}
+            <strong>${escHtml(f.label)}</strong>
+            <span style="color:var(--muted)">—</span>
+            <span style="color:var(--muted)">${GEN_FIELD_TYPES.find(t => t.value === f.type)?.label || f.type}</span>
+          </div>`).join('')}
+        </div>` : ''}
+        <div style="padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:6px">Prompt-Vorschau</div>
+          <div style="font-size:0.78rem;color:var(--muted);font-family:monospace;white-space:pre-wrap;max-height:140px;overflow-y:auto;line-height:1.5">${escHtml(preview.slice(0, 500))}${preview.length > 500 ? '…' : ''}</div>
+        </div>`;
+    }
+  }
+
+  // ── KI-Modus ──────────────────────────────────────────────────────────────
+  else if (s.mode === 'ai') {
+
+    if (s.step === 2) {
+      html = `
+        <p style="font-size:0.85rem;color:var(--muted);margin:0 0 12px">Beschreibe kurz was dein Prompt analysieren oder tun soll. Claude erstellt den vollständigen Prompt für dich.</p>
+        <textarea id="genAiDesc" rows="6" placeholder="Ich brauche einen Prompt der aus einem Gespräch alle offenen Fragen extrahiert und als Checkliste auflistet, damit ich nach dem Meeting sofort weiß was noch zu klären ist…"
+          style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;resize:vertical;box-sizing:border-box;line-height:1.5">${escHtml(s.aiDesc)}</textarea>`;
+    }
+
+    else if (s.step === 6) {
+      const preview    = assemblePromptText({ rolle: s.rolle, tonalitaet: s.tonalitaet, grenzen: s.grenzen, kontext: s.kontext });
+      const validSchema = s.schema.filter(f => f.label);
+      html = `
+        <div style="padding:10px 12px;background:rgba(108,99,255,0.06);border-radius:8px;border:1px solid rgba(108,99,255,0.2);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+          ${icon('check-circle', 16, 'color:var(--accent)')}
+          <span style="font-size:0.83rem;color:var(--accent);font-weight:600">Claude hat „${escHtml(s.name)}" erstellt</span>
+        </div>
+        ${validSchema.length > 0 ? `
+        <div style="margin-bottom:14px;padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:8px">Ausgabe-Felder</div>
+          ${validSchema.map(f => `<div style="font-size:0.8rem;color:var(--text);padding:3px 0;display:flex;align-items:center;gap:6px">
+            ${icon('corner-down-right', 11, 'color:var(--muted);flex-shrink:0')}
+            <strong>${escHtml(f.label)}</strong>
+            <span style="color:var(--muted)">—</span>
+            <span style="color:var(--muted)">${GEN_FIELD_TYPES.find(t => t.value === f.type)?.label || f.type}</span>
+          </div>`).join('')}
+        </div>` : ''}
+        <div style="margin-bottom:14px">
+          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px">Tags</label>
+          <input id="genTags" type="text" placeholder="tag1, tag2" value="${escHtml(s.tags.join(', '))}"
+            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;outline:none;box-sizing:border-box">
+        </div>
+        <div style="padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:6px">Prompt-Vorschau</div>
+          <div style="font-size:0.78rem;color:var(--muted);font-family:monospace;white-space:pre-wrap;max-height:140px;overflow-y:auto;line-height:1.5">${escHtml(preview.slice(0, 500))}${preview.length > 500 ? '…' : ''}</div>
+        </div>`;
+    }
+  }
+
+  contentEl.innerHTML = html;
+
+  // Navigation
+  const isFirst = s.step === 1;
+  const isLast  = s.step === 6;
+  const isAiGen = s.mode === 'ai' && s.step === 2;
+
+  let navHtml = '';
+  navHtml += isFirst
+    ? '<div></div>'
+    : `<button class="btn btn-ghost" onclick="_genBack()" style="gap:6px">${icon('arrow-left', 13)} Zurück</button>`;
+
+  if (!isFirst) {
+    const label = isLast  ? `${icon('check', 13)} Speichern`
+                : isAiGen ? `${icon('sparkles', 13)} Generieren`
+                :           `Weiter ${icon('arrow-right', 13)}`;
+    navHtml += `<button class="btn btn-primary" onclick="_genNext()" style="gap:6px">${label}</button>`;
+  }
+  navEl.innerHTML = navHtml;
+
+  if (window.lucide) lucide.createIcons({ nodes: [document.getElementById('promptGeneratorModal')] });
 }
 
 // ── Migration beim Seitenstart ausführen (v5.22) ─────────────────────────────
