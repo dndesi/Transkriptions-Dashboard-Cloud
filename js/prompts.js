@@ -32,9 +32,9 @@ function assemblePromptText(promptObj) {
 }
 
 // ── Such- und Filter-State für Prompt-Bibliothek ──────
-let _promptSearch    = '';
-let _promptTagFilter = '';
-let _promptTypeFilter = 'all'; // 'all' | 'system' | 'standard' | 'feature' | 'custom'
+let _promptSearch      = '';
+let _activeTagFilters  = []; // v5.19: Multi-Tag-Filter (Array)
+let _promptTypeFilter  = 'all'; // 'all' | 'system' | 'standard' | 'feature' | 'custom'
 
 // ── Bearbeitbare Standard-Prompts ────────────────────
 const EDITABLE_PROMPTS_KEY = 'editablePrompts';
@@ -756,7 +756,17 @@ function setPromptTypeFilter(val) {
 }
 
 function setPromptTagFilter(tag) {
-  _promptTagFilter = (_promptTagFilter === tag) ? '' : tag;
+  const idx = _activeTagFilters.indexOf(tag);
+  if (idx >= 0) {
+    _activeTagFilters.splice(idx, 1);
+  } else {
+    _activeTagFilters.push(tag);
+  }
+  _renderPromptsResults();
+}
+
+function clearPromptTagFilters() {
+  _activeTagFilters = [];
   _renderPromptsResults();
 }
 
@@ -817,27 +827,29 @@ function _renderPromptsResults() {
   const container = document.getElementById('promptsResults');
   if (!container) return;
 
-  const typeFilter = _promptTypeFilter;
-  const q          = _promptSearch;
-  const tagF       = _promptTagFilter;
+  const typeFilter  = _promptTypeFilter;
+  const q           = _promptSearch;
+  const activeTags  = _activeTagFilters; // Array (multi-select)
+  // Wenn Tags aktiv → nur Eigene Prompts zeigen (Tags gelten nur für eigene)
+  const tagFilterActive = activeTags.length > 0;
 
   const matchesSearch = (texts) => !q || texts.some(t => (t||'').toLowerCase().includes(q));
 
-  // System-Prompts filtern
-  const systemVisible = typeFilter === 'all' || typeFilter === 'system';
+  // System-Prompts filtern (nicht wenn Tag-Filter aktiv)
+  const systemVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'system');
   const filteredSystem = systemVisible
     ? SYSTEM_PROMPTS.filter(p => matchesSearch([p.name, p.description, p.prompt]))
     : [];
 
-  // Standard-Prompts filtern
-  const standardVisible = typeFilter === 'all' || typeFilter === 'standard';
+  // Standard-Prompts filtern (nicht wenn Tag-Filter aktiv)
+  const standardVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'standard');
   const filteredStandard = standardVisible
     ? EDITABLE_PROMPT_DEFAULTS.filter(p => p.category === 'standard')
         .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
     : [];
 
-  // Feature-Prompts filtern
-  const featureVisible = typeFilter === 'all' || typeFilter === 'feature';
+  // Feature-Prompts filtern (nicht wenn Tag-Filter aktiv)
+  const featureVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'feature');
   const filteredFeature = featureVisible
     ? EDITABLE_PROMPT_DEFAULTS.filter(p => p.category === 'feature')
         .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
@@ -849,7 +861,12 @@ function _renderPromptsResults() {
   if (q) filteredCustom = filteredCustom.filter(p =>
     matchesSearch([p.name, p.description, assemblePromptText(p), ...(p.tags||[])])
   );
-  if (tagF) filteredCustom = filteredCustom.filter(p => (p.tags||[]).includes(tagF));
+  // Multi-Tag-Filter: alle aktiven Tags müssen vorhanden sein (AND-Verknüpfung)
+  if (tagFilterActive) {
+    filteredCustom = filteredCustom.filter(p =>
+      activeTags.every(t => (p.tags||[]).includes(t))
+    );
+  }
 
   const allTags    = _getAllPromptTags();
   const hasResults = filteredSystem.length || filteredStandard.length || filteredFeature.length || filteredCustom.length;
@@ -922,7 +939,7 @@ function _renderPromptsResults() {
       </div>
       ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
       ${_usedInChip('Sitzungsdetail → Analysen → Eigene Prompts')}
-      ${tags.length ? `<div class="prompt-card-tags">${tags.map(t=>`<span class="tag-chip" style="cursor:pointer" title="Nach '${escHtml(t)}' filtern" onclick="setPromptTagFilter('${escHtml(t)}')">${escHtml(t)}</span>`).join('')}</div>` : ''}
+      ${tags.length ? `<div class="prompt-card-tags">${tags.map(t=>{const isAct=activeTags.includes(t);return`<span class="tag-chip" style="cursor:pointer;${isAct?'background:var(--accent);color:#fff;border-color:var(--accent)':''}" title="Nach '${escHtml(t)}' filtern" onclick="setPromptTagFilter('${escHtml(t)}')">${escHtml(t)}</span>`;}).join('')}</div>` : ''}
       <div class="prompt-card-preview">${escHtml(preview.slice(0, 120))}${preview.length > 120 ? '…' : ''}</div>
       <div class="prompt-card-actions">
         <button class="btn btn-ghost" onclick="openPromptEditorModal('${p.id}')" style="padding:5px 7px" title="Bearbeiten">
@@ -942,15 +959,24 @@ function _renderPromptsResults() {
 
   // Tag-Filter-Chips (nur für eigene Prompts)
   if (allTags.length && (typeFilter === 'all' || typeFilter === 'custom')) {
-    html += `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px;">
-      ${allTags.map(t => `
-        <button onclick="setPromptTagFilter('${escHtml(t)}')"
+    html += `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px; align-items:center;">
+      <span style="font-size:0.7rem; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-right:2px">Tags:</span>
+      ${allTags.map(t => {
+        const isActive = activeTags.includes(t);
+        return `<button onclick="setPromptTagFilter('${escHtml(t)}')"
           style="padding:3px 10px; font-size:0.75rem; border-radius:12px;
-          border:1px solid ${tagF===t ? 'var(--accent)' : 'var(--border)'};
-          background:${tagF===t ? 'var(--accent)' : 'var(--surface2)'};
-          color:${tagF===t ? '#fff' : 'var(--text)'}; cursor:pointer; font-weight:${tagF===t ? '700' : '400'}">
+          border:1px solid ${isActive ? 'var(--accent)' : 'var(--border)'};
+          background:${isActive ? 'var(--accent)' : 'var(--surface2)'};
+          color:${isActive ? '#fff' : 'var(--text)'}; cursor:pointer; font-weight:${isActive ? '700' : '400'}">
           ${escHtml(t)}
-        </button>`).join('')}
+        </button>`;
+      }).join('')}
+      ${tagFilterActive ? `<button onclick="clearPromptTagFilters()"
+        style="padding:3px 10px; font-size:0.72rem; border-radius:12px;
+        border:1px solid var(--border); background:transparent;
+        color:var(--muted); cursor:pointer; margin-left:4px">
+        ✕ Alle
+      </button>` : ''}
     </div>`;
   }
 
@@ -1011,14 +1037,14 @@ function openSystemPromptView(id) {
   document.getElementById('promptEditorDesc').value      = p.description;
   document.getElementById('promptEditorIcon').value      = p.icon;
   document.getElementById('promptEditorText').value      = p.prompt;
-  // v5.18: Felder die System-Prompts nicht haben → leeren (verhindert Kontamination)
-  document.getElementById('promptEditorRolle').value     = '';
-  document.getElementById('promptEditorTonalitaet').value= '';
-  document.getElementById('promptEditorGrenzen').value   = '';
-  document.getElementById('promptEditorTags').value      = '';
   document.getElementById('promptEditorError').style.display = 'none';
-  ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorRolle',
-   'promptEditorTonalitaet','promptEditorGrenzen','promptEditorText','promptEditorTags'].forEach(fid => {
+  // v5.18: custom-only Sektionen komplett ausblenden → keine Kontamination möglich
+  const structEl = document.getElementById('promptEditorStructuredFields');
+  const tagsEl   = document.getElementById('promptEditorTagsSection');
+  if (structEl) structEl.style.display = 'none';
+  if (tagsEl)   tagsEl.style.display   = 'none';
+  // Sichtbare Felder als ReadOnly markieren
+  ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorText'].forEach(fid => {
     const el2 = document.getElementById(fid);
     if (el2) { el2.readOnly = true; el2.style.opacity = '0.6'; }
   });
@@ -1045,6 +1071,11 @@ function openPromptEditorModal(id) {
   document.getElementById('promptEditorTags').value        = (existing?.tags || []).join(', ');
   document.getElementById('promptEditorError').style.display = 'none';
 
+  // v5.18: custom-only Sektionen einblenden + alle Felder editierbar
+  const structEl = document.getElementById('promptEditorStructuredFields');
+  const tagsEl   = document.getElementById('promptEditorTagsSection');
+  if (structEl) structEl.style.display = '';
+  if (tagsEl)   tagsEl.style.display   = '';
   ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorRolle',
    'promptEditorTonalitaet','promptEditorGrenzen','promptEditorText','promptEditorTags'].forEach(fid => {
     const el2 = document.getElementById(fid);
