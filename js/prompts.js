@@ -1217,19 +1217,18 @@ async function runCustomPrompt(session, promptObj, transcript) {
     promptText += `\n\nTranskript:\n${trimTranscript(transcript, 300000)}`;
   }
 
-  // ── Strukturiertes Ausgabe-Schema ────────────────────────────────────────
+  // ── Strukturiertes Ausgabe-Schema (v5.30: aus FIELD_TYPE_CONFIG) ──────────
   const schema = promptObj.outputSchema;
   if (Array.isArray(schema) && schema.length > 0) {
-    // Automatische JSON-Format-Anweisung anhängen
     const jsonTemplate = {};
+    const hints = [];
     schema.forEach(s => {
-      if (s.type === 'text')             jsonTemplate[s.field] = 'Text...';
-      else if (s.type === 'list')        jsonTemplate[s.field] = ['Eintrag 1', 'Eintrag 2'];
-      else if (s.type === 'checklist')   jsonTemplate[s.field] = ['Schritt 1', 'Schritt 2'];
-      else if (s.type === 'list_with_person') jsonTemplate[s.field] = [{ person: 'Name', text: 'Inhalt' }];
-      else if (s.type === 'table')       jsonTemplate[s.field] = [(s.columns || ['Spalte 1', 'Spalte 2']).map(() => '...')];
+      const cfg = FIELD_TYPE_CONFIG[s.type];
+      jsonTemplate[s.field] = cfg ? cfg.jsonExample(s.columns) : 'Text...';
+      if (cfg?.claudeHint) hints.push(`"${s.field}": ${cfg.claudeHint}`);
     });
-    promptText += `\n\nAntworte ausschließlich mit validem JSON, ohne Erklärungen, ohne Markdown-Blöcke. Exaktes Format:\n${JSON.stringify(jsonTemplate, null, 2)}`;
+    const hintBlock = hints.length > 0 ? `\nFeld-Hinweise:\n${hints.map(h => `- ${h}`).join('\n')}` : '';
+    promptText += `\n\nAntworte ausschließlich mit validem JSON, ohne Erklärungen, ohne Markdown-Blöcke.${hintBlock}\nExaktes Format:\n${JSON.stringify(jsonTemplate, null, 2)}`;
   }
 
   const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(promptText, forward));
@@ -1465,13 +1464,95 @@ function importPrompts(event) {
 
 let _genState = null;
 
-const GEN_FIELD_TYPES = [
-  { value: 'text',             label: 'Freitext' },
-  { value: 'list',             label: 'Aufzählung' },
-  { value: 'checklist',        label: 'Checkliste' },
-  { value: 'list_with_person', label: 'Aufgaben (Person + Text)' },
-  { value: 'table',            label: 'Tabelle' },
+// ── Zentrale Ausgabe-Feld-Konfiguration (v5.30) ──────────────────────────────
+// Einzige Quelle der Wahrheit für alle Typen: Dropdown, JSON-Vorschau,
+// Claude-Anweisung und Renderer lesen alle aus dieser Config.
+// Neuen Typ hinzufügen = eine neue Zeile hier.
+const FIELD_TYPE_CONFIG = {
+  // ── Einfach ───────────────────────────────────────────────────────────────
+  text: {
+    label: 'Freitext', icon: 'align-left', group: 'einfach',
+    jsonExample: ()  => 'Text...',
+    claudeHint:  'Fließtext ohne Aufzählungen',
+  },
+  boolean: {
+    label: 'Ja / Nein', icon: 'toggle-right', group: 'einfach',
+    jsonExample: ()  => true,
+    claudeHint:  'Genau true oder false (ohne Anführungszeichen)',
+  },
+  rating: {
+    label: 'Bewertung (1–5)', icon: 'star', group: 'einfach',
+    jsonExample: ()  => ({ wert: 4, begruendung: 'Kurze Begründung...' }),
+    claudeHint:  'Objekt mit "wert" (ganze Zahl 1–5) und "begruendung" (ein Satz)',
+  },
+  // ── Listen ────────────────────────────────────────────────────────────────
+  list: {
+    label: 'Aufzählung', icon: 'list', group: 'listen',
+    jsonExample: ()  => ['Eintrag 1', 'Eintrag 2'],
+    claudeHint:  'Array von Strings, ein Punkt pro Eintrag',
+  },
+  checklist: {
+    label: 'Checkliste', icon: 'check-square', group: 'listen',
+    jsonExample: ()  => ['Schritt 1', 'Schritt 2'],
+    claudeHint:  'Array von Strings, jeder Eintrag ist ein abhakbarer Punkt',
+  },
+  tag_list: {
+    label: 'Tags / Labels', icon: 'tag', group: 'listen',
+    jsonExample: ()  => ['Tag 1', 'Tag 2', 'Tag 3'],
+    claudeHint:  'Array von kurzen Strings (1–3 Wörter) zur Kategorisierung',
+  },
+  // ── Strukturiert ──────────────────────────────────────────────────────────
+  list_with_person: {
+    label: 'Aufgaben (Person + Text)', icon: 'user-check', group: 'strukturiert',
+    jsonExample: ()  => [{ person: 'Name', text: 'Aufgabe...' }],
+    claudeHint:  'Array von Objekten mit "person" (Name) und "text" (Aufgabe). Nur wenn Person eindeutig erkennbar.',
+  },
+  list_with_date: {
+    label: 'Termin (Datum + Text)', icon: 'calendar-event', group: 'strukturiert',
+    jsonExample: ()  => [{ datum: 'TT.MM.JJJJ', text: 'Beschreibung...' }],
+    claudeHint:  'Array von Objekten mit "datum" (Format TT.MM.JJJJ) und "text" (Beschreibung)',
+  },
+  quote: {
+    label: 'Zitat', icon: 'quote', group: 'strukturiert',
+    jsonExample: ()  => [{ text: 'Wörtliche Aussage...', person: 'Name' }],
+    claudeHint:  'Array von Objekten mit "text" (wörtliches Zitat) und "person" (Sprecher, falls erkennbar)',
+  },
+  key_value: {
+    label: 'Schlüssel-Wert', icon: 'layout-list', group: 'strukturiert',
+    jsonExample: ()  => [{ key: 'Begriff', value: 'Wert' }],
+    claudeHint:  'Array von Objekten mit "key" (Bezeichnung) und "value" (Inhalt)',
+  },
+  // ── Komplex ───────────────────────────────────────────────────────────────
+  table: {
+    label: 'Tabelle', icon: 'table', group: 'komplex',
+    jsonExample: (cols) => [(cols || ['Spalte 1', 'Spalte 2']).map(() => '...')],
+    claudeHint:  'Array von Arrays (Zeilen), jede Zeile hat so viele Werte wie Spalten definiert',
+  },
+};
+
+// Gruppen-Reihenfolge für das Dropdown
+const FIELD_TYPE_GROUPS = [
+  { key: 'einfach',      label: 'Einfach' },
+  { key: 'listen',       label: 'Listen' },
+  { key: 'strukturiert', label: 'Strukturiert' },
+  { key: 'komplex',      label: 'Komplex' },
 ];
+
+// Dropdown-HTML mit optgroup (aus Config abgeleitet)
+function genFieldTypeDropdown(selectedValue) {
+  return FIELD_TYPE_GROUPS.map(g => {
+    const types = Object.entries(FIELD_TYPE_CONFIG).filter(([, c]) => c.group === g.key);
+    if (!types.length) return '';
+    return `<optgroup label="${g.label}">${
+      types.map(([v, c]) => `<option value="${v}"${selectedValue === v ? ' selected' : ''}>${c.label}</option>`).join('')
+    }</optgroup>`;
+  }).join('');
+}
+
+// Abwärtskompatibles Array für alle Stellen die noch .find() nutzen
+const GEN_FIELD_TYPES = Object.entries(FIELD_TYPE_CONFIG).map(([value, c]) => ({
+  value, label: c.label, icon: c.icon, group: c.group,
+}));
 
 function openPromptGeneratorModal() {
   _genState = {
@@ -1677,18 +1758,13 @@ function _genSave() {
 function _buildJsonPreview(validSchema) {
   const tpl = {};
   validSchema.forEach((f, i) => {
-    // Gespeicherte Prompts haben bereits f.field; Generator-Step-6 leitet ab
     const field = f.field || (f.label || '')
       .toLowerCase()
       .normalize('NFD').replace(/[̀-ͯ]/g, '')
       .replace(/[^a-z0-9]+/g, '_')
       .replace(/^_|_$/g, '') || 'field_' + i;
-    if (f.type === 'text')             tpl[field] = 'Text...';
-    else if (f.type === 'list')        tpl[field] = ['Eintrag 1', 'Eintrag 2'];
-    else if (f.type === 'checklist')   tpl[field] = ['Schritt 1', 'Schritt 2'];
-    else if (f.type === 'list_with_person') tpl[field] = [{ person: 'Name', text: 'Inhalt' }];
-    else if (f.type === 'table')       tpl[field] = [['...', '...']];
-    else                               tpl[field] = 'Text...';
+    const cfg = FIELD_TYPE_CONFIG[f.type];
+    tpl[field] = cfg ? cfg.jsonExample(f.columns) : 'Text...';
   });
   return JSON.stringify(tpl, null, 2);
 }
@@ -1811,7 +1887,7 @@ function _renderGenModal() {
               <input id="gfl_${f.id}" type="text" placeholder="Feldname (z.B. Kernpunkte)" value="${escHtml(f.label)}"
                 style="flex:1;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;outline:none">
               <select id="gft_${f.id}" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;outline:none">
-                ${GEN_FIELD_TYPES.map(t => `<option value="${t.value}"${f.type === t.value ? ' selected' : ''}>${t.label}</option>`).join('')}
+                ${genFieldTypeDropdown(f.type)}
               </select>
               <button onclick="_genRemoveField('${f.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0" title="Entfernen">
                 ${icon('x', 14)}

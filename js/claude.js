@@ -1305,6 +1305,104 @@ function renderCustomSchemaResult(session, promptId, data, schema) {
           </table>
         </div>
       </div>`;
+    // ── Neue Typen (v5.30) ────────────────────────────────────────────────
+
+    } else if (type === 'list_with_date') {
+      const items = Array.isArray(value) ? value : [];
+      html += `<div class="work-section">
+        <div class="work-section-title">${escHtml(label)} ${addBtn()}</div>
+        <div id="${sectionId}" data-custom-section="${promptId}-${field}">`;
+      items.forEach((item, i) => {
+        const datum = typeof item === 'object' ? (item.datum || '') : '';
+        const text  = typeof item === 'object' ? (item.text  || String(item)) : String(item);
+        html += `<div class="work-item">
+          <span style="font-size:0.7rem;background:rgba(250,174,52,0.15);color:var(--accent2,#f59e0b);border-radius:4px;padding:1px 6px;white-space:nowrap;flex-shrink:0">${escHtml(datum)}</span>
+          <div class="work-item-content" data-custom-item="${promptId}-${field}-${i}">${escHtml(text)}</div>
+          ${editItemBtn(i)}${delItemBtn(i)}
+        </div>`;
+      });
+      html += `</div></div>`;
+
+    } else if (type === 'boolean') {
+      const boolVal = value === true || String(value).toLowerCase() === 'true' || String(value).toLowerCase() === 'ja';
+      html += `<div class="work-section">
+        <div class="work-section-title">${escHtml(label)}</div>
+        <div style="margin-top:6px">
+          <span style="display:inline-block;padding:3px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;
+            background:${boolVal ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.12)'};
+            color:${boolVal ? 'var(--green,#10b981)' : 'var(--red,#ef4444)'}">
+            ${boolVal ? 'Ja' : 'Nein'}
+          </span>
+        </div>
+      </div>`;
+
+    } else if (type === 'rating') {
+      const wert = typeof value === 'object' ? Number(value.wert || 0) : Number(value) || 0;
+      const begr = typeof value === 'object' ? (value.begruendung || '') : '';
+      const stars = Array.from({length: 5}, (_, i) => i < wert ? '★' : '☆').join('');
+      html += `<div class="work-section">
+        <div class="work-section-title">${escHtml(label)}</div>
+        <div style="margin-top:6px">
+          <div style="font-size:1.1rem;color:var(--accent2,#f59e0b);letter-spacing:2px">${stars}
+            <span style="font-size:0.82rem;color:var(--muted);vertical-align:middle;margin-left:4px">${wert}/5</span>
+          </div>
+          ${begr ? `<div style="font-size:0.82rem;color:var(--muted);margin-top:4px">${escHtml(begr)}</div>` : ''}
+        </div>
+      </div>`;
+
+    } else if (type === 'quote') {
+      const items = Array.isArray(value) ? value : [];
+      html += `<div class="work-section">
+        <div class="work-section-title">${escHtml(label)} ${addBtn()}</div>
+        <div id="${sectionId}" data-custom-section="${promptId}-${field}">`;
+      items.forEach((item, i) => {
+        const text   = typeof item === 'object' ? (item.text   || String(item)) : String(item);
+        const person = typeof item === 'object' ? (item.person || '') : '';
+        html += `<div class="work-item" style="align-items:flex-start">
+          <span>${icon('quote',11)}</span>
+          <div class="work-item-content" data-custom-item="${promptId}-${field}-${i}"
+            style="border-left:2px solid var(--accent);padding-left:8px">
+            <div style="font-style:italic">${escHtml(text)}</div>
+            ${person ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">— ${escHtml(person)}</div>` : ''}
+          </div>
+          ${editItemBtn(i)}${delItemBtn(i)}
+        </div>`;
+      });
+      html += `</div></div>`;
+
+    } else if (type === 'key_value') {
+      const items = Array.isArray(value) ? value : [];
+      html += `<div class="work-section">
+        <div class="work-section-title">${escHtml(label)} ${addBtn()}</div>
+        <div id="${sectionId}" data-custom-section="${promptId}-${field}">`;
+      items.forEach((item, i) => {
+        const k = typeof item === 'object' ? (item.key   || '') : String(item);
+        const v = typeof item === 'object' ? (item.value || '') : '';
+        html += `<div class="work-item">
+          <div class="work-item-content" data-custom-item="${promptId}-${field}-${i}"
+            style="display:flex;gap:10px;align-items:baseline">
+            <span style="font-weight:600;color:var(--muted);font-size:0.8rem;min-width:90px;flex-shrink:0">${escHtml(k)}</span>
+            <span>${escHtml(v)}</span>
+          </div>
+          ${editItemBtn(i)}${delItemBtn(i)}
+        </div>`;
+      });
+      html += `</div></div>`;
+
+    } else if (type === 'tag_list') {
+      const items = Array.isArray(value) ? value : [];
+      html += `<div class="work-section">
+        <div class="work-section-title">${escHtml(label)} ${addBtn()}</div>
+        <div id="${sectionId}" data-custom-section="${promptId}-${field}"
+          style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">`;
+      items.forEach((item, i) => {
+        html += `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(108,99,255,0.1);
+          color:var(--accent);border-radius:20px;padding:3px 10px;font-size:0.8rem">
+          ${escHtml(String(item))}${delItemBtn(i)}
+        </span>`;
+      });
+      html += `</div></div>`;
+
     }
   });
 
