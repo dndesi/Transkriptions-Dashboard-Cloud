@@ -65,7 +65,7 @@ function assemblePromptText(promptObj) {
 // ── Such- und Filter-State für Prompt-Bibliothek ──────
 let _promptSearch      = '';
 let _activeTagFilters  = []; // v5.19: Multi-Tag-Filter (Array)
-let _promptTypeFilter  = 'all'; // 'all' | 'system' | 'standard' | 'feature' | 'custom'
+let _promptTypeFilter  = 'all'; // 'all' | 'system' | 'standard' | 'design' | 'custom'
 
 // ── Bearbeitbare Standard-Prompts ────────────────────
 const EDITABLE_PROMPTS_KEY = 'editablePrompts';
@@ -832,7 +832,7 @@ function renderPromptsView() {
           <option value="all">Alle Typen</option>
           <option value="system">System</option>
           <option value="standard">Standard</option>
-          <option value="feature">Feature</option>
+          <option value="design">Design</option>
           <option value="custom">Eigene</option>
         </select>
         <button class="btn btn-ghost" onclick="openPromptGeneratorModal()" style="gap:6px;flex-shrink:0" title="Prompt per Wizard oder KI erstellen">
@@ -873,17 +873,17 @@ function _renderPromptsResults() {
     ? SYSTEM_PROMPTS.filter(p => matchesSearch([p.name, p.description, p.prompt]))
     : [];
 
-  // Standard-Prompts filtern (nicht wenn Tag-Filter aktiv)
+  // Standard-Prompts filtern: Standard-Analysen + Feature-Prompts (ohne Design) zusammen (v5.24)
   const standardVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'standard');
   const filteredStandard = standardVisible
-    ? EDITABLE_PROMPT_DEFAULTS.filter(p => p.category === 'standard')
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => !p.canvaDesignType)
         .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
     : [];
 
-  // Feature-Prompts filtern (nicht wenn Tag-Filter aktiv)
-  const featureVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'feature');
-  const filteredFeature = featureVisible
-    ? EDITABLE_PROMPT_DEFAULTS.filter(p => p.category === 'feature')
+  // Design-Prompts filtern: alle Prompts mit canvaDesignType (v5.24)
+  const designVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'design');
+  const filteredDesign = designVisible
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => !!p.canvaDesignType)
         .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
     : [];
 
@@ -901,7 +901,7 @@ function _renderPromptsResults() {
   }
 
   const allTags    = _getAllPromptTags();
-  const hasResults = filteredSystem.length || filteredStandard.length || filteredFeature.length || filteredCustom.length;
+  const hasResults = filteredSystem.length || filteredStandard.length || filteredDesign.length || filteredCustom.length;
 
   const sectionHead = (label, extra = '') => `
     <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:6px">
@@ -1031,15 +1031,15 @@ function _renderPromptsResults() {
 
   if (filteredStandard.length) {
     html += `<div style="margin-bottom:24px">
-      ${sectionHead('Standard-Analysen', `${icon('edit-2',11,'color:var(--muted);margin-left:2px')} <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>`)}
+      ${sectionHead('Standard-Prompts', `${icon('edit-2',11,'color:var(--muted);margin-left:2px')} <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>`)}
       <div class="prompts-grid">${filteredStandard.map(_cardEditable).join('')}</div>
     </div>`;
   }
 
-  if (filteredFeature.length) {
+  if (filteredDesign.length) {
     html += `<div style="margin-bottom:24px">
-      ${sectionHead('Feature-Prompts', `${icon('zap',11,'color:var(--muted);margin-left:2px')} <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>`)}
-      <div class="prompts-grid">${filteredFeature.map(_cardEditable).join('')}</div>
+      ${sectionHead('Design-Prompts', `${icon('layout',11,'color:var(--muted);margin-left:2px')} <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>`)}
+      <div class="prompts-grid">${filteredDesign.map(_cardEditable).join('')}</div>
     </div>`;
   }
 
