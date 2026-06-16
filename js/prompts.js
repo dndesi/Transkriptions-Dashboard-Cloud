@@ -1601,14 +1601,20 @@ function _genSaveStep() {
       });
     }
     if (s.step === 6) {
-      s.tags      = val('genTags').split(',').map(t => t.trim()).filter(Boolean);
-      s.finalText = val('genFinalPrompt');
+      s.tags       = val('genTags').split(',').map(t => t.trim()).filter(Boolean);
+      s.rolle      = val('gen6Rolle').trim();
+      s.tonalitaet = val('gen6Ton').trim();
+      s.grenzen    = val('gen6Grenzen').trim();
+      s.kontext    = val('gen6Kontext').trim();
     }
   } else {
     if (s.step === 2) { s.aiDesc = val('genAiDesc').trim(); }
     if (s.step === 6) {
-      s.tags      = val('genTags').split(',').map(t => t.trim()).filter(Boolean);
-      s.finalText = val('genFinalPrompt');
+      s.tags       = val('genTags').split(',').map(t => t.trim()).filter(Boolean);
+      s.rolle      = val('gen6Rolle').trim();
+      s.tonalitaet = val('gen6Ton').trim();
+      s.grenzen    = val('gen6Grenzen').trim();
+      s.kontext    = val('gen6Kontext').trim();
     }
   }
 }
@@ -1714,8 +1720,7 @@ function _genSave() {
   _genSaveStep();
   const s = _genState;
   if (!s.name) { showToast('Name fehlt.', 'warning'); return; }
-  const hasContent = s.finalText?.trim() || s.kontext?.trim();
-  if (!hasContent) { showToast('Kein Prompt-Inhalt vorhanden.', 'warning'); return; }
+  if (!s.kontext?.trim()) { showToast('Kein Prompt-Inhalt vorhanden.', 'warning'); return; }
 
   // Schema bereinigen: nur Felder mit Label behalten, field-Key ableiten
   const schema = s.schema
@@ -1729,18 +1734,15 @@ function _genSave() {
               .replace(/^_|_$/g, '') || 'field_' + i
     }));
 
-  // v5.26: Wenn finalText vorhanden (User hat editiert oder KI-Modus),
-  // wird der komplette Text als kontext gespeichert (rolle/ton/grenzen bereits eingebaut)
-  const useFinalText = !!s.finalText?.trim();
   const obj = {
     id:          genPromptId(),
     name:        s.name,
     icon:        s.icon || 'sparkles',
     description: s.description,
-    rolle:       useFinalText ? '' : s.rolle,
-    tonalitaet:  useFinalText ? '' : s.tonalitaet,
-    grenzen:     useFinalText ? '' : s.grenzen,
-    kontext:     useFinalText ? s.finalText.trim() : s.kontext,
+    rolle:       s.rolle      || '',
+    tonalitaet:  s.tonalitaet || '',
+    grenzen:     s.grenzen    || '',
+    kontext:     s.kontext,
     tags:        s.tags,
     ...(schema.length > 0 ? { outputSchema: schema } : {})
   };
@@ -1751,6 +1753,43 @@ function _genSave() {
   closePromptGeneratorModal();
   _renderPromptsResults();
   showToast(`"${s.name}" wurde erstellt ✓`, 'success');
+}
+
+// ── Step-6-Formular (v5.31) ───────────────────────────────────────────────────
+// Gemeinsam für Wizard- und KI-Modus – zeigt 4 Felder statt einer Textarea
+function _buildGen6Form(s, validSchema) {
+  const fieldStyle = 'width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;outline:none;box-sizing:border-box';
+  const labelStyle = 'font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px';
+
+  return `
+    <div style="margin-bottom:14px">
+      <label style="${labelStyle}">Tags (kommagetrennt)</label>
+      <input id="genTags" type="text" placeholder="feedback, team, wöchentlich" value="${escHtml((s.tags || []).join(', '))}" style="${fieldStyle}">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="${labelStyle}">Rolle <span style="font-weight:400;text-transform:none;color:var(--muted);font-size:0.72rem">(optional – z.B. „ein erfahrener Coach")</span></label>
+      <input id="gen6Rolle" type="text" placeholder="z.B. ein erfahrener Coach" value="${escHtml(s.rolle || '')}" style="${fieldStyle}">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="${labelStyle}">Tonalität <span style="font-weight:400;text-transform:none;color:var(--muted);font-size:0.72rem">(optional)</span></label>
+      <input id="gen6Ton" type="text" placeholder="z.B. sachlich und präzise" value="${escHtml(s.tonalitaet || '')}" style="${fieldStyle}">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="${labelStyle}">Grenzen <span style="font-weight:400;text-transform:none;color:var(--muted);font-size:0.72rem">(optional – was der Prompt NICHT tun soll)</span></label>
+      <input id="gen6Grenzen" type="text" placeholder="z.B. keine persönlichen Empfehlungen geben" value="${escHtml(s.grenzen || '')}" style="${fieldStyle}">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="${labelStyle}">Kontext / Prompt-Text</label>
+      <textarea id="gen6Kontext" rows="8" placeholder="Analysiere das folgende Transkript: {{transkript}}"
+        style="${fieldStyle};resize:vertical;line-height:1.5;font-family:inherit">${escHtml(s.kontext || '')}</textarea>
+    </div>
+    ${validSchema.length > 0 ? `
+    <details style="margin-bottom:8px">
+      <summary style="font-size:0.75rem;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;list-style:none;outline:none">
+        ${icon('chevron-right', 12, 'transition:transform 0.15s')} JSON-Format – wird beim Ausführen automatisch ergänzt
+      </summary>
+      <pre style="margin:6px 0 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word">${escHtml(_buildJsonPreview(validSchema))}</pre>
+    </details>` : ''}`;
 }
 
 // ── JSON-Vorschau für Step 6 ──────────────────────────────────────────────────
@@ -1900,38 +1939,8 @@ function _renderGenModal() {
     }
 
     else if (s.step === 6) {
-      const assembled   = assemblePromptText({ rolle: s.rolle, tonalitaet: s.tonalitaet, grenzen: s.grenzen, kontext: s.kontext });
-      const previewText = s.finalText || assembled;
       const validSchema = s.schema.filter(f => f.label);
-      html = `
-        <div style="margin-bottom:14px">
-          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px">Tags (kommagetrennt)</label>
-          <input id="genTags" type="text" placeholder="feedback, team, wöchentlich" value="${escHtml(s.tags.join(', '))}"
-            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;outline:none;box-sizing:border-box">
-        </div>
-        ${validSchema.length > 0 ? `
-        <div style="margin-bottom:14px;padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
-          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:8px">Ausgabe-Felder</div>
-          ${validSchema.map(f => `<div style="font-size:0.8rem;color:var(--text);padding:3px 0;display:flex;align-items:center;gap:6px">
-            ${icon('corner-down-right', 11, 'color:var(--muted);flex-shrink:0')}
-            <strong>${escHtml(f.label)}</strong>
-            <span style="color:var(--muted)">—</span>
-            <span style="color:var(--muted)">${GEN_FIELD_TYPES.find(t => t.value === f.type)?.label || f.type}</span>
-          </div>`).join('')}
-        </div>` : ''}
-        <div>
-          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px">
-            Fertiger Prompt – direkt bearbeitbar
-          </label>
-          <textarea id="genFinalPrompt" rows="14"
-            style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;resize:vertical;box-sizing:border-box;font-family:monospace;line-height:1.6;outline:none">${escHtml(previewText)}</textarea>
-          ${validSchema.length > 0 ? `<details style="margin-top:8px">
-            <summary style="font-size:0.75rem;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;list-style:none;outline:none">
-              ${icon('chevron-right', 12, 'transition:transform 0.15s')} JSON-Format – wird beim Ausführen automatisch ergänzt
-            </summary>
-            <pre style="margin:6px 0 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word">${escHtml(_buildJsonPreview(validSchema))}</pre>
-          </details>` : ''}
-        </div>`;
+      html = _buildGen6Form(s, validSchema);
     }
   }
 
@@ -1946,42 +1955,13 @@ function _renderGenModal() {
     }
 
     else if (s.step === 6) {
-      const assembled   = assemblePromptText({ rolle: s.rolle, tonalitaet: s.tonalitaet, grenzen: s.grenzen, kontext: s.kontext });
-      const previewText = s.finalText || assembled;
       const validSchema = s.schema.filter(f => f.label);
       html = `
         <div style="padding:10px 12px;background:rgba(108,99,255,0.06);border-radius:8px;border:1px solid rgba(108,99,255,0.2);margin-bottom:14px;display:flex;align-items:center;gap:8px">
           ${icon('check-circle', 16, 'color:var(--accent)')}
-          <span style="font-size:0.83rem;color:var(--accent);font-weight:600">Claude hat „${escHtml(s.name)}" erstellt</span>
+          <span style="font-size:0.83rem;color:var(--accent);font-weight:600">Claude hat „${escHtml(s.name)}" erstellt – prüfe und passe an</span>
         </div>
-        ${validSchema.length > 0 ? `
-        <div style="margin-bottom:14px;padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
-          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:8px">Ausgabe-Felder</div>
-          ${validSchema.map(f => `<div style="font-size:0.8rem;color:var(--text);padding:3px 0;display:flex;align-items:center;gap:6px">
-            ${icon('corner-down-right', 11, 'color:var(--muted);flex-shrink:0')}
-            <strong>${escHtml(f.label)}</strong>
-            <span style="color:var(--muted)">—</span>
-            <span style="color:var(--muted)">${GEN_FIELD_TYPES.find(t => t.value === f.type)?.label || f.type}</span>
-          </div>`).join('')}
-        </div>` : ''}
-        <div style="margin-bottom:14px">
-          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px">Tags</label>
-          <input id="genTags" type="text" placeholder="tag1, tag2" value="${escHtml(s.tags.join(', '))}"
-            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;outline:none;box-sizing:border-box">
-        </div>
-        <div>
-          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px">
-            Fertiger Prompt – direkt bearbeitbar
-          </label>
-          <textarea id="genFinalPrompt" rows="14"
-            style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;resize:vertical;box-sizing:border-box;font-family:monospace;line-height:1.6;outline:none">${escHtml(previewText)}</textarea>
-          ${validSchema.length > 0 ? `<details style="margin-top:8px">
-            <summary style="font-size:0.75rem;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;list-style:none;outline:none">
-              ${icon('chevron-right', 12, 'transition:transform 0.15s')} JSON-Format – wird beim Ausführen automatisch ergänzt
-            </summary>
-            <pre style="margin:6px 0 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word">${escHtml(_buildJsonPreview(validSchema))}</pre>
-          </details>` : ''}
-        </div>`;
+        ${_buildGen6Form(s, validSchema)}`;
     }
   }
 
