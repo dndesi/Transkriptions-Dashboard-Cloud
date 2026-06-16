@@ -922,7 +922,7 @@ function _renderPromptsResults() {
       </div>
       ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
       ${_usedInChip('Sitzungsdetail → Analysen → Eigene Prompts')}
-      ${tags.length ? `<div class="prompt-card-tags">${tags.map(t=>`<span class="tag-chip">${escHtml(t)}</span>`).join('')}</div>` : ''}
+      ${tags.length ? `<div class="prompt-card-tags">${tags.map(t=>`<span class="tag-chip" style="cursor:pointer" title="Nach '${escHtml(t)}' filtern" onclick="setPromptTagFilter('${escHtml(t)}')">${escHtml(t)}</span>`).join('')}</div>` : ''}
       <div class="prompt-card-preview">${escHtml(preview.slice(0, 120))}${preview.length > 120 ? '…' : ''}</div>
       <div class="prompt-card-actions">
         <button class="btn btn-ghost" onclick="openPromptEditorModal('${p.id}')" style="padding:5px 7px" title="Bearbeiten">
@@ -1006,13 +1006,19 @@ function openSystemPromptView(id) {
   const p = SYSTEM_PROMPTS.find(sp => sp.id === id);
   if (!p) return;
   document.getElementById('promptEditorTitle').textContent = p.name + ' (System)';
-  document.getElementById('promptEditorId').value   = '';
-  document.getElementById('promptEditorName').value = p.name;
-  document.getElementById('promptEditorDesc').value = p.description;
-  document.getElementById('promptEditorIcon').value = p.icon;
-  document.getElementById('promptEditorText').value = p.prompt;
+  document.getElementById('promptEditorId').value        = '';
+  document.getElementById('promptEditorName').value      = p.name;
+  document.getElementById('promptEditorDesc').value      = p.description;
+  document.getElementById('promptEditorIcon').value      = p.icon;
+  document.getElementById('promptEditorText').value      = p.prompt;
+  // v5.18: Felder die System-Prompts nicht haben → leeren (verhindert Kontamination)
+  document.getElementById('promptEditorRolle').value     = '';
+  document.getElementById('promptEditorTonalitaet').value= '';
+  document.getElementById('promptEditorGrenzen').value   = '';
+  document.getElementById('promptEditorTags').value      = '';
   document.getElementById('promptEditorError').style.display = 'none';
-  ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorText'].forEach(fid => {
+  ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorRolle',
+   'promptEditorTonalitaet','promptEditorGrenzen','promptEditorText','promptEditorTags'].forEach(fid => {
     const el2 = document.getElementById(fid);
     if (el2) { el2.readOnly = true; el2.style.opacity = '0.6'; }
   });
@@ -1027,7 +1033,7 @@ function openPromptEditorModal(id) {
   const prompts  = getCustomPrompts();
   const existing = id ? prompts.find(p => p.id === id) : null;
 
-  document.getElementById('promptEditorTitle').textContent = existing ? 'Prompt bearbeiten' : 'Neuer Prompt';
+  document.getElementById('promptEditorTitle').textContent = existing ? 'Eigener Prompt' : 'Neuer Prompt';
   document.getElementById('promptEditorId').value          = existing?.id          || '';
   document.getElementById('promptEditorName').value        = existing?.name        || '';
   document.getElementById('promptEditorDesc').value        = existing?.description || '';
@@ -1085,13 +1091,13 @@ function savePromptFromEditor() {
   saveCustomPrompts(prompts);
   closePromptEditorModal();
   _renderPromptsResults();
-  showToast(id ? 'Prompt aktualisiert' : 'Prompt gespeichert', 'ok');
+  showToast(id ? 'Prompt aktualisiert' : 'Prompt gespeichert', 'success');
 }
 
 function deletePromptById(id) {
   saveCustomPrompts(getCustomPrompts().filter(p => p.id !== id));
   _renderPromptsResults();
-  showToast('Prompt gelöscht', 'ok');
+  showToast('Prompt gelöscht', 'success');
 }
 
 // ── Custom Prompt ausführen ──────────────────────

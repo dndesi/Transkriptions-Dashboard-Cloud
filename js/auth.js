@@ -123,6 +123,9 @@ async function enterApp() {
     if (email)  email.textContent    = driveUser.email || driveUser.name || '';
   }
 
+  // v5.18: Ladebildschirm starten sobald Drive-Verbindung steht
+  if (typeof initLoadingScreen === 'function') initLoadingScreen();
+
   try {
     await ensureDriveFolder();
     updateDriveStatus();
@@ -130,6 +133,7 @@ async function enterApp() {
     checkUploadReady();
   } catch(e) {
     showToast('Drive-Verbindung fehlgeschlagen: ' + e.message, 'error');
+    if (typeof hideLoadingScreen === 'function') hideLoadingScreen();
     return;
   }
 
@@ -138,6 +142,7 @@ async function enterApp() {
   renderBrowser();
   setupAudioSync();
   await loadFromDrive();
+  // hideLoadingScreen() wird von loadSettingsFromDrive() am Ende aufgerufen
 }
 
 // ── Drive-Banner (nicht blockierend) ──────────────

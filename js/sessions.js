@@ -1,3 +1,32 @@
+// ═══════════════════════════════════════════════════
+// LADE-OVERLAY (v5.18)
+// ═══════════════════════════════════════════════════
+let _loadingTimeout = null;
+
+function updateLoadingScreen(pct, msg) {
+  const bar    = document.getElementById('loadingBar');
+  const status = document.getElementById('loadingStatus');
+  if (bar)    bar.style.width = pct + '%';
+  if (status) status.textContent = msg;
+}
+
+function hideLoadingScreen() {
+  clearTimeout(_loadingTimeout);
+  const overlay = document.getElementById('loadingOverlay');
+  if (!overlay) return;
+  overlay.style.opacity = '0';
+  setTimeout(() => { overlay.style.display = 'none'; }, 420);
+}
+
+function initLoadingScreen() {
+  updateLoadingScreen(5, 'Verbindung zu Drive wird aufgebaut…');
+  // Sicherheits-Timeout: nach 8 Sekunden automatisch schließen
+  _loadingTimeout = setTimeout(() => {
+    updateLoadingScreen(100, 'Zeitüberschreitung – lokale Daten werden verwendet');
+    setTimeout(() => hideLoadingScreen(), 1200);
+  }, 8000);
+}
+
 // DRIVE SESSION MANAGEMENT
 // ═══════════════════════════════════════════════════
 async function saveToArchive(session, audioFile = null) {
@@ -53,6 +82,7 @@ async function loadFromDrive() {
     rememberedFolders = subfolders.map(f => ({ name: f.name, id: f.id }));
     renderSubfolderList(subfolders);
 
+    updateLoadingScreen(20, 'Sitzungen werden geladen…');
     // 2. Session-JSONs laden
     const res = await driveGet('/files', {
       q: `name contains 'session_' and name contains '.json' and trashed=false`,
@@ -91,6 +121,7 @@ async function loadFromDrive() {
     saveSessions();
     updateFolderDropdown();
     renderBrowser();
+    updateLoadingScreen(55, `${loaded.length} Sitzung(en) geladen ✓ – Einstellungen werden geladen…`);
     if (loaded.length > 0) showToast(`${loaded.length} Sitzung(en) aus Drive geladen`, 'success');
 
     // Settings laden (Projekte, Prompts, Beziehungskontext) – v4.92
@@ -147,6 +178,16 @@ function queueSettingsSave() {
 async function saveSettingsToDrive() {
   if (!driveToken || !driveFolderId) return;
   try {
+    // v5.18: Race-Condition fix – _settingsFileId erst per Search ermitteln wenn noch unbekannt
+    if (!_settingsFileId) {
+      const searchRes = await driveGet('/files', {
+        q: `name='distill_settings.json' and '${driveFolderId}' in parents and trashed=false`,
+        fields: 'files(id)',
+        spaces: 'drive',
+      });
+      const found = (searchRes.files || []);
+      if (found.length > 0) _settingsFileId = found[0].id;
+    }
     const data = {
       version: 1,
       savedAt: new Date().toISOString(),
@@ -214,21 +255,17 @@ async function loadSettingsFromDrive() {
         renderProjectBrowser();
       }
       const newCount = projects.length - 1; // minus Builtin
-      if (newCount > 0) showToast(`${projects.length} Projekte aus Drive geladen ✓`, 'ok');
+      updateLoadingScreen(75, `${newCount} Projekt(e) geladen ✓ – Prompts werden geladen…`);
+      if (newCount > 0) showToast(`${projects.length} Projekte aus Drive geladen ✓`, 'success');
     }
 
-    // ── Eigene Prompts: Drive gewinnt wenn mehr Einträge ──
+    // ── Eigene Prompts: Drive ist autoritativ (v5.18) ──
+    // Drive gewinnt vollständig – gelöschte Prompts kommen nicht zurück
     if (Array.isArray(data.customPrompts)) {
-      const local = (typeof getCustomPrompts === 'function') ? getCustomPrompts() : [];
-      // Union: alle IDs zusammenführen
-      const mergedMap = new Map(local.map(p => [p.id, p]));
-      data.customPrompts.forEach(dp => {
-        if (!mergedMap.has(dp.id)) mergedMap.set(dp.id, dp);
-        else mergedMap.set(dp.id, { ...mergedMap.get(dp.id), ...dp });
-      });
       if (typeof saveCustomPrompts === 'function') {
-        saveCustomPrompts([...mergedMap.values()]);
+        saveCustomPrompts(data.customPrompts);
       }
+      updateLoadingScreen(90, `${data.customPrompts.length} Prompt(s) geladen ✓`);
       // Persona-Dropdowns aktualisieren
       if (typeof populatePersonaSelects === 'function') populatePersonaSelects();
       // Prompts-View aktualisieren falls gerade geöffnet (v5.0)
@@ -255,9 +292,12 @@ async function loadSettingsFromDrive() {
       localStorage.setItem('personRelationships', JSON.stringify(merged));
     }
 
+    updateLoadingScreen(100, 'Alles geladen ✓');
     console.log('[settings] Von Drive geladen ✓');
+    setTimeout(() => hideLoadingScreen(), 600);
   } catch(e) {
     console.warn('[settings] Laden von Drive fehlgeschlagen:', e.message);
+    hideLoadingScreen(); // auch bei Fehler freigeben
   }
 }
 

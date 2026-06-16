@@ -44,6 +44,13 @@ async function init() {
     history.replaceState({}, '', location.pathname);
     setTimeout(() => checkPendingShares(), 500); // kurze Pause damit UI aufgebaut ist
   }
+
+  // v5.18: Ladebildschirm – ohne Drive kurz anzeigen dann schließen
+  // Mit Drive wird hideLoadingScreen() von loadSettingsFromDrive() aufgerufen
+  if (!driveToken && typeof hideLoadingScreen === 'function') {
+    updateLoadingScreen(100, 'Bereit');
+    setTimeout(() => hideLoadingScreen(), 600);
+  }
 }
 
 
