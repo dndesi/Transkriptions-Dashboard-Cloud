@@ -1183,24 +1183,10 @@ function showTranscript(session) {
   }
   // Folgegespräch-Panel befüllen
   renderFollowUpMessages(session);
-  // Präsentations-Vorschau laden falls vorhanden
-  const preview = document.getElementById('canvaPreview');
-  const exportBtn = document.getElementById('canvaExportBtn');
-  if (preview) {
-    const transferBtn = document.getElementById('canvaTransferBtn');
-    if (session.claudePresentation?.data) {
-      _renderPresentationPreview(session.claudePresentation.data, preview);
-      if (exportBtn)   exportBtn.style.display   = 'inline-flex';
-      if (transferBtn) transferBtn.style.display  = 'inline-flex';
-      const sel = document.getElementById('canvaPromptSelect');
-      if (sel && session.claudePresentation.promptId) sel.value = session.claudePresentation.promptId;
-    } else {
-      preview.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">Wähle einen Typ und klicke auf „Generieren" – Claude strukturiert den Inhalt aus deinen Analysen.</span>';
-      if (exportBtn)   exportBtn.style.display   = 'none';
-      if (transferBtn) transferBtn.style.display  = 'none';
-    }
-    renderDesignLinks(session);
-  }
+  // Design-Versionen Tab laden (v5.25)
+  _activeDesignVersionId = null;
+  _designEditMode        = false;
+  renderDesignVersionTabs(session);
   _restoreAccState(session.id);
   // v4.76: Faehnchen einblenden, Sidebar-Modus zuruecksetzen
   const flap = document.getElementById('sdcFlap');
@@ -1634,13 +1620,15 @@ async function askFollowUp() {
 
 function exportToClaudeDesign() {
   const session = getSession(currentSessionId);
-  if (!session?.claudePresentation?.data) {
+  _migrateDesignData(session);
+  const active = session?.designVersions?.find(v => v.id === _activeDesignVersionId);
+  if (!active?.data) {
     showToast('Erst Design generieren.', 'warning');
     return;
   }
 
-  const json      = session.claudePresentation.data;
-  const promptId  = session.claudePresentation.promptId || 'builtin_canva_presentation';
+  const json      = active.data;
+  const promptId  = active.promptId || 'builtin_canva_presentation';
   const promptDef = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === promptId);
   const typeLabel = {
     builtin_canva_presentation: 'Präsentation',
@@ -1745,6 +1733,244 @@ function removeDesignLink(idx) {
   renderDesignLinks(session);
 }
 
+// ── Design-Versionen (v5.25) ──────────────────────────────────────────────
+// Jede Generierung erzeugt einen eigenen Unter-Tab mit Zeitstempel.
+// Struktur: session.designVersions = [{ id, promptId, promptLabel, data, ts, editedText, canvaLink }]
+
+let _activeDesignVersionId = null;
+let _designEditMode        = false;
+
+function _migrateDesignData(session) {
+  if (session.designVersions) return; // bereits migriert
+  session.designVersions = [];
+  if (session.claudePresentation?.data) {
+    const pd = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === (session.claudePresentation.promptId || 'builtin_canva_presentation'));
+    session.designVersions.push({
+      id: 'dv_migrated',
+      promptId:    session.claudePresentation.promptId || 'builtin_canva_presentation',
+      promptLabel: pd?.name || 'Präsentation',
+      data:        session.claudePresentation.data,
+      ts:          session.claudePresentation.ts || new Date().toISOString(),
+      editedText:  null,
+      canvaLink:   session.claudeDesignLinks?.[0]?.url || null
+    });
+  }
+}
+
+function renderDesignVersionTabs(session) {
+  _migrateDesignData(session);
+  const tabsEl    = document.getElementById('designVersionTabs');
+  const contentEl = document.getElementById('designVersionContent');
+  if (!tabsEl || !contentEl) return;
+
+  const versions = session.designVersions || [];
+  const expBtn   = document.getElementById('canvaExportBtn');
+  const trfBtn   = document.getElementById('canvaTransferBtn');
+
+  // Aktive Version setzen
+  if (versions.length && !versions.find(v => v.id === _activeDesignVersionId)) {
+    _activeDesignVersionId = versions[versions.length - 1].id;
+  }
+  if (!versions.length) _activeDesignVersionId = null;
+
+  if (!versions.length) {
+    tabsEl.innerHTML = '';
+    contentEl.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">Wähle einen Typ und klicke auf „Generieren" – Claude strukturiert den Inhalt aus deinen Analysen.</span>';
+    if (expBtn) expBtn.style.display = 'none';
+    if (trfBtn) trfBtn.style.display = 'none';
+    return;
+  }
+
+  // Sub-Tabs rendern
+  tabsEl.innerHTML = `
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+      ${versions.map(v => {
+        const isActive = v.id === _activeDesignVersionId;
+        const time = new Date(v.ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        return `<div style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px 4px 12px;border-radius:20px;font-size:0.78rem;font-weight:${isActive ? '700' : '400'};cursor:pointer;
+          border:1px solid ${isActive ? 'var(--accent)' : 'var(--border)'};
+          background:${isActive ? 'rgba(108,99,255,0.12)' : 'var(--surface2)'};
+          color:${isActive ? 'var(--accent)' : 'var(--muted)'}">
+          <span onclick="switchDesignVersion('${v.id}')" style="cursor:pointer">${escHtml(v.promptLabel)} ${time}</span>
+          <span onclick="deleteDesignVersion('${v.id}')" style="margin-left:4px;opacity:0.5;font-size:1rem;line-height:1;cursor:pointer;padding:0 2px" title="Version löschen">×</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  // Aktiven Inhalt rendern
+  const active = versions.find(v => v.id === _activeDesignVersionId);
+  if (!active) { contentEl.innerHTML = ''; return; }
+
+  if (expBtn) expBtn.style.display = active.data ? 'inline-flex' : 'none';
+  if (trfBtn) trfBtn.style.display = active.data ? 'inline-flex' : 'none';
+
+  // Vorschau oder Edit-Modus
+  let previewHtml = '';
+  if (_designEditMode) {
+    const currentText = active.editedText ?? _presentationDataToText(active.data);
+    previewHtml = `
+      <textarea id="designEditTextarea" style="width:100%;min-height:280px;box-sizing:border-box;background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:12px;color:var(--text);font-size:0.83rem;line-height:1.6;resize:vertical;outline:none;font-family:inherit">${escHtml(currentText)}</textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button onclick="saveDesignVersionEdit('${active.id}')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:0.83rem;cursor:pointer;display:flex;align-items:center;gap:5px">
+          <i data-lucide="check" style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none"></i> Speichern
+        </button>
+        <button onclick="_designEditMode=false;renderDesignVersionTabs(getSession(currentSessionId))" style="background:none;border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:0.83rem;color:var(--muted);cursor:pointer">
+          Abbrechen
+        </button>
+      </div>`;
+  } else {
+    const rendered = active.editedText
+      ? `<div style="white-space:pre-wrap;font-size:0.83rem;line-height:1.7;color:var(--text)">${escHtml(active.editedText)}</div>`
+      : _renderPresentationPreviewHtml(active.data);
+    previewHtml = `
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button onclick="_designEditMode=true;renderDesignVersionTabs(getSession(currentSessionId))" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:0.78rem;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px">
+          <i data-lucide="edit-2" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Bearbeiten
+        </button>
+      </div>
+      <div id="dvPreviewArea">${rendered}</div>`;
+  }
+
+  // Canva-Link-Sektion (pro Version)
+  const linkHtml = `
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:16px">
+      <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;display:flex;align-items:center;gap:5px">
+        <i data-lucide="link" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none"></i> Claude Design Link
+      </div>
+      ${active.canvaLink ? `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <a href="${escHtml(active.canvaLink)}" target="_blank" rel="noopener"
+             style="flex:1;font-size:0.83rem;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:6px;
+                    background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">
+            <i data-lucide="external-link" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+            ${escHtml(active.canvaLink)}
+          </a>
+          <button onclick="clearDesignVersionLink('${active.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px" title="Entfernen">
+            <i data-lucide="x" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
+          </button>
+        </div>` : ''}
+      <div style="display:flex;gap:8px">
+        <input id="designVersionLinkInput" type="url" placeholder="Claude Design Share-Link hier einfügen…"
+          style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:0.82rem;outline:none"
+          onkeydown="if(event.key==='Enter') saveDesignVersionLink('${active.id}')" />
+        <button onclick="saveDesignVersionLink('${active.id}')" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:0.82rem;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px">
+          <i data-lucide="plus" style="width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none"></i> Speichern
+        </button>
+      </div>
+    </div>`;
+
+  contentEl.innerHTML = previewHtml + linkHtml;
+  if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [contentEl] });
+}
+
+function switchDesignVersion(id) {
+  _activeDesignVersionId = id;
+  _designEditMode        = false;
+  renderDesignVersionTabs(getSession(currentSessionId));
+}
+
+function deleteDesignVersion(id) {
+  const session = getSession(currentSessionId);
+  if (!session?.designVersions) return;
+  session.designVersions = session.designVersions.filter(v => v.id !== id);
+  if (_activeDesignVersionId === id) _activeDesignVersionId = null;
+  saveSessions();
+  saveToArchive(session);
+  renderDesignVersionTabs(session);
+  showToast('Version gelöscht', 'ok');
+}
+
+function saveDesignVersionEdit(id) {
+  const session = getSession(currentSessionId);
+  const version = session?.designVersions?.find(v => v.id === id);
+  if (!version) return;
+  const ta = document.getElementById('designEditTextarea');
+  if (!ta) return;
+  version.editedText = ta.value;
+  _designEditMode    = false;
+  saveSessions();
+  saveToArchive(session);
+  renderDesignVersionTabs(session);
+  showToast('Änderungen gespeichert ✓', 'success');
+}
+
+function saveDesignVersionLink(id) {
+  const session = getSession(currentSessionId);
+  const version = session?.designVersions?.find(v => v.id === id);
+  if (!version) return;
+  const input = document.getElementById('designVersionLinkInput');
+  const url   = input?.value?.trim();
+  if (!url)                   { showToast('Bitte Link eingeben.', 'warning'); return; }
+  if (!url.startsWith('http')) { showToast('Kein gültiger Link.', 'warning'); return; }
+  version.canvaLink = url;
+  if (input) input.value = '';
+  saveSessions();
+  saveToArchive(session);
+  renderDesignVersionTabs(session);
+  showToast('Design-Link gespeichert ✓', 'success');
+}
+
+function clearDesignVersionLink(id) {
+  const session = getSession(currentSessionId);
+  const version = session?.designVersions?.find(v => v.id === id);
+  if (!version) return;
+  version.canvaLink = null;
+  saveSessions();
+  saveToArchive(session);
+  renderDesignVersionTabs(session);
+}
+
+// Strukturierte Daten → bearbeitbarer Plaintext
+function _presentationDataToText(data) {
+  if (!data) return '';
+  const lines = [];
+  if (data.title)    lines.push(data.title);
+  if (data.subtitle) lines.push(data.subtitle);
+  if (lines.length) lines.push('');
+  (data.slides || []).forEach((s, i) => {
+    lines.push(`## ${s.heading || 'Abschnitt ' + (i + 1)}`);
+    (s.bullets || []).forEach(b => lines.push(`- ${b}`));
+    if (s.note) lines.push(`(${s.note})`);
+    lines.push('');
+  });
+  // Fallback für andere Strukturen (Flyer, Poster etc.)
+  if (!data.slides && typeof data === 'object') {
+    Object.entries(data).forEach(([k, v]) => {
+      lines.push(`${k}: ${Array.isArray(v) ? v.join(', ') : v}`);
+    });
+  }
+  return lines.join('\n').trim();
+}
+
+// HTML-Vorschau für strukturierte Daten (gibt String zurück, kein DOM-Zugriff)
+function _renderPresentationPreviewHtml(json) {
+  if (!json) return '<div style="color:var(--muted)">Keine Daten vorhanden.</div>';
+  if (json.slides?.length) {
+    const slides = json.slides.map((s, i) => `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px">Folie ${i + 1}</div>
+        <div style="font-size:0.9rem;font-weight:700;color:var(--accent);margin-bottom:8px">${escHtml(s.heading || '')}</div>
+        ${(s.bullets||[]).map(b => `<div style="font-size:0.83rem;color:var(--text);padding:2px 0;display:flex;gap:7px"><span style="color:var(--muted);flex-shrink:0">·</span>${escHtml(b)}</div>`).join('')}
+        ${s.note ? `<div style="font-size:0.75rem;color:var(--muted);margin-top:8px;font-style:italic">📝 ${escHtml(s.note)}</div>` : ''}
+      </div>`).join('');
+    return `<div style="padding:4px 0 8px">
+      <div style="font-size:1rem;font-weight:700;margin-bottom:2px">${escHtml(json.title || '')}</div>
+      ${json.subtitle ? `<div style="font-size:0.8rem;color:var(--muted);margin-bottom:14px">${escHtml(json.subtitle)}</div>` : '<div style="margin-bottom:14px"></div>'}
+      ${slides}
+    </div>`;
+  }
+  // Fallback: Key-Value-Darstellung für Flyer, Poster, etc.
+  return `<div style="padding:4px 0 8px">
+    ${Object.entries(json).map(([k, v]) => `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:8px">
+        <div style="font-size:0.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">${escHtml(k)}</div>
+        <div style="font-size:0.83rem;color:var(--text);line-height:1.6">
+          ${Array.isArray(v) ? v.map(i => `<div style="display:flex;gap:7px;padding:1px 0"><span style="color:var(--muted);flex-shrink:0">·</span>${escHtml(String(i))}</div>`).join('') : escHtml(String(v))}
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
 function clearFollowUp() {
   const session = getSession(currentSessionId);
   if (!session) return;
@@ -1763,10 +1989,10 @@ async function generatePresentation() {
   if (!session) { showToast('Keine aktive Sitzung.', 'warning'); return; }
   if (!anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'warning'); return; }
 
-  const promptId = document.getElementById('canvaPromptSelect')?.value || 'builtin_canva_presentation';
-  const btn      = document.getElementById('canvaGenerateBtn');
-  const preview  = document.getElementById('canvaPreview');
-  const exportBtn = document.getElementById('canvaExportBtn');
+  const promptId   = document.getElementById('canvaPromptSelect')?.value || 'builtin_canva_presentation';
+  const btn        = document.getElementById('canvaGenerateBtn');
+  const contentEl  = document.getElementById('designVersionContent');
+  const exportBtn  = document.getElementById('canvaExportBtn');
 
   const analysisContext = _buildFollowUpContext(session);
   if (!analysisContext) {
@@ -1776,7 +2002,7 @@ async function generatePresentation() {
 
   btn.disabled = true;
   btn.innerHTML = icon('loader', 13, 'margin-right:5px') + ' Generiere…';
-  preview.innerHTML = `<div style="color:var(--muted);font-size:0.85rem;padding:8px 0">Claude strukturiert die Inhalte…</div>`;
+  if (contentEl) contentEl.innerHTML = `<div style="color:var(--muted);font-size:0.85rem;padding:8px 0">Claude strukturiert die Inhalte…</div>`;
   if (exportBtn) exportBtn.style.display = 'none';
 
   const { forward, reverse } = buildAnonMap(session);
@@ -1794,19 +2020,28 @@ async function generatePresentation() {
     const raw = deanonymizeObject(text, reverse);
     const json = JSON.parse(extractJSON(raw, '{'));
 
-    session.claudePresentation = { promptId, data: json, ts: new Date().toISOString() };
+    // v5.25: In designVersions speichern statt claudePresentation
+    const promptDef = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === promptId);
+    if (!session.designVersions) session.designVersions = [];
+    const newVersion = {
+      id:          'dv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+      promptId,
+      promptLabel: promptDef?.name || 'Design',
+      data:        json,
+      ts:          new Date().toISOString(),
+      editedText:  null,
+      canvaLink:   null
+    };
+    session.designVersions.push(newVersion);
+    _activeDesignVersionId = newVersion.id;
+    _designEditMode        = false;
     saveSessions();
     await saveToArchive(session);
 
-    _renderPresentationPreview(json, preview);
-    if (exportBtn) exportBtn.style.display = 'inline-flex';
-    const transferBtn2 = document.getElementById('canvaTransferBtn');
-    if (transferBtn2) transferBtn2.style.display = 'inline-flex';
-    renderDesignLinks(session);
-    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [preview] });
-    showToast('Präsentation erstellt', 'success');
+    renderDesignVersionTabs(session);
+    showToast('Design erstellt ✓', 'success');
   } catch (e) {
-    preview.innerHTML = `<div style="color:var(--red);font-size:0.85rem">${escHtml(e.message || 'Fehler')}</div>`;
+    if (contentEl) contentEl.innerHTML = `<div style="color:var(--red);font-size:0.85rem">${escHtml(e.message || 'Fehler')}</div>`;
     showToast('Fehler: ' + (e.message || 'Unbekannt'), 'error');
   } finally {
     btn.disabled = false;
@@ -1833,10 +2068,12 @@ function _renderPresentationPreview(json, container) {
 
 async function exportPresentationPptx() {
   const session = getSession(currentSessionId);
-  if (!session?.claudePresentation?.data) { showToast('Erst Präsentation generieren.', 'warning'); return; }
+  _migrateDesignData(session);
+  const active = session?.designVersions?.find(v => v.id === _activeDesignVersionId);
+  if (!active?.data) { showToast('Erst Präsentation generieren.', 'warning'); return; }
   if (typeof PptxGenJS === 'undefined') { showToast('PptxGenJS wird noch geladen…', 'warning'); return; }
 
-  const json  = session.claudePresentation.data;
+  const json  = active.data;
   const pptx  = new PptxGenJS();
 
   // Basis-Layout
