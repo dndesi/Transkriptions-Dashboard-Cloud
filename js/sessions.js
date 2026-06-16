@@ -189,9 +189,12 @@ async function saveSettingsToDrive() {
       if (found.length > 0) _settingsFileId = found[0].id;
     }
     const data = {
-      version: 1,
+      version: 2,  // v5.22: userPrompts statt customPrompts+editablePrompts
       savedAt: new Date().toISOString(),
       projects: (typeof projects !== 'undefined') ? projects : [],
+      // v5.22: Unified Storage (neues Format)
+      userPrompts: (typeof getUserPrompts === 'function') ? getUserPrompts() : { custom: [], editableOverrides: {} },
+      // Legacy-Felder für ältere Versionen (Fallback beim Laden)
       customPrompts: (typeof getCustomPrompts === 'function') ? getCustomPrompts() : [],
       editablePrompts: (typeof getEditablePrompts === 'function') ? getEditablePrompts() : {},
       personRelationships: (() => {
@@ -259,28 +262,34 @@ async function loadSettingsFromDrive() {
       if (newCount > 0) showToast(`${projects.length} Projekte aus Drive geladen ✓`, 'success');
     }
 
-    // ── Eigene Prompts: Drive ist autoritativ (v5.18) ──
-    // Drive gewinnt vollständig – gelöschte Prompts kommen nicht zurück
-    if (Array.isArray(data.customPrompts)) {
-      if (typeof saveCustomPrompts === 'function') {
-        saveCustomPrompts(data.customPrompts);
-      }
-      updateLoadingScreen(90, `${data.customPrompts.length} Prompt(s) geladen ✓`);
-      // Persona-Dropdowns aktualisieren
+    // ── Prompts: v5.22 userPrompts (unified) oder Legacy-Fallback ──────────────
+    // Drive ist autoritativ – eigene Prompts kommen vollständig von Drive
+    const _refreshPromptsUI = (count) => {
+      updateLoadingScreen(90, `${count} Prompt(s) geladen ✓`);
       if (typeof populatePersonaSelects === 'function') populatePersonaSelects();
-      // Prompts-View aktualisieren falls gerade geöffnet (v5.0)
       const pvpEl = document.getElementById('promptsView');
       if (pvpEl && pvpEl.style.display !== 'none' && typeof renderPromptsView === 'function') {
         renderPromptsView();
       }
-    }
+    };
 
-    // ── Bearbeitete Systemprompts: zusammenführen (lokal hat Priorität) ──
-    if (data.editablePrompts && typeof data.editablePrompts === 'object'
-        && typeof EDITABLE_PROMPTS_KEY !== 'undefined') {
-      const local = (typeof getEditablePrompts === 'function') ? getEditablePrompts() : {};
-      const merged = { ...data.editablePrompts, ...local };
-      localStorage.setItem(EDITABLE_PROMPTS_KEY, JSON.stringify(merged));
+    if (data.userPrompts && typeof data.userPrompts === 'object') {
+      // Neues Format (v5.22): userPrompts direkt übernehmen (Drive gewinnt)
+      if (typeof saveUserPrompts === 'function') saveUserPrompts(data.userPrompts);
+      _refreshPromptsUI((data.userPrompts.custom || []).length);
+
+    } else {
+      // Legacy-Fallback: alte customPrompts + editablePrompts Felder lesen
+      if (Array.isArray(data.customPrompts) && typeof getUserPrompts === 'function') {
+        const up = getUserPrompts();
+        up.custom = data.customPrompts;
+        // editablePrompts zusammenführen: Drive + lokal (lokal hat Priorität)
+        if (data.editablePrompts && typeof data.editablePrompts === 'object') {
+          up.editableOverrides = { ...data.editablePrompts, ...up.editableOverrides };
+        }
+        if (typeof saveUserPrompts === 'function') saveUserPrompts(up);
+        _refreshPromptsUI(data.customPrompts.length);
+      }
     }
 
     // ── Beziehungskontext: zusammenführen (lokal hat Priorität) ──

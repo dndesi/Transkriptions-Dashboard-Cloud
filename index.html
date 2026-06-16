@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.19" />
+  <link rel="stylesheet" href="css/styles.css?v=5.20" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.19</button>
+        onmouseout="this.style.color='var(--muted)'">v5.22</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1190,6 +1190,33 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.22 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.22</span><span class="cl-date">16.06.2026</span></div>
+        <ul>
+          <li><strong>Phase 5a: Unified Prompt-Storage</strong> – Neuer localStorage-Schlüssel <code>userPrompts</code> vereint <code>customPrompts</code> und <code>editablePrompts</code> zu einem einzigen Objekt <code>{ custom: [...], editableOverrides: {...} }</code>. Öffnet die Architektur für zukünftige Design-Prompts.</li>
+          <li><strong>Automatische Migration</strong> – Beim ersten Start nach Update werden bestehende Daten automatisch in das neue Format überführt. Alte localStorage-Keys bleiben als Backup erhalten.</li>
+          <li><strong>Drive-Sync v2</strong> – <code>distill_settings.json</code> schreibt neues <code>userPrompts</code>-Feld (Legacy-Felder <code>customPrompts</code>/<code>editablePrompts</code> weiterhin mitgeschrieben für Rückwärtskompatibilität). Ladelogik liest neues Format zuerst, fällt sonst auf Legacy zurück.</li>
+        </ul>
+        <div class="cl-tech">js/prompts.js: getUserPrompts(), saveUserPrompts(), migrateToUserPrompts() neu; getCustomPrompts() + saveCustomPrompts() + getEditablePrompts() + saveEditablePromptText() + resetEditablePrompt() auf userPrompts umgestellt; importPrompts() auf saveUserPrompts() umgestellt; DOMContentLoaded-Hook für Migration. js/sessions.js: saveSettingsToDrive() schreibt userPrompts (version:2); loadSettingsFromDrive() liest userPrompts mit Legacy-Fallback.</div>
+      </div>
+
+      <!-- ── v5.21 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.21</span><span class="cl-date">16.06.2026</span></div>
+        <div class="cl-title">Bugfix: Feldkontamination auch in Standard- und Feature-Prompts</div>
+        <div class="cl-body">openEditablePromptEditor() (Standard- und Feature-Prompts) löscht jetzt ebenfalls Rolle/Tonalität/Grenzen/Tags beim Öffnen und setzt diese Felder auf readOnly – verhindert Kontamination durch zuvor geöffnete eigene Prompts. Außerdem: 3x showToast 'ok'→'success' in openEditablePromptEditor/saveEditablePromptFromEditor/resetEditablePromptAndRefresh behoben (rotes X).</div>
+        <div class="cl-tech">js/prompts.js: openEditablePromptEditor() +clearFields +structuredFields display:'' +readOnly für Rolle/Tonalität/Grenzen/Tags; 3x 'ok'→'success'.</div>
+      </div>
+
+      <!-- ── v5.20 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.20</span><span class="cl-date">16.06.2026</span></div>
+        <div class="cl-title">Bugfix: Feldkontamination System-Prompts (echter Fix)</div>
+        <div class="cl-body">Feldkontamination korrekt behoben: openSystemPromptView() setzt jetzt alle strukturierten Felder (Rolle, Tonalität, Grenzen, Tags) explizit auf leer und macht sie schreibgeschützt – Felder bleiben sichtbar und sind nicht von vorherigen eigenen Prompts kontaminiert. Außerdem: tagF-Referenzfehler in Prompt-Bibliothek behoben (veraltete Variable, jetzt tagFilterActive).</div>
+        <div class="cl-tech">js/prompts.js: openSystemPromptView() löscht Werte + zeigt Felder (display:'') + setzt readOnly; tagF→tagFilterActive in _renderPromptsResults().</div>
+      </div>
 
       <!-- ── v5.19 ── -->
       <div class="cl-entry">
@@ -3650,29 +3677,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.19"></script>
-<script src="js/storage.js?v=5.19"></script>
-<script src="js/config.js?v=5.19"></script>
-<script src="js/auth.js?v=5.19"></script>
-<script src="js/drive.js?v=5.19"></script>
-<script src="js/sessions.js?v=5.19"></script>
-<script src="js/assemblyai.js?v=5.19"></script>
-<script src="js/claude.js?v=5.19"></script>
-<script src="js/ui.js?v=5.19"></script>
-<script src="js/tags.js?v=5.19"></script>
-<script src="js/notes.js?v=5.19"></script>
-<script src="js/persons.js?v=5.19"></script>
-<script src="js/audio.js?v=5.19"></script>
-<script src="js/recorder.js?v=5.19"></script>
-<script src="js/app.js?v=5.19"></script>
+<script src="js/icons.js?v=5.21"></script>
+<script src="js/storage.js?v=5.21"></script>
+<script src="js/config.js?v=5.21"></script>
+<script src="js/auth.js?v=5.21"></script>
+<script src="js/drive.js?v=5.21"></script>
+<script src="js/sessions.js?v=5.21"></script>
+<script src="js/assemblyai.js?v=5.21"></script>
+<script src="js/claude.js?v=5.21"></script>
+<script src="js/ui.js?v=5.21"></script>
+<script src="js/tags.js?v=5.21"></script>
+<script src="js/notes.js?v=5.21"></script>
+<script src="js/persons.js?v=5.21"></script>
+<script src="js/audio.js?v=5.21"></script>
+<script src="js/recorder.js?v=5.21"></script>
+<script src="js/app.js?v=5.21"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.19"></script>
-<script src="js/search.js?v=5.19"></script>
-<script src="js/calendar.js?v=5.19"></script>
-<script src="js/prompts.js?v=5.19"></script>
-<script src="js/projects.js?v=5.19"></script>
-<script src="js/import.js?v=5.19"></script>
+<script src="js/features.js?v=5.21"></script>
+<script src="js/search.js?v=5.21"></script>
+<script src="js/calendar.js?v=5.21"></script>
+<script src="js/prompts.js?v=5.21"></script>
+<script src="js/projects.js?v=5.21"></script>
+<script src="js/import.js?v=5.21"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

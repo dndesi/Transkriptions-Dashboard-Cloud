@@ -4,16 +4,47 @@
 // Bearbeitbare Standard- und Feature-Prompts
 // ═══════════════════════════════════════════════════
 
-const PROMPTS_KEY = 'customPrompts';
+const PROMPTS_KEY = 'customPrompts';           // Legacy-Schlüssel (bleibt für Migration)
+const USER_PROMPTS_KEY = 'userPrompts';          // v5.22: Unified Storage
 
+// ── Unified Storage: getUserPrompts / saveUserPrompts ─────────────────────────
+// Einheitliche Datenhaltung: { custom: [...], editableOverrides: {...} }
+function getUserPrompts() {
+  try {
+    const raw = localStorage.getItem(USER_PROMPTS_KEY);
+    if (!raw) return { custom: [], editableOverrides: {} };
+    const parsed = JSON.parse(raw);
+    return {
+      custom:           Array.isArray(parsed.custom) ? parsed.custom : [],
+      editableOverrides: (parsed.editableOverrides && typeof parsed.editableOverrides === 'object') ? parsed.editableOverrides : {}
+    };
+  } catch { return { custom: [], editableOverrides: {} }; }
+}
+
+function saveUserPrompts(obj) {
+  localStorage.setItem(USER_PROMPTS_KEY, JSON.stringify(obj));
+  if (typeof queueSettingsSave === 'function') queueSettingsSave();
+}
+
+// ── Einmalige Migration von alten Schlüsseln (v5.22) ─────────────────────────
+// Läuft beim ersten Seitenaufruf nach Update. Alte Keys bleiben als Backup erhalten.
+function migrateToUserPrompts() {
+  if (localStorage.getItem(USER_PROMPTS_KEY)) return; // bereits migriert
+  const custom = (() => { try { return JSON.parse(localStorage.getItem(PROMPTS_KEY) || '[]'); } catch { return []; } })();
+  const editableOverrides = (() => { try { return JSON.parse(localStorage.getItem('editablePrompts') || '{}'); } catch { return {}; } })();
+  localStorage.setItem(USER_PROMPTS_KEY, JSON.stringify({ custom, editableOverrides }));
+  console.log('[prompts] Migration zu userPrompts ✓ – Custom:', custom.length, '| EditableOverrides:', Object.keys(editableOverrides).length);
+}
+
+// ── Backwards-Compatible Aliases ──────────────────────────────────────────────
 function getCustomPrompts() {
-  try { return JSON.parse(localStorage.getItem(PROMPTS_KEY) || '[]'); } catch { return []; }
+  return getUserPrompts().custom;
 }
 
 function saveCustomPrompts(arr) {
-  localStorage.setItem(PROMPTS_KEY, JSON.stringify(arr));
-  // Drive-Sync (v4.92)
-  if (typeof queueSettingsSave === 'function') queueSettingsSave();
+  const up = getUserPrompts();
+  up.custom = arr;
+  saveUserPrompts(up);
 }
 
 function genPromptId() {
@@ -641,7 +672,7 @@ Antworte NUR mit einem JSON-Objekt:
 ];
 
 function getEditablePrompts() {
-  try { return JSON.parse(localStorage.getItem(EDITABLE_PROMPTS_KEY) || '{}'); } catch { return {}; }
+  return getUserPrompts().editableOverrides;
 }
 
 function getEditablePromptText(id) {
@@ -661,22 +692,20 @@ function isEditablePromptModified(id) {
 }
 
 function saveEditablePromptText(id, text) {
-  const saved = getEditablePrompts();
+  const up  = getUserPrompts();
   const def = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === id);
   if (def && text.trim() === def.prompt.trim()) {
-    delete saved[id];
+    delete up.editableOverrides[id];
   } else {
-    saved[id] = text;
+    up.editableOverrides[id] = text;
   }
-  localStorage.setItem(EDITABLE_PROMPTS_KEY, JSON.stringify(saved));
-  if (typeof queueSettingsSave === 'function') queueSettingsSave(); // Drive-Sync (v4.92)
+  saveUserPrompts(up); // inkl. Drive-Sync
 }
 
 function resetEditablePrompt(id) {
-  const saved = getEditablePrompts();
-  delete saved[id];
-  localStorage.setItem(EDITABLE_PROMPTS_KEY, JSON.stringify(saved));
-  if (typeof queueSettingsSave === 'function') queueSettingsSave(); // Drive-Sync (v4.92)
+  const up = getUserPrompts();
+  delete up.editableOverrides[id];
+  saveUserPrompts(up); // inkl. Drive-Sync
 }
 
 // ── System-Prompts (read-only) ────────────────────
@@ -1017,8 +1046,8 @@ function _renderPromptsResults() {
     ${filteredCustom.length === 0 ? `
       <div style="text-align:center; padding:40px 24px; color:var(--muted); border:1px dashed var(--border); border-radius:14px">
         <div style="margin-bottom:10px; opacity:0.3">${icon('sparkles',28)}</div>
-        <div style="font-size:0.88rem; margin-bottom:6px; font-weight:500">${q || tagF ? 'Keine Treffer' : 'Noch keine eigenen Prompts'}</div>
-        ${!q && !tagF ? `<button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;margin-top:8px">${icon('plus',14)} Ersten Prompt erstellen</button>` : ''}
+        <div style="font-size:0.88rem; margin-bottom:6px; font-weight:500">${q || tagFilterActive ? 'Keine Treffer' : 'Noch keine eigenen Prompts'}</div>
+        ${!q && !tagFilterActive ? `<button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;margin-top:8px">${icon('plus',14)} Ersten Prompt erstellen</button>` : ''}
       </div>
     ` : `<div class="prompts-grid">${filteredCustom.map(_cardCustom).join('')}</div>`}
   </div>`;
@@ -1032,22 +1061,30 @@ function openSystemPromptView(id) {
   const p = SYSTEM_PROMPTS.find(sp => sp.id === id);
   if (!p) return;
   document.getElementById('promptEditorTitle').textContent = p.name + ' (System)';
-  document.getElementById('promptEditorId').value        = '';
-  document.getElementById('promptEditorName').value      = p.name;
-  document.getElementById('promptEditorDesc').value      = p.description;
-  document.getElementById('promptEditorIcon').value      = p.icon;
-  document.getElementById('promptEditorText').value      = p.prompt;
+  document.getElementById('promptEditorId').value          = '';
+  document.getElementById('promptEditorName').value        = p.name;
+  document.getElementById('promptEditorDesc').value        = p.description;
+  document.getElementById('promptEditorIcon').value        = p.icon;
+  document.getElementById('promptEditorText').value        = p.prompt;
   document.getElementById('promptEditorError').style.display = 'none';
-  // v5.18: custom-only Sektionen komplett ausblenden → keine Kontamination möglich
+
+  // v5.20: Alle Felder explizit zurücksetzen (verhindert Kontamination durch vorherige eigene Prompts)
+  document.getElementById('promptEditorRolle').value       = '';
+  document.getElementById('promptEditorTonalitaet').value  = '';
+  document.getElementById('promptEditorGrenzen').value     = '';
+  document.getElementById('promptEditorTags').value        = '';
+
+  // Felder sichtbar lassen, aber alle als ReadOnly markieren
   const structEl = document.getElementById('promptEditorStructuredFields');
   const tagsEl   = document.getElementById('promptEditorTagsSection');
-  if (structEl) structEl.style.display = 'none';
-  if (tagsEl)   tagsEl.style.display   = 'none';
-  // Sichtbare Felder als ReadOnly markieren
-  ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorText'].forEach(fid => {
+  if (structEl) structEl.style.display = '';
+  if (tagsEl)   tagsEl.style.display   = '';
+  ['promptEditorName','promptEditorDesc','promptEditorIcon','promptEditorRolle',
+   'promptEditorTonalitaet','promptEditorGrenzen','promptEditorText','promptEditorTags'].forEach(fid => {
     const el2 = document.getElementById(fid);
     if (el2) { el2.readOnly = true; el2.style.opacity = '0.6'; }
   });
+
   const saveBtn = document.getElementById('promptEditorSaveBtn');
   if (saveBtn) saveBtn.style.display = 'none';
   const modal = document.getElementById('promptEditorModal');
@@ -1222,9 +1259,23 @@ function openEditablePromptEditor(id) {
   document.getElementById('promptEditorText').value = currentText;
   document.getElementById('promptEditorError').style.display = 'none';
 
-  ['promptEditorName','promptEditorDesc','promptEditorIcon'].forEach(fid => {
+  // v5.20: Strukturierte Felder leeren (verhindert Kontamination durch eigene Prompts)
+  document.getElementById('promptEditorRolle').value      = '';
+  document.getElementById('promptEditorTonalitaet').value = '';
+  document.getElementById('promptEditorGrenzen').value    = '';
+  document.getElementById('promptEditorTags').value       = '';
+
+  // Strukturierte Sektionen sichtbar lassen, aber gesperrt
+  const structEl = document.getElementById('promptEditorStructuredFields');
+  const tagsEl   = document.getElementById('promptEditorTagsSection');
+  if (structEl) structEl.style.display = '';
+  if (tagsEl)   tagsEl.style.display   = '';
+
+  // Name/Desc/Icon/Rolle/Tonalität/Grenzen/Tags gesperrt, nur Text editierbar
+  ['promptEditorName','promptEditorDesc','promptEditorIcon',
+   'promptEditorRolle','promptEditorTonalitaet','promptEditorGrenzen','promptEditorTags'].forEach(fid => {
     const el2 = document.getElementById(fid);
-    el2.readOnly = true; el2.style.opacity = '0.5';
+    if (el2) { el2.readOnly = true; el2.style.opacity = '0.5'; }
   });
   document.getElementById('promptEditorText').readOnly = false;
   document.getElementById('promptEditorText').style.opacity = '';
@@ -1239,7 +1290,7 @@ function openEditablePromptEditor(id) {
       resetEditablePrompt(id);
       document.getElementById('promptEditorText').value = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === id).prompt;
       resetBtn.style.display = 'none';
-      showToast('Prompt zurückgesetzt', 'ok');
+      showToast('Prompt zurückgesetzt', 'success');
     };
   }
 
@@ -1255,13 +1306,13 @@ function saveEditablePromptFromEditor(id) {
   saveEditablePromptText(id, text);
   closePromptEditorModal();
   _renderPromptsResults();
-  showToast('Prompt gespeichert', 'ok');
+  showToast('Prompt gespeichert', 'success');
 }
 
 function resetEditablePromptAndRefresh(id) {
   resetEditablePrompt(id);
   _renderPromptsResults();
-  showToast('Prompt zurückgesetzt', 'ok');
+  showToast('Prompt zurückgesetzt', 'success');
 }
 
 // ── Checkboxen im Analyse-Modal befüllen ─────────
@@ -1360,9 +1411,9 @@ function importPrompts(event) {
 
       // Bearbeitete Standard-Prompts zusammenführen
       if (data.editedDefaults && typeof data.editedDefaults === 'object') {
-        const current = getEditablePrompts();
-        const merged  = { ...data.editedDefaults, ...current }; // lokale Änderungen haben Vorrang
-        localStorage.setItem(EDITABLE_PROMPTS_KEY, JSON.stringify(merged));
+        const up = getUserPrompts();
+        up.editableOverrides = { ...data.editedDefaults, ...up.editableOverrides }; // lokale haben Vorrang
+        saveUserPrompts(up);
       }
 
       showToast(`${added} neue Prompt(s) importiert`, 'success');
@@ -1374,4 +1425,12 @@ function importPrompts(event) {
   reader.readAsText(file);
   // Input zurücksetzen damit dieselbe Datei nochmal importiert werden kann
   event.target.value = '';
+}
+
+// ── Migration beim Seitenstart ausführen (v5.22) ─────────────────────────────
+// Nur einmalig – wenn userPrompts noch nicht existiert, werden alte Schlüssel übernommen
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', migrateToUserPrompts);
+} else {
+  migrateToUserPrompts();
 }
