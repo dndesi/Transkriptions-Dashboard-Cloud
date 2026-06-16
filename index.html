@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.25</button>
+        onmouseout="this.style.color='var(--muted)'">v5.26</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1175,6 +1175,15 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.26 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.26</span><span class="cl-date">16.06.2026</span></div>
+        <ul>
+          <li><strong>Prompt-Generator: Vollständige Vorschau + direkt editierbar</strong> – Im letzten Schritt (Wizard & KI-Modus) wird der fertige Prompt jetzt vollständig als bearbeitbare Textarea angezeigt (kein 500-Zeichen-Limit mehr, keine abgeschnittene Vorschau). Änderungen werden beim Speichern direkt übernommen.</li>
+        </ul>
+        <div class="cl-tech">js/prompts.js: _genState.finalText ergänzt. _genSaveStep() liest genFinalPrompt-Textarea. _genSave() nutzt finalText falls vorhanden (rolle/ton/grenzen bereits eingebaut). _renderGenModal() Step 6: Textarea statt read-only Preview-Box.</div>
+      </div>
 
       <!-- ── v5.25 ── -->
       <div class="cl-entry">
@@ -3710,29 +3719,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.25"></script>
-<script src="js/storage.js?v=5.25"></script>
-<script src="js/config.js?v=5.25"></script>
-<script src="js/auth.js?v=5.25"></script>
-<script src="js/drive.js?v=5.25"></script>
-<script src="js/sessions.js?v=5.25"></script>
-<script src="js/assemblyai.js?v=5.25"></script>
-<script src="js/claude.js?v=5.25"></script>
-<script src="js/ui.js?v=5.25"></script>
-<script src="js/tags.js?v=5.25"></script>
-<script src="js/notes.js?v=5.25"></script>
-<script src="js/persons.js?v=5.25"></script>
-<script src="js/audio.js?v=5.25"></script>
-<script src="js/recorder.js?v=5.25"></script>
-<script src="js/app.js?v=5.25"></script>
+<script src="js/icons.js?v=5.26"></script>
+<script src="js/storage.js?v=5.26"></script>
+<script src="js/config.js?v=5.26"></script>
+<script src="js/auth.js?v=5.26"></script>
+<script src="js/drive.js?v=5.26"></script>
+<script src="js/sessions.js?v=5.26"></script>
+<script src="js/assemblyai.js?v=5.26"></script>
+<script src="js/claude.js?v=5.26"></script>
+<script src="js/ui.js?v=5.26"></script>
+<script src="js/tags.js?v=5.26"></script>
+<script src="js/notes.js?v=5.26"></script>
+<script src="js/persons.js?v=5.26"></script>
+<script src="js/audio.js?v=5.26"></script>
+<script src="js/recorder.js?v=5.26"></script>
+<script src="js/app.js?v=5.26"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.25"></script>
-<script src="js/search.js?v=5.25"></script>
-<script src="js/calendar.js?v=5.25"></script>
-<script src="js/prompts.js?v=5.25"></script>
-<script src="js/projects.js?v=5.25"></script>
-<script src="js/import.js?v=5.25"></script>
+<script src="js/features.js?v=5.26"></script>
+<script src="js/search.js?v=5.26"></script>
+<script src="js/calendar.js?v=5.26"></script>
+<script src="js/prompts.js?v=5.26"></script>
+<script src="js/projects.js?v=5.26"></script>
+<script src="js/import.js?v=5.26"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

@@ -1450,7 +1450,7 @@ function openPromptGeneratorModal() {
     mode: null, step: 1,
     name: '', icon: 'sparkles', description: '',
     rolle: '', tonalitaet: '', grenzen: '',
-    kontext: '', schema: [], tags: [], aiDesc: ''
+    kontext: '', schema: [], tags: [], aiDesc: '', finalText: ''
   };
   _renderGenModal();
   document.getElementById('promptGeneratorModal').style.display = 'flex';
@@ -1492,12 +1492,14 @@ function _genSaveStep() {
       });
     }
     if (s.step === 6) {
-      s.tags = val('genTags').split(',').map(t => t.trim()).filter(Boolean);
+      s.tags      = val('genTags').split(',').map(t => t.trim()).filter(Boolean);
+      s.finalText = val('genFinalPrompt');
     }
   } else {
     if (s.step === 2) { s.aiDesc = val('genAiDesc').trim(); }
     if (s.step === 6) {
-      s.tags = val('genTags').split(',').map(t => t.trim()).filter(Boolean);
+      s.tags      = val('genTags').split(',').map(t => t.trim()).filter(Boolean);
+      s.finalText = val('genFinalPrompt');
     }
   }
 }
@@ -1602,8 +1604,9 @@ Erstelle einen vollständigen, professionellen Prompt. Antworte NUR mit einem JS
 function _genSave() {
   _genSaveStep();
   const s = _genState;
-  if (!s.name)   { showToast('Name fehlt.', 'warning'); return; }
-  if (!s.kontext){ showToast('Kontext fehlt.', 'warning'); return; }
+  if (!s.name) { showToast('Name fehlt.', 'warning'); return; }
+  const hasContent = s.finalText?.trim() || s.kontext?.trim();
+  if (!hasContent) { showToast('Kein Prompt-Inhalt vorhanden.', 'warning'); return; }
 
   // Schema bereinigen: nur Felder mit Label behalten, field-Key ableiten
   const schema = s.schema
@@ -1617,15 +1620,18 @@ function _genSave() {
               .replace(/^_|_$/g, '') || 'field_' + i
     }));
 
+  // v5.26: Wenn finalText vorhanden (User hat editiert oder KI-Modus),
+  // wird der komplette Text als kontext gespeichert (rolle/ton/grenzen bereits eingebaut)
+  const useFinalText = !!s.finalText?.trim();
   const obj = {
     id:          genPromptId(),
     name:        s.name,
     icon:        s.icon || 'sparkles',
     description: s.description,
-    rolle:       s.rolle,
-    tonalitaet:  s.tonalitaet,
-    grenzen:     s.grenzen,
-    kontext:     s.kontext,
+    rolle:       useFinalText ? '' : s.rolle,
+    tonalitaet:  useFinalText ? '' : s.tonalitaet,
+    grenzen:     useFinalText ? '' : s.grenzen,
+    kontext:     useFinalText ? s.finalText.trim() : s.kontext,
     tags:        s.tags,
     ...(schema.length > 0 ? { outputSchema: schema } : {})
   };
@@ -1769,7 +1775,8 @@ function _renderGenModal() {
     }
 
     else if (s.step === 6) {
-      const preview = assemblePromptText({ rolle: s.rolle, tonalitaet: s.tonalitaet, grenzen: s.grenzen, kontext: s.kontext });
+      const assembled   = assemblePromptText({ rolle: s.rolle, tonalitaet: s.tonalitaet, grenzen: s.grenzen, kontext: s.kontext });
+      const previewText = s.finalText || assembled;
       const validSchema = s.schema.filter(f => f.label);
       html = `
         <div style="margin-bottom:14px">
@@ -1787,9 +1794,12 @@ function _renderGenModal() {
             <span style="color:var(--muted)">${GEN_FIELD_TYPES.find(t => t.value === f.type)?.label || f.type}</span>
           </div>`).join('')}
         </div>` : ''}
-        <div style="padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
-          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:6px">Prompt-Vorschau</div>
-          <div style="font-size:0.78rem;color:var(--muted);font-family:monospace;white-space:pre-wrap;max-height:140px;overflow-y:auto;line-height:1.5">${escHtml(preview.slice(0, 500))}${preview.length > 500 ? '…' : ''}</div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px">
+            Fertiger Prompt – direkt bearbeitbar
+          </label>
+          <textarea id="genFinalPrompt" rows="14"
+            style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;resize:vertical;box-sizing:border-box;font-family:monospace;line-height:1.6;outline:none">${escHtml(previewText)}</textarea>
         </div>`;
     }
   }
@@ -1805,7 +1815,8 @@ function _renderGenModal() {
     }
 
     else if (s.step === 6) {
-      const preview    = assemblePromptText({ rolle: s.rolle, tonalitaet: s.tonalitaet, grenzen: s.grenzen, kontext: s.kontext });
+      const assembled   = assemblePromptText({ rolle: s.rolle, tonalitaet: s.tonalitaet, grenzen: s.grenzen, kontext: s.kontext });
+      const previewText = s.finalText || assembled;
       const validSchema = s.schema.filter(f => f.label);
       html = `
         <div style="padding:10px 12px;background:rgba(108,99,255,0.06);border-radius:8px;border:1px solid rgba(108,99,255,0.2);margin-bottom:14px;display:flex;align-items:center;gap:8px">
@@ -1827,9 +1838,12 @@ function _renderGenModal() {
           <input id="genTags" type="text" placeholder="tag1, tag2" value="${escHtml(s.tags.join(', '))}"
             style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;outline:none;box-sizing:border-box">
         </div>
-        <div style="padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
-          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:6px">Prompt-Vorschau</div>
-          <div style="font-size:0.78rem;color:var(--muted);font-family:monospace;white-space:pre-wrap;max-height:140px;overflow-y:auto;line-height:1.5">${escHtml(preview.slice(0, 500))}${preview.length > 500 ? '…' : ''}</div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:block;margin-bottom:5px">
+            Fertiger Prompt – direkt bearbeitbar
+          </label>
+          <textarea id="genFinalPrompt" rows="14"
+            style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;resize:vertical;box-sizing:border-box;font-family:monospace;line-height:1.6;outline:none">${escHtml(previewText)}</textarea>
         </div>`;
     }
   }
