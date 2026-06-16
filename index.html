@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.28</button>
+        onmouseout="this.style.color='var(--muted)'">v5.29</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1175,6 +1175,15 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.29 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.29</span><span class="cl-date">16.06.2026</span></div>
+        <ul>
+          <li><strong>JSON-Format-Vorschau im Prompt-Editor</strong> – Beim Öffnen eines gespeicherten Prompts mit Ausgabe-Feldern erscheint im Formular ein ausklappbares „JSON-Format"-Element. Zeigt das exakte JSON-Template mit den gespeicherten Feldnamen und Beispielwerten.</li>
+        </ul>
+        <div class="cl-tech">index.html: promptEditorSchemaPreview-Container ergänzt. js/prompts.js: openPromptEditorModal() befüllt Container bei existing.outputSchema. _buildJsonPreview() nutzt jetzt f.field direkt wenn vorhanden.</div>
+      </div>
 
       <!-- ── v5.28 ── -->
       <div class="cl-entry">
@@ -3588,6 +3597,9 @@
       <p style="font-size:0.7rem; color:var(--muted); margin-top:3px;">Kommagetrennt – für Suche und Filterung in der Bibliothek.</p>
     </div>
 
+    <!-- JSON-Vorschau für Prompts mit Ausgabe-Schema (v5.29) -->
+    <div id="promptEditorSchemaPreview" style="display:none; margin-bottom:16px;"></div>
+
     <div id="promptEditorError" style="display:none; margin-bottom:12px; padding:9px 12px; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.4); border-radius:8px; font-size:0.82rem; color:var(--red);"></div>
 
     <div class="modal-actions">
@@ -3739,29 +3751,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.28"></script>
-<script src="js/storage.js?v=5.28"></script>
-<script src="js/config.js?v=5.28"></script>
-<script src="js/auth.js?v=5.28"></script>
-<script src="js/drive.js?v=5.28"></script>
-<script src="js/sessions.js?v=5.28"></script>
-<script src="js/assemblyai.js?v=5.28"></script>
-<script src="js/claude.js?v=5.28"></script>
-<script src="js/ui.js?v=5.28"></script>
-<script src="js/tags.js?v=5.28"></script>
-<script src="js/notes.js?v=5.28"></script>
-<script src="js/persons.js?v=5.28"></script>
-<script src="js/audio.js?v=5.28"></script>
-<script src="js/recorder.js?v=5.28"></script>
-<script src="js/app.js?v=5.28"></script>
+<script src="js/icons.js?v=5.29"></script>
+<script src="js/storage.js?v=5.29"></script>
+<script src="js/config.js?v=5.29"></script>
+<script src="js/auth.js?v=5.29"></script>
+<script src="js/drive.js?v=5.29"></script>
+<script src="js/sessions.js?v=5.29"></script>
+<script src="js/assemblyai.js?v=5.29"></script>
+<script src="js/claude.js?v=5.29"></script>
+<script src="js/ui.js?v=5.29"></script>
+<script src="js/tags.js?v=5.29"></script>
+<script src="js/notes.js?v=5.29"></script>
+<script src="js/persons.js?v=5.29"></script>
+<script src="js/audio.js?v=5.29"></script>
+<script src="js/recorder.js?v=5.29"></script>
+<script src="js/app.js?v=5.29"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.28"></script>
-<script src="js/search.js?v=5.28"></script>
-<script src="js/calendar.js?v=5.28"></script>
-<script src="js/prompts.js?v=5.28"></script>
-<script src="js/projects.js?v=5.28"></script>
-<script src="js/import.js?v=5.28"></script>
+<script src="js/features.js?v=5.29"></script>
+<script src="js/search.js?v=5.29"></script>
+<script src="js/calendar.js?v=5.29"></script>
+<script src="js/prompts.js?v=5.29"></script>
+<script src="js/projects.js?v=5.29"></script>
+<script src="js/import.js?v=5.29"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

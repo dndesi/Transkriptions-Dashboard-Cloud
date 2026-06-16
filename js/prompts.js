@@ -1134,6 +1134,26 @@ function openPromptEditorModal(id) {
   const resetBtn = document.getElementById('promptEditorResetBtn');
   if (resetBtn) resetBtn.style.display = 'none';
 
+  // v5.29: JSON-Vorschau bei Prompts mit outputSchema
+  const schemaPreviewEl = document.getElementById('promptEditorSchemaPreview');
+  if (schemaPreviewEl) {
+    const schema = existing?.outputSchema;
+    if (Array.isArray(schema) && schema.length > 0) {
+      schemaPreviewEl.style.display = '';
+      schemaPreviewEl.innerHTML = `
+        <details>
+          <summary style="font-size:0.75rem;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;list-style:none;outline:none">
+            ${icon('chevron-right', 12)} JSON-Format – wird beim Ausführen automatisch ergänzt
+          </summary>
+          <pre style="margin:6px 0 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);overflow-x:auto;line-height:1.5;white-space:pre-wrap;word-break:break-word">${escHtml(_buildJsonPreview(schema))}</pre>
+        </details>`;
+      if (window.lucide) lucide.createIcons({ nodes: [schemaPreviewEl] });
+    } else {
+      schemaPreviewEl.style.display = 'none';
+      schemaPreviewEl.innerHTML = '';
+    }
+  }
+
   const modal = document.getElementById('promptEditorModal');
   modal.style.display = 'flex';
   if (window.lucide) lucide.createIcons({ nodes: [modal] });
@@ -1657,7 +1677,8 @@ function _genSave() {
 function _buildJsonPreview(validSchema) {
   const tpl = {};
   validSchema.forEach((f, i) => {
-    const field = (f.label || '')
+    // Gespeicherte Prompts haben bereits f.field; Generator-Step-6 leitet ab
+    const field = f.field || (f.label || '')
       .toLowerCase()
       .normalize('NFD').replace(/[̀-ͯ]/g, '')
       .replace(/[^a-z0-9]+/g, '_')
