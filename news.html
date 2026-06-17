@@ -17,6 +17,8 @@
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { scroll-behavior: smooth; }
+
     body {
       background: var(--bg);
       color: var(--text);
@@ -62,11 +64,75 @@
       border-radius: 20px;
     }
 
-    /* ── Layout ── */
+    /* ── Two-column layout ── */
+    .news-layout {
+      display: flex;
+      min-height: calc(100vh - 57px);
+    }
+
+    /* ── Sidebar ── */
+    .news-sidebar {
+      width: 210px;
+      flex-shrink: 0;
+      padding: 36px 0 80px 0;
+      position: sticky;
+      top: 57px;
+      height: calc(100vh - 57px);
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+    }
+    .news-sidebar::-webkit-scrollbar { width: 4px; }
+    .news-sidebar::-webkit-scrollbar-track { background: transparent; }
+    .news-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .news-sidebar-title {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      padding: 0 20px;
+    }
+
+    .news-sidebar-link {
+      display: block;
+      padding: 8px 20px 8px 18px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      margin-bottom: 1px;
+      transition: color 0.15s, background 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .news-sidebar-link:hover {
+      color: var(--text);
+      background: var(--surface2);
+    }
+    .news-sidebar-link.active {
+      color: var(--accent2);
+      border-left-color: var(--accent);
+      background: rgba(108, 99, 255, 0.08);
+    }
+    .news-sidebar-version {
+      display: inline-block;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-right: 5px;
+      vertical-align: 1px;
+    }
+    .news-sidebar-link.active .news-sidebar-version {
+      color: var(--accent2);
+    }
+
+    /* ── Main content ── */
     .news-container {
+      flex: 1;
+      min-width: 0;
       max-width: 760px;
-      margin: 0 auto;
-      padding: 48px 24px 80px;
+      padding: 48px 32px 80px 48px;
     }
 
     /* ── Artikel ── */
@@ -74,384 +140,751 @@
       margin-bottom: 64px;
       padding-bottom: 64px;
       border-bottom: 1px solid var(--border);
+      scroll-margin-top: 80px;
     }
     .news-article:last-child {
       border-bottom: none;
       margin-bottom: 0;
-      padding-bottom: 0;
     }
 
+    /* ── Meta ── */
     .news-meta {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
+      margin-bottom: 20px;
     }
     .news-version {
       background: var(--accent);
       color: #fff;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 700;
-      padding: 3px 9px;
+      padding: 3px 8px;
       border-radius: 20px;
-      letter-spacing: 0.04em;
     }
     .news-date {
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
     .news-category {
-      color: var(--muted);
-      font-size: 0.78rem;
-      padding: 2px 8px;
+      margin-left: auto;
+      background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
     }
 
+    /* ── Hero ── */
+    .news-tile-hero {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      height: 220px;
+      margin-bottom: 28px;
+    }
+    .news-tile-hero-text {
+      position: absolute;
+      bottom: 20px;
+      left: 24px;
+      z-index: 2;
+    }
+    .news-tile-hero-text span {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .news-tile-hero-text h3 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* ── Artikel-Text ── */
     .news-article h2 {
-      font-size: 1.6rem;
+      font-size: 1.4rem;
       font-weight: 800;
       line-height: 1.25;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
+    }
+    .news-article h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 24px 0 12px;
       color: var(--text);
     }
-
     .news-article .lead {
       font-size: 1.05rem;
       color: var(--accent2);
-      margin-bottom: 24px;
-      line-height: 1.6;
       font-weight: 500;
+      line-height: 1.6;
+      margin-bottom: 20px;
     }
-
     .news-article p {
-      color: #c8cad8;
+      color: #c8cad6;
       margin-bottom: 16px;
-      font-size: 0.97rem;
     }
 
-    /* ── Hero-Bild der Kachel ── */
-    .news-tile-hero {
-      width: 100%;
-      border-radius: 14px;
-      margin-bottom: 28px;
-      aspect-ratio: 16/7;
-      display: flex;
-      align-items: flex-end;
-      padding: 24px;
-      position: relative;
-      overflow: hidden;
-    }
-    .news-tile-hero-text {
-      position: relative;
-      z-index: 1;
-    }
-    .news-tile-hero-text span {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.55);
-    }
-    .news-tile-hero-text h3 {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: #fff;
-      margin-top: 4px;
-    }
-    .news-tile-hero svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* ── Feature-Liste ── */
+    /* ── Feature-List ── */
     .news-feature-list {
       list-style: none;
-      margin: 20px 0;
+      margin: 20px 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
     .news-feature-list li {
-      display: flex;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.93rem;
-      color: #c8cad8;
-      align-items: flex-start;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      color: #c8cad6;
+      line-height: 1.5;
     }
-    .news-feature-list li:last-child { border-bottom: none; }
-    .news-feature-list li::before {
-      content: '→';
-      color: var(--accent);
-      font-weight: 700;
-      flex-shrink: 0;
-      margin-top: 1px;
+    .news-feature-list li strong {
+      color: var(--text);
+      display: block;
+      margin-bottom: 2px;
     }
 
     /* ── Info-Box ── */
     .news-info-box {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--accent);
-      border-radius: 0 10px 10px 0;
-      padding: 14px 18px;
-      margin: 20px 0;
-      font-size: 0.88rem;
-      color: var(--muted);
+      margin-top: 24px;
+      padding: 16px 20px;
+      background: rgba(108, 99, 255, 0.08);
+      border: 1px solid rgba(108, 99, 255, 0.25);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      color: #c8cad6;
       line-height: 1.6;
     }
-    .news-info-box strong { color: var(--text); }
+    .news-info-box strong {
+      color: var(--accent2);
+    }
 
-    /* ── Separator ── */
-    hr.news-sep {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 32px 0;
+    /* ── Typ-Grid (Feldtypen-Artikel) ── */
+    .news-type-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 20px 0 24px;
+    }
+    .news-type-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .news-type-card-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 4px;
+    }
+    .news-type-card-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 768px) {
+      .news-layout { display: block; }
+      .news-sidebar { display: none; }
+      .news-container { padding: 32px 20px 60px; max-width: 100%; }
+      .news-type-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<!-- ── Header ── -->
 <header class="news-header">
-  <a href="index.html" class="back">← Zurück zur App</a>
+  <a href="index.html" class="back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Zurück
+  </a>
   <h1>📰 Was ist neu?</h1>
-  <span class="badge">v5.5</span>
+  <span class="badge">v5.35</span>
 </header>
 
-<!-- ── Artikel-Feed ── -->
-<main class="news-container">
+<div class="news-layout">
+
+  <!-- ── Sidebar-Navigation ── -->
+  <nav class="news-sidebar" aria-label="Artikel-Navigation">
+    <p class="news-sidebar-title">Artikel</p>
+    <a href="#ausgabe-felder"   class="news-sidebar-link" data-id="ausgabe-felder"><span class="news-sidebar-version">v5.30</span>Ausgabe-Feld-Typen</a>
+    <a href="#design-versionen" class="news-sidebar-link" data-id="design-versionen"><span class="news-sidebar-version">v5.25</span>Design-Versionen</a>
+    <a href="#prompt-generator" class="news-sidebar-link" data-id="prompt-generator"><span class="news-sidebar-version">v5.23</span>Prompt-Generator</a>
+    <a href="#share-target"     class="news-sidebar-link" data-id="share-target"><span class="news-sidebar-version">v5.2</span>Android Share Target</a>
+    <a href="#audio-delete"     class="news-sidebar-link" data-id="audio-delete"><span class="news-sidebar-version">v5.1</span>Audio Auto-Delete</a>
+    <a href="#prompts-sync"     class="news-sidebar-link" data-id="prompts-sync"><span class="news-sidebar-version">v5.0</span>Prompts-Sync</a>
+    <a href="#pwa"              class="news-sidebar-link" data-id="pwa"><span class="news-sidebar-version">v4.89</span>PWA-Installation</a>
+  </nav>
+
+  <!-- ── Artikel-Feed ── -->
+  <main class="news-container">
 
 
-  <!-- ════════════════════════════════════════
-       ARTIKEL: Android Share Target (v5.2)
-       ════════════════════════════════════════ -->
-  <article class="news-article" id="share-target">
-    <div class="news-meta">
-      <span class="news-version">v5.2</span>
-      <span class="news-date">15. Juni 2026</span>
-      <span class="news-category">Feature</span>
-    </div>
-
-    <div class="news-tile-hero" style="background:#1a1040">
-      <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
-        <circle cx="440" cy="105" r="160" fill="#6c43e0" opacity="0.15"/>
-        <rect x="240" y="65" width="90" height="145" rx="12" fill="#2d1f6e" stroke="#6c43e0" stroke-width="2"/>
-        <rect x="252" y="82" width="66" height="108" rx="4" fill="#1a1040"/>
-        <circle cx="285" cy="200" r="5.5" fill="#6c43e0" opacity="0.5"/>
-        <line x1="180" y1="137" x2="240" y2="137" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4 3"/>
-        <polygon points="235,131 248,137 235,143" fill="#a78bfa"/>
-        <line x1="330" y1="115" x2="390" y2="95" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4 3"/>
-        <polygon points="385,90 398,100 384,104" fill="#a78bfa"/>
-        <line x1="330" y1="160" x2="390" y2="182" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4 3"/>
-        <polygon points="383,175 397,187 388,163" fill="#a78bfa"/>
-        <rect x="395" y="78" width="42" height="42" rx="9" fill="#3b1d8a" stroke="#6c43e0" stroke-width="1.5"/>
-        <text x="416" y="106" text-anchor="middle" font-size="20" fill="#a78bfa" font-family="sans-serif">D</text>
-        <rect x="395" y="162" width="42" height="36" rx="9" fill="#3b1d8a" stroke="#6c43e0" stroke-width="1.5"/>
-        <text x="416" y="184" text-anchor="middle" font-size="14" fill="#a78bfa" font-family="sans-serif">.txt</text>
-        <rect x="135" y="118" width="42" height="38" rx="6" fill="#3b1d8a" stroke="#6c43e0" stroke-width="1.5"/>
-        <text x="156" y="141" text-anchor="middle" font-size="13" fill="#c4b5fd" font-family="sans-serif">MP3</text>
-        <defs><linearGradient id="nh1" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#1a1040" stop-opacity="0"/><stop offset="100%" stop-color="#1a1040" stop-opacity="0.95"/></linearGradient></defs>
-        <rect x="0" y="0" width="640" height="280" fill="url(#nh1)"/>
-      </svg>
-      <div class="news-tile-hero-text">
-        <span>Neu in v5.2</span>
-        <h3>Android Share Target</h3>
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Ausgabe-Feld-Typen (v5.30)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="ausgabe-felder">
+      <div class="news-meta">
+        <span class="news-version">v5.30</span>
+        <span class="news-date">17. Juni 2026</span>
+        <span class="news-category">Feature</span>
       </div>
-    </div>
 
-    <h2>Dateien direkt aus Android-Apps teilen</h2>
-    <p class="lead">Du kannst Distill Voice jetzt als Ziel beim Android-Teilen auswählen – genau wie WhatsApp oder Dropbox. TXT-Dateien, MP3-Aufnahmen oder beides gleichzeitig lassen sich aus jeder App heraus direkt in eine neue Sitzung überführen.</p>
-
-    <p>Wer mit einer Diktier-App auf Android arbeitet – wie Samsung Voice Recorder, Google Recorder oder ähnlichen – kennt das Problem: Die Aufnahme liegt als TXT oder MP3 auf dem Gerät, muss aber manuell in Distill Voice importiert werden. Das entfällt jetzt.</p>
-
-    <p>Distill Voice erkennt automatisch, welche Dateien ankommen, und wählt den richtigen Verarbeitungsmodus:</p>
-
-    <ul class="news-feature-list">
-      <li><strong>TXT + MP3 zusammen:</strong> Das Transkript aus der TXT-Datei wird direkt übernommen, das MP3 wird gespeichert – keine erneute Transkription nötig.</li>
-      <li><strong>Nur MP3:</strong> Die Audiodatei wird an AssemblyAI weitergeleitet und automatisch transkribiert.</li>
-      <li><strong>Nur TXT:</strong> Der Text wird als fertiges Transkript importiert.</li>
-    </ul>
-
-    <p>Nach dem Empfang erscheint ein Overlay mit Datei-Vorschau, Sitzungsname und Projekt-Auswahl. Erst dann wird die Datei verarbeitet – du behältst die volle Kontrolle.</p>
-
-    <div class="news-info-box">
-      <strong>Einrichtung:</strong> Die App muss nach diesem Update einmal neu installiert werden (als PWA). Danach erscheint „Distill Voice" im Android-Teilen-Dialog unter Apps. Beim ersten Teilen kann es 5–10 Sekunden dauern, bis das Overlay erscheint – der Service Worker muss einmalig starten.
-    </div>
-  </article>
-
-
-  <!-- ════════════════════════════════════════
-       ARTIKEL: Audio Auto-Delete (v5.1)
-       ════════════════════════════════════════ -->
-  <article class="news-article" id="audio-delete">
-    <div class="news-meta">
-      <span class="news-version">v5.1</span>
-      <span class="news-date">15. Juni 2026</span>
-      <span class="news-category">Datenschutz</span>
-    </div>
-
-    <div class="news-tile-hero" style="background:#0f2a1a">
-      <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
-        <circle cx="360" cy="100" r="150" fill="#22c55e" opacity="0.08"/>
-        <circle cx="280" cy="130" r="80" fill="#0f2a1a" stroke="#22c55e" stroke-width="2.5"/>
-        <circle cx="280" cy="130" r="70" fill="#1a5c3a" opacity="0.3"/>
-        <line x1="280" y1="130" x2="280" y2="80" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="280" y1="130" x2="318" y2="148" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="280" cy="130" r="5" fill="#22c55e"/>
-        <line x1="280" y1="54" x2="280" y2="64" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
-        <line x1="280" y1="196" x2="280" y2="206" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
-        <line x1="204" y1="130" x2="214" y2="130" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
-        <line x1="346" y1="130" x2="356" y2="130" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
-        <rect x="390" y="152" width="52" height="58" rx="6" fill="#1a5c3a" stroke="#22c55e" stroke-width="1.8"/>
-        <rect x="384" y="145" width="64" height="9" rx="3" fill="#22c55e" opacity="0.7"/>
-        <rect x="396" y="140" width="32" height="7" rx="2" fill="#22c55e" opacity="0.4"/>
-        <line x1="404" y1="160" x2="404" y2="202" stroke="#22c55e" stroke-width="1.5" opacity="0.4"/>
-        <line x1="416" y1="160" x2="416" y2="202" stroke="#22c55e" stroke-width="1.5" opacity="0.4"/>
-        <line x1="428" y1="160" x2="428" y2="202" stroke="#22c55e" stroke-width="1.5" opacity="0.4"/>
-        <path d="M 362 148 Q 388 135 396 148" stroke="#22c55e" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
-        <polygon points="392,142 402,150 395,158" fill="#22c55e" opacity="0.8"/>
-        <defs><linearGradient id="nh2" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#0f2a1a" stop-opacity="0"/><stop offset="100%" stop-color="#0f2a1a" stop-opacity="0.95"/></linearGradient></defs>
-        <rect x="0" y="0" width="640" height="280" fill="url(#nh2)"/>
-      </svg>
-      <div class="news-tile-hero-text">
-        <span>Neu in v5.1</span>
-        <h3>Audio Auto-Delete</h3>
+      <div class="news-tile-hero" style="background:#0c1a1a">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <circle cx="320" cy="100" r="180" fill="#06b6d4" opacity="0.06"/>
+          <!-- Card 1: Star Rating -->
+          <rect x="80" y="55" width="190" height="80" rx="8" fill="#112020" stroke="#164e4e" stroke-width="1.5"/>
+          <text x="96" y="80" font-size="10" fill="#06b6d4" font-family="sans-serif" font-weight="700">BEWERTUNG</text>
+          <text x="96" y="102" font-size="18" fill="#f59e0b" font-family="sans-serif">&#9733;&#9733;&#9733;</text>
+          <text x="151" y="102" font-size="18" fill="#2a3a3a" font-family="sans-serif">&#9733;&#9733;</text>
+          <text x="96" y="120" font-size="10" fill="#4a8a8a" font-family="sans-serif">&#8222;Sehr detaillierter Vortrag&#8220;</text>
+          <!-- Card 2: Boolean -->
+          <rect x="290" y="55" width="170" height="80" rx="8" fill="#112020" stroke="#164e4e" stroke-width="1.5"/>
+          <text x="306" y="80" font-size="10" fill="#06b6d4" font-family="sans-serif" font-weight="700">JA / NEIN</text>
+          <rect x="306" y="88" width="44" height="22" rx="11" fill="#166534"/>
+          <text x="328" y="104" text-anchor="middle" font-size="11" fill="#4ade80" font-family="sans-serif" font-weight="700">Ja</text>
+          <rect x="358" y="88" width="44" height="22" rx="11" fill="#1a1a2a"/>
+          <text x="380" y="104" text-anchor="middle" font-size="11" fill="#4a4a6a" font-family="sans-serif">Nein</text>
+          <!-- Card 3: Tags -->
+          <rect x="80" y="155" width="190" height="80" rx="8" fill="#112020" stroke="#164e4e" stroke-width="1.5"/>
+          <text x="96" y="178" font-size="10" fill="#06b6d4" font-family="sans-serif" font-weight="700">TAGS</text>
+          <rect x="96" y="186" width="52" height="20" rx="10" fill="#1a3a3a" stroke="#06b6d4" stroke-width="1"/>
+          <text x="122" y="200" text-anchor="middle" font-size="10" fill="#06b6d4" font-family="sans-serif">#KI</text>
+          <rect x="154" y="186" width="82" height="20" rx="10" fill="#1a3a3a" stroke="#06b6d4" stroke-width="1"/>
+          <text x="195" y="200" text-anchor="middle" font-size="10" fill="#06b6d4" font-family="sans-serif">#Innovation</text>
+          <rect x="96" y="212" width="96" height="20" rx="10" fill="#1a3a3a" stroke="#06b6d4" stroke-width="1"/>
+          <text x="144" y="226" text-anchor="middle" font-size="10" fill="#06b6d4" font-family="sans-serif">#Zusammenfassung</text>
+          <!-- Card 4: Key-Value -->
+          <rect x="290" y="155" width="170" height="80" rx="8" fill="#112020" stroke="#164e4e" stroke-width="1.5"/>
+          <text x="306" y="178" font-size="10" fill="#06b6d4" font-family="sans-serif" font-weight="700">KEY&#8211;VALUE</text>
+          <text x="306" y="198" font-size="11" fill="#e8eaf0" font-family="sans-serif" font-weight="700">Stimmung:</text>
+          <text x="381" y="198" font-size="11" fill="#4a8a8a" font-family="sans-serif">Positiv</text>
+          <text x="306" y="215" font-size="11" fill="#e8eaf0" font-family="sans-serif" font-weight="700">Energie:</text>
+          <text x="369" y="215" font-size="11" fill="#4a8a8a" font-family="sans-serif">Hoch</text>
+          <!-- Right: list card -->
+          <rect x="490" y="55" width="130" height="180" rx="8" fill="#112020" stroke="#164e4e" stroke-width="1.5"/>
+          <text x="506" y="80" font-size="10" fill="#06b6d4" font-family="sans-serif" font-weight="700">LISTE</text>
+          <line x1="506" y1="88" x2="606" y2="88" stroke="#164e4e" stroke-width="1"/>
+          <circle cx="514" cy="104" r="3" fill="#06b6d4" opacity="0.6"/>
+          <rect x="522" y="100" width="80" height="7" rx="3" fill="#1a3a3a"/>
+          <circle cx="514" cy="124" r="3" fill="#06b6d4" opacity="0.6"/>
+          <rect x="522" y="120" width="65" height="7" rx="3" fill="#1a3a3a"/>
+          <circle cx="514" cy="144" r="3" fill="#06b6d4" opacity="0.6"/>
+          <rect x="522" y="140" width="72" height="7" rx="3" fill="#1a3a3a"/>
+          <circle cx="514" cy="164" r="3" fill="#06b6d4" opacity="0.6"/>
+          <rect x="522" y="160" width="58" height="7" rx="3" fill="#1a3a3a"/>
+          <circle cx="514" cy="184" r="3" fill="#06b6d4" opacity="0.6"/>
+          <rect x="522" y="180" width="75" height="7" rx="3" fill="#1a3a3a"/>
+          <text x="506" y="222" font-size="9" fill="#164e4e" font-family="sans-serif">+ 6 weitere Typen</text>
+          <defs><linearGradient id="nh5" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#0c1a1a" stop-opacity="0"/><stop offset="100%" stop-color="#0c1a1a" stop-opacity="0.95"/></linearGradient></defs>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh5)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu ab v5.30</span>
+          <h3>11 Ausgabe-Feld-Typen</h3>
+        </div>
       </div>
-    </div>
 
-    <h2>Audiodateien automatisch löschen</h2>
-    <p class="lead">Audiodateien verbrauchen überproportional viel Speicherplatz in Google Drive. Seit v5.1 löscht Distill Voice sie automatisch nach einer konfigurierbaren Frist – Transkripte und Analysen bleiben selbstverständlich erhalten.</p>
+      <h2>Strukturierte Analysen statt Freitext</h2>
+      <p class="lead">Eigene Analyse-Prompts können strukturierte Ausgabe-Felder definieren – mit 11 verschiedenen Typen. Statt einer Textwüste bekommst du geordnete, direkt bearbeitbare Ergebniskarten.</p>
 
-    <p>Der Standard ist 14 Tage. Das bedeutet: Direkt nach der Transkription steht die Aufnahme noch zwei Wochen für eventuelle Rückfragen bereit. Danach wird sie still aus Drive entfernt.</p>
+      <p>Wenn du eine Sitzung analysieren lässt, schickt Distill Voice den Transkripttext an Claude. Ohne Vorgaben antwortet die KI als freier Fließtext – schwer zu überfliegen, schwer weiterzuverarbeiten. Mit Ausgabe-Feldern sagst du der KI vorab: „Gib mir das Ergebnis bitte als Bewertung mit Begründung, als Liste mit Schlüsselpunkten und als Ja/Nein für eine Handlungsempfehlung." Die App rendert das Ergebnis dann als visuelle Karten.</p>
 
-    <p>Die Aufbewahrungsfrist ist im API-Modal einstellbar:</p>
+      <p>Alle Felder sind nach der Analyse direkt inline bearbeitbar – kein Kopieren in externe Tools notwendig.</p>
 
-    <ul class="news-feature-list">
-      <li>7 Tage – für sehr aktive Nutzer mit vielen Sitzungen</li>
-      <li>14 Tage – Standard, gute Balance</li>
-      <li>30 Tage – für Projekte mit langer Laufzeit</li>
-      <li>90 Tage – für seltene Archivierungsfälle</li>
-      <li>Niemals – Audio dauerhaft behalten</li>
-    </ul>
+      <h3>Die 11 Feld-Typen</h3>
 
-    <div class="news-info-box">
-      <strong>Was bleibt erhalten?</strong> Transkript, alle KI-Analysen, Notizen, Tags, Personen und Projektdaten sind nie betroffen. Nur die Rohdatei des Audios wird gelöscht.
-    </div>
-  </article>
-
-
-  <!-- ════════════════════════════════════════
-       ARTIKEL: Prompts-Sync (v5.0)
-       ════════════════════════════════════════ -->
-  <article class="news-article" id="prompts-sync">
-    <div class="news-meta">
-      <span class="news-version">v5.0</span>
-      <span class="news-date">15. Juni 2026</span>
-      <span class="news-category">Synchronisation</span>
-    </div>
-
-    <div class="news-tile-hero" style="background:#1a1500">
-      <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
-        <circle cx="320" cy="110" r="140" fill="#f59e0b" opacity="0.07"/>
-        <rect x="90" y="90" width="135" height="88" rx="8" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
-        <rect x="104" y="104" width="107" height="62" rx="3" fill="#1a1500"/>
-        <rect x="122" y="186" width="32" height="8" rx="2" fill="#f59e0b" opacity="0.35"/>
-        <rect x="110" y="194" width="56" height="5" rx="2" fill="#5c4200" opacity="0.6"/>
-        <rect x="112" y="112" width="60" height="5" rx="2" fill="#f59e0b" opacity="0.55"/>
-        <rect x="112" y="122" width="84" height="4" rx="2" fill="#5c4200"/>
-        <rect x="112" y="130" width="70" height="4" rx="2" fill="#5c4200"/>
-        <rect x="112" y="138" width="78" height="4" rx="2" fill="#5c4200"/>
-        <rect x="416" y="84" width="78" height="128" rx="11" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
-        <rect x="428" y="100" width="54" height="96" rx="4" fill="#1a1500"/>
-        <circle cx="455" cy="96" r="4" fill="#f59e0b" opacity="0.35"/>
-        <rect x="433" y="108" width="40" height="4" rx="2" fill="#f59e0b" opacity="0.55"/>
-        <rect x="433" y="118" width="32" height="3.5" rx="2" fill="#5c4200"/>
-        <rect x="433" y="127" width="36" height="3.5" rx="2" fill="#5c4200"/>
-        <rect x="433" y="136" width="28" height="3.5" rx="2" fill="#5c4200"/>
-        <!-- Cloud in centre -->
-        <ellipse cx="320" cy="118" rx="38" ry="24" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
-        <ellipse cx="306" cy="112" rx="17" ry="14" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
-        <ellipse cx="332" cy="110" rx="13" ry="12" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
-        <!-- Arrows -->
-        <line x1="227" y1="130" x2="277" y2="122" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5 3"/>
-        <polygon points="273,117 283,124 272,129" fill="#f59e0b" opacity="0.85"/>
-        <line x1="364" y1="122" x2="414" y2="130" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5 3"/>
-        <polygon points="410,125 420,133 411,138" fill="#f59e0b" opacity="0.85"/>
-        <defs><linearGradient id="nh3" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#1a1500" stop-opacity="0"/><stop offset="100%" stop-color="#1a1500" stop-opacity="0.95"/></linearGradient></defs>
-        <rect x="0" y="0" width="640" height="280" fill="url(#nh3)"/>
-      </svg>
-      <div class="news-tile-hero-text">
-        <span>Neu in v5.0</span>
-        <h3>Prompts-Sync geräteübergreifend</h3>
+      <div class="news-type-grid">
+        <div class="news-type-card">
+          <div class="news-type-card-name">text – Freitext</div>
+          <div class="news-type-card-desc">Ein einzelner Fließtext-Block. Ideal für Zusammenfassungen oder freie Einschätzungen.</div>
+        </div>
+        <div class="news-type-card">
+          <div class="news-type-card-name">list – Aufzählung</div>
+          <div class="news-type-card-desc">Eine einfache Liste mit Punkten. Perfekt für Schlüsselpunkte, Themen oder nächste Schritte.</div>
+        </div>
+        <div class="news-type-card">
+          <div class="news-type-card-name">checklist – Checkliste</div>
+          <div class="news-type-card-desc">Liste mit abhakbaren Checkboxen. Gut für Aufgaben oder To-Dos aus dem Gespräch.</div>
+        </div>
+        <div class="news-type-card">
+          <div class="news-type-card-name">tag_list – Tags</div>
+          <div class="news-type-card-desc">Farbige Chips pro Begriff. Ideal für Schlagworte, Kategorien oder Themen-Labels.</div>
+        </div>
+        <div class="news-type-card">
+          <div class="news-type-card-name">boolean – Ja / Nein</div>
+          <div class="news-type-card-desc">Eine klare Entscheidung als farbiger Pill. Perfekt für Handlungsempfehlungen.</div>
+        </div>
+        <div class="news-type-card">
+          <div class="news-type-card-name">rating – Bewertung</div>
+          <div class="news-type-card-desc">Sterne (1–5) mit optionaler Begründung. Gut für Qualitätsbewertungen jeder Art.</div>
+        </div>
+        <div class="news-type-card">
+          <div class="news-type-card-name">quote – Zitat</div>
+          <div class="news-type-card-desc">Markante Aussagen mit Person-Zuordnung als Blockzitat. Für wörtliche Zitate aus dem Gespräch.</div>
+        </div>
+        <div class="news-type-card">
+          <div class="news-type-card-name">key_value – Schlüssel–Wert</div>
+          <div class="news-type-card-desc">Paare aus fettgedrucktem Begriff und zugehörigem Wert. Für strukturierte Fakten.</div>
+        </div>
+        <div class="news-type-card">
+          <div class="news-type-card-name">list_with_person – Aufgabenliste</div>
+          <div class="news-type-card-desc">Aufgaben mit zugeordneter Person. Ideal für Meetings mit klaren Verantwortlichkeiten.</div>
+        </div>
+        <div class="news-type-card">
+          <div class="news-type-card-name">list_with_date – Terminliste</div>
+          <div class="news-type-card-desc">Einträge mit Datums-Badge. Perfekt für Zeitpläne oder Meilensteine aus dem Gespräch.</div>
+        </div>
+        <div class="news-type-card">
+          <div class="news-type-card-name">table – Tabelle</div>
+          <div class="news-type-card-desc">Vollständige Tabelle mit Spalten und Zeilen. Für strukturierte Vergleiche oder Übersichten.</div>
+        </div>
       </div>
-    </div>
 
-    <h2>Analyse-Vorlagen auf allen Geräten</h2>
-    <p class="lead">Eigene Analyse-Prompts, die auf einem Gerät erstellt wurden, sind jetzt sofort auf allen anderen Geräten sichtbar – ohne Neustart und ohne manuelles Synchronisieren.</p>
+      <h3>Schema-Builder: Felder ohne JSON definieren</h3>
 
-    <p>Bis v4.99 war die Prompt-Bibliothek lokal: Ein Prompt, der auf dem Desktop erstellt wurde, war auf dem Smartphone nicht vorhanden. Seit v5.0 lädt die App beim Öffnen der Promptbibliothek automatisch den aktuellen Stand aus Google Drive.</p>
+      <p>Felder musst du nicht als JSON-Code eintippen. Im Prompt-Editor gibt es den Schema-Builder: Du fügst Felder per Klick hinzu, gibst jedem einen Namen und wählst den Typ aus einem Dropdown. Die JSON-Vorschau aktualisiert sich live im Hintergrund – sie ist ausklappbar, wenn du sie brauchst.</p>
 
-    <div class="news-info-box">
-      <strong>Voraussetzung:</strong> Google Drive muss verbunden sein. Die Synchronisation läuft nur wenn Drive aktiv ist.
-    </div>
-  </article>
+      <p>Über den <strong>? Feldtypen</strong>-Button im Editor und im Generator öffnet sich ein Hilfe-Overlay mit allen 11 Typen als Karten: Anwendungsfall, Prompt-Ziel und Ausgabe-Vorschau auf einen Blick.</p>
 
+      <ul class="news-feature-list">
+        <li><strong>Schritt 1: Prompt-Bibliothek öffnen</strong>Stift-Icon in der Sidenav → eigenen Prompt öffnen oder über den Generator neu erstellen.</li>
+        <li><strong>Schritt 2: Felder hinzufügen</strong>Im Prompt-Editor im Bereich „Ausgabe-Felder" auf „+ Feld hinzufügen" klicken. Feldname eingeben und Typ aus dem Dropdown wählen.</li>
+        <li><strong>Schritt 3: ? Hilfe nutzen</strong>Der Button „? Feldtypen" öffnet das Hilfe-Overlay mit allen 11 Typen, Anwendungsfällen und Ausgabe-Vorschauen.</li>
+        <li><strong>Schritt 4: Prompt speichern und anwenden</strong>Prompt speichern → auf eine Sitzung anwenden → Ergebnisse erscheinen als strukturierte, bearbeitbare Karten direkt in der Sitzungsansicht.</li>
+      </ul>
 
-  <!-- ════════════════════════════════════════
-       ARTIKEL: PWA (v4.89)
-       ════════════════════════════════════════ -->
-  <article class="news-article" id="pwa">
-    <div class="news-meta">
-      <span class="news-version">v4.89</span>
-      <span class="news-date">Juni 2026</span>
-      <span class="news-category">Installation</span>
-    </div>
-
-    <div class="news-tile-hero" style="background:#0f1a2a">
-      <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
-        <circle cx="360" cy="105" r="160" fill="#3b82f6" opacity="0.1"/>
-        <rect x="246" y="65" width="110" height="188" rx="14" fill="#0f1a2a" stroke="#3b82f6" stroke-width="2.2"/>
-        <rect x="261" y="84" width="80" height="134" rx="4" fill="#1a3a5c" opacity="0.4"/>
-        <rect x="280" y="115" width="52" height="52" rx="12" fill="#1a3a5c" stroke="#3b82f6" stroke-width="2"/>
-        <text x="306" y="150" text-anchor="middle" font-size="24" fill="#60a5fa" font-family="sans-serif" font-weight="700">D</text>
-        <!-- Download arrow above phone -->
-        <line x1="306" y1="68" x2="306" y2="108" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="4 3"/>
-        <polygon points="298,106 306,118 314,106" fill="#3b82f6"/>
-        <!-- App icons in grid -->
-        <rect x="266" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
-        <rect x="285" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
-        <rect x="304" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
-        <rect x="323" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
-        <circle cx="306" cy="234" r="7.5" fill="#1a3a5c" stroke="#3b82f6" stroke-width="1.5"/>
-        <!-- Plus badge top-right -->
-        <circle cx="370" cy="96" r="20" fill="#1a3a5c" stroke="#3b82f6" stroke-width="2"/>
-        <line x1="370" y1="88" x2="370" y2="104" stroke="#3b82f6" stroke-width="2.5"/>
-        <line x1="362" y1="96" x2="378" y2="96" stroke="#3b82f6" stroke-width="2.5"/>
-        <defs><linearGradient id="nh4" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#0f1a2a" stop-opacity="0"/><stop offset="100%" stop-color="#0f1a2a" stop-opacity="0.95"/></linearGradient></defs>
-        <rect x="0" y="0" width="640" height="280" fill="url(#nh4)"/>
-      </svg>
-      <div class="news-tile-hero-text">
-        <span>Neu in v4.89</span>
-        <h3>PWA-Installation</h3>
+      <div class="news-info-box">
+        <strong>Tipp:</strong> Kombiniere mehrere Typen in einem Prompt. Zum Beispiel: eine Zusammenfassung (text) + Schlüsselpunkte (list) + Handlungsempfehlung (boolean) + nächste Schritte (checklist). Das gibt dir auf einen Blick alles Wichtige aus dem Gespräch – ohne eine Zeile tippen zu müssen.
       </div>
-    </div>
-
-    <h2>Distill Voice als App installieren</h2>
-    <p class="lead">Distill Voice ist jetzt eine Progressive Web App (PWA). Das bedeutet: Du kannst die App auf dem Startbildschirm deines Smartphones oder auf dem Desktop installieren – ohne App Store, ohne Download.</p>
-
-    <p>Die installierte Version öffnet sich wie eine native App, ohne Browser-Adressleiste, im Vollbild. Auf Android nutzt die PWA-Installation auch die Grundlage für den neuen Share Target (v5.2).</p>
-
-    <ul class="news-feature-list">
-      <li><strong>Android (Chrome):</strong> „Zum Startbildschirm hinzufügen" im Browser-Menü</li>
-      <li><strong>iPhone (Safari):</strong> Teilen → „Zum Home-Bildschirm"</li>
-      <li><strong>Desktop (Chrome/Edge):</strong> Installations-Symbol in der Adressleiste</li>
-    </ul>
-  </article>
+    </article>
 
 
-</main>
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Design-Tab Versionen (v5.25)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="design-versionen">
+      <div class="news-meta">
+        <span class="news-version">v5.25</span>
+        <span class="news-date">16. Juni 2026</span>
+        <span class="news-category">Feature</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#1a1200">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <circle cx="320" cy="110" r="160" fill="#f59e0b" opacity="0.06"/>
+          <!-- Tab bar -->
+          <rect x="80" y="60" width="480" height="36" rx="6" fill="#2a1f00" stroke="#5c3d00" stroke-width="1"/>
+          <rect x="86" y="66" width="140" height="24" rx="4" fill="#1a1200"/>
+          <text x="156" y="83" text-anchor="middle" font-size="10" fill="#5c4200" font-family="sans-serif">Pr&#228;sentation 12:15</text>
+          <rect x="232" y="66" width="140" height="24" rx="4" fill="#1a1200"/>
+          <text x="302" y="83" text-anchor="middle" font-size="10" fill="#5c4200" font-family="sans-serif">1-Pager 13:00</text>
+          <!-- Active tab -->
+          <rect x="378" y="63" width="154" height="30" rx="5" fill="#f59e0b" opacity="0.15" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="444" y="82" text-anchor="middle" font-size="10" fill="#fbbf24" font-family="sans-serif" font-weight="700">Pr&#228;sentation 14:32</text>
+          <text x="522" y="82" font-size="13" fill="#f59e0b" font-family="sans-serif">&#215;</text>
+          <!-- Slide card -->
+          <rect x="130" y="112" width="380" height="120" rx="8" fill="#2a1f00" stroke="#5c3d00" stroke-width="1.5"/>
+          <rect x="145" y="127" width="200" height="10" rx="3" fill="#f59e0b" opacity="0.5"/>
+          <rect x="145" y="145" width="340" height="6" rx="2" fill="#3d2c00"/>
+          <rect x="145" y="158" width="280" height="6" rx="2" fill="#3d2c00"/>
+          <rect x="145" y="171" width="310" height="6" rx="2" fill="#3d2c00"/>
+          <rect x="145" y="184" width="250" height="6" rx="2" fill="#3d2c00"/>
+          <rect x="145" y="197" width="320" height="6" rx="2" fill="#3d2c00"/>
+          <!-- Action buttons -->
+          <rect x="360" y="246" width="88" height="24" rx="5" fill="#2a1f00" stroke="#f59e0b" stroke-width="1"/>
+          <text x="404" y="262" text-anchor="middle" font-size="10" fill="#f59e0b" font-family="sans-serif">Bearbeiten</text>
+          <rect x="458" y="246" width="76" height="24" rx="5" fill="#f59e0b"/>
+          <text x="496" y="262" text-anchor="middle" font-size="10" fill="#1a1000" font-family="sans-serif" font-weight="700">PPTX &#8595;</text>
+          <defs><linearGradient id="nh6" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#1a1200" stop-opacity="0"/><stop offset="100%" stop-color="#1a1200" stop-opacity="0.95"/></linearGradient></defs>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh6)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v5.25</span>
+          <h3>Design-Tab &amp; Versionen</h3>
+        </div>
+      </div>
+
+      <h2>Präsentationen, Flyer &amp; 1-Pager direkt aus deinem Transkript</h2>
+      <p class="lead">Der Design-Tab wandelt deine Transkripte automatisch in fertige Layouts um: Präsentationen, 1-Pager, Aktionspläne, Flyer, Poster oder Social-Media-Posts. Jede Generierung wird als eigene Version gespeichert.</p>
+
+      <p>Der Design-Tab ist in jeder Sitzung über das Palette-Icon erreichbar. Er enthält alle Design-Prompts aus der Prompt-Bibliothek – vorgefertigte wie „Präsentation", „1-Pager" oder „Aktionsplan", und eigene, die du selbst erstellt hast.</p>
+
+      <p>Du wählst einen Prompt, klickst auf „Generieren" und Claude erstellt daraus automatisch ein strukturiertes Dokument. Das Ergebnis erscheint direkt im Tab und ist ohne Kopieren in andere Tools sofort lesbar und bearbeitbar.</p>
+
+      <h3>Versions-System: mehrere Entwürfe nebeneinander</h3>
+
+      <p>Jede Generierung legt einen eigenen Versions-Tab an – mit Typ und Uhrzeit als Bezeichnung, zum Beispiel „Präsentation 14:32". Du kannst für dieselbe Sitzung beliebig viele Versionen erstellen: unterschiedliche Prompt-Varianten, verschiedene Layouts, oder mehrere Iterationen desselben Dokuments. Versionen bleiben dauerhaft gespeichert und sind beim nächsten Öffnen der Sitzung sofort verfügbar.</p>
+
+      <ul class="news-feature-list">
+        <li><strong>Schritt 1: Design-Tab öffnen</strong>Sitzung öffnen → Tab „Design" (Palette-Icon in der Tab-Leiste). Alle verfügbaren Design-Prompts erscheinen zur Auswahl.</li>
+        <li><strong>Schritt 2: Prompt wählen und generieren</strong>Einen Prompt auswählen (z.B. „Präsentation") → „Generieren". Claude erstellt den Inhalt auf Basis des Transkripts. Das Ergebnis erscheint als neuer Versions-Tab.</li>
+        <li><strong>Schritt 3: Weitere Versionen erstellen</strong>Erneut generieren – mit einem anderen Prompt oder einer anderen Formulierung. Jede Generierung erzeugt einen eigenen Tab, der unabhängig bearbeitet werden kann.</li>
+        <li><strong>Schritt 4: Version bearbeiten</strong>„Bearbeiten"-Button im Tab öffnet einen Freitext-Editor für den Versions-Inhalt. Änderungen werden pro Version gespeichert und überschreiben die vorherige Fassung nicht.</li>
+        <li><strong>Schritt 5: Exportieren oder verknüpfen</strong>PPTX-Export für Präsentationen direkt über den Download-Button. Oder: Claude Design / Canva-Link pro Version speichern – der Link bleibt dauerhaft mit der jeweiligen Version verbunden.</li>
+        <li><strong>Schritt 6: Versionen aufräumen</strong>Einzelne Versionen können über das &#215; im Tab-Titel gelöscht werden. Andere Versionen bleiben unverändert erhalten.</li>
+      </ul>
+
+      <div class="news-info-box">
+        <strong>Verfügbare Design-Prompts:</strong> Präsentation, 1-Pager, Aktionsplan, Flyer, Poster, Social-Media-Post – alle in der Prompt-Bibliothek unter dem Tab „Design". Eigene Design-Prompts lassen sich über den Prompt-Generator erstellen und erscheinen dann ebenfalls im Design-Tab.
+      </div>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Prompt-Generator (v5.23)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="prompt-generator">
+      <div class="news-meta">
+        <span class="news-version">v5.23</span>
+        <span class="news-date">16. Juni 2026</span>
+        <span class="news-category">Feature</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#12102a">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <circle cx="200" cy="130" r="150" fill="#6c63ff" opacity="0.08"/>
+          <circle cx="500" cy="100" r="110" fill="#a78bfa" opacity="0.05"/>
+          <!-- Step connector lines -->
+          <line x1="108" y1="110" x2="182" y2="110" stroke="#3a3060" stroke-width="2"/>
+          <line x1="218" y1="110" x2="292" y2="110" stroke="#3a3060" stroke-width="2"/>
+          <line x1="328" y1="110" x2="352" y2="110" stroke="#6c63ff" stroke-width="2"/>
+          <line x1="388" y1="110" x2="442" y2="110" stroke="#3a3060" stroke-width="2" stroke-dasharray="4 3"/>
+          <!-- Step circles 1-3 (done) -->
+          <circle cx="90" cy="110" r="18" fill="#1e1a40" stroke="#3a3060" stroke-width="1.5"/>
+          <text x="90" y="116" text-anchor="middle" font-size="13" fill="#5a5490" font-family="sans-serif" font-weight="700">1</text>
+          <text x="90" y="140" text-anchor="middle" font-size="9" fill="#3a3060" font-family="sans-serif">Grundlagen</text>
+          <circle cx="200" cy="110" r="18" fill="#1e1a40" stroke="#3a3060" stroke-width="1.5"/>
+          <text x="200" y="116" text-anchor="middle" font-size="13" fill="#5a5490" font-family="sans-serif" font-weight="700">2</text>
+          <text x="200" y="140" text-anchor="middle" font-size="9" fill="#3a3060" font-family="sans-serif">Charakter</text>
+          <circle cx="310" cy="110" r="18" fill="#1e1a40" stroke="#3a3060" stroke-width="1.5"/>
+          <text x="310" y="116" text-anchor="middle" font-size="13" fill="#5a5490" font-family="sans-serif" font-weight="700">3</text>
+          <text x="310" y="140" text-anchor="middle" font-size="9" fill="#3a3060" font-family="sans-serif">Kontext</text>
+          <!-- Step 4 active -->
+          <circle cx="370" cy="110" r="22" fill="#6c63ff" opacity="0.15" stroke="#6c63ff" stroke-width="2"/>
+          <circle cx="370" cy="110" r="18" fill="#2a1f6e" stroke="#6c63ff" stroke-width="2"/>
+          <text x="370" y="116" text-anchor="middle" font-size="13" fill="#a78bfa" font-family="sans-serif" font-weight="700">4</text>
+          <text x="370" y="140" text-anchor="middle" font-size="9" fill="#6c63ff" font-family="sans-serif">Ausgabe</text>
+          <!-- Step 5 pending -->
+          <circle cx="460" cy="110" r="18" fill="#1e1a40" stroke="#3a3060" stroke-width="1.5" stroke-dasharray="5 3"/>
+          <text x="460" y="116" text-anchor="middle" font-size="13" fill="#5a5490" font-family="sans-serif" font-weight="700">5</text>
+          <text x="460" y="140" text-anchor="middle" font-size="9" fill="#3a3060" font-family="sans-serif">Fertig</text>
+          <!-- KI mode panel -->
+          <rect x="80" y="162" width="480" height="62" rx="8" fill="#1e1a40" stroke="#3a3060" stroke-width="1.5"/>
+          <text x="105" y="186" font-size="10" fill="#6c63ff" font-family="sans-serif" font-weight="700">&#10022; KI-ASSISTENT</text>
+          <rect x="105" y="194" width="335" height="18" rx="4" fill="#2a2650"/>
+          <text x="115" y="207" font-size="10" fill="#5a5490" font-family="sans-serif">&#8222;Analysiere Sales-Gespr&#228;che auf Einw&#228;nde und Kaufsignale &#8230;&#8220;</text>
+          <rect x="452" y="192" width="88" height="22" rx="5" fill="#6c63ff"/>
+          <text x="496" y="207" text-anchor="middle" font-size="10" fill="#fff" font-family="sans-serif" font-weight="700">Generieren</text>
+          <defs><linearGradient id="nh7" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#12102a" stop-opacity="0"/><stop offset="100%" stop-color="#12102a" stop-opacity="0.95"/></linearGradient></defs>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh7)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v5.23</span>
+          <h3>Prompt-Generator</h3>
+        </div>
+      </div>
+
+      <h2>Eigene Analyse-Vorlagen erstellen – ohne Programmierkenntnisse</h2>
+      <p class="lead">Der Prompt-Generator hilft dir, eigene KI-Analyse-Vorlagen zu bauen – per geführtem Wizard oder per KI-Assistent. Du bestimmst, wie die KI deine Gespräche auswertet und in welchem Format sie die Ergebnisse liefert.</p>
+
+      <p>Distill Voice kommt mit fertigen Analyse-Prompts für häufige Anwendungsfälle: Zusammenfassung, Aktionspunkte, Sentiment-Analyse und mehr. Der Generator ermöglicht es dir, eigene Vorlagen zu erstellen – zugeschnitten auf dein Team, deine Branche oder deine spezifischen Gesprächstypen. Erstellte Prompts erscheinen in der Prompt-Bibliothek unter „Eigene Prompts" und lassen sich auf jede beliebige Sitzung anwenden.</p>
+
+      <h3>Modus 1: Wizard – Schritt für Schritt</h3>
+
+      <p>Der Wizard führt dich in fünf Schritten durch die Erstellung. Du brauchst kein Vorwissen über Prompt-Engineering – jeder Schritt erklärt sich selbst:</p>
+
+      <ul class="news-feature-list">
+        <li><strong>Schritt 1 – Grundlagen</strong>Name des Prompts, kurze Beschreibung und Tags vergeben. Tags helfen später beim Filtern in der Bibliothek.</li>
+        <li><strong>Schritt 2 – Charakter</strong>Wer analysiert? Du definierst die Rolle der KI (z.B. „erfahrener Business-Analyst") und die Tonalität (z.B. „präzise und sachlich, keine Füllsätze").</li>
+        <li><strong>Schritt 3 – Kontext</strong>Was soll analysiert werden – und was nicht? Grenzen setzen und Hintergrundinfos mitgeben (z.B. Branche, Meeting-Typ, Zielgruppe des Ergebnisses).</li>
+        <li><strong>Schritt 4 – Ausgabe-Format</strong>Strukturierte Felder definieren: Welche Informationen soll die KI liefern und in welchem Format? 11 Typen stehen zur Auswahl (Liste, Bewertung, Tags, Tabelle usw.).</li>
+        <li><strong>Schritt 5 – Fertig</strong>Vollständige Vorschau aller Felder und Inhalte. Alles ist direkt bearbeitbar – erst dann speichern.</li>
+      </ul>
+
+      <h3>Modus 2: KI-Assistent – ein Satz genügt</h3>
+
+      <p>Statt den Wizard Schritt für Schritt auszufüllen, beschreibst du in einem einzigen Satz, was du analysieren möchtest. Claude generiert daraus automatisch Name, Rolle, Tonalität, Grenzen, Kontext und passende Ausgabe-Felder. Das Ergebnis erscheint zur Prüfung – jedes Feld lässt sich vor dem Speichern noch anpassen.</p>
+
+      <ul class="news-feature-list">
+        <li><strong>Schritt 1 – Generator öffnen</strong>Prompt-Bibliothek öffnen (Stift-Icon in der Sidenav) → oben rechts auf „&#10022; Erstellen" klicken.</li>
+        <li><strong>Schritt 2 – KI-Assistent wählen</strong>Im Generator-Modal den Modus „KI-Assistent" auswählen.</li>
+        <li><strong>Schritt 3 – Beschreiben</strong>Einen beschreibenden Satz eingeben, z.B.: „Analysiere Sales-Gespräche auf Einwände, Kaufsignale und vereinbarte nächste Schritte."</li>
+        <li><strong>Schritt 4 – Generieren &amp; prüfen</strong>„Generieren" klicken. Claude füllt alle Felder aus. Das Ergebnis erscheint vollständig zur Prüfung – du kannst jeden Wert anpassen.</li>
+        <li><strong>Schritt 5 – Speichern und anwenden</strong>Prompt speichern → er erscheint in der Bibliothek unter „Eigene Prompts" und lässt sich ab sofort auf jede Sitzung anwenden.</li>
+      </ul>
+
+      <div class="news-info-box">
+        <strong>Tipp – Ausgabe-Felder im KI-Modus:</strong> Auch im KI-Modus werden strukturierte Ausgabe-Felder automatisch generiert. Claude wählt passende Typen für dein Anwendungsszenario. Du kannst sie im letzten Schritt noch anpassen oder im Prompt-Editor jederzeit erweitern. Alle 11 Typen sind über den <strong>? Feldtypen</strong>-Button erklärt.
+      </div>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Android Share Target (v5.2)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="share-target">
+      <div class="news-meta">
+        <span class="news-version">v5.2</span>
+        <span class="news-date">15. Juni 2026</span>
+        <span class="news-category">Feature</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#1a1040">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <circle cx="440" cy="105" r="160" fill="#6c43e0" opacity="0.15"/>
+          <rect x="240" y="65" width="90" height="145" rx="12" fill="#2d1f6e" stroke="#6c43e0" stroke-width="2"/>
+          <rect x="252" y="82" width="66" height="108" rx="4" fill="#1a1040"/>
+          <circle cx="285" cy="200" r="5.5" fill="#6c43e0" opacity="0.5"/>
+          <line x1="180" y1="137" x2="240" y2="137" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4 3"/>
+          <polygon points="235,131 248,137 235,143" fill="#a78bfa"/>
+          <line x1="330" y1="115" x2="390" y2="95" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4 3"/>
+          <polygon points="385,90 398,100 384,104" fill="#a78bfa"/>
+          <line x1="330" y1="160" x2="390" y2="182" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4 3"/>
+          <polygon points="383,175 397,187 388,163" fill="#a78bfa"/>
+          <rect x="395" y="78" width="42" height="42" rx="9" fill="#3b1d8a" stroke="#6c43e0" stroke-width="1.5"/>
+          <text x="416" y="106" text-anchor="middle" font-size="20" fill="#a78bfa" font-family="sans-serif">D</text>
+          <rect x="395" y="162" width="42" height="36" rx="9" fill="#3b1d8a" stroke="#6c43e0" stroke-width="1.5"/>
+          <text x="416" y="184" text-anchor="middle" font-size="14" fill="#a78bfa" font-family="sans-serif">.txt</text>
+          <rect x="135" y="118" width="42" height="38" rx="6" fill="#3b1d8a" stroke="#6c43e0" stroke-width="1.5"/>
+          <text x="156" y="141" text-anchor="middle" font-size="13" fill="#c4b5fd" font-family="sans-serif">MP3</text>
+          <defs><linearGradient id="nh1" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#1a1040" stop-opacity="0"/><stop offset="100%" stop-color="#1a1040" stop-opacity="0.95"/></linearGradient></defs>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh1)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v5.2</span>
+          <h3>Android Share Target</h3>
+        </div>
+      </div>
+
+      <h2>Dateien direkt aus Android-Apps teilen</h2>
+      <p class="lead">Du kannst Distill Voice jetzt als Ziel beim Android-Teilen auswählen – genau wie WhatsApp oder Dropbox. TXT-Dateien, MP3-Aufnahmen oder beides gleichzeitig lassen sich aus jeder App heraus direkt in eine neue Sitzung überführen.</p>
+
+      <p>Wer mit einer Diktier-App auf Android arbeitet – wie Samsung Voice Recorder, Google Recorder oder ähnlichen – kennt das Problem: Die Aufnahme liegt als TXT oder MP3 auf dem Gerät, muss aber manuell in Distill Voice importiert werden. Das entfällt jetzt.</p>
+
+      <p>Distill Voice erkennt automatisch, welche Dateien ankommen, und wählt den richtigen Verarbeitungsmodus:</p>
+
+      <ul class="news-feature-list">
+        <li><strong>TXT + MP3 zusammen:</strong> Das Transkript aus der TXT-Datei wird direkt übernommen, das MP3 wird gespeichert – keine erneute Transkription nötig.</li>
+        <li><strong>Nur MP3:</strong> Die Audiodatei wird an AssemblyAI weitergeleitet und automatisch transkribiert.</li>
+        <li><strong>Nur TXT:</strong> Der Text wird als fertiges Transkript importiert.</li>
+      </ul>
+
+      <p>Nach dem Empfang erscheint ein Overlay mit Datei-Vorschau, Sitzungsname und Projekt-Auswahl. Erst dann wird die Datei verarbeitet – du behältst die volle Kontrolle.</p>
+
+      <div class="news-info-box">
+        <strong>Einrichtung:</strong> Die App muss nach diesem Update einmal neu installiert werden (als PWA). Danach erscheint „Distill Voice" im Android-Teilen-Dialog unter Apps. Beim ersten Teilen kann es 5–10 Sekunden dauern, bis das Overlay erscheint – der Service Worker muss einmalig starten.
+      </div>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Audio Auto-Delete (v5.1)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="audio-delete">
+      <div class="news-meta">
+        <span class="news-version">v5.1</span>
+        <span class="news-date">15. Juni 2026</span>
+        <span class="news-category">Datenschutz</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#0f2a1a">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <circle cx="360" cy="100" r="150" fill="#22c55e" opacity="0.08"/>
+          <circle cx="280" cy="130" r="80" fill="#0f2a1a" stroke="#22c55e" stroke-width="2.5"/>
+          <circle cx="280" cy="130" r="70" fill="#1a5c3a" opacity="0.3"/>
+          <line x1="280" y1="130" x2="280" y2="80" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="280" y1="130" x2="318" y2="148" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="280" cy="130" r="5" fill="#22c55e"/>
+          <line x1="280" y1="54" x2="280" y2="64" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+          <line x1="280" y1="196" x2="280" y2="206" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+          <line x1="204" y1="130" x2="214" y2="130" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+          <line x1="346" y1="130" x2="356" y2="130" stroke="#22c55e" stroke-width="2" opacity="0.5"/>
+          <rect x="390" y="152" width="52" height="58" rx="6" fill="#1a5c3a" stroke="#22c55e" stroke-width="1.8"/>
+          <rect x="384" y="145" width="64" height="9" rx="3" fill="#22c55e" opacity="0.7"/>
+          <rect x="396" y="140" width="32" height="7" rx="2" fill="#22c55e" opacity="0.4"/>
+          <line x1="404" y1="160" x2="404" y2="202" stroke="#22c55e" stroke-width="1.5" opacity="0.4"/>
+          <line x1="416" y1="160" x2="416" y2="202" stroke="#22c55e" stroke-width="1.5" opacity="0.4"/>
+          <line x1="428" y1="160" x2="428" y2="202" stroke="#22c55e" stroke-width="1.5" opacity="0.4"/>
+          <path d="M 362 148 Q 388 135 396 148" stroke="#22c55e" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
+          <polygon points="392,142 402,150 395,158" fill="#22c55e" opacity="0.8"/>
+          <defs><linearGradient id="nh2" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#0f2a1a" stop-opacity="0"/><stop offset="100%" stop-color="#0f2a1a" stop-opacity="0.95"/></linearGradient></defs>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh2)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v5.1</span>
+          <h3>Audio Auto-Delete</h3>
+        </div>
+      </div>
+
+      <h2>Audiodateien automatisch löschen</h2>
+      <p class="lead">Audiodateien verbrauchen überproportional viel Speicherplatz in Google Drive. Seit v5.1 löscht Distill Voice sie automatisch nach einer konfigurierbaren Frist – Transkripte und Analysen bleiben selbstverständlich erhalten.</p>
+
+      <p>Der Standard ist 14 Tage. Das bedeutet: Direkt nach der Transkription steht die Aufnahme noch zwei Wochen für eventuelle Rückfragen bereit. Danach wird sie still aus Drive entfernt.</p>
+
+      <p>Die Aufbewahrungsfrist ist im API-Modal einstellbar:</p>
+
+      <ul class="news-feature-list">
+        <li>7 Tage – für sehr aktive Nutzer mit vielen Sitzungen</li>
+        <li>14 Tage – Standard, gute Balance</li>
+        <li>30 Tage – für Projekte mit langer Laufzeit</li>
+        <li>90 Tage – für seltene Archivierungsfälle</li>
+        <li>Niemals – Audio dauerhaft behalten</li>
+      </ul>
+
+      <div class="news-info-box">
+        <strong>Was bleibt erhalten?</strong> Transkript, alle KI-Analysen, Notizen, Tags, Personen und Projektdaten sind nie betroffen. Nur die Rohdatei des Audios wird gelöscht.
+      </div>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Prompts-Sync (v5.0)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="prompts-sync">
+      <div class="news-meta">
+        <span class="news-version">v5.0</span>
+        <span class="news-date">15. Juni 2026</span>
+        <span class="news-category">Synchronisation</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#1a1500">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <circle cx="320" cy="110" r="140" fill="#f59e0b" opacity="0.07"/>
+          <rect x="90" y="90" width="135" height="88" rx="8" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
+          <rect x="104" y="104" width="107" height="62" rx="3" fill="#1a1500"/>
+          <rect x="122" y="186" width="32" height="8" rx="2" fill="#f59e0b" opacity="0.35"/>
+          <rect x="110" y="194" width="56" height="5" rx="2" fill="#5c4200" opacity="0.6"/>
+          <rect x="112" y="112" width="60" height="5" rx="2" fill="#f59e0b" opacity="0.55"/>
+          <rect x="112" y="122" width="84" height="4" rx="2" fill="#5c4200"/>
+          <rect x="112" y="130" width="70" height="4" rx="2" fill="#5c4200"/>
+          <rect x="112" y="138" width="78" height="4" rx="2" fill="#5c4200"/>
+          <rect x="416" y="84" width="78" height="128" rx="11" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
+          <rect x="428" y="100" width="54" height="96" rx="4" fill="#1a1500"/>
+          <circle cx="455" cy="96" r="4" fill="#f59e0b" opacity="0.35"/>
+          <rect x="433" y="108" width="40" height="4" rx="2" fill="#f59e0b" opacity="0.55"/>
+          <rect x="433" y="118" width="32" height="3.5" rx="2" fill="#5c4200"/>
+          <rect x="433" y="127" width="36" height="3.5" rx="2" fill="#5c4200"/>
+          <rect x="433" y="136" width="28" height="3.5" rx="2" fill="#5c4200"/>
+          <ellipse cx="320" cy="118" rx="38" ry="24" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
+          <ellipse cx="306" cy="112" rx="17" ry="14" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
+          <ellipse cx="332" cy="110" rx="13" ry="12" fill="#2a1f00" stroke="#f59e0b" stroke-width="2"/>
+          <line x1="227" y1="130" x2="277" y2="122" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5 3"/>
+          <polygon points="273,117 283,124 272,129" fill="#f59e0b" opacity="0.85"/>
+          <line x1="364" y1="122" x2="414" y2="130" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5 3"/>
+          <polygon points="410,125 420,133 411,138" fill="#f59e0b" opacity="0.85"/>
+          <defs><linearGradient id="nh3" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#1a1500" stop-opacity="0"/><stop offset="100%" stop-color="#1a1500" stop-opacity="0.95"/></linearGradient></defs>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh3)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v5.0</span>
+          <h3>Prompts-Sync geräteübergreifend</h3>
+        </div>
+      </div>
+
+      <h2>Analyse-Vorlagen auf allen Geräten</h2>
+      <p class="lead">Eigene Analyse-Prompts, die auf einem Gerät erstellt wurden, sind jetzt sofort auf allen anderen Geräten sichtbar – ohne Neustart und ohne manuelles Synchronisieren.</p>
+
+      <p>Bis v4.99 war die Prompt-Bibliothek lokal: Ein Prompt, der auf dem Desktop erstellt wurde, war auf dem Smartphone nicht vorhanden. Seit v5.0 lädt die App beim Öffnen der Promptbibliothek automatisch den aktuellen Stand aus Google Drive.</p>
+
+      <div class="news-info-box">
+        <strong>Voraussetzung:</strong> Google Drive muss verbunden sein. Die Synchronisation läuft nur wenn Drive aktiv ist.
+      </div>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: PWA (v4.89)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="pwa">
+      <div class="news-meta">
+        <span class="news-version">v4.89</span>
+        <span class="news-date">Juni 2026</span>
+        <span class="news-category">Installation</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#0f1a2a">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <circle cx="360" cy="105" r="160" fill="#3b82f6" opacity="0.1"/>
+          <rect x="246" y="65" width="110" height="188" rx="14" fill="#0f1a2a" stroke="#3b82f6" stroke-width="2.2"/>
+          <rect x="261" y="84" width="80" height="134" rx="4" fill="#1a3a5c" opacity="0.4"/>
+          <rect x="280" y="115" width="52" height="52" rx="12" fill="#1a3a5c" stroke="#3b82f6" stroke-width="2"/>
+          <text x="306" y="150" text-anchor="middle" font-size="24" fill="#60a5fa" font-family="sans-serif" font-weight="700">D</text>
+          <line x1="306" y1="68" x2="306" y2="108" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="4 3"/>
+          <polygon points="298,106 306,118 314,106" fill="#3b82f6"/>
+          <rect x="266" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
+          <rect x="285" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
+          <rect x="304" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
+          <rect x="323" y="184" width="15" height="15" rx="3" fill="#1e40af" opacity="0.55"/>
+          <circle cx="306" cy="234" r="7.5" fill="#1a3a5c" stroke="#3b82f6" stroke-width="1.5"/>
+          <circle cx="370" cy="96" r="20" fill="#1a3a5c" stroke="#3b82f6" stroke-width="2"/>
+          <line x1="370" y1="88" x2="370" y2="104" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="362" y1="96" x2="378" y2="96" stroke="#3b82f6" stroke-width="2.5"/>
+          <defs><linearGradient id="nh4" x1="0" y1="0" x2="0" y2="1"><stop offset="40%" stop-color="#0f1a2a" stop-opacity="0"/><stop offset="100%" stop-color="#0f1a2a" stop-opacity="0.95"/></linearGradient></defs>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh4)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v4.89</span>
+          <h3>PWA-Installation</h3>
+        </div>
+      </div>
+
+      <h2>Distill Voice als App installieren</h2>
+      <p class="lead">Distill Voice ist jetzt eine Progressive Web App (PWA). Das bedeutet: Du kannst die App auf dem Startbildschirm deines Smartphones oder auf dem Desktop installieren – ohne App Store, ohne Download.</p>
+
+      <p>Die installierte Version öffnet sich wie eine native App, ohne Browser-Adressleiste, im Vollbild. Auf Android nutzt die PWA-Installation auch die Grundlage für den neuen Share Target (v5.2).</p>
+
+      <ul class="news-feature-list">
+        <li><strong>Android (Chrome):</strong> „Zum Startbildschirm hinzufügen" im Browser-Menü</li>
+        <li><strong>iPhone (Safari):</strong> Teilen &#8594; „Zum Home-Bildschirm"</li>
+        <li><strong>Desktop (Chrome/Edge):</strong> Installations-Symbol in der Adressleiste</li>
+      </ul>
+    </article>
+
+
+  </main>
+</div>
+
+<script>
+  // ── Scrollspy ──────────────────────────────────────────────
+  (function () {
+    var links = document.querySelectorAll('.news-sidebar-link[data-id]');
+    if (!links.length) return;
+
+    var articles = Array.from(links)
+      .map(function(l) { return document.getElementById(l.dataset.id); })
+      .filter(Boolean);
+
+    // Erste Link standardmäßig aktiv
+    links[0].classList.add('active');
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          links.forEach(function(l) { l.classList.remove('active'); });
+          var active = document.querySelector('.news-sidebar-link[data-id="' + entry.target.id + '"]');
+          if (active) active.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-5% 0px -82% 0px', threshold: 0 });
+
+    articles.forEach(function(a) { observer.observe(a); });
+  })();
+</script>
+
 </body>
 </html>
