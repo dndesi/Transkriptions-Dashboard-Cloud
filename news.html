@@ -312,7 +312,7 @@
     Zurück
   </a>
   <h1>📰 Was ist neu?</h1>
-  <span class="badge">v5.35</span>
+  <span class="badge">v5.36</span>
 </header>
 
 <div class="news-layout">
@@ -684,10 +684,38 @@
         <li><strong>Nur TXT:</strong> Der Text wird als fertiges Transkript importiert.</li>
       </ul>
 
-      <p>Nach dem Empfang erscheint ein Overlay mit Datei-Vorschau, Sitzungsname und Projekt-Auswahl. Erst dann wird die Datei verarbeitet – du behältst die volle Kontrolle.</p>
+      <p>Nach dem Empfang erscheint ein Overlay mit Datei-Vorschau, Sitzungsname und Drive-Ordner-Auswahl. Erst dann wird die Datei verarbeitet – du behältst die volle Kontrolle.</p>
+
+      <h3>Einrichtung: Distill Voice als PWA installieren</h3>
+
+      <p>Damit Distill Voice im Android-Teilen-Dialog erscheint, muss die App einmalig als PWA auf dem Gerät installiert werden. Das geht direkt über Chrome – kein App Store nötig.</p>
+
+      <ul class="news-feature-list">
+        <li><strong>Schritt 1: Chrome öffnen</strong>Öffne Google Chrome auf deinem Android-Gerät und rufe die Distill-Voice-Adresse auf.</li>
+        <li><strong>Schritt 2: Menü öffnen</strong>Tippe oben rechts auf die drei Punkte (⋮) → „Zum Startbildschirm hinzufügen".</li>
+        <li><strong>Schritt 3: Installation bestätigen</strong>Im Bestätigungs-Dialog auf „Installieren" tippen. Das App-Icon erscheint auf dem Startbildschirm.</li>
+        <li><strong>Schritt 4: Einmalig öffnen</strong>Die installierte App einmal öffnen und dich anmelden. Der Service Worker startet dabei im Hintergrund – das ist nötig, damit der Share Target funktioniert.</li>
+        <li><strong>Schritt 5: Fertig</strong>Distill Voice erscheint jetzt in jedem Android-Teilen-Dialog unter den verfügbaren Apps.</li>
+      </ul>
 
       <div class="news-info-box">
-        <strong>Einrichtung:</strong> Die App muss nach diesem Update einmal neu installiert werden (als PWA). Danach erscheint „Distill Voice" im Android-Teilen-Dialog unter Apps. Beim ersten Teilen kann es 5–10 Sekunden dauern, bis das Overlay erscheint – der Service Worker muss einmalig starten.
+        <strong>Hinweis:</strong> Beim allerersten Teilen nach der Installation kann es 5–10 Sekunden dauern, bis das Overlay erscheint – der Service Worker startet einmalig. Ab dem zweiten Mal öffnet sich die App sofort.
+      </div>
+
+      <h3>So teilst du eine Datei mit Distill Voice</h3>
+
+      <p>Sobald die App installiert ist, funktioniert das Teilen aus jeder Android-App heraus – zum Beispiel aus Samsung Voice Recorder, Google Recorder, dem Datei-Manager oder einer Sprach-Notiz-App.</p>
+
+      <ul class="news-feature-list">
+        <li><strong>Schritt 1: Diktier-App öffnen</strong>Öffne die App, in der deine Aufnahme oder dein Transkript gespeichert ist – z.B. Samsung Voice Recorder, Google Recorder oder den Android-Dateimanager.</li>
+        <li><strong>Schritt 2: Datei auswählen und teilen</strong>Die Aufnahme oder TXT-Datei antippen und halten (oder öffnen) → Teilen-Symbol antippen. Der Android-Teilen-Dialog öffnet sich.</li>
+        <li><strong>Schritt 3: Distill Voice wählen</strong>Im Teilen-Dialog „Distill Voice" antippen. Falls die App nicht sofort sichtbar ist, nach unten scrollen oder auf „Mehr" tippen.</li>
+        <li><strong>Schritt 4: Overlay ausfüllen</strong>Distill Voice öffnet sich mit einem Empfangs-Overlay: Datei-Vorschau, Sitzungsname anpassen und optional einen Drive-Ordner auswählen.</li>
+        <li><strong>Schritt 5: Verarbeiten</strong>Auf „Verarbeiten" tippen. Je nach Dateityp startet die Transkription automatisch (MP3) oder das Transkript wird direkt importiert (TXT). Die neue Sitzung erscheint sofort in der App.</li>
+      </ul>
+
+      <div class="news-info-box">
+        <strong>Kompatible Dateitypen:</strong> MP3, M4A (werden transkribiert) und TXT (wird direkt als Transkript importiert). Schickst du TXT + MP3 zusammen, wird das TXT als Transkript genutzt und das Audio gespeichert – keine doppelte Transkription.
       </div>
     </article>
 
