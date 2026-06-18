@@ -68,7 +68,7 @@ function render360Block(session) {
   if (!block || !content) return;
 
   const d = session.claude360;
-  if (!d) { block.style.display = 'none'; return; }
+  if (!d) { block.style.display = 'none'; block.dataset.hasContent = '0'; return; }
 
   const perspIcons = {
     meineAufgaben:     icon('target',14,'margin-right:5px'),

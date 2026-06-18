@@ -783,6 +783,7 @@ function showInsightsBlock(block) {
   if (!block) return;
   const wasHidden = block.style.display === 'none' || block.style.display === '';
   block.style.display = 'block';
+  block.dataset.hasContent = '1'; // v5.40: Marker für _refreshAnalysenSubtabs
   if (wasHidden) block.classList.add('collapsed');
 }
 
@@ -897,6 +898,7 @@ function renderInsights(session) {
     anyVisible = true;
   } else {
     privateBlock.style.display = 'none';
+    privateBlock.dataset.hasContent = '0';
   }
 
   // ── Arbeits-Analyse ───────────────────────────────
@@ -992,6 +994,7 @@ function renderInsights(session) {
     anyVisible = true;
   } else {
     workBlock.style.display = 'none';
+    workBlock.dataset.hasContent = '0';
   }
 
   // ── Stimmungsanalyse (Claude) ─────────────────────
@@ -1026,6 +1029,7 @@ function renderInsights(session) {
     anyVisible = true;
   } else {
     sentBlock.style.display = 'none';
+    sentBlock.dataset.hasContent = '0';
   }
 
   // ── Kapitel (Claude) ──────────────────────────────
@@ -1075,6 +1079,7 @@ function renderInsights(session) {
     anyVisible = true;
   } else {
     chapBlock.style.display = 'none';
+    chapBlock.dataset.hasContent = '0';
   }
 
   // ── Themen (Claude) ───────────────────────────────
@@ -1102,6 +1107,7 @@ function renderInsights(session) {
     anyVisible = true;
   } else {
     topicsBlock.style.display = 'none';
+    topicsBlock.dataset.hasContent = '0';
   }
 
   // ── Custom Prompt Ergebnisse ──────────────────────
@@ -1126,8 +1132,11 @@ function renderInsights(session) {
         }
         if (!bodyHtml) return ''; // Kein Inhalt → Block überspringen
         const sid = session.id;
-        // Pencil immer anzeigen – editCustomFreeText bearbeitet res.text, unabhängig ob Schema vorhanden
-        const editBtn = `<button class="insights-export-btn" title="Bearbeiten" onclick="event.stopPropagation();editCustomFreeText(this,'${sid}','${pid}','${bid}')">${icon('pencil',11,'pointer-events:none')}</button>`;
+        // Pencil nur für Freitext-Analysen (kein Schema) – edit-2 Icon (in icons.js registriert)
+        const hasSchema = !!(res.structured && res.schema);
+        const editBtn = !hasSchema
+          ? `<button class="insights-export-btn" title="Bearbeiten" onclick="event.stopPropagation();editCustomFreeText(this,'${sid}','${pid}','${bid}')" style="gap:3px">${icon('edit-2',11,'pointer-events:none')} EDIT</button>`
+          : '';
         return `
           <div class="insights-block" id="${bid}">
             <div class="insights-block-title" onclick="toggleInsightsBlock('${bid}')">
