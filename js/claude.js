@@ -1688,17 +1688,35 @@ function renderFollowUpMessages(session) {
     container.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">Noch keine Fragen gestellt – tippe unten eine Folgefrage ein.</span>';
     return;
   }
-  container.innerHTML = msgs.map(m => `
+  container.innerHTML = msgs.map((m, i) => `
     <div style="margin-bottom:16px">
       <div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">Deine Frage</div>
       <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:0.9rem">${escHtml(m.question)}</div>
     </div>
     <div style="margin-bottom:24px">
-      <div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">Claude</div>
+      <div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;display:flex;align-items:center;gap:8px">
+        Claude
+        <button onclick="copyFollowUpAnswer(${i})"
+          style="background:none;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:0.7rem;color:var(--muted);cursor:pointer;font-weight:400;text-transform:none;letter-spacing:0;display:inline-flex;align-items:center;gap:3px"
+          title="Antwort kopieren">
+          ${icon('clipboard',10,'pointer-events:none')} Kopieren
+        </button>
+      </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:0.9rem;white-space:pre-wrap;line-height:1.6">${escHtml(m.answer)}</div>
     </div>
   `).join('');
   container.scrollTop = container.scrollHeight;
+}
+
+function copyFollowUpAnswer(idx) {
+  const session = getSession(currentSessionId);
+  const text = session?.claudeFollowUp?.[idx]?.answer;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Antwort kopiert ✓', 'success');
+  }).catch(() => {
+    showToast('Kopieren fehlgeschlagen', 'error');
+  });
 }
 
 async function askFollowUp() {
