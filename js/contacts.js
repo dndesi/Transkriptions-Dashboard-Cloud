@@ -140,14 +140,12 @@ function _renderContactsList(list) {
           ? new Date(lastS.date).toLocaleDateString('de-DE', { day:'numeric', month:'short', year:'numeric' })
           : '–';
         return `
-          <div onclick="renderContactDetail('${c.id}')"
-            style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:background 0.15s"
-            onmouseover="this.style.background='rgba(108,99,255,0.07)'" onmouseout="this.style.background='var(--surface2)'">
-            <span style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0"></span>
-            <span style="font-weight:600;font-size:0.9rem;min-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(c.name)}</span>
-            <span style="font-size:0.78rem;color:var(--accent2);min-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.beziehung ? escHtml(c.beziehung) : ''}</span>
-            <span style="font-size:0.75rem;color:var(--muted);white-space:nowrap">${projs.length} Projekt${projs.length!==1?'e':''}</span>
-            <span style="font-size:0.75rem;color:var(--muted);margin-left:auto;white-space:nowrap">${lastDate !== '–' ? 'zuletzt ' + lastDate : '–'}</span>
+          <div class="cv-list-row" onclick="renderContactDetail('${c.id}')">
+            <span class="cv-lr-dot" style="background:${c.color}"></span>
+            <span class="cv-lr-name">${escHtml(c.name)}</span>
+            ${c.beziehung ? `<span class="cv-lr-bez">${escHtml(c.beziehung)}</span>` : ''}
+            <span class="cv-lr-projs">${projs.length} Projekt${projs.length!==1?'e':''}</span>
+            <span class="cv-lr-date">${lastDate !== '–' ? 'zuletzt ' + lastDate : '–'}</span>
           </div>`;
       }).join('')}
     </div>`;

@@ -3439,3 +3439,44 @@ mark.search-highlight {
   line-height: 1;
 }
 #helpTooltip .help-tooltip-close:hover { color: var(--text); }
+
+/* ── List-View Rows – Kontakte & Projekte (v5.48) ───────────────────────── */
+.cv-list-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer; transition: background 0.15s; overflow: hidden;
+}
+.cv-list-row:hover { background: rgba(108,99,255,0.07); }
+.cv-lr-dot   { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.cv-lr-name  { font-weight: 600; font-size: 0.9rem; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cv-lr-bez   { font-size: 0.78rem; color: var(--accent2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; flex-shrink: 0; }
+.cv-lr-projs { font-size: 0.75rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+.cv-lr-date  { font-size: 0.75rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; margin-left: auto; }
+
+.pj-list-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer; margin-bottom: 4px; transition: background 0.15s; overflow: hidden;
+}
+.pj-list-row:hover { background: rgba(108,99,255,0.07); }
+.pj-lr-dot     { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.pj-lr-name    { font-weight: 600; font-size: 0.9rem; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pj-lr-status  { font-size: 0.68rem; padding: 2px 7px; flex-shrink: 0; }
+.pj-lr-count   { font-size: 0.75rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+.pj-lr-date    { font-size: 0.72rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+.pj-lr-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.pj-lr-btn     { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--muted); padding: 3px 8px; cursor: pointer; font-size: 0.72rem; }
+.pj-lr-btn.danger { border-color: rgba(239,68,68,0.3); color: var(--red); }
+
+@media (max-width: 640px) {
+  .cv-list-row { gap: 8px; padding: 9px 10px; }
+  .cv-lr-bez   { display: none; }
+  .cv-lr-date  { display: none; }
+
+  .pj-list-row { gap: 8px; padding: 9px 10px; }
+  .pj-lr-count { display: none; }
+  .pj-lr-date  { display: none; }
+  .pj-lr-btn.hide-mobile { display: none; }
+}

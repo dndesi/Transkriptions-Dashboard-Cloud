@@ -116,22 +116,18 @@ function _renderProjectListRow(p) {
   const statusLabel = { active: 'Aktiv', paused: 'Pausiert', archived: 'Archiviert' }[p.status] || p.status;
   const canDelete = !p.builtin;
   return `
-    <div onclick="showProjectDetail('${p.id}')"
-      style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:4px;transition:background 0.15s"
-      onmouseover="this.style.background='rgba(108,99,255,0.07)'" onmouseout="this.style.background='var(--surface2)'">
-      <span style="width:10px;height:10px;border-radius:50%;background:${p.color};flex-shrink:0"></span>
-      <span style="font-weight:600;font-size:0.9rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(p.name)}</span>
-      <span class="project-card-status ${p.status}" style="font-size:0.68rem;padding:2px 7px">${statusLabel}</span>
-      <span style="font-size:0.75rem;color:var(--muted);min-width:65px;text-align:right;white-space:nowrap">${count} Sitzung${count!==1?'en':''}</span>
-      <span style="font-size:0.72rem;color:var(--muted);white-space:nowrap;min-width:70px;text-align:right">${new Date(p.createdAt).toLocaleDateString('de-DE')}</span>
-      <div onclick="event.stopPropagation()" style="display:flex;gap:4px;flex-shrink:0">
-        <button onclick="openEditProjectModal('${p.id}')"
-          style="background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);padding:3px 8px;cursor:pointer;font-size:0.72rem"
-          title="Bearbeiten">✎</button>
+    <div class="pj-list-row" onclick="showProjectDetail('${p.id}')">
+      <span class="pj-lr-dot" style="background:${p.color}"></span>
+      <span class="pj-lr-name">${escHtml(p.name)}</span>
+      <span class="project-card-status ${p.status} pj-lr-status">${statusLabel}</span>
+      <span class="pj-lr-count">${count} Sitzung${count!==1?'en':''}</span>
+      <span class="pj-lr-date">${new Date(p.createdAt).toLocaleDateString('de-DE')}</span>
+      <div class="pj-lr-actions" onclick="event.stopPropagation()">
+        <button class="pj-lr-btn" onclick="openEditProjectModal('${p.id}')" title="Bearbeiten">✎</button>
         ${p.status !== 'archived'
-          ? `<button onclick="confirmArchiveProject('${p.id}')" style="background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);padding:3px 8px;cursor:pointer;font-size:0.72rem" title="Archivieren">⊘</button>`
-          : `<button onclick="confirmUnarchiveProject('${p.id}')" style="background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);padding:3px 8px;cursor:pointer;font-size:0.72rem" title="Aktivieren">↩</button>`}
-        ${canDelete ? `<button onclick="confirmDeleteProject('${p.id}')" style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:5px;color:var(--red);padding:3px 8px;cursor:pointer;font-size:0.72rem" title="Löschen">✕</button>` : ''}
+          ? `<button class="pj-lr-btn hide-mobile" onclick="confirmArchiveProject('${p.id}')" title="Archivieren">⊘</button>`
+          : `<button class="pj-lr-btn hide-mobile" onclick="confirmUnarchiveProject('${p.id}')" title="Aktivieren">↩</button>`}
+        ${canDelete ? `<button class="pj-lr-btn danger hide-mobile" onclick="confirmDeleteProject('${p.id}')" title="Löschen">✕</button>` : ''}
       </div>
     </div>`;
 }
