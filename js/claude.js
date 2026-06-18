@@ -1126,10 +1126,8 @@ function renderInsights(session) {
         }
         if (!bodyHtml) return ''; // Kein Inhalt → Block überspringen
         const sid = session.id;
-        const hasSchema = !!(res.structured && res.schema);
-        const editBtn = !hasSchema
-          ? `<button class="insights-export-btn" title="Bearbeiten" onclick="event.stopPropagation();editCustomFreeText(this,'${sid}','${pid}','${bid}')">${icon('pencil',11,'pointer-events:none')}</button>`
-          : '';
+        // Pencil immer anzeigen – editCustomFreeText bearbeitet res.text, unabhängig ob Schema vorhanden
+        const editBtn = `<button class="insights-export-btn" title="Bearbeiten" onclick="event.stopPropagation();editCustomFreeText(this,'${sid}','${pid}','${bid}')">${icon('pencil',11,'pointer-events:none')}</button>`;
         return `
           <div class="insights-block" id="${bid}">
             <div class="insights-block-title" onclick="toggleInsightsBlock('${bid}')">
@@ -2724,9 +2722,13 @@ function editCustomFreeText(btn, sessionId, promptId, blockId) {
   const block = document.getElementById(blockId);
   if (!block) return;
   const body = block.querySelector('.insights-block-body');
+  if (!body) return;
+  // Freitext-Div vorhanden? Sonst aus Session-Daten lesen (z.B. Schema-Analysen)
   const textDiv = block.querySelector('.custom-result-text');
-  if (!textDiv) return;
-  const currentText = textDiv.textContent || '';
+  const s = sessions.find(x => x.id === sessionId);
+  const currentText = textDiv
+    ? (textDiv.textContent || '')
+    : (s?.customResults?.[promptId]?.text || '');
 
   body.innerHTML = `
     <textarea id="customFreeTextEdit_${promptId}" style="

@@ -504,7 +504,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 5.38</span>
+          <span style="color:var(--accent); font-weight:600">Version 5.39</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -745,7 +745,12 @@ function _refreshAnalysenSubtabs() {
   });
   const visible = blockMap.filter(b => {
     const el = document.getElementById(b.id);
-    return el && el.style.display !== 'none';
+    if (!el) return false;
+    // display:none darf NICHT als Kriterium verwendet werden – switchAnalysenSubtab setzt
+    // nicht-aktive Blöcke auf none, was beim nächsten Aufruf alle außer dem ersten versteckt.
+    // Stattdessen: hat der Block-Body echten Inhalt?
+    const body = el.querySelector('.insights-block-body');
+    return body && body.innerHTML.trim().length > 5;
   });
   _analysenVisibleBlocks = visible.map(b => b.id);
 
