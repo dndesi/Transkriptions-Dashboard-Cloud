@@ -132,38 +132,9 @@ function renderBrowser(filter = '') {
     return;
   }
 
-  // ── Sync-Toolbar-Buttons (v5.44) ────────────────────────────────────────
+  // ── Sync-Toolbar-Buttons ────────────────────────────────────────────────
   document.getElementById('viewGrid')?.classList.toggle('active', currentView === 'grid');
-  document.getElementById('viewList')?.classList.toggle('active', currentView === 'list');
   document.getElementById('viewTimeline')?.classList.toggle('active', currentView === 'timeline');
-
-  // ── Listenansicht (v5.44) ───────────────────────────────────────────────
-  if (currentView === 'list') {
-    grid.innerHTML = `<div style="display:flex;flex-direction:column;gap:3px">
-      ${list.map(s => {
-        const t = s.type || 'privat';
-        const typeIconMap = { arbeit: 'briefcase', privat: 'message-circle', gedanken: 'message-square' };
-        const typeLabel   = { arbeit: 'Arbeit', privat: 'Privat', gedanken: 'Gedanken' };
-        const dur = s.duration ? formatDuration(s.duration) : '';
-        const d = new Date(s.date).toLocaleDateString('de-DE', { day:'numeric', month:'short', year:'numeric' });
-        const proj = getProjectById(s.projectId);
-        const persons = (s.persons||[]).slice(0,2).join(' · ');
-        const statusOk = s.status === 'done';
-        return `<div onclick="_openSessionById('${s.id}')"
-          style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:background 0.15s"
-          onmouseover="this.style.background='rgba(108,99,255,0.07)'" onmouseout="this.style.background='var(--surface2)'">
-          <span style="flex-shrink:0;color:var(--muted)">${icon(typeIconMap[t]||'message-circle',14)}</span>
-          <span style="font-weight:600;font-size:0.88rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(s.label)}</span>
-          ${proj && !proj.builtin ? `<span style="font-size:0.68rem;background:${proj.color};color:#fff;padding:2px 7px;border-radius:10px;white-space:nowrap;flex-shrink:0">${escHtml(proj.name)}</span>` : ''}
-          ${persons ? `<span style="font-size:0.75rem;color:var(--muted);white-space:nowrap;flex-shrink:0">${escHtml(persons)}</span>` : ''}
-          <span style="font-size:0.75rem;color:var(--muted);white-space:nowrap;flex-shrink:0">${d}</span>
-          ${dur ? `<span style="font-size:0.72rem;color:var(--muted);white-space:nowrap;flex-shrink:0">${dur}</span>` : ''}
-          <span style="font-size:0.68rem;flex-shrink:0;color:${statusOk?'var(--green)':'var(--red)'}">${statusOk?'✓':'!'}</span>
-        </div>`;
-      }).join('')}
-    </div>`;
-    return;
-  }
 
   grid.innerHTML = '';
   list.forEach(s => {
@@ -401,15 +372,14 @@ function clearSelection() {
 // ═══════════════════════════════════════════════════
 // ANSICHT UMSCHALTEN
 // ═══════════════════════════════════════════════════
-let currentView = localStorage.getItem('distillSessionsView') || 'list';
+let currentView = localStorage.getItem('distillSessionsView') || 'timeline';
 function setView(v) {
   hideHero(); // v4.83: Hero verstecken beim View-Wechsel
   currentView = v;
-  if (['grid','list','timeline'].includes(v)) localStorage.setItem('distillSessionsView', v);
+  if (['grid','timeline'].includes(v)) localStorage.setItem('distillSessionsView', v);
   document.getElementById('viewGrid')?.classList.toggle('active', v === 'grid');
-  document.getElementById('viewList')?.classList.toggle('active', v === 'list');
   document.getElementById('viewTimeline').classList.toggle('active', v === 'timeline');
-  document.getElementById('sessionGrid').style.display = (v === 'grid' || v === 'list') ? '' : 'none';
+  document.getElementById('sessionGrid').style.display = v === 'grid' ? '' : 'none';
   document.getElementById('timelineView').classList.toggle('visible', v === 'timeline');
   // Alle Overlay-Views verstecken
   ['costsView','personsView','archView','promptsView','projectsView','contactsView'].forEach(id => {
@@ -423,7 +393,7 @@ function setView(v) {
     if (btn) { btn.classList.remove('active'); btn.style.borderColor='var(--border)'; btn.style.color='var(--muted)'; btn.style.background='none'; }
   });
   if (v === 'timeline') renderTimeline();
-  else if (v === 'grid' || v === 'list') renderBrowser();
+  else if (v === 'grid') renderBrowser();
 }
 
 // Hilfsfunktion: Session per ID öffnen (für List-View onclick)
@@ -566,7 +536,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 5.44</span>
+          <span style="color:var(--accent); font-weight:600">Version 5.45</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">

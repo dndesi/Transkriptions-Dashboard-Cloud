@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.44</button>
+        onmouseout="this.style.color='var(--muted)'">v5.45</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -768,9 +768,8 @@
           <input type="text" id="sidebarSearchMain" placeholder="Suchen…" oninput="filterBrowser()" />
         </div>
         <div class="view-toggle">
-          <button class="view-btn active" id="viewList" onclick="setView('list')" title="Listenansicht">☰</button>
           <button class="view-btn" id="viewGrid" onclick="setView('grid')" title="Kachelansicht">⊞</button>
-          <button class="view-btn" id="viewTimeline" onclick="setView('timeline')" title="Sitzungschronik">≡</button>
+          <button class="view-btn active" id="viewTimeline" onclick="setView('timeline')" title="Sitzungschronik">≡</button>
         </div>
         <button class="btn btn-ghost select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()">☑ Auswählen</button>
       </div>
@@ -1296,6 +1295,12 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
+      <!-- ── v5.45 ── -->
+        <div class="cl-header"><span class="cl-version">v5.45</span><span class="cl-date">18.06.2026</span></div>
+        <ul class="cl-list">
+          <li>Sitzungschronik ist wieder Standardansicht im Sitzungsarchiv</li>
+          <li>Listenansicht-Button aus Sitzungs-Toolbar entfernt</li>
+        </ul>
       <!-- ── v5.44 ── -->
         <div class="cl-header"><span class="cl-version">v5.44</span><span class="cl-date">18.06.2026</span></div>
         <ul class="cl-list">
@@ -4030,30 +4035,30 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.44"></script>
-<script src="js/storage.js?v=5.44"></script>
-<script src="js/config.js?v=5.44"></script>
-<script src="js/auth.js?v=5.44"></script>
-<script src="js/drive.js?v=5.44"></script>
-<script src="js/sessions.js?v=5.44"></script>
-<script src="js/assemblyai.js?v=5.44"></script>
-<script src="js/claude.js?v=5.44"></script>
-<script src="js/ui.js?v=5.44"></script>
-<script src="js/tags.js?v=5.44"></script>
-<script src="js/notes.js?v=5.44"></script>
-<script src="js/persons.js?v=5.44"></script>
-<script src="js/audio.js?v=5.44"></script>
-<script src="js/recorder.js?v=5.44"></script>
-<script src="js/contacts.js?v=5.44"></script>
-<script src="js/app.js?v=5.44"></script>
+<script src="js/icons.js?v=5.45"></script>
+<script src="js/storage.js?v=5.45"></script>
+<script src="js/config.js?v=5.45"></script>
+<script src="js/auth.js?v=5.45"></script>
+<script src="js/drive.js?v=5.45"></script>
+<script src="js/sessions.js?v=5.45"></script>
+<script src="js/assemblyai.js?v=5.45"></script>
+<script src="js/claude.js?v=5.45"></script>
+<script src="js/ui.js?v=5.45"></script>
+<script src="js/tags.js?v=5.45"></script>
+<script src="js/notes.js?v=5.45"></script>
+<script src="js/persons.js?v=5.45"></script>
+<script src="js/audio.js?v=5.45"></script>
+<script src="js/recorder.js?v=5.45"></script>
+<script src="js/contacts.js?v=5.45"></script>
+<script src="js/app.js?v=5.45"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.44"></script>
-<script src="js/search.js?v=5.44"></script>
-<script src="js/calendar.js?v=5.44"></script>
-<script src="js/prompts.js?v=5.44"></script>
-<script src="js/projects.js?v=5.44"></script>
-<script src="js/import.js?v=5.44"></script>
+<script src="js/features.js?v=5.45"></script>
+<script src="js/search.js?v=5.45"></script>
+<script src="js/calendar.js?v=5.45"></script>
+<script src="js/prompts.js?v=5.45"></script>
+<script src="js/projects.js?v=5.45"></script>
+<script src="js/import.js?v=5.45"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
