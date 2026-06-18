@@ -12,9 +12,9 @@ async function init() {
   updateDriveStatus();
   updateTagFilter();
   renderBrowser();
+  setView(currentView); // v5.46: Startansicht aus localStorage wiederherstellen (Standard: timeline)
   setupAudioSync();
   setDateInputToNow();
-  // Startansicht: Hero-Seite (v4.87) – kein setView('timeline') mehr beim Init
 
   // Drag & Drop
   const zone = document.getElementById('uploadZone');

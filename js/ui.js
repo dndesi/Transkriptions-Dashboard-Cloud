@@ -385,8 +385,8 @@ function setView(v) {
   ['costsView','personsView','archView','promptsView','projectsView','contactsView'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
-  // Browser-Toolbar wieder einblenden (war ggf. für Prompt-Bibliothek ausgeblendet)
-  const bt = document.getElementById('browserToolbar'); if (bt) bt.style.display = '';
+  // Browser-Toolbar nur bei Kachelansicht zeigen (v5.46)
+  const bt = document.getElementById('browserToolbar'); if (bt) bt.style.display = v === 'grid' ? '' : 'none';
   // Alle Overlay-Buttons zurücksetzen inkl. navProjects + navKontakte
   ['headerCostsBtn','headerPersonsBtn','headerArchBtn','headerPromptsBtn','navProjects','navKontakte'].forEach(id => {
     const btn = document.getElementById(id);
@@ -444,8 +444,9 @@ function _showOverlay(viewId, btnId, renderFn) {
   _setHeaderBtn(btnId, true);
   currentView = viewId.replace('View','');
   // Browser-Toolbar tauschen
+  // Toolbar bei allen Overlays verstecken (v5.46)
   const bt = document.getElementById('browserToolbar');
-  if (bt) bt.style.display = (viewId === 'promptsView' || isProjects) ? 'none' : '';
+  if (bt) bt.style.display = 'none';
   if (renderFn) renderFn();
 }
 
@@ -536,7 +537,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 5.45</span>
+          <span style="color:var(--accent); font-weight:600">Version 5.46</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
