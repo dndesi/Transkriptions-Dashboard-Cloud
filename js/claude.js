@@ -2460,32 +2460,26 @@ function swapAllSpeakers() {
   const s = getSession();
   if (!s || !s.utterances) return;
   if (!confirm(
-    `Sprecher A und B vollständig tauschen?\n\n` +
-    `A: "${s.speakerA || 'Sprecher A'}" → wird B\n` +
-    `B: "${s.speakerB || 'Sprecher B'}" → wird A\n\n` +
-    `Alle Utterances werden umgekehrt. Dies wird gespeichert.`
+    `Namen der Sprecher tauschen?\n\n` +
+    `"${s.speakerA || 'Sprecher A'}" ↔ "${s.speakerB || 'Sprecher B'}"\n\n` +
+    `Die Zuweisung der Sprecherabschnitte bleibt gleich – nur die Namen werden getauscht.`
   )) return;
 
-  // 1. Namen tauschen
+  // Nur Namen tauschen – Utterances bleiben wie sie sind.
+  // Beide gleichzeitig zu tauschen hebt sich gegenseitig auf (Farbe wechselt, Name nicht).
   const tmp = s.speakerA; s.speakerA = s.speakerB; s.speakerB = tmp;
 
-  // 2. Alle utterances tauschen – das ist der entscheidende Teil
-  s.utterances.forEach(u => {
-    if (u.speaker === 'A') u.speaker = 'B';
-    else if (u.speaker === 'B') u.speaker = 'A';
-  });
-
-  // 3. Speichern (lokal + Drive)
+  // Speichern (lokal + Drive)
   saveSessions();
   saveToArchive(s);
 
-  // 4. UI aktualisieren
+  // UI aktualisieren
   const elA = document.getElementById('editSpeakerA');
   const elB = document.getElementById('editSpeakerB');
   if (elA) elA.value = s.speakerA || 'Sprecher A';
   if (elB) elB.value = s.speakerB || 'Sprecher B';
   renderUtterances(s);
-  showToast('Sprecher A ↔ B vollständig getauscht ✓', 'success');
+  showToast('Sprecher-Namen getauscht ✓', 'success');
 }
 
 function swapSpeakersFromIndex(idx) {
