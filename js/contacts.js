@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════════
 
 let contacts = [];
+let _contactsViewMode = localStorage.getItem('distillContactsView') || 'list';
 
 const CONTACT_COLORS = [
   '#6b7280','#3b82f6','#8b5cf6','#ec4899',
@@ -79,6 +80,12 @@ function getSessionsForContact(contactId) {
 
 // ── Hauptansicht ─────────────────────────────────────────────────────────────
 
+function _setContactsViewMode(mode) {
+  _contactsViewMode = mode;
+  localStorage.setItem('distillContactsView', mode);
+  renderContactsView();
+}
+
 function renderContactsView() {
   const el = document.getElementById('contactsView');
   if (!el) return;
@@ -95,16 +102,23 @@ function renderContactsView() {
             data-help="Manuell angelegte Kontakte (Kunden, Kollegen, Freunde). Einem Kontakt können Projekte zugeordnet werden – so entsteht die Kette Kontakt → Projekt → Sitzung."
             onclick="showHelpTooltip(this)">?</button>
         </h2>
-        <button class="btn btn-primary" onclick="openContactModal()" style="display:inline-flex;align-items:center;gap:6px">
-          ${icon('plus',13,'pointer-events:none')} Neuer Kontakt
-        </button>
+        <div style="display:flex; align-items:center; gap:8px">
+          <div class="view-toggle">
+            <button class="view-btn ${_contactsViewMode==='list'?'active':''}" onclick="_setContactsViewMode('list')" title="Listenansicht">☰</button>
+            <button class="view-btn ${_contactsViewMode==='grid'?'active':''}" onclick="_setContactsViewMode('grid')" title="Kachelansicht">⊞</button>
+          </div>
+          <button class="btn btn-primary" onclick="openContactModal()" style="display:inline-flex;align-items:center;gap:6px">
+            ${icon('plus',13,'pointer-events:none')} Neuer Kontakt
+          </button>
+        </div>
       </div>
 
       ${list.length === 0 ? `
         <div style="text-align:center; padding:48px 0; color:var(--muted); font-size:0.85rem">
           <div style="margin-bottom:12px; opacity:0.4">${icon('users',32)}</div>
           Noch keine Kontakte. Lege deinen ersten Kontakt an.
-        </div>` : `
+        </div>` :
+        _contactsViewMode === 'list' ? _renderContactsList(list) : `
         <div class="projects-grid">
           ${list.map(c => _renderContactCard(c)).join('')}
         </div>`}
@@ -113,6 +127,30 @@ function renderContactsView() {
     ${_contactModalHtml()}`;
 
   if (window.lucide) lucide.createIcons({ nodes: [el] });
+}
+
+function _renderContactsList(list) {
+  return `
+    <div style="display:flex; flex-direction:column; gap:4px">
+      ${list.map(c => {
+        const projs  = getProjectsForContact(c.id);
+        const sess   = getSessionsForContact(c.id);
+        const lastS  = sess[0];
+        const lastDate = lastS
+          ? new Date(lastS.date).toLocaleDateString('de-DE', { day:'numeric', month:'short', year:'numeric' })
+          : '–';
+        return `
+          <div onclick="renderContactDetail('${c.id}')"
+            style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:background 0.15s"
+            onmouseover="this.style.background='rgba(108,99,255,0.07)'" onmouseout="this.style.background='var(--surface2)'">
+            <span style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0"></span>
+            <span style="font-weight:600;font-size:0.9rem;min-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(c.name)}</span>
+            <span style="font-size:0.78rem;color:var(--accent2);min-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.beziehung ? escHtml(c.beziehung) : ''}</span>
+            <span style="font-size:0.75rem;color:var(--muted);white-space:nowrap">${projs.length} Projekt${projs.length!==1?'e':''}</span>
+            <span style="font-size:0.75rem;color:var(--muted);margin-left:auto;white-space:nowrap">${lastDate !== '–' ? 'zuletzt ' + lastDate : '–'}</span>
+          </div>`;
+      }).join('')}
+    </div>`;
 }
 
 function _renderContactCard(c) {

@@ -10,6 +10,7 @@ const PROJECT_COLORS = [
   '#f97316','#84cc16'
 ];
 
+let _projectsViewMode = localStorage.getItem('distillProjectsView') || 'list';
 let _projectModalMode = 'create'; // 'create' | 'edit'
 let _projectModalEditId = null;
 let _currentProjectDetailId = null;
@@ -61,6 +62,12 @@ function toggleProjectsView() {
 }
 
 // ── Projekt-Browser rendern ──────────────────────────────────────────────
+function _setProjectsViewMode(mode) {
+  _projectsViewMode = mode;
+  localStorage.setItem('distillProjectsView', mode);
+  renderProjectBrowser();
+}
+
 function renderProjectBrowser() {
   const el = document.getElementById('projectsView');
   if (!el) return;
@@ -72,12 +79,13 @@ function renderProjectBrowser() {
 
   function renderGroup(list, groupLabel) {
     if (!list.length) return '';
+    const content = _projectsViewMode === 'list'
+      ? list.map(p => _renderProjectListRow(p)).join('')
+      : `<div class="projects-grid">${list.map(p => renderProjectCard(p)).join('')}</div>`;
     return `
       <div style="margin-bottom:28px">
         <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">${groupLabel}</div>
-        <div class="projects-grid">
-          ${list.map(p => renderProjectCard(p)).join('')}
-        </div>
+        ${content}
       </div>`;
   }
 
@@ -85,9 +93,15 @@ function renderProjectBrowser() {
     <div class="projects-browser">
       <div class="projects-browser-header">
         <h2>${icon('layers',18)} Projekte <button class="help-icon" data-help="Gruppiere Sitzungen nach Themen oder Beziehungen. Jedes Projekt hat eine Sitzungsliste und ein Dashboard mit aggregierten Aufgaben, Themen und Analysen." onclick="showHelpTooltip(this)">?</button></h2>
-        <button class="btn btn-primary" onclick="openCreateProjectModal()" style="margin-left:auto">
-          ${icon('plus',14)} Neues Projekt
-        </button>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+          <div class="view-toggle">
+            <button class="view-btn ${_projectsViewMode==='list'?'active':''}" onclick="_setProjectsViewMode('list')" title="Listenansicht">☰</button>
+            <button class="view-btn ${_projectsViewMode==='grid'?'active':''}" onclick="_setProjectsViewMode('grid')" title="Kachelansicht">⊞</button>
+          </div>
+          <button class="btn btn-primary" onclick="openCreateProjectModal()">
+            ${icon('plus',14)} Neues Projekt
+          </button>
+        </div>
       </div>
       ${renderGroup(active, 'Aktiv')}
       ${renderGroup(paused, 'Pausiert')}
@@ -95,6 +109,31 @@ function renderProjectBrowser() {
       ${!projects.length ? '<div class="browser-empty">Noch keine Projekte vorhanden.</div>' : ''}
     </div>
   `;
+}
+
+function _renderProjectListRow(p) {
+  const count = sessions.filter(s => s.projectId === p.id).length;
+  const statusLabel = { active: 'Aktiv', paused: 'Pausiert', archived: 'Archiviert' }[p.status] || p.status;
+  const canDelete = !p.builtin;
+  return `
+    <div onclick="showProjectDetail('${p.id}')"
+      style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:4px;transition:background 0.15s"
+      onmouseover="this.style.background='rgba(108,99,255,0.07)'" onmouseout="this.style.background='var(--surface2)'">
+      <span style="width:10px;height:10px;border-radius:50%;background:${p.color};flex-shrink:0"></span>
+      <span style="font-weight:600;font-size:0.9rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(p.name)}</span>
+      <span class="project-card-status ${p.status}" style="font-size:0.68rem;padding:2px 7px">${statusLabel}</span>
+      <span style="font-size:0.75rem;color:var(--muted);min-width:65px;text-align:right;white-space:nowrap">${count} Sitzung${count!==1?'en':''}</span>
+      <span style="font-size:0.72rem;color:var(--muted);white-space:nowrap;min-width:70px;text-align:right">${new Date(p.createdAt).toLocaleDateString('de-DE')}</span>
+      <div onclick="event.stopPropagation()" style="display:flex;gap:4px;flex-shrink:0">
+        <button onclick="openEditProjectModal('${p.id}')"
+          style="background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);padding:3px 8px;cursor:pointer;font-size:0.72rem"
+          title="Bearbeiten">✎</button>
+        ${p.status !== 'archived'
+          ? `<button onclick="confirmArchiveProject('${p.id}')" style="background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);padding:3px 8px;cursor:pointer;font-size:0.72rem" title="Archivieren">⊘</button>`
+          : `<button onclick="confirmUnarchiveProject('${p.id}')" style="background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);padding:3px 8px;cursor:pointer;font-size:0.72rem" title="Aktivieren">↩</button>`}
+        ${canDelete ? `<button onclick="confirmDeleteProject('${p.id}')" style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:5px;color:var(--red);padding:3px 8px;cursor:pointer;font-size:0.72rem" title="Löschen">✕</button>` : ''}
+      </div>
+    </div>`;
 }
 
 function renderProjectCard(p) {
