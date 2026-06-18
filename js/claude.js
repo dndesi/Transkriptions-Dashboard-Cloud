@@ -254,6 +254,11 @@ async function runSingleAnalysis(type) {
     showToast('Analyse abgeschlossen', 'success');
   } catch (e) {
     console.error('Analyse-Fehler:', e);
+    // Zwischenergebnisse sichern – verhindert Datenverlust wenn Custom-Prompt fehlschlägt
+    saveSessions();
+    saveToArchive(s).catch(() => {});
+    renderInsights(s);
+    if (typeof render360Block === 'function') render360Block(s);
     document.getElementById('analyseLoadingArea').style.display = 'none';
     document.getElementById('analyseCancelBtn').disabled = false;
     showAnalyseError(e.message || 'Unbekannter Fehler bei der Analyse.');
@@ -371,8 +376,9 @@ async function runAnalysisFromModal() {
         if (promptObj) await runCustomPrompt(s, promptObj, transcript);
       }
       stepsDone.push(type);
+      // Nach jedem Schritt sofort sichern – verhindert Datenverlust bei späterem Fehler
+      saveSessions();
     }
-    saveSessions();
     await saveToArchive(s);
     renderInsights(s);
     if (typeof render360Block === 'function') render360Block(s);
@@ -380,6 +386,11 @@ async function runAnalysisFromModal() {
     showToast('Analyse abgeschlossen', 'success');
   } catch (e) {
     console.error('Analyse-Fehler:', e);
+    // Zwischenergebnisse sichern und anzeigen bevor Fehler gemeldet wird
+    saveSessions();
+    saveToArchive(s).catch(() => {});
+    renderInsights(s);
+    if (typeof render360Block === 'function') render360Block(s);
     // Zurück in den Auswahl-Zustand, Fehler anzeigen
     document.getElementById('analyseChecks').style.display = 'block';
     document.getElementById('analyseLoadingArea').style.display = 'none';
@@ -1114,6 +1125,11 @@ function renderInsights(session) {
           bodyHtml = `<div class="custom-result-text" style="white-space:pre-wrap">${escHtml(res.text)}</div>`;
         }
         if (!bodyHtml) return ''; // Kein Inhalt → Block überspringen
+        const sid = session.id;
+        const hasSchema = !!(res.structured && res.schema);
+        const editBtn = !hasSchema
+          ? `<button class="insights-export-btn" title="Bearbeiten" onclick="event.stopPropagation();editCustomFreeText(this,'${sid}','${pid}','${bid}')">${icon('pencil',11,'pointer-events:none')}</button>`
+          : '';
         return `
           <div class="insights-block" id="${bid}">
             <div class="insights-block-title" onclick="toggleInsightsBlock('${bid}')">
@@ -1121,7 +1137,16 @@ function renderInsights(session) {
                 ${icon(icoName,14,'stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0')}
                 ${escHtml(res.promptName || 'Eigener Prompt')}
               </span>
-              <span class="insights-block-chevron">▾</span>
+              <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
+                ${editBtn}
+                <button class="insights-export-btn" title="Als Text kopieren" onclick="event.stopPropagation();exportCustomResultText('${sid}','${pid}')">
+                  ${icon('copy',11,'pointer-events:none')}TXT</button>
+                <button class="insights-export-btn" title="Drucken / PDF" onclick="event.stopPropagation();exportCustomResultPdf('${bid}')">
+                  ${icon('printer',11,'pointer-events:none')}PDF</button>
+                <button class="insights-export-btn" title="Analyse löschen" style="color:var(--muted)" onclick="event.stopPropagation();deleteCustomAnalysis(this,'${pid}')">
+                  ${icon('trash-2',11,'pointer-events:none')}</button>
+                <span class="insights-block-chevron">▾</span>
+              </span>
             </div>
             <div class="insights-block-body">${bodyHtml}</div>
           </div>`;
@@ -2605,5 +2630,161 @@ function manualCopy() {
 
 function closeSendOverlay() {
   document.getElementById('sendOverlay').classList.remove('open');
+}
+
+// ── Custom-Prompt Export (v5.37) ──────────────────────────────────────────────
+function exportCustomResultText(sessionId, promptId) {
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s) return;
+  const res = s.customResults?.[promptId];
+  if (!res) return;
+
+  let out = (res.promptName || 'Eigener Prompt') + '\n' + '═'.repeat(50) + '\n\n';
+  if (res.structured && res.schema) {
+    res.schema.forEach(field => {
+      const val = res.structured[field.field];
+      out += `【${field.field}】\n`;
+      if (Array.isArray(val)) {
+        val.forEach(v => { out += `  • ${typeof v === 'object' ? JSON.stringify(v) : v}\n`; });
+      } else {
+        out += `${val ?? ''}\n`;
+      }
+      out += '\n';
+    });
+  } else {
+    out += res.text || '';
+  }
+
+  navigator.clipboard.writeText(out)
+    .then(() => showToast('Ergebnis kopiert ✓', 'success'))
+    .catch(() => showToast('Kopieren fehlgeschlagen', 'error'));
+}
+
+// ── Analyse löschen (v5.38) ───────────────────────────────────────────────────
+function deleteAnalysis(btn, key) {
+  if (!btn.dataset.confirmPending) {
+    btn.dataset.confirmPending = '1';
+    btn.dataset.origHtml = btn.innerHTML;
+    btn.style.color = 'var(--red)';
+    btn.style.borderColor = 'var(--red)';
+    btn.innerHTML = 'Sicher?';
+    btn.title = 'Nochmal klicken zum Löschen';
+    setTimeout(() => {
+      if (btn.dataset.confirmPending) {
+        delete btn.dataset.confirmPending;
+        btn.innerHTML = btn.dataset.origHtml || '';
+        btn.style.color = 'var(--muted)';
+        btn.style.borderColor = '';
+        btn.title = 'Analyse löschen';
+        if (window.lucide) lucide.createIcons({ nodes: [btn] });
+      }
+    }, 3000);
+    return;
+  }
+  const s = getSession();
+  if (!s) return;
+  delete s[key];
+  saveSessions();
+  saveToArchive(s).catch(() => {});
+  renderInsights(s);
+  if (typeof render360Block === 'function') render360Block(s);
+  showToast('Analyse gelöscht', 'success');
+}
+
+function deleteCustomAnalysis(btn, promptId) {
+  if (!btn.dataset.confirmPending) {
+    btn.dataset.confirmPending = '1';
+    btn.dataset.origHtml = btn.innerHTML;
+    btn.style.color = 'var(--red)';
+    btn.style.borderColor = 'var(--red)';
+    btn.innerHTML = 'Sicher?';
+    btn.title = 'Nochmal klicken zum Löschen';
+    setTimeout(() => {
+      if (btn.dataset.confirmPending) {
+        delete btn.dataset.confirmPending;
+        btn.innerHTML = btn.dataset.origHtml || '';
+        btn.style.color = 'var(--muted)';
+        btn.style.borderColor = '';
+        btn.title = 'Analyse löschen';
+      }
+    }, 3000);
+    return;
+  }
+  const s = getSession();
+  if (!s || !s.customResults) return;
+  delete s.customResults[promptId];
+  saveSessions();
+  saveToArchive(s).catch(() => {});
+  renderInsights(s);
+  showToast('Analyse gelöscht', 'success');
+}
+
+// ── Freitext-Edit für Custom-Analysen ohne Schema (v5.38) ────────────────────
+function editCustomFreeText(btn, sessionId, promptId, blockId) {
+  const block = document.getElementById(blockId);
+  if (!block) return;
+  const body = block.querySelector('.insights-block-body');
+  const textDiv = block.querySelector('.custom-result-text');
+  if (!textDiv) return;
+  const currentText = textDiv.textContent || '';
+
+  body.innerHTML = `
+    <textarea id="customFreeTextEdit_${promptId}" style="
+      width:100%; min-height:180px; background:var(--surface2);
+      border:1px solid var(--accent); border-radius:6px;
+      color:var(--text); padding:10px; font-size:0.85rem;
+      line-height:1.6; resize:vertical; box-sizing:border-box;"
+    >${escHtml(currentText)}</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="insights-export-btn" style="color:var(--green);border-color:var(--green)"
+        onclick="saveCustomFreeText('${sessionId}','${promptId}')">
+        ${icon('check',11,'pointer-events:none')} Speichern</button>
+      <button class="insights-export-btn"
+        onclick="renderInsights(getSession())">Abbrechen</button>
+    </div>`;
+}
+
+function saveCustomFreeText(sessionId, promptId) {
+  const ta = document.getElementById('customFreeTextEdit_' + promptId);
+  if (!ta) return;
+  const s = sessions.find(x => x.id === sessionId);
+  if (!s || !s.customResults?.[promptId]) return;
+  s.customResults[promptId].text = ta.value;
+  saveSessions();
+  saveToArchive(s).catch(() => {});
+  renderInsights(s);
+  showToast('Gespeichert ✓', 'success');
+}
+
+function exportCustomResultPdf(blockId) {
+  const block = document.getElementById(blockId);
+  if (!block) return;
+  // Block temporär aufklappen falls zugeklappt
+  const body = block.querySelector('.insights-block-body');
+  const wasHidden = body && body.style.display === 'none';
+  if (wasHidden) body.style.display = 'block';
+
+  const title = block.querySelector('.insights-block-title span')?.textContent?.trim() || 'Analyse';
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${title}</title>
+    <style>
+      body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1a1a2e; }
+      h1 { font-size: 1.4rem; border-bottom: 2px solid #6c63ff; padding-bottom: 8px; margin-bottom: 24px; }
+      .work-section { margin-bottom: 20px; }
+      .work-section-title { font-weight: 700; font-size: 0.85rem; color: #6c63ff; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+      .work-item { display: flex; gap: 8px; margin-bottom: 6px; }
+      .work-item-content { flex: 1; }
+      .custom-result-text { white-space: pre-wrap; line-height: 1.6; }
+      button { display: none !important; }
+      @media print { body { margin: 20px; } }
+    </style></head><body>
+    <h1>${title}</h1>
+    ${body ? body.innerHTML : ''}
+    <script>window.onload=()=>window.print();<\/script>
+  </body></html>`);
+  w.document.close();
+
+  if (wasHidden) body.style.display = 'none';
 }
 

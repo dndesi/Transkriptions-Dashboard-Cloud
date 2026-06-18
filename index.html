@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.36</button>
+        onmouseout="this.style.color='var(--muted)'">v5.38</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -989,6 +989,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('private','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('private','pdf')" title="PDF">PDF</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();deleteAnalysis(this,'privateAnalysis')" title="Analyse löschen" style="color:var(--muted)"><i data-lucide="trash-2" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;pointer-events:none"></i></button>
                   </span>
                 </div>
                 <div class="insights-block-body" style="display:block"><div id="privateContent"></div></div>
@@ -1000,6 +1001,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('work','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('work','pdf')" title="PDF">PDF</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();deleteAnalysis(this,'workAnalysis')" title="Analyse löschen" style="color:var(--muted)"><i data-lucide="trash-2" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;pointer-events:none"></i></button>
                   </span>
                 </div>
                 <div class="insights-block-body" style="display:block"><div id="workContent"></div></div>
@@ -1011,6 +1013,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('sentiment','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('sentiment','pdf')" title="PDF">PDF</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();deleteAnalysis(this,'claudeSentiment')" title="Analyse löschen" style="color:var(--muted)"><i data-lucide="trash-2" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;pointer-events:none"></i></button>
                   </span>
                 </div>
                 <div class="insights-block-body" style="display:block"><div id="sentimentContent"></div></div>
@@ -1022,6 +1025,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('chapters','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('chapters','pdf')" title="PDF">PDF</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();deleteAnalysis(this,'claudeChapters')" title="Analyse löschen" style="color:var(--muted)"><i data-lucide="trash-2" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;pointer-events:none"></i></button>
                   </span>
                 </div>
                 <div class="insights-block-body" style="display:block"><div id="chaptersContent"></div></div>
@@ -1033,6 +1037,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('topics','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('topics','pdf')" title="PDF">PDF</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();deleteAnalysis(this,'claudeTopics')" title="Analyse löschen" style="color:var(--muted)"><i data-lucide="trash-2" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;pointer-events:none"></i></button>
                   </span>
                 </div>
                 <div class="insights-block-body" style="display:block"><div id="topicsContent"></div></div>
@@ -1044,6 +1049,7 @@
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('360','txt')" title="TXT">TXT</button>
                     <button class="insights-export-btn" onclick="event.stopPropagation();exportSection('360','pdf')" title="PDF">PDF</button>
+                    <button class="insights-export-btn" onclick="event.stopPropagation();deleteAnalysis(this,'claude360')" title="Analyse löschen" style="color:var(--muted)"><i data-lucide="trash-2" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;pointer-events:none"></i></button>
                   </span>
                 </div>
                 <div class="insights-block-body" style="display:block"><div id="content360"></div></div>
@@ -1283,6 +1289,28 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.38 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.38</span><span class="cl-date">18.06.2026</span></div>
+        <ul>
+          <li><strong>Analysen löschen</strong> – Alle 6 eingebauten Analyse-Blöcke (Privat, Arbeit, Sentiment, Kapitel, Themen, 360°) haben jetzt ein Papierkorb-Icon im Header. Zwei-Klick-Bestätigung: erster Klick → rot + „Sicher?", zweiter Klick löscht. Auto-Reset nach 3s ohne zweiten Klick.</li>
+          <li><strong>Custom-Analysen löschen</strong> – Eigene Prompt-Ergebnisse können ebenfalls per Papierkorb-Icon (zwei-Klick) gelöscht werden.</li>
+          <li><strong>Freitext-Edit für Custom-Analysen</strong> – Custom-Analysen ohne strukturiertes Schema (kein JSON-Output) haben jetzt ein Stift-Icon. Klick öffnet ein Textarea direkt im Block; Speichern überschreibt den Text in der Session und Drive.</li>
+        </ul>
+        <div class="cl-tech">index.html: Trash-Icons in allen 6 Built-in-Blöcken. claude.js: deleteAnalysis(), deleteCustomAnalysis(), editCustomFreeText(), saveCustomFreeText().</div>
+      </div>
+
+      <!-- ── v5.37 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.37</span><span class="cl-date">18.06.2026</span></div>
+        <ul>
+          <li><strong>Datenverlust-Bug behoben</strong> – Wenn eine Custom-Prompt-Analyse fehlschlug, wurden alle vorher abgeschlossenen Analysen desselben Batches weder gespeichert noch angezeigt. Fix: saveSessions() nach jedem einzelnen Schritt + saveSessions/saveToArchive/renderInsights im catch-Block.</li>
+          <li><strong>Custom-Analysen als eigene Tabs</strong> – Eigene Prompt-Ergebnisse erscheinen jetzt als individuelle Subtabs in der Tab-Leiste (neben Gespräch, Arbeit, Kapitel usw.). Tabs werden dynamisch aus den vorhandenen customBlock_* Elementen gelesen.</li>
+          <li><strong>Export für Custom-Analysen</strong> – TXT-Kopieren und PDF-Drucken direkt im Header jedes Custom-Ergebnis-Blocks.</li>
+        </ul>
+        <div class="cl-tech">claude.js: runSingleAnalysis() + runAnalysisFromModal() catch-Blöcke + for-Schleife, exportCustomResultText(), exportCustomResultPdf(), Custom-Block-Header mit Export-Buttons. ui.js: _refreshAnalysenSubtabs() liest [id^="customBlock_"] dynamisch ein.</div>
+      </div>
 
       <!-- ── v5.36 ── -->
       <div class="cl-entry">
@@ -3941,29 +3969,29 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.36"></script>
-<script src="js/storage.js?v=5.36"></script>
-<script src="js/config.js?v=5.36"></script>
-<script src="js/auth.js?v=5.36"></script>
-<script src="js/drive.js?v=5.36"></script>
-<script src="js/sessions.js?v=5.36"></script>
-<script src="js/assemblyai.js?v=5.36"></script>
-<script src="js/claude.js?v=5.36"></script>
-<script src="js/ui.js?v=5.36"></script>
-<script src="js/tags.js?v=5.36"></script>
-<script src="js/notes.js?v=5.36"></script>
-<script src="js/persons.js?v=5.36"></script>
-<script src="js/audio.js?v=5.36"></script>
-<script src="js/recorder.js?v=5.36"></script>
-<script src="js/app.js?v=5.36"></script>
+<script src="js/icons.js?v=5.38"></script>
+<script src="js/storage.js?v=5.38"></script>
+<script src="js/config.js?v=5.38"></script>
+<script src="js/auth.js?v=5.38"></script>
+<script src="js/drive.js?v=5.38"></script>
+<script src="js/sessions.js?v=5.38"></script>
+<script src="js/assemblyai.js?v=5.38"></script>
+<script src="js/claude.js?v=5.38"></script>
+<script src="js/ui.js?v=5.38"></script>
+<script src="js/tags.js?v=5.38"></script>
+<script src="js/notes.js?v=5.38"></script>
+<script src="js/persons.js?v=5.38"></script>
+<script src="js/audio.js?v=5.38"></script>
+<script src="js/recorder.js?v=5.38"></script>
+<script src="js/app.js?v=5.38"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.36"></script>
-<script src="js/search.js?v=5.36"></script>
-<script src="js/calendar.js?v=5.36"></script>
-<script src="js/prompts.js?v=5.36"></script>
-<script src="js/projects.js?v=5.36"></script>
-<script src="js/import.js?v=5.36"></script>
+<script src="js/features.js?v=5.38"></script>
+<script src="js/search.js?v=5.38"></script>
+<script src="js/calendar.js?v=5.38"></script>
+<script src="js/prompts.js?v=5.38"></script>
+<script src="js/projects.js?v=5.38"></script>
+<script src="js/import.js?v=5.38"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

@@ -504,7 +504,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 5.36</span>
+          <span style="color:var(--accent); font-weight:600">Version 5.38</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -738,6 +738,11 @@ function _refreshAnalysenSubtabs() {
     { id: 'topicsBlock',   label: 'Themen' },
     { id: 'block360',      label: '360°' },
   ];
+  // Custom-Prompt-Blöcke dynamisch ergänzen (v5.37)
+  document.querySelectorAll('[id^="customBlock_"]').forEach(el => {
+    const label = el.querySelector('.insights-block-title span')?.textContent?.trim() || 'Eigener Prompt';
+    blockMap.push({ id: el.id, label });
+  });
   const visible = blockMap.filter(b => {
     const el = document.getElementById(b.id);
     return el && el.style.display !== 'none';
