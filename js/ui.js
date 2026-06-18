@@ -62,7 +62,7 @@ function showHero() {
   if (browser) browser.classList.remove('visible');
   if (transcript) transcript.classList.remove('visible');
   // Alle Overlays schließen
-  ['costsView','personsView','archView','promptsView','projectsView'].forEach(id => {
+  ['costsView','personsView','archView','promptsView','projectsView','contactsView'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   // Fähnchen + Sidebar verstecken
@@ -82,7 +82,7 @@ function showBrowser() {
   document.getElementById('browserView').classList.add('visible');
   document.getElementById('transcriptCard').classList.remove('visible');
   // Alle Overlay-Views schliessen
-  ['costsView','personsView','archView','promptsView','projectsView'].forEach(id => {
+  ['costsView','personsView','archView','promptsView','projectsView','contactsView'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   // v4.76: Fahnchen ausblenden + Sidebar zuklappen
@@ -377,13 +377,13 @@ function setView(v) {
   document.getElementById('sessionGrid').style.display = v === 'grid' ? '' : 'none';
   document.getElementById('timelineView').classList.toggle('visible', v === 'timeline');
   // Alle Overlay-Views verstecken
-  ['costsView','personsView','archView','promptsView','projectsView'].forEach(id => {
+  ['costsView','personsView','archView','promptsView','projectsView','contactsView'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   // Browser-Toolbar wieder einblenden (war ggf. für Prompt-Bibliothek ausgeblendet)
   const bt = document.getElementById('browserToolbar'); if (bt) bt.style.display = '';
-  // Alle Overlay-Buttons zurücksetzen inkl. navProjects
-  ['headerCostsBtn','headerPersonsBtn','headerArchBtn','headerPromptsBtn','navProjects'].forEach(id => {
+  // Alle Overlay-Buttons zurücksetzen inkl. navProjects + navKontakte
+  ['headerCostsBtn','headerPersonsBtn','headerArchBtn','headerPromptsBtn','navProjects','navKontakte'].forEach(id => {
     const btn = document.getElementById(id);
     if (btn) { btn.classList.remove('active'); btn.style.borderColor='var(--border)'; btn.style.color='var(--muted)'; btn.style.background='none'; }
   });
@@ -405,7 +405,7 @@ function _showOverlay(viewId, btnId, renderFn) {
   const isProjects = viewId === 'projectsView';
 
   // Andere Overlay-Views (innerhalb browserView) schließen
-  ['costsView','personsView','archView','promptsView'].forEach(id => {
+  ['costsView','personsView','archView','promptsView','contactsView'].forEach(id => {
     const el = document.getElementById(id);
     if (el && id !== viewId) el.style.display = 'none';
   });
@@ -414,7 +414,7 @@ function _showOverlay(viewId, btnId, renderFn) {
     const pv = document.getElementById('projectsView');
     if (pv) pv.style.display = 'none';
   }
-  ['headerCostsBtn','headerPersonsBtn','headerArchBtn','headerPromptsBtn','navProjects'].forEach(id => {
+  ['headerCostsBtn','headerPersonsBtn','headerArchBtn','headerPromptsBtn','navProjects','navKontakte'].forEach(id => {
     if (id !== btnId) _setHeaderBtn(id, false);
   });
 
@@ -473,6 +473,26 @@ function toggleArchView() {
   }
 }
 
+// v5.42: Kontakte-Modul
+function toggleContactsView() {
+  const el = document.getElementById('contactsView');
+  if (!el) return;
+  if (el.style.display !== 'none') {
+    el.style.display = 'none';
+    _setHeaderBtn('navKontakte', false);
+    setView(currentView === 'kontakte' ? 'grid' : currentView);
+  } else {
+    if (typeof closeSessionSidebar === 'function') closeSessionSidebar();
+    _showOverlay('contactsView', 'navKontakte', () => {
+      if (typeof renderContactsView === 'function') renderContactsView();
+      // Drive-Sync beim Öffnen (v5.42)
+      if (typeof loadSettingsFromDrive === 'function') {
+        loadSettingsFromDrive().catch(() => {});
+      }
+    });
+  }
+}
+
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
@@ -504,7 +524,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 5.41</span>
+          <span style="color:var(--accent); font-weight:600">Version 5.42</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -538,7 +558,7 @@ function renderArchView() {
           <span style="opacity:0.7">app.js · config.js · storage.js · ui.js · claude.js · drive.js</span><br>
           <span style="opacity:0.7">assemblyai.js · recorder.js · sessions.js · auth.js</span><br>
           <span style="color:var(--accent2); font-weight:500">features.js · search.js · calendar.js · persons.js</span><br>
-          <span style="color:var(--accent); font-weight:500">prompts.js · audio.js · tags.js · notes.js · import.js</span><br>
+          <span style="color:var(--accent); font-weight:500">prompts.js · audio.js · tags.js · notes.js · import.js · contacts.js</span><br>
           <span style="color:var(--accent); font-size:0.72rem">dndesi.github.io/Transkriptions-Dashboard-Cloud</span>
         </div>
       </div>

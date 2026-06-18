@@ -200,6 +200,7 @@ async function saveSettingsToDrive() {
       personRelationships: (() => {
         try { return JSON.parse(localStorage.getItem('personRelationships') || '{}'); } catch { return {}; }
       })(),
+      contacts: (typeof contacts !== 'undefined') ? contacts : [],
     };
     const result = await driveUploadJSON(
       'distill_settings.json', data, _settingsFileId || null, driveFolderId
@@ -299,6 +300,18 @@ async function loadSettingsFromDrive() {
       })();
       const merged = { ...data.personRelationships, ...local };
       localStorage.setItem('personRelationships', JSON.stringify(merged));
+    }
+
+    // ── Contacts (v5.42) ──────────────────────────────────────────────────────
+    if (Array.isArray(data.contacts) && data.contacts.length > 0) {
+      if (typeof contacts !== 'undefined') {
+        contacts = data.contacts;
+        if (typeof saveContacts === 'function') saveContacts();
+        const cvEl = document.getElementById('contactsView');
+        if (cvEl && cvEl.style.display !== 'none' && typeof renderContactsView === 'function') {
+          renderContactsView();
+        }
+      }
     }
 
     updateLoadingScreen(100, 'Alles geladen ✓');
@@ -828,6 +841,7 @@ function createProject({ name, color = '#6b7280', goalDescription = '', promptTe
     status: 'active',
     goalDescription,
     promptTemplateId,
+    kontaktId: null,
     createdAt: new Date().toISOString(),
     builtin: false,
   };
@@ -839,7 +853,7 @@ function createProject({ name, color = '#6b7280', goalDescription = '', promptTe
 function updateProject(id, changes = {}) {
   const proj = projects.find(p => p.id === id);
   if (!proj) return;
-  const allowed = ['name', 'color', 'status', 'goalDescription', 'promptTemplateId'];
+  const allowed = ['name', 'color', 'status', 'goalDescription', 'promptTemplateId', 'kontaktId'];
   allowed.forEach(k => { if (k in changes) proj[k] = changes[k]; });
   saveProjects();
   return proj;

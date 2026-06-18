@@ -82,6 +82,12 @@ async function initStorage() {
       projects.unshift(_defaultProjects()[0]);
     }
   }
+
+  // Contacts in globale Variable laden
+  const storedContacts = await _idbGet('contacts');
+  if (Array.isArray(storedContacts) && typeof contacts !== 'undefined') {
+    contacts = storedContacts;
+  }
 }
 
 // ── Speichern ─────────────────────────────────────────────────────────────

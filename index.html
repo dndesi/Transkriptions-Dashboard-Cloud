@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.41</button>
+        onmouseout="this.style.color='var(--muted)'">v5.42</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -379,6 +379,10 @@
     </div>
 
     <div class="sidenav-label">Archiv</div>
+    <button class="sidenav-item" id="navKontakte" onclick="toggleContactsView(); setSidenavActive(this)">
+      <i data-lucide="address-book" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      Kontakte
+    </button>
     <button class="sidenav-item" id="navProjects" onclick="toggleProjectsView(); setSidenavActive(this)">
       <i data-lucide="layers" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
       Projekte
@@ -775,6 +779,7 @@
       <div class="timeline-view" id="timelineView"></div>
       <div id="costsView" style="display:none; padding-bottom:40px"></div>
       <div id="personsView" style="display:none; padding-bottom:40px"></div>
+      <div id="contactsView" style="display:none; padding-bottom:40px"></div>
       <div id="archView" style="display:none; padding-bottom:40px"></div>
       <div id="promptsView" style="display:none; padding-bottom:40px"></div>
     </div>
@@ -1289,6 +1294,15 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.42 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.42</span><span class="cl-date">18.06.2026</span></div>
+        <ul>
+          <li><strong>Neues Modul: Kontakte</strong> – Neue Ebene über Projekten (Kontakt → Projekt → Sitzung). Kontakte können manuell angelegt, bearbeitet und gelöscht werden. Projekte lassen sich einem Kontakt zuordnen. In der Kontakt-Detailansicht sind alle zugeordneten Projekte und Sitzungen sichtbar. Vollständige Drive-Sync-Integration.</li>
+        </ul>
+        <div class="cl-tech">js/contacts.js (neu): getContacts(), createContact(), updateContact(), deleteContact(), saveContacts(), renderContactsView(), renderContactDetail(). js/storage.js: initStorage() lädt contacts aus IDB. js/sessions.js: saveSettingsToDrive() + loadSettingsFromDrive() mit contacts. updateProject() + createProject() mit kontaktId-Feld. js/projects.js: _openProjectModal() + saveProjectFromModal() mit pmKontakt-Dropdown. js/ui.js: toggleContactsView(), alle Overlay-Listen erweitert, Version 5.42. index.html: Kontakte-Nav, contactsView-Div, pmKontakt-Select, Script-Tag.</div>
+      </div>
 
       <!-- ── v5.41 ── -->
       <div class="cl-entry">
@@ -3998,29 +4012,30 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.41"></script>
-<script src="js/storage.js?v=5.41"></script>
-<script src="js/config.js?v=5.41"></script>
-<script src="js/auth.js?v=5.41"></script>
-<script src="js/drive.js?v=5.41"></script>
-<script src="js/sessions.js?v=5.41"></script>
-<script src="js/assemblyai.js?v=5.41"></script>
-<script src="js/claude.js?v=5.41"></script>
-<script src="js/ui.js?v=5.41"></script>
-<script src="js/tags.js?v=5.41"></script>
-<script src="js/notes.js?v=5.41"></script>
-<script src="js/persons.js?v=5.41"></script>
-<script src="js/audio.js?v=5.41"></script>
-<script src="js/recorder.js?v=5.41"></script>
-<script src="js/app.js?v=5.41"></script>
+<script src="js/icons.js?v=5.42"></script>
+<script src="js/storage.js?v=5.42"></script>
+<script src="js/config.js?v=5.42"></script>
+<script src="js/auth.js?v=5.42"></script>
+<script src="js/drive.js?v=5.42"></script>
+<script src="js/sessions.js?v=5.42"></script>
+<script src="js/assemblyai.js?v=5.42"></script>
+<script src="js/claude.js?v=5.42"></script>
+<script src="js/ui.js?v=5.42"></script>
+<script src="js/tags.js?v=5.42"></script>
+<script src="js/notes.js?v=5.42"></script>
+<script src="js/persons.js?v=5.42"></script>
+<script src="js/audio.js?v=5.42"></script>
+<script src="js/recorder.js?v=5.42"></script>
+<script src="js/contacts.js?v=5.42"></script>
+<script src="js/app.js?v=5.42"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.41"></script>
-<script src="js/search.js?v=5.41"></script>
-<script src="js/calendar.js?v=5.41"></script>
-<script src="js/prompts.js?v=5.41"></script>
-<script src="js/projects.js?v=5.41"></script>
-<script src="js/import.js?v=5.41"></script>
+<script src="js/features.js?v=5.42"></script>
+<script src="js/search.js?v=5.42"></script>
+<script src="js/calendar.js?v=5.42"></script>
+<script src="js/prompts.js?v=5.42"></script>
+<script src="js/projects.js?v=5.42"></script>
+<script src="js/import.js?v=5.42"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
@@ -4149,6 +4164,13 @@
         <option value="">Kein Standard (manuell wählen)</option>
       </select>
       <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Wird im Dashboard automatisch vorausgewählt.</div>
+    </div>
+    <div>
+      <label>Kontakt zuordnen</label>
+      <select id="pmKontakt">
+        <option value="">Kein Kontakt</option>
+      </select>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Verknüpft dieses Projekt mit einem Kontakt.</div>
     </div>
     <div class="project-modal-footer">
       <button id="pmDeleteBtn" class="btn btn-ghost" style="margin-right:auto;color:var(--red);border-color:var(--red);display:none"

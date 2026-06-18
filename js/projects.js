@@ -277,6 +277,16 @@ function _openProjectModal(data) {
       ).join('');
   }
 
+  // Kontakt-Dropdown befüllen (v5.42)
+  const pmKontakt = overlay.querySelector('#pmKontakt');
+  if (pmKontakt) {
+    pmKontakt.innerHTML = '<option value="">Kein Kontakt</option>' +
+      (typeof contacts !== 'undefined' ? contacts : [])
+        .slice().sort((a,b) => a.name.localeCompare(b.name, 'de'))
+        .map(c => `<option value="${c.id}"${c.id === data.kontaktId ? ' selected' : ''}>${escHtml(c.name)}</option>`)
+        .join('');
+  }
+
   // Löschen-Button: nur beim Bearbeiten + nicht bei Builtin-Projekten
   const deleteBtn = overlay.querySelector('#pmDeleteBtn');
   if (deleteBtn) {
@@ -304,11 +314,13 @@ function saveProjectFromModal() {
   const goalDescription = document.getElementById('pmGoal')?.value.trim() || '';
   const status = document.getElementById('pmStatus')?.value || 'active';
   const promptTemplateId = document.getElementById('pmPrompt')?.value || null;
+  const kontaktId = document.getElementById('pmKontakt')?.value || null;
 
   if (_projectModalMode === 'create') {
-    createProject({ name, color, goalDescription, promptTemplateId });
+    const proj = createProject({ name, color, goalDescription, promptTemplateId });
+    if (proj && kontaktId) updateProject(proj.id, { kontaktId });
   } else {
-    updateProject(_projectModalEditId, { name, color, goalDescription, status, promptTemplateId });
+    updateProject(_projectModalEditId, { name, color, goalDescription, status, promptTemplateId, kontaktId });
   }
 
   closeProjectModal();
