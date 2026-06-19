@@ -1740,11 +1740,18 @@ async function askFollowUp() {
   let analysisContext = _buildFollowUpContext(session);
   if (!analysisContext) { showToast('Noch keine Analysen vorhanden – bitte erst Analysen durchführen.', 'warning'); return; }
 
-  // Lesezeichen vom Typ „wichtig" als priorisierten Kontext anhängen (v5.50)
-  const importantHighlights = (session.highlights || []).filter(h => h.type === 'wichtig');
-  if (importantHighlights.length) {
-    analysisContext += '\n\n=== VOM NUTZER ALS WICHTIG MARKIERT ===\n' +
-      importantHighlights.map(h => `- ${h.text}`).join('\n');
+  // Alle Lesezeichen als Kontext anhängen – nach Typ gruppiert (v5.55)
+  const hlByType = {
+    wichtig:    { label: 'WICHTIG (priorisiert)',  items: [] },
+    erkenntnis: { label: 'ERKENNTNISSE',           items: [] },
+    risiko:     { label: 'RISIKOHINWEISE',         items: [] },
+    schluessel: { label: 'SCHLÜSSELBEGRIFFE',      items: [] },
+  };
+  (session.highlights || []).forEach(h => { if (hlByType[h.type]) hlByType[h.type].items.push(h.text); });
+  const hlSections = Object.values(hlByType).filter(g => g.items.length);
+  if (hlSections.length) {
+    analysisContext += '\n\n=== VOM NUTZER MARKIERTE STELLEN ===\n' +
+      hlSections.map(g => `[${g.label}]\n${g.items.map(t => `- ${t}`).join('\n')}`).join('\n\n');
   }
 
   // UI: Lade-Zustand

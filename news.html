@@ -429,8 +429,15 @@
       <h3 class="news-section-title">Sammlung im Notizen-Tab</h3>
       <p>Alle Lesezeichen der Sitzung erscheinen im Tab <em>Notizen</em>, sortiert nach Erstellungszeit. Über Filter-Pills kannst du schnell zwischen Typen wechseln. Jede Karte zeigt den Originaltext, den Quell-Block und das Datum – und lässt sich per ✕ einzeln löschen.</p>
 
-      <h3 class="news-section-title">KI-Priorität bei Folgefragen</h3>
-      <p>Lesezeichen vom Typ <strong>⭐ Wichtig</strong> werden bei jeder Folgefrage automatisch als priorisierter Kontext an die KI übergeben – unter dem internen Label <em>„Vom Nutzer als wichtig markiert"</em>. Du musst die KI also nicht mehr manuell auf Kernpunkte hinweisen; sie kennt sie bereits.</p>
+      <h3 class="news-section-title">KI-Kontext bei Folgefragen</h3>
+      <p>Alle gespeicherten Lesezeichen werden bei jeder Folgefrage automatisch als strukturierter Kontext an die KI übergeben – gruppiert nach Typ:</p>
+      <ul style="margin:12px 0 12px 20px; color:var(--muted); font-size:0.9rem; line-height:2">
+        <li><strong style="color:#f59e0b">⭐ Wichtig</strong> – als priorisierter Abschnitt ganz oben, damit die KI diese Punkte besonders berücksichtigt</li>
+        <li><strong style="color:#06b6d4">💡 Erkenntnisse</strong> – als Kontext für weiterführende Gedanken und Einordnungen</li>
+        <li><strong style="color:#ef4444">⚠️ Risikohinweise</strong> – damit die KI bei verwandten Themen gezielt darauf eingehen kann</li>
+        <li><strong style="color:#a78bfa">🔑 Schlüsselbegriffe</strong> – als begrifflicher Rahmen für präzisere Antworten</li>
+      </ul>
+      <p>Du musst die KI also nicht mehr manuell auf Kernpunkte hinweisen – sie kennt bereits deine gesamte Einschätzung zur Sitzung.</p>
 
       <div class="info-box" style="margin-top:24px">
         <strong>So verwendest du es:</strong> Öffne eine Sitzung → wechsle zum Analysen-Tab → markiere mit der Maus einen Textabschnitt in einem Analyse-Block → Typ im Popup wählen → fertig. Die markierte Stelle erhält sofort eine farbige Unterlinie. Im Notizen-Tab siehst du alle Lesezeichen gesammelt.
