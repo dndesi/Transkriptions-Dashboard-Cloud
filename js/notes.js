@@ -283,7 +283,7 @@ function initHighlightSelection() {
   function onSelectionEnd(e) {
     setTimeout(() => {
       const sel = window.getSelection();
-      const text = sel?.toString().trim();
+      let text = sel?.toString().trim();
       if (!text || text.length < 10) { _removeHlPopup(); return; }
 
       const range = sel.rangeCount ? sel.getRangeAt(0) : null;
@@ -302,7 +302,15 @@ function initHighlightSelection() {
       let rowKey = '';
       if (isRowMark) {
         const tr = node.tagName?.toUpperCase() === 'TR' ? node : node.querySelector('tr');
-        rowKey = tr ? tr.textContent.replace(/\s+/g, ' ').trim() : text;
+        if (tr) {
+          rowKey = tr.textContent.replace(/\s+/g, ' ').trim();
+          // Anzeigetext mit Pipe-Trennern zwischen den Zellen
+          const cells = [...tr.querySelectorAll('td, th')];
+          const piped = cells.map(td => td.textContent.trim()).filter(Boolean).join(' | ');
+          if (piped) text = piped;
+        } else {
+          rowKey = text;
+        }
       }
 
       const coords = e.touches ? e.touches[0] : e;
