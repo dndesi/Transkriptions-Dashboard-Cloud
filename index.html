@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.48</button>
+        onmouseout="this.style.color='var(--muted)'">v5.49</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -381,7 +381,7 @@
     <div class="sidenav-label">Archiv</div>
     <button class="sidenav-item" id="navKontakte" onclick="toggleContactsView(); setSidenavActive(this)">
       <i data-lucide="users" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-      Kontakte
+      Kontexte
     </button>
     <button class="sidenav-item" id="navProjects" onclick="toggleProjectsView(); setSidenavActive(this)">
       <i data-lucide="layers" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
@@ -507,6 +507,48 @@
           <i data-lucide="arrow-right" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;margin-left:auto;opacity:0.6"></i>
         </a>
         <div class="hero-news-grid">
+
+          <!-- Kachel NEU 0: Kontakte / Themen -->
+          <a href="news.html#kontakte-themen" class="hero-news-tile" style="background:#0d1a2a">
+            <svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+              <!-- Hierarchie-Diagramm: Kontakt → Projekt → Sitzung -->
+              <!-- Kontakt-Node oben -->
+              <rect x="110" y="32" width="100" height="28" rx="8" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5"/>
+              <text x="160" y="50" text-anchor="middle" font-size="10" fill="#93c5fd" font-family="sans-serif" font-weight="700">Kontext</text>
+              <!-- Linie runter -->
+              <line x1="160" y1="60" x2="160" y2="76" stroke="#3b82f6" stroke-width="1.2" stroke-dasharray="3,2"/>
+              <!-- Zwei Projekt-Nodes -->
+              <rect x="58" y="76" width="84" height="24" rx="6" fill="#1a2e1a" stroke="#22c55e" stroke-width="1.2"/>
+              <text x="100" y="92" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">Projekt A</text>
+              <rect x="178" y="76" width="84" height="24" rx="6" fill="#1a2e1a" stroke="#22c55e" stroke-width="1.2"/>
+              <text x="220" y="92" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">Projekt B</text>
+              <!-- Linien zu Projekten -->
+              <line x1="160" y1="76" x2="100" y2="76" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
+              <line x1="160" y1="76" x2="220" y2="76" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
+              <!-- Sitzungs-Nodes unter Projekt A -->
+              <rect x="38" y="118" width="62" height="20" rx="5" fill="#1c1c2e" stroke="#6c63ff" stroke-width="1"/>
+              <text x="69" y="132" text-anchor="middle" font-size="8" fill="#a5b4fc" font-family="sans-serif">Sitzung 1</text>
+              <rect x="108" y="118" width="62" height="20" rx="5" fill="#1c1c2e" stroke="#6c63ff" stroke-width="1"/>
+              <text x="139" y="132" text-anchor="middle" font-size="8" fill="#a5b4fc" font-family="sans-serif">Sitzung 2</text>
+              <!-- Sitzungs-Nodes unter Projekt B -->
+              <rect x="158" y="118" width="62" height="20" rx="5" fill="#1c1c2e" stroke="#6c63ff" stroke-width="1"/>
+              <text x="189" y="132" text-anchor="middle" font-size="8" fill="#a5b4fc" font-family="sans-serif">Sitzung 3</text>
+              <rect x="228" y="118" width="62" height="20" rx="5" fill="#1c1c2e" stroke="#6c63ff" stroke-width="1"/>
+              <text x="259" y="132" text-anchor="middle" font-size="8" fill="#a5b4fc" font-family="sans-serif">Sitzung 4</text>
+              <!-- Linien zu Sitzungen -->
+              <line x1="100" y1="100" x2="69" y2="118" stroke="#22c55e" stroke-width="0.8" stroke-dasharray="2,2"/>
+              <line x1="100" y1="100" x2="139" y2="118" stroke="#22c55e" stroke-width="0.8" stroke-dasharray="2,2"/>
+              <line x1="220" y1="100" x2="189" y2="118" stroke="#22c55e" stroke-width="0.8" stroke-dasharray="2,2"/>
+              <line x1="220" y1="100" x2="259" y2="118" stroke="#22c55e" stroke-width="0.8" stroke-dasharray="2,2"/>
+              <defs><linearGradient id="ng8" x1="0" y1="0" x2="0" y2="1"><stop offset="35%" stop-color="#0d1a2a" stop-opacity="0"/><stop offset="100%" stop-color="#0d1a2a" stop-opacity="0.95"/></linearGradient></defs>
+              <rect x="0" y="0" width="320" height="240" fill="url(#ng8)"/>
+            </svg>
+            <div class="hero-news-tile-overlay">
+              <span class="hero-news-tile-label">v5.42</span>
+              <h4 class="hero-news-tile-title">Struktur: Kontext → Projekt → Sitzung</h4>
+              <p class="hero-news-tile-teaser">Neue Hierarchie-Ebene über Projekten. Ob Person oder Themenfeld – alle Sitzungen auf einen Blick.</p>
+            </div>
+          </a>
 
           <!-- Kachel NEU 1: Ausgabe-Feld-Typen -->
           <a href="news.html#ausgabe-felder" class="hero-news-tile" style="background:#0c1a1a">
@@ -1291,6 +1333,12 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
+      <!-- ── v5.49 ── -->
+        <div class="cl-header"><span class="cl-version">v5.49</span><span class="cl-date">19.06.2026</span></div>
+        <ul class="cl-list">
+          <li>Nav-Label „Kontakte" → „Kontexte" (Modul deckt Personen und Themenfelder ab)</li>
+          <li>Neue News-Kachel + Artikel: Struktur – Kontext → Projekt → Sitzung mit Hierarchie-Schema und Analysevorteilen</li>
+        </ul>
       <!-- ── v5.48 ── -->
         <div class="cl-header"><span class="cl-version">v5.48</span><span class="cl-date">19.06.2026</span></div>
         <ul class="cl-list">
@@ -4052,30 +4100,30 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.48"></script>
-<script src="js/storage.js?v=5.48"></script>
-<script src="js/config.js?v=5.48"></script>
-<script src="js/auth.js?v=5.48"></script>
-<script src="js/drive.js?v=5.48"></script>
-<script src="js/sessions.js?v=5.48"></script>
-<script src="js/assemblyai.js?v=5.48"></script>
-<script src="js/claude.js?v=5.48"></script>
-<script src="js/ui.js?v=5.48"></script>
-<script src="js/tags.js?v=5.48"></script>
-<script src="js/notes.js?v=5.48"></script>
-<script src="js/persons.js?v=5.48"></script>
-<script src="js/audio.js?v=5.48"></script>
-<script src="js/recorder.js?v=5.48"></script>
-<script src="js/contacts.js?v=5.48"></script>
-<script src="js/app.js?v=5.48"></script>
+<script src="js/icons.js?v=5.49"></script>
+<script src="js/storage.js?v=5.49"></script>
+<script src="js/config.js?v=5.49"></script>
+<script src="js/auth.js?v=5.49"></script>
+<script src="js/drive.js?v=5.49"></script>
+<script src="js/sessions.js?v=5.49"></script>
+<script src="js/assemblyai.js?v=5.49"></script>
+<script src="js/claude.js?v=5.49"></script>
+<script src="js/ui.js?v=5.49"></script>
+<script src="js/tags.js?v=5.49"></script>
+<script src="js/notes.js?v=5.49"></script>
+<script src="js/persons.js?v=5.49"></script>
+<script src="js/audio.js?v=5.49"></script>
+<script src="js/recorder.js?v=5.49"></script>
+<script src="js/contacts.js?v=5.49"></script>
+<script src="js/app.js?v=5.49"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.48"></script>
-<script src="js/search.js?v=5.48"></script>
-<script src="js/calendar.js?v=5.48"></script>
-<script src="js/prompts.js?v=5.48"></script>
-<script src="js/projects.js?v=5.48"></script>
-<script src="js/import.js?v=5.48"></script>
+<script src="js/features.js?v=5.49"></script>
+<script src="js/search.js?v=5.49"></script>
+<script src="js/calendar.js?v=5.49"></script>
+<script src="js/prompts.js?v=5.49"></script>
+<script src="js/projects.js?v=5.49"></script>
+<script src="js/import.js?v=5.49"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
