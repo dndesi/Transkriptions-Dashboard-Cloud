@@ -1138,7 +1138,7 @@ function renderInsights(session) {
           ? `<button class="insights-export-btn" title="Bearbeiten" onclick="event.stopPropagation();editCustomFreeText(this,'${sid}','${pid}','${bid}')" style="gap:3px">${icon('edit-2',11,'pointer-events:none')} EDIT</button>`
           : '';
         return `
-          <div class="insights-block" id="${bid}">
+          <div class="insights-block" id="${bid}" data-hl-source="${escHtml(res.promptName || 'Eigener Prompt')}">
             <div class="insights-block-title" onclick="toggleInsightsBlock('${bid}')">
               <span style="display:inline-flex;align-items:center;gap:6px">
                 ${icon(icoName,14,'stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0')}
@@ -1202,6 +1202,8 @@ function showTranscript(session) {
   renderTagChips(session);
   const notesEl = document.getElementById('notesArea');
   if (notesEl) notesEl.value = session.notes || '';
+  // Lesezeichen rendern (v5.50)
+  if (typeof renderHighlights === 'function') renderHighlights(session);
 
   renderInsights(session);
   loadAudioForSession(session);
@@ -1729,8 +1731,15 @@ async function askFollowUp() {
   if (!question) { showToast('Bitte erst eine Frage eingeben.', 'warning'); return; }
   if (!anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'warning'); return; }
 
-  const analysisContext = _buildFollowUpContext(session);
+  let analysisContext = _buildFollowUpContext(session);
   if (!analysisContext) { showToast('Noch keine Analysen vorhanden – bitte erst Analysen durchführen.', 'warning'); return; }
+
+  // Lesezeichen vom Typ „wichtig" als priorisierten Kontext anhängen (v5.50)
+  const importantHighlights = (session.highlights || []).filter(h => h.type === 'wichtig');
+  if (importantHighlights.length) {
+    analysisContext += '\n\n=== VOM NUTZER ALS WICHTIG MARKIERT ===\n' +
+      importantHighlights.map(h => `- ${h.text}`).join('\n');
+  }
 
   // UI: Lade-Zustand
   btn.disabled = true;

@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.49</button>
+        onmouseout="this.style.color='var(--muted)'">v5.50</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1026,7 +1026,7 @@
             <!-- Analyse-Ergebnisse -->
             <div class="insights-section" id="insightsSection">
               <!-- Gesprächsanalyse -->
-              <div class="insights-block" id="privateBlock" style="display:none">
+              <div class="insights-block" id="privateBlock" data-hl-source="privat" style="display:none">
                 <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="message-circle" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Gesprächsanalyse</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
@@ -1038,7 +1038,7 @@
                 <div class="insights-block-body" style="display:block"><div id="privateContent"></div></div>
               </div>
               <!-- Arbeitsanalyse -->
-              <div class="insights-block" id="workBlock" style="display:none">
+              <div class="insights-block" id="workBlock" data-hl-source="arbeit" style="display:none">
                 <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="briefcase" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Arbeitsanalyse</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
@@ -1050,7 +1050,7 @@
                 <div class="insights-block-body" style="display:block"><div id="workContent"></div></div>
               </div>
               <!-- Stimmungsanalyse -->
-              <div class="insights-block" id="sentimentBlock" style="display:none">
+              <div class="insights-block" id="sentimentBlock" data-hl-source="sentiment" style="display:none">
                 <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="activity" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Stimmungsanalyse</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
@@ -1062,7 +1062,7 @@
                 <div class="insights-block-body" style="display:block"><div id="sentimentContent"></div></div>
               </div>
               <!-- Kapitel -->
-              <div class="insights-block" id="chaptersBlock" style="display:none">
+              <div class="insights-block" id="chaptersBlock" data-hl-source="kapitel" style="display:none">
                 <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="book-open" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Kapitel</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
@@ -1074,7 +1074,7 @@
                 <div class="insights-block-body" style="display:block"><div id="chaptersContent"></div></div>
               </div>
               <!-- Themen -->
-              <div class="insights-block" id="topicsBlock" style="display:none">
+              <div class="insights-block" id="topicsBlock" data-hl-source="themen" style="display:none">
                 <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="tag" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> Themen</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
@@ -1086,7 +1086,7 @@
                 <div class="insights-block-body" style="display:block"><div id="topicsContent"></div></div>
               </div>
               <!-- 360°-Auswertung -->
-              <div class="insights-block" id="block360" style="display:none">
+              <div class="insights-block" id="block360" data-hl-source="360" style="display:none">
                 <div class="insights-block-title">
                   <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="refresh-cw" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i> 360°-Auswertung</span>
                   <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
@@ -1155,7 +1155,26 @@
           <!-- ── TAB: Notizen ── -->
           <div class="sdc-panel" id="sdc-panel-notizen">
             <textarea class="notes-area" id="notesArea" placeholder="Persönliche Eindrücke, Kontext, Beobachtungen…"
-              oninput="saveNotes()" style="margin:0;width:100%;min-height:280px;box-sizing:border-box"></textarea>
+              oninput="saveNotes()" style="margin:0;width:100%;min-height:200px;box-sizing:border-box"></textarea>
+
+            <hr class="hl-section-divider">
+
+            <div class="hl-section-header">
+              <span class="hl-section-title">🔖 Lesezeichen
+                <button class="help-icon" data-help="Text in einer Analyse markieren → Typ wählen → Lesezeichen wird hier gespeichert. ⭐ Wichtig-Lesezeichen fließen automatisch in Folgefragen ein." onclick="showHelpTooltip(this)">?</button>
+              </span>
+              <div class="hl-filter-pills">
+                <span class="hl-pill active" data-filter="alle" onclick="setHlFilter('alle')">Alle</span>
+                <span class="hl-pill" data-filter="wichtig" onclick="setHlFilter('wichtig')">⭐</span>
+                <span class="hl-pill" data-filter="erkenntnis" onclick="setHlFilter('erkenntnis')">💡</span>
+                <span class="hl-pill" data-filter="risiko" onclick="setHlFilter('risiko')">⚠️</span>
+                <span class="hl-pill" data-filter="schluessel" onclick="setHlFilter('schluessel')">🔑</span>
+              </div>
+            </div>
+
+            <div id="highlightsContainer">
+              <div class="hl-empty">Noch keine Lesezeichen – Text in einer Analyse markieren.</div>
+            </div>
           </div>
           <!-- /notizen -->
 
@@ -1333,6 +1352,14 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
+      <!-- ── v5.50 ── -->
+        <div class="cl-header"><span class="cl-version">v5.50</span><span class="cl-date">19.06.2026</span></div>
+        <ul class="cl-list">
+          <li>Lesezeichen-Feature: Text in Analyse-Blöcken markieren → Typ wählen (⭐ Wichtig / 💡 Erkenntnis / ⚠️ Risiko / 🔑 Schlüsselbegriff)</li>
+          <li>Lesezeichen erscheinen im Notizen-Tab, filterbar nach Typ, mit Quell-Block und Datum</li>
+          <li>„Wichtig"-Lesezeichen fließen automatisch als priorisierten Kontext in Folgefragen ein</li>
+          <li>Selektion über Block-Grenzen hinweg wird korrekt abgefangen (kein Popup bei ungültiger Auswahl)</li>
+        </ul>
       <!-- ── v5.49 ── -->
         <div class="cl-header"><span class="cl-version">v5.49</span><span class="cl-date">19.06.2026</span></div>
         <ul class="cl-list">
@@ -4100,30 +4127,31 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.49"></script>
-<script src="js/storage.js?v=5.49"></script>
-<script src="js/config.js?v=5.49"></script>
-<script src="js/auth.js?v=5.49"></script>
-<script src="js/drive.js?v=5.49"></script>
-<script src="js/sessions.js?v=5.49"></script>
-<script src="js/assemblyai.js?v=5.49"></script>
-<script src="js/claude.js?v=5.49"></script>
-<script src="js/ui.js?v=5.49"></script>
-<script src="js/tags.js?v=5.49"></script>
-<script src="js/notes.js?v=5.49"></script>
-<script src="js/persons.js?v=5.49"></script>
-<script src="js/audio.js?v=5.49"></script>
-<script src="js/recorder.js?v=5.49"></script>
-<script src="js/contacts.js?v=5.49"></script>
-<script src="js/app.js?v=5.49"></script>
+<script src="js/icons.js?v=5.50"></script>
+<script src="js/storage.js?v=5.50"></script>
+<script src="js/config.js?v=5.50"></script>
+<script src="js/auth.js?v=5.50"></script>
+<script src="js/drive.js?v=5.50"></script>
+<script src="js/sessions.js?v=5.50"></script>
+<script src="js/assemblyai.js?v=5.50"></script>
+<script src="js/claude.js?v=5.50"></script>
+<script src="js/ui.js?v=5.50"></script>
+<script src="js/tags.js?v=5.50"></script>
+<script src="js/notes.js?v=5.50"></script>
+<script src="js/persons.js?v=5.50"></script>
+<script src="js/audio.js?v=5.50"></script>
+<script src="js/recorder.js?v=5.50"></script>
+<script src="js/contacts.js?v=5.50"></script>
+<script src="js/app.js?v=5.50"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
-<script src="js/features.js?v=5.49"></script>
-<script src="js/search.js?v=5.49"></script>
-<script src="js/calendar.js?v=5.49"></script>
-<script src="js/prompts.js?v=5.49"></script>
-<script src="js/projects.js?v=5.49"></script>
-<script src="js/import.js?v=5.49"></script>
+<script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
+<script src="js/features.js?v=5.50"></script>
+<script src="js/search.js?v=5.50"></script>
+<script src="js/calendar.js?v=5.50"></script>
+<script src="js/prompts.js?v=5.50"></script>
+<script src="js/projects.js?v=5.50"></script>
+<script src="js/import.js?v=5.50"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

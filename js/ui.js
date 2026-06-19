@@ -537,7 +537,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 5.49</span>
+          <span style="color:var(--accent); font-weight:600">Version 5.50</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -755,6 +755,11 @@ function switchSessionTab(name) {
 
   // Bei Analysen-Tab: Sub-Tabs aktualisieren
   if (name === 'analysen') _refreshAnalysenSubtabs();
+  // Bei Notizen-Tab: Lesezeichen rendern (v5.50)
+  if (name === 'notizen' && typeof renderHighlights === 'function') {
+    const s = (typeof getSession === 'function') ? getSession() : null;
+    if (s) renderHighlights(s);
+  }
 }
 
 // v4.82: Welche Analyse-Blöcke aktuell Inhalt haben (für switchAnalysenSubtab)
