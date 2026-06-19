@@ -320,6 +320,7 @@
   <!-- ── Sidebar-Navigation ── -->
   <nav class="news-sidebar" aria-label="Artikel-Navigation">
     <p class="news-sidebar-title">Artikel</p>
+    <a href="#lesezeichen"      class="news-sidebar-link" data-id="lesezeichen"><span class="news-sidebar-version">v5.51</span>Lesezeichen in Analysen</a>
     <a href="#kontakte-themen"  class="news-sidebar-link" data-id="kontakte-themen"><span class="news-sidebar-version">v5.42</span>Struktur: Kontext → Projekt → Sitzung</a>
     <a href="#ausgabe-felder"   class="news-sidebar-link" data-id="ausgabe-felder"><span class="news-sidebar-version">v5.30</span>Ausgabe-Feld-Typen</a>
     <a href="#design-versionen" class="news-sidebar-link" data-id="design-versionen"><span class="news-sidebar-version">v5.25</span>Design-Versionen</a>
@@ -332,6 +333,109 @@
 
   <!-- ── Artikel-Feed ── -->
   <main class="news-container">
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Lesezeichen (v5.50/v5.51)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="lesezeichen">
+      <div class="news-meta">
+        <span class="news-version">v5.50 – v5.51</span>
+        <span class="news-date">19. Juni 2026</span>
+        <span class="news-category">Feature</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#0e1520">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <!-- Analyse-Block Mockup groß -->
+          <rect x="60" y="28" width="520" height="190" rx="12" fill="#141a2e" stroke="#2e3347" stroke-width="1.5"/>
+          <!-- Titel-Zeile -->
+          <text x="80" y="56" font-size="10" fill="#7a7f9a" font-family="sans-serif" font-weight="700">GESPRÄCHSANALYSE</text>
+          <!-- Block-Badge -->
+          <rect x="490" y="42" width="66" height="20" rx="10" fill="rgba(59,130,246,0.18)" stroke="rgba(59,130,246,0.45)" stroke-width="1"/>
+          <text x="523" y="56" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif" font-weight="700">🔖 3 Lesezeichen</text>
+
+          <!-- Fließtext-Linie 1: wichtig (amber) markiert -->
+          <rect x="80" y="70" width="300" height="11" rx="3" fill="rgba(245,158,11,0.12)"/>
+          <line x1="80" y1="81" x2="380" y2="81" stroke="rgba(245,158,11,0.85)" stroke-width="2"/>
+          <!-- Tooltip-Bubble über markiertem Text -->
+          <rect x="290" y="48" width="78" height="18" rx="6" fill="#f59e0b" opacity="0.9"/>
+          <text x="329" y="61" text-anchor="middle" font-size="9" fill="#000" font-family="sans-serif" font-weight="700">⭐ Wichtig</text>
+          <line x1="329" y1="66" x2="329" y2="70" stroke="#f59e0b" stroke-width="1.5" opacity="0.9"/>
+
+          <rect x="80" y="92" width="440" height="9" rx="3" fill="#1e2540" opacity="0.7"/>
+          <rect x="80" y="108" width="380" height="9" rx="3" fill="#1e2540" opacity="0.7"/>
+
+          <!-- Fließtext-Linie 2: erkenntnis (cyan) markiert -->
+          <rect x="80" y="124" width="240" height="11" rx="3" fill="rgba(6,182,212,0.10)"/>
+          <line x1="80" y1="135" x2="320" y2="135" stroke="rgba(6,182,212,0.85)" stroke-width="2"/>
+
+          <rect x="80" y="146" width="440" height="9" rx="3" fill="#1e2540" opacity="0.7"/>
+          <rect x="80" y="162" width="360" height="9" rx="3" fill="#1e2540" opacity="0.7"/>
+
+          <!-- Fließtext-Linie 3: risiko (rot) markiert -->
+          <rect x="80" y="178" width="190" height="11" rx="3" fill="rgba(239,68,68,0.09)"/>
+          <line x1="80" y1="189" x2="270" y2="189" stroke="rgba(239,68,68,0.85)" stroke-width="2"/>
+
+          <!-- Popup unten -->
+          <rect x="100" y="220" width="360" height="42" rx="10" fill="#1a1d27" stroke="#2e3347" stroke-width="1.2"/>
+          <text x="116" y="238" font-size="9" fill="#7a7f9a" font-family="sans-serif">Speichern als:</text>
+          <rect x="172" y="226" width="56" height="22" rx="6" fill="rgba(245,158,11,0.12)" stroke="rgba(245,158,11,0.45)" stroke-width="1"/>
+          <text x="200" y="241" text-anchor="middle" font-size="9" fill="#f59e0b" font-family="sans-serif" font-weight="600">⭐ Wichtig</text>
+          <rect x="234" y="226" width="66" height="22" rx="6" fill="rgba(6,182,212,0.10)" stroke="rgba(6,182,212,0.4)" stroke-width="1"/>
+          <text x="267" y="241" text-anchor="middle" font-size="9" fill="#06b6d4" font-family="sans-serif" font-weight="600">💡 Erkenntnis</text>
+          <rect x="306" y="226" width="48" height="22" rx="6" fill="rgba(239,68,68,0.10)" stroke="rgba(239,68,68,0.4)" stroke-width="1"/>
+          <text x="330" y="241" text-anchor="middle" font-size="9" fill="#ef4444" font-family="sans-serif" font-weight="600">⚠️ Risiko</text>
+          <rect x="360" y="226" width="76" height="22" rx="6" fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.45)" stroke-width="1"/>
+          <text x="398" y="241" text-anchor="middle" font-size="9" fill="#a78bfa" font-family="sans-serif" font-weight="600">🔑 Schlüsselbegriff</text>
+
+          <defs><linearGradient id="nh_lz" x1="0" y1="0" x2="0" y2="1"><stop offset="25%" stop-color="#0e1520" stop-opacity="0"/><stop offset="100%" stop-color="#0e1520" stop-opacity="0.95"/></linearGradient></defs>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh_lz)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu ab v5.50</span>
+          <h3>Lesezeichen in Analysen</h3>
+        </div>
+      </div>
+
+      <h2>Wichtiges markieren – und nicht mehr vergessen</h2>
+      <p class="lead">Jede Analyse enthält Aussagen, die mehr Gewicht verdienen als andere. Mit dem neuen Lesezeichen-Feature markierst du solche Textstellen direkt im Analyse-Block und speicherst sie nach Typ geordnet – für späteren Zugriff und für die KI.</p>
+
+      <h3 class="news-section-title">Wie es funktioniert</h3>
+      <p>Text in einem beliebigen Analyse-Block auswählen – sei es Gesprächsanalyse, Stimmungsauswertung, 360°-Bericht oder ein eigener Custom-Prompt-Block. Sobald du loslässt, erscheint ein Popup mit vier Lesezeichen-Typen:</p>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0">
+        <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:10px; padding:14px">
+          <div style="font-size:1rem; font-weight:700; color:#f59e0b; margin-bottom:6px">⭐ Wichtig</div>
+          <p style="font-size:0.85rem; color:var(--muted); margin:0">Kernaussagen und Entscheidungen, die in Folgefragen automatisch als priorisierter Kontext an die KI übergeben werden.</p>
+        </div>
+        <div style="background:rgba(6,182,212,0.07); border:1px solid rgba(6,182,212,0.3); border-radius:10px; padding:14px">
+          <div style="font-size:1rem; font-weight:700; color:#06b6d4; margin-bottom:6px">💡 Erkenntnis</div>
+          <p style="font-size:0.85rem; color:var(--muted); margin:0">Neue Einsichten oder überraschende Beobachtungen, die du im Nachgang weiterdenken möchtest.</p>
+        </div>
+        <div style="background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:14px">
+          <div style="font-size:1rem; font-weight:700; color:#ef4444; margin-bottom:6px">⚠️ Risiko</div>
+          <p style="font-size:0.85rem; color:var(--muted); margin:0">Warnzeichen, Konflikte oder Aussagen, auf die du besonders achten willst.</p>
+        </div>
+        <div style="background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.3); border-radius:10px; padding:14px">
+          <div style="font-size:1rem; font-weight:700; color:#a78bfa; margin-bottom:6px">🔑 Schlüsselbegriff</div>
+          <p style="font-size:0.85rem; color:var(--muted); margin:0">Wichtige Begriffe, Namen oder Konzepte, die für den gesamten Kontext relevant sind.</p>
+        </div>
+      </div>
+
+      <h3 class="news-section-title">Sichtbar im Text (ab v5.51)</h3>
+      <p>Nach dem Speichern wird die Textstelle direkt im Analyse-Block markiert: eine farbige Unterlinie + leichter Hintergrundton – je nach Typ. So siehst du auf einen Blick, was du bereits erfasst hast, ohne in den Notizen-Tab wechseln zu müssen. Analyse-Blöcke mit mindestens einem Lesezeichen erhalten zusätzlich ein kleines Badge im Titel (z. B. <code style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:4px;padding:1px 5px;font-size:0.8rem;color:#93c5fd">🔖 2</code>).</p>
+
+      <h3 class="news-section-title">Sammlung im Notizen-Tab</h3>
+      <p>Alle Lesezeichen der Sitzung erscheinen im Tab <em>Notizen</em>, sortiert nach Erstellungszeit. Über Filter-Pills kannst du schnell zwischen Typen wechseln. Jede Karte zeigt den Originaltext, den Quell-Block und das Datum – und lässt sich per ✕ einzeln löschen.</p>
+
+      <h3 class="news-section-title">KI-Priorität bei Folgefragen</h3>
+      <p>Lesezeichen vom Typ <strong>⭐ Wichtig</strong> werden bei jeder Folgefrage automatisch als priorisierter Kontext an die KI übergeben – unter dem internen Label <em>„Vom Nutzer als wichtig markiert"</em>. Du musst die KI also nicht mehr manuell auf Kernpunkte hinweisen; sie kennt sie bereits.</p>
+
+      <div class="info-box" style="margin-top:24px">
+        <strong>So verwendest du es:</strong> Öffne eine Sitzung → wechsle zum Analysen-Tab → markiere mit der Maus einen Textabschnitt in einem Analyse-Block → Typ im Popup wählen → fertig. Die markierte Stelle erhält sofort eine farbige Unterlinie. Im Notizen-Tab siehst du alle Lesezeichen gesammelt.
+      </div>
+    </article>
 
 
     <!-- ════════════════════════════════════════

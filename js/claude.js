@@ -1173,6 +1173,11 @@ function renderInsights(session) {
 
   // v4.81: Subtabs immer nach renderInsights aktualisieren (nicht nur beim Tab-Klick)
   if (typeof _refreshAnalysenSubtabs === 'function') _refreshAnalysenSubtabs();
+  // v5.51: Lesezeichen-Marker + Badges nach jedem Render neu setzen
+  if (typeof _applyHighlightMarkers === 'function') {
+    const _s = (typeof getSession === 'function') ? getSession() : null;
+    if (_s) _applyHighlightMarkers(_s);
+  }
 }
 
 function showTranscript(session) {
@@ -1202,8 +1207,9 @@ function showTranscript(session) {
   renderTagChips(session);
   const notesEl = document.getElementById('notesArea');
   if (notesEl) notesEl.value = session.notes || '';
-  // Lesezeichen rendern (v5.50)
+  // Lesezeichen rendern + Marker setzen (v5.50/v5.51)
   if (typeof renderHighlights === 'function') renderHighlights(session);
+  if (typeof _applyHighlightMarkers === 'function') _applyHighlightMarkers(session);
 
   renderInsights(session);
   loadAudioForSession(session);
