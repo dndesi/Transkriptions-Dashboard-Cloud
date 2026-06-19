@@ -3518,6 +3518,31 @@ mark.search-highlight {
 .hl-marker-risiko     { border-bottom: 2px solid rgba(239,68,68,0.85);  background: rgba(239,68,68,0.09);  }
 .hl-marker-schluessel { border-bottom: 2px solid rgba(167,139,250,0.85);background: rgba(167,139,250,0.10);}
 
+/* ── Tabellenzeilen-Markierung (v5.53) ───────────────── */
+.hl-row-wichtig    { background: rgba(245,158,11,0.10) !important; border-left: 3px solid rgba(245,158,11,0.85) !important; }
+.hl-row-erkenntnis { background: rgba(6,182,212,0.09)  !important; border-left: 3px solid rgba(6,182,212,0.85)  !important; }
+.hl-row-risiko     { background: rgba(239,68,68,0.09)   !important; border-left: 3px solid rgba(239,68,68,0.85)   !important; }
+.hl-row-schluessel { background: rgba(167,139,250,0.10) !important; border-left: 3px solid rgba(167,139,250,0.85) !important; }
+.hl-row-wichtig td:first-child,
+.hl-row-erkenntnis td:first-child,
+.hl-row-risiko td:first-child,
+.hl-row-schluessel td:first-child { border-left: none !important; } /* Linie sitzt auf TR */
+
+/* Popup: Tabellenzeilen-Hinweis */
+#highlightPopup .hl-pop-row-hint {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.35);
+  border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; color: #a5b4fc;
+}
+
+/* Notizen-Tab: Tabellenzeilen-Label */
+.hl-row-label {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.7rem; color: #a5b4fc; background: rgba(99,102,241,0.10);
+  border: 1px solid rgba(99,102,241,0.25); border-radius: 5px;
+  padding: 2px 7px; margin-bottom: 5px;
+}
+
 /* ── Block-Badge (v5.51) ─────────────────────────────── */
 .hl-block-badge {
   display: inline-flex; align-items: center; gap: 3px;

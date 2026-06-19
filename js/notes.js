@@ -34,17 +34,19 @@ const HL_SOURCE_LABELS = {
 let _hlActiveFilter = 'alle';
 
 // Lesezeichen speichern
-function addHighlight(text, type, sourceBlock) {
+function addHighlight(text, type, sourceBlock, isRowMark, rowKey) {
   const s = getSession();
   if (!s) return;
   if (!s.highlights) s.highlights = [];
-  s.highlights.unshift({
+  const entry = {
     id: 'hl_' + Date.now(),
     text: text.trim(),
     type,
     sourceBlock,
     createdAt: new Date().toISOString(),
-  });
+  };
+  if (isRowMark) { entry.isRowMark = true; entry.rowKey = rowKey || text.trim(); }
+  s.highlights.unshift(entry);
   saveSessions();
   saveToArchive(s);
   renderHighlights(s);
@@ -92,6 +94,7 @@ function renderHighlights(session) {
         <span class="hl-badge ${typeInfo.css}">${ico} ${typeInfo.label}</span>
         ${srcLabel ? `<span class="hl-source">${escHtml(srcLabel)}</span>` : ''}
       </div>
+      ${h.isRowMark ? `<div class="hl-row-label">${typeof icon === 'function' ? icon('table',10,'flex-shrink:0') : ''} Tabellenzeile</div>` : ''}
       <p class="hl-text">${escHtml(h.text)}</p>
       <div class="hl-card-footer">
         <span class="hl-date">${date}</span>
@@ -139,21 +142,36 @@ function _applyHighlightMarkers(session) {
   const section = document.getElementById('insightsSection');
   if (!section || !session?.highlights?.length) return;
 
-  // Bestehende Marker entfernen (um Duplikate zu verhindern)
+  // Bestehende Marker + Zeilen-Klassen entfernen (Duplikate verhindern)
   section.querySelectorAll('.hl-marker').forEach(span => {
     const parent = span.parentNode;
     parent.replaceChild(document.createTextNode(span.textContent), span);
     parent.normalize();
   });
+  const ROW_CLASSES = ['hl-row-wichtig','hl-row-erkenntnis','hl-row-risiko','hl-row-schluessel'];
+  section.querySelectorAll('tr').forEach(tr => tr.classList.remove(...ROW_CLASSES));
 
   // Für jedes Lesezeichen: Textstelle im DOM suchen und markieren
   session.highlights.forEach(h => {
     const searchText = h.text.trim();
     if (!searchText) return;
 
+    // ── Tabellenzeilen-Markierung ──────────────────────────────────────────
+    if (h.isRowMark) {
+      const rowKey = (h.rowKey || searchText).replace(/\s+/g, ' ').trim();
+      section.querySelectorAll('tr').forEach(tr => {
+        if (tr.closest('thead')) return; // Kopfzeilen überspringen
+        const trKey = tr.textContent.replace(/\s+/g, ' ').trim();
+        if (trKey && rowKey && trKey === rowKey) {
+          tr.classList.add(`hl-row-${h.type}`);
+        }
+      });
+      return;
+    }
+
+    // ── Normaler Text-Marker (TreeWalker) ──────────────────────────────────
     const walker = document.createTreeWalker(section, NodeFilter.SHOW_TEXT, {
       acceptNode: node => {
-        // Buttons, Inputs und bestehende Marker überspringen
         const parent = node.parentElement;
         if (!parent) return NodeFilter.FILTER_REJECT;
         const tag = parent.tagName?.toLowerCase();
@@ -170,7 +188,6 @@ function _applyHighlightMarkers(session) {
       const idx = content.indexOf(searchText);
       if (idx === -1) continue;
 
-      // Text aufteilen und Marker-Span einfügen
       const before = content.slice(0, idx);
       const after  = content.slice(idx + searchText.length);
       const typeInfo = HL_TYPES[h.type] || {};
@@ -186,7 +203,7 @@ function _applyHighlightMarkers(session) {
       parent.insertBefore(marker, node);
       if (after) parent.insertBefore(document.createTextNode(after), node);
       parent.removeChild(node);
-      found = true; // Nur erste Fundstelle markieren
+      found = true;
     }
   });
 
@@ -202,7 +219,7 @@ function _removeHlPopup() {
   if (_hlPopup) { _hlPopup.remove(); _hlPopup = null; }
 }
 
-function _showHlPopup(text, sourceBlock, x, y) {
+function _showHlPopup(text, sourceBlock, x, y, isRowMark, rowKey) {
   _removeHlPopup();
   const popup = document.createElement('div');
   popup.id = 'highlightPopup';
@@ -212,14 +229,21 @@ function _showHlPopup(text, sourceBlock, x, y) {
     return `<button class="hl-pop-btn hl-pop-btn-${key}" onclick="_saveHlFromPopup('${key}','${escHtml(sourceBlock)}')">${ico} ${t.label}</button>`;
   }).join('');
 
+  const rowHint = isRowMark
+    ? `<span class="hl-pop-row-hint">${typeof icon === 'function' ? icon('table', 11) : ''} Tabellenzeile</span>`
+    : '';
+
   popup.innerHTML = `
     <span class="hl-pop-label">Speichern als:</span>
+    ${rowHint}
     ${btns}
     <button class="hl-pop-cancel" onclick="_removeHlPopup()" title="Abbrechen">✕</button>
   `;
   document.body.appendChild(popup);
   _hlPopup = popup;
   popup._hlText = text;
+  popup._hlIsRowMark = !!isRowMark;
+  popup._hlRowKey = rowKey || '';
 
   // Viewport-sichere Positionierung
   requestAnimationFrame(() => {
@@ -243,9 +267,11 @@ function _hlOutsideClick(e) {
 }
 
 function _saveHlFromPopup(type, sourceBlock) {
-  const text = _hlPopup?._hlText || '';
+  const text       = _hlPopup?._hlText      || '';
+  const isRowMark  = _hlPopup?._hlIsRowMark || false;
+  const rowKey     = _hlPopup?._hlRowKey    || '';
   _removeHlPopup();
-  if (text) addHighlight(text, type, sourceBlock);
+  if (text) addHighlight(text, type, sourceBlock, isRowMark, rowKey);
   window.getSelection()?.removeAllRanges();
 }
 
@@ -264,17 +290,26 @@ function initHighlightSelection() {
       if (!range) return;
       if (!panel.contains(range.commonAncestorContainer)) { _removeHlPopup(); return; }
 
-      // Quell-Block bestimmen
+      // Quell-Block + Tabellenzeilen-Erkennung
       let node = range.commonAncestorContainer;
       if (node.nodeType === 3) node = node.parentElement;
       const block = node.closest('[data-hl-source]');
       const sourceBlock = block?.dataset.hlSource || 'custom';
 
+      // Tabellen-Selektion? → wenn commonAncestor TR/TBODY/TABLE ist
+      const TABLE_TAGS = ['TR', 'TBODY', 'TABLE'];
+      const isRowMark = TABLE_TAGS.includes(node.tagName?.toUpperCase() || '');
+      let rowKey = '';
+      if (isRowMark) {
+        const tr = node.tagName?.toUpperCase() === 'TR' ? node : node.querySelector('tr');
+        rowKey = tr ? tr.textContent.replace(/\s+/g, ' ').trim() : text;
+      }
+
       const coords = e.touches ? e.touches[0] : e;
       const x = coords?.clientX ?? window.innerWidth / 2;
       const y = coords?.clientY ?? window.innerHeight / 2;
 
-      _showHlPopup(text, sourceBlock, x, y);
+      _showHlPopup(text, sourceBlock, x, y, isRowMark, rowKey);
     }, 10);
   }
 
