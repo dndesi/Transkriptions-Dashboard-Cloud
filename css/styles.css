@@ -3283,9 +3283,8 @@ mark.search-highlight {
    NEWS-SEKTION HERO (v5.3)
    ════════════════════════════════════════════════════ */
 .hero-news-section {
-  padding: 0 20px 32px;
-  max-width: 960px;
-  margin: 0 auto;
+  padding: 0 0 32px;
+  /* kein max-width – Slider soll volle Breite des Content-Bereichs nutzen */
 }
 
 .hero-news-heading {
@@ -3297,9 +3296,12 @@ mark.search-highlight {
   font-size: 1.1rem;
   font-weight: 700;
   margin-bottom: 14px;
-  padding: 10px 0;
+  padding: 10px 20px;
   border-bottom: 1px solid var(--border);
   transition: color 0.2s;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .hero-news-heading:hover { color: var(--accent); }
 
@@ -3309,9 +3311,7 @@ mark.search-highlight {
   display: flex;
   align-items: center;
   gap: 4px;
-  /* Breakout: volle Viewport-Breite, egal wie schmal das max-width-Parent ist */
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
+  width: 100%;
   padding: 0 8px;
   box-sizing: border-box;
 }
