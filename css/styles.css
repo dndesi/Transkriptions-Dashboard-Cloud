@@ -3309,6 +3309,11 @@ mark.search-highlight {
   display: flex;
   align-items: center;
   gap: 4px;
+  /* Breakout: volle Viewport-Breite, egal wie schmal das max-width-Parent ist */
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  padding: 0 8px;
+  box-sizing: border-box;
 }
 
 .hero-news-slider {
