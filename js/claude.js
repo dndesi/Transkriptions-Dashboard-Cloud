@@ -1174,9 +1174,9 @@ function renderInsights(session) {
   // v4.81: Subtabs immer nach renderInsights aktualisieren (nicht nur beim Tab-Klick)
   if (typeof _refreshAnalysenSubtabs === 'function') _refreshAnalysenSubtabs();
   // v5.51: Lesezeichen-Marker + Badges nach jedem Render neu setzen
+  // session-Parameter direkt verwenden (getSession() kann auf Reload null sein)
   if (typeof _applyHighlightMarkers === 'function') {
-    const _s = (typeof getSession === 'function') ? getSession() : null;
-    if (_s) _applyHighlightMarkers(_s);
+    _applyHighlightMarkers(session);
   }
 }
 
@@ -1207,9 +1207,9 @@ function showTranscript(session) {
   renderTagChips(session);
   const notesEl = document.getElementById('notesArea');
   if (notesEl) notesEl.value = session.notes || '';
-  // Lesezeichen rendern + Marker setzen (v5.50/v5.51)
+  // Lesezeichen im Notizen-Tab rendern (v5.50)
   if (typeof renderHighlights === 'function') renderHighlights(session);
-  if (typeof _applyHighlightMarkers === 'function') _applyHighlightMarkers(session);
+  // Marker werden am Ende von renderInsights() gesetzt (DOM muss erst gefüllt sein)
 
   renderInsights(session);
   loadAudioForSession(session);
