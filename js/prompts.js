@@ -676,6 +676,72 @@ Antworte NUR mit einem JSON-Objekt:
   "naechsterSchritt": "Was ist der dringlichste nächste Schritt?",
   "risiken": ["Mögliche Probleme oder Verzögerungen – nur wenn relevant"]
 }`
+  },
+
+  // ── Foto-Analyse-Prompts (v5.58) ──────────────────
+  // category:'foto' → nur im Fotos-Tab sichtbar, nicht bei Textanalysen
+  {
+    id: 'builtin_foto_whiteboard',
+    category: 'foto',
+    name: 'Whiteboard-Inhalt extrahieren',
+    description: 'Alle sichtbaren Texte, Diagramme und Strukturen eines Whiteboards erfassen',
+    usedIn: 'Sitzungsdetail → Fotos → Prompt-Auswahl',
+    icon: 'layout-dashboard',
+    prompt: `Analysiere dieses Foto eines Whiteboards oder einer Tafel aus einem Meeting.
+Extrahiere ALLE sichtbaren Inhalte: Text, Zahlen, Diagramme, Pfeile, Strukturen.
+Formatiere die Ergebnisse übersichtlich mit Markdown-Überschriften und Listen.
+Wenn ein Transkript verfügbar ist, verknüpfe die Whiteboard-Inhalte mit den besprochenen Themen.`
+  },
+  {
+    id: 'builtin_foto_sketch',
+    category: 'foto',
+    name: 'Skizze / Diagramm beschreiben',
+    description: 'Handgezeichnete Diagramme und Skizzen strukturiert beschreiben',
+    usedIn: 'Sitzungsdetail → Fotos → Prompt-Auswahl',
+    icon: 'pen-tool',
+    prompt: `Beschreibe diese Skizze oder dieses handgezeichnete Diagramm detailliert.
+Was wird dargestellt? Welche Elemente, Verbindungen, Pfeile und Strukturen sind erkennbar?
+Benenne alle beschrifteten Bereiche und erkläre ihre Beziehung zueinander.
+Wenn ein Transkript verfügbar ist, erkläre den Zusammenhang zum Gespräch.`
+  },
+  {
+    id: 'builtin_foto_handwriting',
+    category: 'foto',
+    name: 'Handschrift lesen & transkribieren',
+    description: 'Handgeschriebene Notizen oder Texte abtippen und strukturieren',
+    usedIn: 'Sitzungsdetail → Fotos → Prompt-Auswahl',
+    icon: 'file-text',
+    prompt: `Lese und transkribiere alle handgeschriebenen Texte in diesem Foto so genau wie möglich.
+Markiere unleserliche Stellen mit [?].
+Strukturiere den Text so, wie er im Original angeordnet ist (Aufzählungen, Unterpunkte, Abschnitte).
+Wenn Abkürzungen erkennbar sind, löse sie wenn möglich auf.`
+  },
+  {
+    id: 'builtin_foto_combined',
+    category: 'foto',
+    name: 'Foto + Transkript kombiniert analysieren',
+    description: 'Foto und Gesprächsprotokoll zusammen auswerten und verknüpfen',
+    usedIn: 'Sitzungsdetail → Fotos → Prompt-Auswahl',
+    icon: 'layers',
+    prompt: `Du erhältst ein oder mehrere Fotos aus einem Meeting sowie das zugehörige Gesprächstranskript.
+Analysiere beides zusammen: Was zeigen die Fotos? Welche konkreten Bezüge gibt es zum Gespräch?
+Welche Erkenntnisse ergeben sich aus der Kombination beider Quellen, die aus dem Transkript allein nicht erkennbar wären?
+Fasse die wichtigsten Punkte kompakt zusammen und trenne klar, was aus dem Foto vs. dem Gespräch stammt.`
+  },
+  {
+    id: 'builtin_foto_tasks',
+    category: 'foto',
+    name: 'Aufgaben aus Foto ableiten',
+    description: 'To-Dos, Aktionspunkte und nächste Schritte aus Fotos extrahieren',
+    usedIn: 'Sitzungsdetail → Fotos → Prompt-Auswahl',
+    icon: 'check-square',
+    prompt: `Analysiere dieses Foto und leite daraus konkrete Aufgaben und Handlungsschritte (To-Dos) ab.
+Prüfe auch das Transkript auf ergänzende Aktionspunkte.
+Formatiere die Aufgaben als Checkliste (- [ ] Aufgabe) mit:
+- Kurzbeschreibung der Aufgabe
+- Priorität wenn erkennbar (Hoch / Mittel / Niedrig)
+- Verantwortliche Person wenn erkennbar
+- Deadline wenn erkennbar`
   }
 ];
 
@@ -841,6 +907,7 @@ function renderPromptsView() {
           <option value="system">System</option>
           <option value="standard">Standard</option>
           <option value="design">Design</option>
+          <option value="foto">Foto-Analyse</option>
           <option value="custom">Eigene</option>
         </select>
         <button class="btn btn-ghost" onclick="openPromptGeneratorModal()" style="gap:6px;flex-shrink:0" title="Prompt per Wizard oder KI erstellen">
@@ -881,10 +948,17 @@ function _renderPromptsResults() {
     ? SYSTEM_PROMPTS.filter(p => matchesSearch([p.name, p.description, p.prompt]))
     : [];
 
-  // Standard-Prompts filtern: Standard-Analysen + Feature-Prompts (ohne Design) zusammen (v5.24)
+  // Standard-Prompts filtern: Standard-Analysen + Feature-Prompts (ohne Design, ohne Foto) zusammen (v5.24)
   const standardVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'standard');
   const filteredStandard = standardVisible
-    ? EDITABLE_PROMPT_DEFAULTS.filter(p => !p.canvaDesignType)
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => !p.canvaDesignType && p.category !== 'foto')
+        .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
+    : [];
+
+  // Foto-Analyse-Prompts filtern (v5.58) – nur bei Typ-Filter 'all' oder 'foto'
+  const fotoVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'foto');
+  const filteredFoto = fotoVisible
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => p.category === 'foto')
         .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
     : [];
 
@@ -909,7 +983,7 @@ function _renderPromptsResults() {
   }
 
   const allTags    = _getAllPromptTags();
-  const hasResults = filteredSystem.length || filteredStandard.length || filteredDesign.length || filteredCustom.length;
+  const hasResults = filteredSystem.length || filteredStandard.length || filteredDesign.length || filteredFoto.length || filteredCustom.length;
 
   const sectionHead = (label, extra = '') => `
     <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:6px">
@@ -1048,6 +1122,14 @@ function _renderPromptsResults() {
     html += `<div style="margin-bottom:24px">
       ${sectionHead('Design-Prompts', `${icon('layout',11,'color:var(--muted);margin-left:2px')} <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>`)}
       <div class="prompts-grid">${filteredDesign.map(_cardEditable).join('')}</div>
+    </div>`;
+  }
+
+  // Foto-Analyse-Prompts (v5.58) – nur im Fotos-Tab abrufbar
+  if (filteredFoto.length) {
+    html += `<div style="margin-bottom:24px">
+      ${sectionHead('Foto-Analyse-Prompts', `${icon('camera',11,'color:var(--muted);margin-left:2px')} <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar · nur im Fotos-Tab</span>`)}
+      <div class="prompts-grid">${filteredFoto.map(_cardEditable).join('')}</div>
     </div>`;
   }
 

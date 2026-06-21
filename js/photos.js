@@ -1,9 +1,42 @@
 // ═══════════════════════════════════════════════════
-// FOTOS – Upload, Drive-Sync, Analyse  (v5.57)
+// FOTOS – Upload, Drive-Sync, Analyse  (v5.58)
 // ═══════════════════════════════════════════════════
 
-// ── Bild-spezifische Prompts ─────────────────────
-const PHOTO_PROMPTS = [
+// ── Foto-Prompts aus Promptdatenbank lesen ────────
+// Prompts werden in EDITABLE_PROMPT_DEFAULTS (prompts.js) mit category:'foto' verwaltet.
+// Diese Funktion liest sie mit eventuellem editableOverride (falls Nutzer angepasst hat).
+function getPhotoPrompts() {
+  const base = (typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined')
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => p.category === 'foto')
+    : [];
+  return base.map(p => ({
+    id:     p.id,
+    label:  p.name,
+    icon:   p.icon || 'camera',
+    prompt: (typeof getEditablePromptText === 'function') ? getEditablePromptText(p.id) : p.prompt
+  }));
+}
+
+// Fallback-Array (nur falls prompts.js noch nicht geladen)
+const _PHOTO_PROMPTS_FALLBACK = [
+  { id: 'builtin_foto_whiteboard', label: 'Whiteboard-Inhalt extrahieren', icon: 'layout-dashboard',
+    prompt: 'Extrahiere alle sichtbaren Inhalte dieses Whiteboard-Fotos.' },
+  { id: 'builtin_foto_sketch',     label: 'Skizze / Diagramm beschreiben', icon: 'pen-tool',
+    prompt: 'Beschreibe diese Skizze oder dieses Diagramm detailliert.' },
+  { id: 'builtin_foto_combined',   label: 'Foto + Transkript kombiniert',   icon: 'layers',
+    prompt: 'Analysiere Foto und Transkript gemeinsam.' },
+];
+
+function _resolvePhotoPrompts() {
+  const ps = getPhotoPrompts();
+  return ps.length ? ps : _PHOTO_PROMPTS_FALLBACK;
+}
+
+// Hilfsprompt "Eigene Frage" – immer am Ende
+const _PHOTO_PROMPT_CUSTOM = { id: 'custom', label: '✏️ Eigene Frage eingeben…', icon: 'edit', prompt: '' };
+
+// Unused legacy – kept for reference only
+const _LEGACY_PHOTO_PROMPTS = [
   {
     id: 'whiteboard',
     label: 'Whiteboard-Inhalt extrahieren',
@@ -29,23 +62,8 @@ Strukturiere den Text so, wie er im Original angeordnet ist.`
   {
     id: 'combined',
     label: 'Foto + Transkript kombiniert analysieren',
-    prompt: `Du erhältst ein Foto aus einem Meeting sowie das zugehörige Gesprächstranskript.
-Analysiere beides zusammen: Was zeigt das Foto? Welche Bezüge gibt es zum Gespräch?
-Welche Erkenntnisse ergeben sich aus der Kombination beider Quellen?
-Fasse die wichtigsten Punkte kompakt zusammen.`
+    prompt: `Du erhältst ein Foto aus einem Meeting sowie das zugehörige Gesprächstranskript.`
   },
-  {
-    id: 'tasks',
-    label: 'Aufgaben aus Foto ableiten',
-    prompt: `Analysiere dieses Foto und leite daraus konkrete Aufgaben (To-Dos) ab.
-Prüfe auch das Transkript auf ergänzende Handlungsschritte.
-Formatiere die Aufgaben als Checkliste mit Priorität und – wenn erkennbar – Verantwortlichkeit.`
-  },
-  {
-    id: 'custom',
-    label: '✏️ Eigene Frage eingeben…',
-    prompt: ''
-  }
 ];
 
 // ── Resize: max 1200px, JPEG 0.75 ────────────────
@@ -133,6 +151,10 @@ async function uploadPhoto(session, file) {
     if (!session.photos) session.photos = [];
     session.photos.unshift(entry);
     saveSessions();
+    // Fix 1 (v5.58): Session-JSON auf Drive aktualisieren, damit andere Geräte die Foto-IDs sehen
+    if (typeof saveToArchive === 'function') {
+      saveToArchive(session).catch(e => console.warn('[Photo] Drive-Sync nach Upload:', e));
+    }
     showToast('Foto gespeichert ✓', 'success');
     renderPhotoTab(session);
   } catch (err) {
@@ -152,6 +174,10 @@ async function deletePhoto(session, photoId) {
   }
   session.photos = (session.photos || []).filter(p => p.id !== photoId);
   saveSessions();
+  // Fix 1 (v5.58): Drive-Sync nach Löschung
+  if (typeof saveToArchive === 'function') {
+    saveToArchive(session).catch(e => console.warn('[Photo] Drive-Sync nach Delete:', e));
+  }
   renderPhotoTab(session);
   showToast('Foto gelöscht', 'info');
 }
@@ -182,11 +208,12 @@ async function runPhotoAnalysis(session) {
   const checked = [...panel.querySelectorAll('.photo-checkbox:checked')];
   if (!checked.length) { showToast('Bitte mindestens ein Foto auswählen.', 'warning'); return; }
 
-  // Prompt ermitteln
+  // Prompt ermitteln (aus Promptdatenbank)
   const promptSelect = panel.querySelector('#photoPromptSelect');
   const customInput  = panel.querySelector('#photoCustomPrompt');
   const selectedId   = promptSelect?.value;
-  let promptTemplate = PHOTO_PROMPTS.find(p => p.id === selectedId)?.prompt || '';
+  const allPrompts   = _resolvePhotoPrompts();
+  let promptTemplate = allPrompts.find(p => p.id === selectedId)?.prompt || '';
 
   if (selectedId === 'custom') {
     promptTemplate = customInput?.value?.trim() || '';
@@ -232,8 +259,8 @@ async function runPhotoAnalysis(session) {
 
     // Ergebnis als Insights-Block rendern (analog zu Custom-Prompts)
     const photoLabel = photos.length === 1 ? photos[0].name : `${photos.length} Fotos`;
-    const promptLabel = PHOTO_PROMPTS.find(p => p.id === selectedId)?.label || 'Foto-Analyse';
-    const blockTitle = `📸 ${promptLabel} – ${photoLabel}`;
+    const promptLabel = allPrompts.find(p => p.id === selectedId)?.label || 'Foto-Analyse';
+    const blockTitle = `${promptLabel} – ${photoLabel}`;
 
     _insertPhotoResultBlock(session, blockTitle, result.text, selectedPhotoIds);
 
@@ -246,56 +273,59 @@ async function runPhotoAnalysis(session) {
   }
 }
 
-// ── Analyse-Ergebnis als Block in Analysen-Tab ────
+// ── Analyse-Ergebnis als Block in Analysen-Tab (Fix 2: v5.58) ────
 function _insertPhotoResultBlock(session, title, markdownText, photoIds) {
-  // Zum Analysen-Tab wechseln
+  // Zum Analysen-Tab wechseln → Subtabs werden danach refresht
   switchSessionTab('analysen');
 
-  // Container
   const analysenPanel = document.getElementById('sdc-panel-analysen');
   if (!analysenPanel) return;
 
-  const blockId = 'photoBlock_' + Date.now();
+  const blockId  = 'photoBlock_' + Date.now();
+  const safeTitle = (typeof escHtml === 'function') ? escHtml(title) : title;
+  // Text wird wie bei Custom-Prompts ohne Schema als pre-wrap dargestellt
+  const bodyHtml = `<div class="custom-result-text" style="white-space:pre-wrap">${
+    (typeof escHtml === 'function') ? escHtml(markdownText) : markdownText
+  }</div>`;
+
   const html = `
-<div class="insights-block photo-result-block" id="${blockId}" data-hl-source="${blockId}">
-  <div class="insights-block-title">
-    <span>${title}</span>
-    <div style="display:flex;gap:6px;align-items:center">
-      <button class="sdc-icon-btn" title="Block löschen"
-        onclick="document.getElementById('${blockId}').remove()"
-        style="opacity:0.6;font-size:11px;padding:2px 7px">✕</button>
-    </div>
+<div class="insights-block photo-result-block" id="${blockId}" data-hl-source="${safeTitle}" data-has-content="1">
+  <div class="insights-block-title" onclick="toggleInsightsBlock('${blockId}')">
+    <span style="display:inline-flex;align-items:center;gap:6px">
+      <i data-lucide="camera" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+      ${safeTitle}
+    </span>
+    <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
+      <button class="insights-export-btn" title="Block löschen" style="color:var(--muted)"
+        onclick="event.stopPropagation();this.closest('.insights-block').remove();if(typeof _refreshAnalysenSubtabs==='function')_refreshAnalysenSubtabs()">
+        <i data-lucide="trash-2" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;pointer-events:none"></i>
+      </button>
+      <span class="insights-block-chevron">▾</span>
+    </span>
   </div>
-  <div class="insights-block-content" id="${blockId}-content">
-    ${_mdToHtml(markdownText)}
-  </div>
+  <div class="insights-block-body">${bodyHtml}</div>
 </div>`;
 
-  // Am Anfang des Analysen-Panels einfügen
-  analysenPanel.insertAdjacentHTML('afterbegin', html);
+  // Vor dem customBlock-Container einfügen (nach built-in Blöcken, vor Custom-Prompts)
+  const customContainer = analysenPanel.querySelector('#customAnalysesContainer');
+  if (customContainer) {
+    customContainer.insertAdjacentHTML('afterbegin', html);
+  } else {
+    analysenPanel.insertAdjacentHTML('afterbegin', html);
+  }
 
-  // Lucide-Icons rendern falls nötig
+  // Block sofort aufklappen (wie showInsightsBlock, aber ohne collapsed)
+  const block = document.getElementById(blockId);
+  if (block) {
+    block.style.display = 'block';
+    block.dataset.hasContent = '1';
+    // collapsed entfernen → direkt offen
+    block.classList.remove('collapsed');
+  }
+
+  // Lucide-Icons + Subtabs aktualisieren
   if (typeof lucide !== 'undefined') lucide.createIcons();
-}
-
-// ── Einfaches Markdown → HTML (nur für Analyse-Output) ──
-function _mdToHtml(md) {
-  if (!md) return '';
-  // Nutzt dieselbe Logik wie andere insights-Blöcke im Projekt
-  // (rudimentär – echtes md wird über renderInsightsMarkdown gehandhabt falls verfügbar)
-  if (typeof renderInsightsMarkdown === 'function') return renderInsightsMarkdown(md);
-  // Fallback: simple Konvertierung
-  return md
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
-    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
-    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/^- (.+)$/gm,'<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-    .replace(/\n\n/g,'<br><br>')
-    .replace(/\n/g,'<br>');
+  if (typeof _refreshAnalysenSubtabs === 'function') _refreshAnalysenSubtabs();
 }
 
 // ── Tab-UI rendern ────────────────────────────────
@@ -306,7 +336,9 @@ function renderPhotoTab(session) {
   const photos = session?.photos || [];
   const noPhotos = photos.length === 0;
 
-  const promptOptions = PHOTO_PROMPTS.map(p =>
+  // Prompts aus Datenbank lesen + "Eigene Frage" ans Ende
+  const _allPrompts = [..._resolvePhotoPrompts(), _PHOTO_PROMPT_CUSTOM];
+  const promptOptions = _allPrompts.map(p =>
     `<option value="${p.id}">${p.label}</option>`
   ).join('');
 
