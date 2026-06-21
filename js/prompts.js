@@ -968,10 +968,11 @@ function _renderPromptsResults() {
     : [];
   const filteredFoto = [...filteredFotoBuiltin, ...filteredFotoCustom];
 
-  // Design-Prompts filtern: alle Prompts mit canvaDesignType (v5.24)
+  // Design-Prompts filtern: alle Prompts mit canvaDesignType (v5.24/v5.62)
+  const _hiddenDesignIds = getHiddenDesignPromptIds();
   const designVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'design');
   const filteredDesign = designVisible
-    ? EDITABLE_PROMPT_DEFAULTS.filter(p => !!p.canvaDesignType)
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => !!p.canvaDesignType && !_hiddenDesignIds.includes(p.id))
         .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
     : [];
 
@@ -1124,16 +1125,39 @@ function _renderPromptsResults() {
     </div>`;
   }
 
-  if (filteredDesign.length) {
-    html += `<div style="margin-bottom:24px">
-      ${sectionHead('Design-Prompts', `${icon('layout',11,'color:var(--muted);margin-left:2px')} <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>`)}
-      <div class="prompts-grid">${filteredDesign.map(_cardEditable).join('')}</div>
-    </div>`;
+  // v5.62: Design-Prompts mit Löschen-Button
+  if (filteredDesign.length || designVisible) {
+    const _cardDesign = (p) => {
+      const modified    = isEditablePromptModified(p.id);
+      const currentText = getEditablePromptText(p.id) || '';
+      return '<div class="prompt-card">'
+        + '<div class="prompt-card-header">'
+        + '<div class="prompt-card-icon">' + icon(p.icon || 'layout', 18, 'color:var(--accent)') + '</div>'
+        + '<div class="prompt-card-name">' + escHtml(p.name)
+        + (modified ? ' <span style="font-size:0.62rem;background:rgba(108,99,255,0.15);color:var(--accent);padding:1px 5px;border-radius:8px;font-weight:600;margin-left:4px">angepasst</span>' : '')
+        + '</div>'
+        + '</div>'
+        + (p.description ? '<div class="prompt-card-desc">' + escHtml(p.description) + '</div>' : '')
+        + '<div class="prompt-card-preview">' + escHtml(currentText.slice(0, 120)) + (currentText.length > 120 ? '…' : '') + '</div>'
+        + '<div class="prompt-card-actions">'
+        + '<button class="btn btn-ghost" onclick="openEditablePromptEditor(\'' + p.id + '\')" style="padding:5px 7px" title="Bearbeiten">' + icon('edit-2',13) + '</button>'
+        + '<button class="btn btn-ghost" onclick="exportSingleEditablePrompt(\'' + p.id + '\')" style="padding:5px 7px" title="Exportieren">' + icon('download',13) + '</button>'
+        + (modified ? '<button class="btn btn-ghost" onclick="resetEditablePromptAndRefresh(\'' + p.id + '\')" style="padding:5px 7px;color:var(--red)" title="Zurücksetzen">' + icon('refresh-cw',13) + '</button>' : '')
+        + '<button class="btn btn-ghost" onclick="hideDesignBuiltinPrompt(\'' + p.id + '\')" style="padding:5px 7px;color:var(--red)" title="Entfernen">' + icon('trash-2',13) + '</button>'
+        + '</div>'
+        + '</div>';
+    };
+    html += '<div style="margin-bottom:24px">'
+      + sectionHead('Design-Prompts', icon('layout',11,'color:var(--muted);margin-left:2px') + ' <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>')
+      + (filteredDesign.length
+        ? '<div class="prompts-grid">' + filteredDesign.map(_cardDesign).join('') + '</div>'
+        : '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem">Alle Design-Prompts wurden entfernt.</div>')
+      + '</div>';
   }
 
-  // Foto-Analyse-Prompts (v5.58/v5.60) – nur im Fotos-Tab abrufbar
+  // Foto-Analyse-Prompts (v5.58/v5.60/v5.62) – nur im Fotos-Tab abrufbar
   if (filteredFoto.length || fotoVisible) {
-    // Card für built-in Foto-Prompts (mit Löschen-Button)
+    // Card für built-in Foto-Prompts (mit Bearbeiten + Download + Löschen)
     const _cardFotoBuiltin = (p) => {
       const txt = getEditablePromptText(p.id) || p.prompt || '';
       return '<div class="prompt-card">'
@@ -1145,11 +1169,12 @@ function _renderPromptsResults() {
         + '<div class="prompt-card-preview">' + escHtml(txt.slice(0, 120)) + (txt.length > 120 ? '…' : '') + '</div>'
         + '<div class="prompt-card-actions">'
         + '<button class="btn btn-ghost" onclick="openEditablePromptModal(\'' + p.id + '\')" style="padding:5px 7px" title="Anpassen">' + icon('edit-2',13) + '</button>'
+        + '<button class="btn btn-ghost" onclick="exportSingleEditablePrompt(\'' + p.id + '\')" style="padding:5px 7px" title="Herunterladen">' + icon('download',13) + '</button>'
         + '<button class="btn btn-ghost" onclick="hideFotoBuiltinPrompt(\'' + p.id + '\')" style="padding:5px 7px;color:var(--red)" title="Entfernen">' + icon('trash-2',13) + '</button>'
         + '</div>'
         + '</div>';
     };
-    // Card für eigene Foto-Prompts (mit Bearbeiten + Löschen)
+    // Card für eigene Foto-Prompts (mit Bearbeiten + Download + Löschen)
     const _cardFotoCustom = (p) => {
       const preview = assemblePromptText(p);
       return '<div class="prompt-card">'
@@ -1161,6 +1186,7 @@ function _renderPromptsResults() {
         + '<div class="prompt-card-preview">' + escHtml(preview.slice(0, 120)) + (preview.length > 120 ? '…' : '') + '</div>'
         + '<div class="prompt-card-actions">'
         + '<button class="btn btn-ghost" onclick="openPromptEditorModal(\'' + p.id + '\')" style="padding:5px 7px" title="Bearbeiten">' + icon('edit-2',13) + '</button>'
+        + '<button class="btn btn-ghost" onclick="exportSinglePrompt(\'' + p.id + '\')" style="padding:5px 7px" title="Herunterladen">' + icon('download',13) + '</button>'
         + '<button class="btn btn-ghost" onclick="deletePromptById(\'' + p.id + '\')" style="padding:5px 7px;color:var(--red)" title="Löschen">' + icon('trash-2',13) + '</button>'
         + '</div>'
         + '</div>';
@@ -1449,6 +1475,18 @@ function hideFotoBuiltinPrompt(id) {
   if (!hidden.includes(id)) { hidden.push(id); localStorage.setItem('hiddenFotoPrompts', JSON.stringify(hidden)); }
   _renderPromptsResults();
   showToast('Foto-Prompt entfernt', 'success');
+}
+
+// v5.62: Design-Prompts soft-löschen
+function getHiddenDesignPromptIds() {
+  try { return JSON.parse(localStorage.getItem('hiddenDesignPrompts') || '[]'); } catch { return []; }
+}
+function hideDesignBuiltinPrompt(id) {
+  if (!confirm('Diesen eingebauten Design-Prompt verstecken?\n(Kann über Browser-Einstellungen → localStorage zurückgesetzt werden)')) return;
+  const hidden = getHiddenDesignPromptIds();
+  if (!hidden.includes(id)) { hidden.push(id); localStorage.setItem('hiddenDesignPrompts', JSON.stringify(hidden)); }
+  _renderPromptsResults();
+  showToast('Design-Prompt entfernt', 'success');
 }
 
 // ── Custom Prompt ausführen ──────────────────────
