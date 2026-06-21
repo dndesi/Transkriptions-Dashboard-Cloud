@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.56" />
+  <link rel="stylesheet" href="css/styles.css?v=5.57" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.56</button>
+        onmouseout="this.style.color='var(--muted)'">v5.57</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1001,6 +1001,10 @@
               <i data-lucide="tag" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Tags
               <button class="help-icon" data-help="Verschlagworte die Sitzung mit Tags um sie später schnell filtern und wiederfinden zu können." onclick="showHelpTooltip(this)">?</button>
             </button>
+            <button class="sdc-tab" id="sdcTab-fotos" onclick="switchSessionTab('fotos')">
+              <i data-lucide="camera" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Fotos
+              <button class="help-icon" data-help="Lade Whiteboards, Skizzen oder Handschriften hoch – die KI analysiert die Bilder und verknüpft sie mit dem Transkript." onclick="showHelpTooltip(this)">?</button>
+            </button>
             <!-- Sidebar-Toggle -->
             <button class="sdc-sidebar-toggle" id="sdcSidebarToggle" onclick="toggleSessionSidebar()" title="Assistent-Sidebar öffnen">
               <i data-lucide="panel-right" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i>
@@ -1253,6 +1257,17 @@
           </div>
           <!-- /tags -->
 
+          <!-- ── TAB: Fotos ── -->
+          <div class="sdc-panel" id="sdc-panel-fotos">
+            <div class="photo-tab-wrap">
+              <div class="photo-empty">
+                <i data-lucide="camera-off" style="width:32px;height:32px;stroke:currentColor;stroke-width:1.5;fill:none;opacity:0.3"></i>
+                <p>Sitzung öffnen um Fotos hochzuladen.</p>
+              </div>
+            </div>
+          </div>
+          <!-- /fotos -->
+
         </div>
         <!-- /sdc-main -->
 
@@ -1417,6 +1432,15 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
+      <!-- ── v5.57 ── -->
+        <div class="cl-header"><span class="cl-version">v5.57</span><span class="cl-date">21.06.2026</span></div>
+        <ul class="cl-list">
+          <li>Neuer Tab „📸 Fotos": Fotos (Whiteboards, Skizzen, Handschriften) zur Sitzung hochladen und in Google Drive speichern</li>
+          <li>Automatische Bildkomprimierung (max. 1200 px, JPEG 0.75) vor dem Upload</li>
+          <li>5 vorgefertigte Bild-Prompts + freie Eingabe: Whiteboard extrahieren, Skizze beschreiben, Handschrift lesen, kombiniert mit Transkript, Aufgaben ableiten</li>
+          <li>Mehrere Fotos gleichzeitig auswählbar (Checkbox) – gemeinsame Analyse mit Claude Vision API</li>
+          <li>Analyse-Ergebnis erscheint direkt als Block im Analysen-Tab</li>
+        </ul>
       <!-- ── v5.56 ── -->
         <div class="cl-header"><span class="cl-version">v5.56</span><span class="cl-date">19.06.2026</span></div>
         <ul class="cl-list">
@@ -4227,31 +4251,32 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.56"></script>
-<script src="js/storage.js?v=5.56"></script>
-<script src="js/config.js?v=5.56"></script>
-<script src="js/auth.js?v=5.56"></script>
-<script src="js/drive.js?v=5.56"></script>
-<script src="js/sessions.js?v=5.56"></script>
-<script src="js/assemblyai.js?v=5.56"></script>
-<script src="js/claude.js?v=5.56"></script>
-<script src="js/ui.js?v=5.56"></script>
-<script src="js/tags.js?v=5.56"></script>
-<script src="js/notes.js?v=5.56"></script>
-<script src="js/persons.js?v=5.56"></script>
-<script src="js/audio.js?v=5.56"></script>
-<script src="js/recorder.js?v=5.56"></script>
-<script src="js/contacts.js?v=5.56"></script>
-<script src="js/app.js?v=5.56"></script>
+<script src="js/icons.js?v=5.57"></script>
+<script src="js/storage.js?v=5.57"></script>
+<script src="js/config.js?v=5.57"></script>
+<script src="js/auth.js?v=5.57"></script>
+<script src="js/drive.js?v=5.57"></script>
+<script src="js/sessions.js?v=5.57"></script>
+<script src="js/assemblyai.js?v=5.57"></script>
+<script src="js/claude.js?v=5.57"></script>
+<script src="js/ui.js?v=5.57"></script>
+<script src="js/tags.js?v=5.57"></script>
+<script src="js/notes.js?v=5.57"></script>
+<script src="js/photos.js?v=5.57"></script>
+<script src="js/persons.js?v=5.57"></script>
+<script src="js/audio.js?v=5.57"></script>
+<script src="js/recorder.js?v=5.57"></script>
+<script src="js/contacts.js?v=5.57"></script>
+<script src="js/app.js?v=5.57"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=5.56"></script>
-<script src="js/search.js?v=5.56"></script>
-<script src="js/calendar.js?v=5.56"></script>
-<script src="js/prompts.js?v=5.56"></script>
-<script src="js/projects.js?v=5.56"></script>
-<script src="js/import.js?v=5.56"></script>
+<script src="js/features.js?v=5.57"></script>
+<script src="js/search.js?v=5.57"></script>
+<script src="js/calendar.js?v=5.57"></script>
+<script src="js/prompts.js?v=5.57"></script>
+<script src="js/projects.js?v=5.57"></script>
+<script src="js/import.js?v=5.57"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

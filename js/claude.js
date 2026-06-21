@@ -32,6 +32,37 @@ async function callClaudeAPI(prompt) {
   };
 }
 
+// Vision-API: content als Array (Text + Bilder)  (v5.57)
+async function callClaudeAPIVision(messageContent) {
+  if (!anthropicKey) throw new Error('Kein Anthropic API-Key gesetzt. Bitte unter 🔑 API-Keys eintragen.');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': anthropicKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8192,
+      messages: [{ role: 'user', content: messageContent }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = err.error?.message || JSON.stringify(err) || `HTTP ${res.status}`;
+    console.error('Anthropic Vision API Fehler:', res.status, msg);
+    throw new Error(`Anthropic HTTP ${res.status}: ${msg}`);
+  }
+  const data = await res.json();
+  return {
+    text: data.content[0].text.trim(),
+    inputTokens:  data.usage?.input_tokens  || 0,
+    outputTokens: data.usage?.output_tokens || 0,
+  };
+}
+
 // Hilfsfunktion: Token-Nutzung zur Session addieren
 // Jeder API-Call bekommt einen eigenen Eintrag mit Zeitstempel im claudeCostLog.
 // So können Kosten, die an verschiedenen Tagen entstehen, korrekt dem jeweiligen Monat zugeordnet werden.
