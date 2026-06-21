@@ -325,6 +325,10 @@ async function runPhotoAnalysis(session) {
     var resultTitle = promptLabel + ' – ' + photoLabel;
     var resultId    = 'pr_' + Date.now();
 
+    // v5.64: Bildnamen automatisch als Kopfzeile voranstellen
+    var photoNameHeader = '📸 ' + photos.map(function(p) { return p.name; }).join(' · ') + '\n\n';
+    result.text = photoNameHeader + result.text;
+
     // v5.61: Ergebnis in Session speichern → Drive-Sync → andere Geräte sehen es
     if (!session.photoResults) session.photoResults = [];
     session.photoResults.unshift({ id: resultId, title: resultTitle, text: result.text, createdAt: new Date().toISOString() });

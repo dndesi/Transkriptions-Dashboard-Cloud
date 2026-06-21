@@ -320,12 +320,13 @@
   <!-- ── Sidebar-Navigation ── -->
   <nav class="news-sidebar" aria-label="Artikel-Navigation">
     <p class="news-sidebar-title">Artikel</p>
+    <a href="#prompt-erstellen" class="news-sidebar-link" data-id="prompt-erstellen"><span class="news-sidebar-version">v5.65</span>Prompts erstellen</a>
     <a href="#fotos"            class="news-sidebar-link" data-id="fotos"><span class="news-sidebar-version">v5.60</span>Foto-Analyse</a>
     <a href="#lesezeichen"      class="news-sidebar-link" data-id="lesezeichen"><span class="news-sidebar-version">v5.51</span>Lesezeichen in Analysen</a>
     <a href="#kontakte-themen"  class="news-sidebar-link" data-id="kontakte-themen"><span class="news-sidebar-version">v5.42</span>Struktur: Kontext → Projekt → Sitzung</a>
     <a href="#ausgabe-felder"   class="news-sidebar-link" data-id="ausgabe-felder"><span class="news-sidebar-version">v5.30</span>Ausgabe-Feld-Typen</a>
     <a href="#design-versionen" class="news-sidebar-link" data-id="design-versionen"><span class="news-sidebar-version">v5.25</span>Design-Versionen</a>
-    <a href="#prompt-generator" class="news-sidebar-link" data-id="prompt-generator"><span class="news-sidebar-version">v5.23</span>Prompt-Generator</a>
+    <a href="#prompt-generator" class="news-sidebar-link" data-id="prompt-generator"><span class="news-sidebar-version">v5.23</span>Prompt-Generator (Archiv)</a>
     <a href="#share-target"     class="news-sidebar-link" data-id="share-target"><span class="news-sidebar-version">v5.2</span>Android Share Target</a>
     <a href="#audio-delete"     class="news-sidebar-link" data-id="audio-delete"><span class="news-sidebar-version">v5.1</span>Audio Auto-Delete</a>
     <a href="#prompts-sync"     class="news-sidebar-link" data-id="prompts-sync"><span class="news-sidebar-version">v5.0</span>Prompts-Sync</a>
@@ -337,7 +338,66 @@
 
 
     <!-- ════════════════════════════════════════
-         ARTIKEL: Foto-Analyse (v5.57–v5.60)
+         ARTIKEL: Prompts erstellen (v5.65)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="prompt-erstellen">
+      <div class="news-meta">
+        <span class="news-version">v5.65</span>
+        <span class="news-date">21. Juni 2026</span>
+        <span class="news-category">Verbesserung</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#12102a">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <defs><linearGradient id="nh_cp" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#12102a" stop-opacity="0"/><stop offset="100%" stop-color="#12102a" stop-opacity="0.95"/></linearGradient></defs>
+          <circle cx="320" cy="110" r="180" fill="#6c63ff" opacity="0.05"/>
+          <!-- Toolbar-Buttons oben -->
+          <rect x="140" y="30" width="110" height="34" rx="8" fill="#1e1a40" stroke="#3a3060" stroke-width="1.5"/>
+          <text x="195" y="52" text-anchor="middle" font-size="11" fill="#a78bfa" font-family="sans-serif" font-weight="700">✦ Generator</text>
+          <rect x="260" y="30" width="130" height="34" rx="8" fill="#6c63ff"/>
+          <text x="325" y="52" text-anchor="middle" font-size="11" fill="#fff" font-family="sans-serif" font-weight="700">+ Neuer Prompt</text>
+          <!-- Picker Modal -->
+          <rect x="190" y="80" width="260" height="140" rx="12" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="320" y="104" text-anchor="middle" font-size="10" fill="#e8eaf0" font-family="sans-serif" font-weight="700">Kategorie wählen</text>
+          <!-- Option 1: Analyse -->
+          <rect x="208" y="114" width="224" height="28" rx="7" fill="#22263a" stroke="#3a3d5c" stroke-width="1"/>
+          <text x="228" y="133" font-size="11" fill="#7a7f9a" font-family="sans-serif">📊</text>
+          <text x="248" y="133" font-size="10" fill="#e8eaf0" font-family="sans-serif" font-weight="600">Analyse</text>
+          <text x="310" y="133" font-size="8.5" fill="#5a5f7a" font-family="sans-serif">Analysen-Tab</text>
+          <!-- Option 2: Design – highlighted -->
+          <rect x="208" y="148" width="224" height="28" rx="7" fill="#1e1a40" stroke="#6c63ff" stroke-width="1.5"/>
+          <text x="228" y="167" font-size="11" fill="#a78bfa" font-family="sans-serif">🎨</text>
+          <text x="248" y="167" font-size="10" fill="#e8eaf0" font-family="sans-serif" font-weight="600">Design</text>
+          <text x="300" y="167" font-size="8.5" fill="#7a6fd0" font-family="sans-serif">Design-Tab</text>
+          <!-- Option 3: Foto -->
+          <rect x="208" y="182" width="224" height="28" rx="7" fill="#22263a" stroke="#3a3d5c" stroke-width="1"/>
+          <text x="228" y="201" font-size="11" fill="#7a7f9a" font-family="sans-serif">📸</text>
+          <text x="248" y="201" font-size="10" fill="#e8eaf0" font-family="sans-serif" font-weight="600">Foto-Analyse</text>
+          <text x="330" y="201" font-size="8.5" fill="#5a5f7a" font-family="sans-serif">Fotos-Tab</text>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh_cp)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v5.65</span>
+          <h3>Prompts erstellen – vereinheitlicht</h3>
+        </div>
+      </div>
+
+      <h2>Einen Einstieg – alle Kategorien</h2>
+      <p class="lead">Zwei globale Buttons oben in der Prompt-Bibliothek ersetzen die verteilten Einzelbuttons in jeder Sektion. Beim Klick wählt man zuerst die Kategorie – dann öffnet sich Editor oder Generator mit dem richtigen Kontext.</p>
+
+      <h3>Kategorie-Picker</h3>
+      <p>Nach dem Klick auf <strong>Neuer Prompt</strong> oder <strong>Generator</strong> erscheint ein kleines Modal mit drei Optionen: <strong>Analyse</strong> (für den Analysen-Tab), <strong>Design</strong> (für den Design-Tab) und <strong>Foto-Analyse</strong> (für den Fotos-Tab). Der erstellte Prompt landet automatisch in der richtigen Sektion der Bibliothek.</p>
+
+      <h3>Standard-Prompts löschbar</h3>
+      <p>Eingebaute Standard-Prompts lassen sich nun ebenfalls über den Papierkorb-Button entfernen – genau wie Design- und Foto-Prompts. Das Entfernen ist ein Soft-Delete: der Prompt verschwindet aus der Bibliothek, kann aber über die Browser-Einstellungen (localStorage) jederzeit wiederhergestellt werden.</p>
+
+      <h3>Eigene Design-Prompts</h3>
+      <p>Über Generator oder Editor erstellte Design-Prompts erscheinen jetzt direkt in der Design-Sektion der Bibliothek – zusammen mit den eingebauten Vorlagen. Sie lassen sich wie alle eigenen Prompts bearbeiten, exportieren und löschen.</p>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Foto-Analyse (v5.57–v5.64)
          ════════════════════════════════════════ -->
     <article class="news-article" id="fotos">
       <div class="news-meta">
@@ -396,27 +456,20 @@
         </svg>
       </div>
 
-      <h2 class="news-article-title">Foto-Analyse: Whiteboards, Skizzen &amp; Handschriften auswerten</h2>
-      <p class="news-article-intro">Der neue Fotos-Tab macht Distill Voice zur Bildanalyse-Plattform. Fotos von Whiteboards, Skizzen oder handgeschriebenen Notizen lassen sich direkt zur Sitzung hochladen – Claude liest, interpretiert und verknüpft den visuellen Inhalt mit dem Gespräch.</p>
+      <h2 class="news-article-title">Foto-Analyse: Bilder direkt in der Sitzung auswerten</h2>
+      <p class="news-article-intro">Der Fotos-Tab erweitert Distill Voice um visuelle Analyse. Fotos lassen sich direkt zur Sitzung hochladen – Claude interpretiert den Inhalt und verknüpft ihn optional mit dem Gespräch.</p>
 
       <h3>So funktioniert der Fotos-Tab</h3>
-      <p>In jeder Sitzung erscheint der Tab <strong>Fotos</strong> direkt neben <strong>Analysen</strong>. Fotos können per Klick auf „Hochladen" oder per Drag &amp; Drop in die Upload-Zone gebracht werden. Jedes Bild wird automatisch auf maximal 1200 Pixel Breite verkleinert (JPEG-Qualität 75 %) und in einem sitzungseigenen Unterordner in Google Drive abgelegt – so bleiben die Originale erhalten und alle Geräte haben Zugriff.</p>
+      <p>In jeder Sitzung erscheint der Tab <strong>Fotos</strong> direkt neben <strong>Analysen</strong>. Bilder können per Klick auf „Hochladen" oder per Drag &amp; Drop hinzugefügt werden. Auf dem Smartphone öffnet ein separater Kamera-Button direkt die Gerätekamera. Jedes Bild wird automatisch komprimiert und in einem sitzungseigenen Unterordner in Google Drive abgelegt – alle Geräte haben sofort Zugriff.</p>
 
       <h3>Bilder auswählen und analysieren</h3>
-      <p>Nach dem Upload erscheint jedes Bild als Karte im Foto-Raster. Mehrere Fotos lassen sich per Checkbox gleichzeitig auswählen, sodass Claude sie in einem Durchgang analysiert. Aus dem Dropdown wählt man einen der verfügbaren Prompt-Typen:</p>
-      <ul>
-        <li><strong>Whiteboard-Inhalt extrahieren</strong> – strukturierte Mitschrift aus Stichpunkten, Diagrammen und Pfeilen</li>
-        <li><strong>Skizze / Diagramm beschreiben</strong> – Flussdiagramme, Architekturskizzen, konzeptuelle Zeichnungen</li>
-        <li><strong>Handschrift lesen &amp; transkribieren</strong> – handgeschriebene Notizen in lesbaren Text umwandeln</li>
-        <li><strong>Foto + Transkript kombiniert analysieren</strong> – kombiniert visuellen Inhalt mit dem Gesprächsprotokoll der Sitzung</li>
-        <li><strong>Aufgaben aus Foto ableiten</strong> – extrahiert To-dos direkt aus Whiteboard-Fotos oder handgeschriebenen Listen</li>
-      </ul>
+      <p>Nach dem Upload erscheint jedes Bild als Karte im Foto-Raster. Mehrere Fotos lassen sich per Checkbox gleichzeitig auswählen, sodass Claude sie in einem Durchgang analysiert. Aus dem Dropdown wählt man einen der verfügbaren Foto-Prompts – die Auswahl lässt sich jederzeit über die Prompt-Bibliothek anpassen und erweitern.</p>
 
-      <h3>Eigene Foto-Prompts erstellen</h3>
-      <p>In der <strong>Prompt-Bibliothek</strong> gibt es jetzt eine eigene Sektion „Foto-Analyse-Prompts". Dort lassen sich eigene Foto-Prompts über den <strong>Prompt-Editor</strong> oder den <strong>Prompt-Generator</strong> erstellen – mit Buttons direkt in der Sektion. Eigene Prompts erscheinen sofort im Dropdown des Fotos-Tabs und lassen sich wie alle anderen Prompts bearbeiten oder löschen. Auch die eingebauten Vorlagen können über den Papierkorb-Button entfernt werden (Soft-Delete, wiederherstellbar über die Browser-Einstellungen).</p>
+      <h3>Eigene Foto-Prompts</h3>
+      <p>In der <strong>Prompt-Bibliothek</strong> gibt es eine eigene Sektion „Foto-Analyse-Prompts". Neue Prompts lassen sich über die globalen Buttons <strong>Neuer Prompt</strong> oder <strong>Generator</strong> erstellen – beim Klick wählt man die Kategorie „Foto-Analyse". Eigene Prompts erscheinen sofort im Dropdown und lassen sich bearbeiten, herunterladen oder löschen. Auch eingebaute Vorlagen können über den Papierkorb-Button entfernt werden (Soft-Delete).</p>
 
       <h3>Ergebnis im Analysen-Tab</h3>
-      <p>Das Analyseergebnis erscheint als aufklappbarer Block im <strong>Analysen-Tab</strong> – im gleichen Stil wie alle anderen KI-Auswertungen. Foto-Analyse-Blöcke sind zusätzlich als eigener Subtab in der Tab-Leiste des Analysen-Panels verlinkt, damit man mit einem Klick direkt dorthin springt. Drive-Sync läuft automatisch: andere Geräte sehen sowohl die hochgeladenen Fotos als auch die Analyseergebnisse.</p>
+      <p>Das Analyseergebnis erscheint als aufklappbarer Block im <strong>Analysen-Tab</strong> – im gleichen Stil wie alle anderen KI-Auswertungen. Der Bildname wird automatisch als Überschrift vorangestellt. Drive-Sync läuft im Hintergrund: andere Geräte sehen sowohl die hochgeladenen Fotos als auch die Analyseergebnisse.</p>
     </article>
 
     <!-- ════════════════════════════════════════
@@ -888,37 +941,33 @@
         </div>
       </div>
 
-      <h2>Eigene Analyse-Vorlagen erstellen – ohne Programmierkenntnisse</h2>
-      <p class="lead">Der Prompt-Generator hilft dir, eigene KI-Analyse-Vorlagen zu bauen – per geführtem Wizard oder per KI-Assistent. Du bestimmst, wie die KI deine Gespräche auswertet und in welchem Format sie die Ergebnisse liefert.</p>
+      <h2>Eigene Prompts erstellen – für jede Kategorie</h2>
+      <p class="lead">Die Prompt-Bibliothek hat zwei globale Buttons: <strong>Neuer Prompt</strong> und <strong>Generator</strong>. Beim Klick wählt man zuerst die Ziel-Kategorie – dann öffnet sich der Editor oder der Generator, vorausgefüllt für den gewählten Bereich.</p>
 
-      <p>Distill Voice kommt mit fertigen Analyse-Prompts für häufige Anwendungsfälle: Zusammenfassung, Aktionspunkte, Sentiment-Analyse und mehr. Der Generator ermöglicht es dir, eigene Vorlagen zu erstellen – zugeschnitten auf dein Team, deine Branche oder deine spezifischen Gesprächstypen. Erstellte Prompts erscheinen in der Prompt-Bibliothek unter „Eigene Prompts" und lassen sich auf jede beliebige Sitzung anwenden.</p>
-
-      <h3>Modus 1: Wizard – Schritt für Schritt</h3>
-
-      <p>Der Wizard führt dich in fünf Schritten durch die Erstellung. Du brauchst kein Vorwissen über Prompt-Engineering – jeder Schritt erklärt sich selbst:</p>
-
+      <h3>Kategorie wählen</h3>
+      <p>Beim Erstellen eines neuen Prompts erscheint zunächst ein Kategorie-Picker mit drei Optionen:</p>
       <ul class="news-feature-list">
-        <li><strong>Schritt 1 – Grundlagen</strong>Name des Prompts, kurze Beschreibung und Tags vergeben. Tags helfen später beim Filtern in der Bibliothek.</li>
-        <li><strong>Schritt 2 – Charakter</strong>Wer analysiert? Du definierst die Rolle der KI (z.B. „erfahrener Business-Analyst") und die Tonalität (z.B. „präzise und sachlich, keine Füllsätze").</li>
-        <li><strong>Schritt 3 – Kontext</strong>Was soll analysiert werden – und was nicht? Grenzen setzen und Hintergrundinfos mitgeben (z.B. Branche, Meeting-Typ, Zielgruppe des Ergebnisses).</li>
-        <li><strong>Schritt 4 – Ausgabe-Format</strong>Strukturierte Felder definieren: Welche Informationen soll die KI liefern und in welchem Format? 11 Typen stehen zur Auswahl (Liste, Bewertung, Tags, Tabelle usw.).</li>
-        <li><strong>Schritt 5 – Fertig</strong>Vollständige Vorschau aller Felder und Inhalte. Alles ist direkt bearbeitbar – erst dann speichern.</li>
+        <li><strong>Analyse</strong> – Eigene Analyse-Vorlagen für den Analysen-Tab. Erscheinen unter „Eigene Prompts" und lassen sich auf jede Sitzung anwenden.</li>
+        <li><strong>Design</strong> – Prompts für den Design-Tab. Erscheinen in der Design-Sektion der Bibliothek.</li>
+        <li><strong>Foto-Analyse</strong> – Prompts für den Fotos-Tab. Erscheinen im Foto-Prompt-Dropdown der Sitzung.</li>
+      </ul>
+      <p>Danach öffnet sich entweder der Editor (manuell befüllen) oder der Generator (Wizard oder KI-Assistent). Der Prompt landet automatisch in der richtigen Sektion.</p>
+
+      <h3>Modus 1: Editor – direkt schreiben</h3>
+      <p>Für alle, die genau wissen was sie wollen: Name, Beschreibung, Rolle, Tonalität und Kontext direkt eingeben. Optional lassen sich strukturierte Ausgabe-Felder definieren – die KI gibt ihr Ergebnis dann als strukturierte Karte zurück statt als Fließtext.</p>
+
+      <h3>Modus 2: Generator – Wizard oder KI-Assistent</h3>
+      <p>Der Generator führt durch die Erstellung – ohne Vorwissen über Prompt-Engineering. Zwei Modi stehen zur Auswahl:</p>
+      <ul class="news-feature-list">
+        <li><strong>Wizard</strong> – Schritt für Schritt: Grundlagen, Charakter der KI, Kontext, Ausgabe-Format. Am Ende steht eine vollständige Vorschau zum Prüfen und Bearbeiten.</li>
+        <li><strong>KI-Assistent</strong> – Ein Satz genügt: Claude generiert automatisch alle Felder (Rolle, Tonalität, Grenzen, Kontext, Ausgabe-Felder) und zeigt das Ergebnis zur Prüfung an.</li>
       </ul>
 
-      <h3>Modus 2: KI-Assistent – ein Satz genügt</h3>
-
-      <p>Statt den Wizard Schritt für Schritt auszufüllen, beschreibst du in einem einzigen Satz, was du analysieren möchtest. Claude generiert daraus automatisch Name, Rolle, Tonalität, Grenzen, Kontext und passende Ausgabe-Felder. Das Ergebnis erscheint zur Prüfung – jedes Feld lässt sich vor dem Speichern noch anpassen.</p>
-
-      <ul class="news-feature-list">
-        <li><strong>Schritt 1 – Generator öffnen</strong>Prompt-Bibliothek öffnen (Stift-Icon in der Sidenav) → oben rechts auf „&#10022; Erstellen" klicken.</li>
-        <li><strong>Schritt 2 – KI-Assistent wählen</strong>Im Generator-Modal den Modus „KI-Assistent" auswählen.</li>
-        <li><strong>Schritt 3 – Beschreiben</strong>Einen beschreibenden Satz eingeben, z.B.: „Analysiere Sales-Gespräche auf Einwände, Kaufsignale und vereinbarte nächste Schritte."</li>
-        <li><strong>Schritt 4 – Generieren &amp; prüfen</strong>„Generieren" klicken. Claude füllt alle Felder aus. Das Ergebnis erscheint vollständig zur Prüfung – du kannst jeden Wert anpassen.</li>
-        <li><strong>Schritt 5 – Speichern und anwenden</strong>Prompt speichern → er erscheint in der Bibliothek unter „Eigene Prompts" und lässt sich ab sofort auf jede Sitzung anwenden.</li>
-      </ul>
+      <h3>Prompts verwalten</h3>
+      <p>Alle eigenen Prompts lassen sich jederzeit bearbeiten, exportieren, importieren und löschen. Auch eingebaute Prompts aller Kategorien (Standard, Design, Foto) können über den Papierkorb-Button entfernt werden (Soft-Delete, per Browser-Einstellungen rücksetzbar). Über den Import-Button lassen sich Prompts als JSON zwischen Geräten teilen.</p>
 
       <div class="news-info-box">
-        <strong>Tipp – Ausgabe-Felder im KI-Modus:</strong> Auch im KI-Modus werden strukturierte Ausgabe-Felder automatisch generiert. Claude wählt passende Typen für dein Anwendungsszenario. Du kannst sie im letzten Schritt noch anpassen oder im Prompt-Editor jederzeit erweitern. Alle 11 Typen sind über den <strong>? Feldtypen</strong>-Button erklärt.
+        <strong>Tipp – Ausgabe-Felder:</strong> Strukturierte Felder sind optional, machen Ergebnisse aber viel übersichtlicher. Es gibt verschiedene Typen – Liste, Checkliste, Bewertung, Tabelle und mehr. Claude wählt im KI-Modus passende Typen automatisch; im Wizard oder Editor lassen sie sich frei konfigurieren.
       </div>
     </article>
 

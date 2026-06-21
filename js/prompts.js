@@ -910,10 +910,10 @@ function renderPromptsView() {
           <option value="foto">Foto-Analyse</option>
           <option value="custom">Eigene</option>
         </select>
-        <button class="btn btn-ghost" onclick="openPromptGeneratorModal()" style="gap:6px;flex-shrink:0" title="Prompt per Wizard oder KI erstellen">
+        <button class="btn btn-ghost" onclick="openPromptCategoryPickerModal('generator')" style="gap:6px;flex-shrink:0" title="Prompt per Wizard oder KI erstellen">
           ${icon('wand-2',14)} Generator
         </button>
-        <button class="btn btn-primary" onclick="openPromptEditorModal(null)" style="gap:6px;flex-shrink:0">
+        <button class="btn btn-primary" onclick="openPromptCategoryPickerModal('editor')" style="gap:6px;flex-shrink:0">
           ${icon('plus',14)} Neuer Prompt
         </button>
         <label class="btn btn-ghost" style="gap:6px;flex-shrink:0;cursor:pointer" title="Prompt importieren">
@@ -950,8 +950,9 @@ function _renderPromptsResults() {
 
   // Standard-Prompts filtern: Standard-Analysen + Feature-Prompts (ohne Design, ohne Foto) zusammen (v5.24)
   const standardVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'standard');
+  const _hiddenStandardIds = getHiddenStandardPromptIds();
   const filteredStandard = standardVisible
-    ? EDITABLE_PROMPT_DEFAULTS.filter(p => !p.canvaDesignType && p.category !== 'foto')
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => !p.canvaDesignType && p.category !== 'foto' && !_hiddenStandardIds.includes(p.id))
         .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
     : [];
 
@@ -968,12 +969,16 @@ function _renderPromptsResults() {
     : [];
   const filteredFoto = [...filteredFotoBuiltin, ...filteredFotoCustom];
 
-  // Design-Prompts filtern: alle Prompts mit canvaDesignType (v5.24/v5.62)
+  // Design-Prompts filtern: eingebaute (canvaDesignType) + eigene mit category:'design' (v5.24/v5.62/v5.65)
   const _hiddenDesignIds = getHiddenDesignPromptIds();
   const designVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'design');
   const filteredDesign = designVisible
     ? EDITABLE_PROMPT_DEFAULTS.filter(p => !!p.canvaDesignType && !_hiddenDesignIds.includes(p.id))
         .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
+    : [];
+  const filteredDesignCustom = designVisible
+    ? getCustomPrompts().filter(p => p.category === 'design')
+        .filter(p => matchesSearch([p.name, p.description, assemblePromptText(p), ...(p.tags||[])]))
     : [];
 
   // Eigene Prompts filtern
@@ -990,7 +995,7 @@ function _renderPromptsResults() {
   }
 
   const allTags    = _getAllPromptTags();
-  const hasResults = filteredSystem.length || filteredStandard.length || filteredDesign.length || filteredFoto.length || filteredCustom.length;
+  const hasResults = filteredSystem.length || filteredStandard.length || filteredDesign.length || filteredDesignCustom.length || filteredFoto.length || filteredCustom.length;
 
   const sectionHead = (label, extra = '') => `
     <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:6px">
@@ -1045,6 +1050,9 @@ function _renderPromptsResults() {
         ${modified ? `<button class="btn btn-ghost" onclick="resetEditablePromptAndRefresh('${p.id}')" style="padding:5px 7px;color:var(--red)" title="Zurücksetzen">
           ${icon('refresh-cw',13)}
         </button>` : ''}
+        <button class="btn btn-ghost" onclick="hideStandardBuiltinPrompt('${p.id}')" style="padding:5px 7px;color:var(--red)" title="Entfernen">
+          ${icon('trash-2',13)}
+        </button>
       </div>
     </div>`;
   };
@@ -1125,8 +1133,8 @@ function _renderPromptsResults() {
     </div>`;
   }
 
-  // v5.62: Design-Prompts mit Löschen-Button
-  if (filteredDesign.length || designVisible) {
+  // v5.62/v5.65: Design-Prompts mit Löschen-Button + eigene Design-Prompts
+  if (filteredDesign.length || filteredDesignCustom.length || designVisible) {
     const _cardDesign = (p) => {
       const modified    = isEditablePromptModified(p.id);
       const currentText = getEditablePromptText(p.id) || '';
@@ -1150,8 +1158,14 @@ function _renderPromptsResults() {
     html += '<div style="margin-bottom:24px">'
       + sectionHead('Design-Prompts', icon('layout',11,'color:var(--muted);margin-left:2px') + ' <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>')
       + (filteredDesign.length
-        ? '<div class="prompts-grid">' + filteredDesign.map(_cardDesign).join('') + '</div>'
-        : '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem">Alle Design-Prompts wurden entfernt.</div>')
+        ? '<div class="prompts-grid" style="margin-bottom:' + (filteredDesignCustom.length ? '16px' : '0') + '">' + filteredDesign.map(_cardDesign).join('') + '</div>'
+        : '')
+      + (filteredDesignCustom.length
+        ? '<div class="prompts-grid">' + filteredDesignCustom.map(_cardCustom).join('') + '</div>'
+        : '')
+      + (!filteredDesign.length && !filteredDesignCustom.length
+        ? '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem">Alle Design-Prompts wurden entfernt.</div>'
+        : '')
       + '</div>';
   }
 
@@ -1193,11 +1207,7 @@ function _renderPromptsResults() {
     };
     html += '<div style="margin-bottom:24px">'
       + sectionHead('Foto-Analyse-Prompts', icon('camera',11,'color:var(--muted);margin-left:2px') + ' <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— nur im Fotos-Tab verfügbar</span>')
-      + '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">'
-      + '<button class="btn btn-primary" onclick="openPromptEditorModal(null,\'foto\')" style="gap:6px;font-size:0.8rem;padding:6px 12px">' + icon('plus',13) + ' Neuer Foto-Prompt</button>'
-      + '<button class="btn btn-ghost" onclick="openPromptGeneratorModal(\'foto\')" style="gap:6px;font-size:0.8rem;padding:6px 12px">' + icon('wand-2',13) + ' Mit Generator erstellen</button>'
-      + '</div>'
-      + (filteredFotoBuiltin.length ? '<div class="prompts-grid" style="margin-bottom:16px">' + filteredFotoBuiltin.map(_cardFotoBuiltin).join('') + '</div>' : '')
+      + (filteredFotoBuiltin.length ? '<div class="prompts-grid" style="margin-bottom:' + (filteredFotoCustom.length ? '16px' : '0') + '">' + filteredFotoBuiltin.map(_cardFotoBuiltin).join('') + '</div>' : '')
       + (filteredFotoCustom.length ? '<div class="prompts-grid">' + filteredFotoCustom.map(_cardFotoCustom).join('') + '</div>' : '')
       + (filteredFoto.length === 0 ? '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem">Alle eingebauten Foto-Prompts wurden entfernt. Eigene erstellen über die Buttons oben.</div>' : '')
       + '</div>';
@@ -1355,9 +1365,11 @@ function openPromptEditorModal(id, category) {
   // v5.60: Kategorie setzen (explizit übergeben oder von vorhandenem Prompt erben)
   _pendingPromptCategory = category || existing?.category || null;
 
-  const titleLabel = _pendingPromptCategory === 'foto'
-    ? (existing ? 'Foto-Prompt bearbeiten' : 'Neuer Foto-Prompt')
-    : (existing ? 'Eigener Prompt' : 'Neuer Prompt');
+  const _categoryTitles = {
+    foto:   existing ? 'Foto-Prompt bearbeiten'   : 'Neuer Foto-Prompt',
+    design: existing ? 'Design-Prompt bearbeiten' : 'Neuer Design-Prompt',
+  };
+  const titleLabel = _categoryTitles[_pendingPromptCategory] || (existing ? 'Eigener Prompt' : 'Neuer Prompt');
   document.getElementById('promptEditorTitle').textContent = titleLabel;
   document.getElementById('promptEditorId').value          = existing?.id          || '';
   document.getElementById('promptEditorName').value        = existing?.name        || '';
@@ -1487,6 +1499,71 @@ function hideDesignBuiltinPrompt(id) {
   if (!hidden.includes(id)) { hidden.push(id); localStorage.setItem('hiddenDesignPrompts', JSON.stringify(hidden)); }
   _renderPromptsResults();
   showToast('Design-Prompt entfernt', 'success');
+}
+
+// v5.65: Standard-Prompts soft-löschen
+function getHiddenStandardPromptIds() {
+  try { return JSON.parse(localStorage.getItem('hiddenStandardPrompts') || '[]'); } catch { return []; }
+}
+function hideStandardBuiltinPrompt(id) {
+  if (!confirm('Diesen eingebauten Standard-Prompt verstecken?\n(Kann über Browser-Einstellungen → localStorage zurückgesetzt werden)')) return;
+  const hidden = getHiddenStandardPromptIds();
+  if (!hidden.includes(id)) { hidden.push(id); localStorage.setItem('hiddenStandardPrompts', JSON.stringify(hidden)); }
+  _renderPromptsResults();
+  showToast('Prompt entfernt', 'success');
+}
+
+// v5.65: Kategorie-Picker Modal (globale Buttons → Kategorie wählen → Editor/Generator)
+let _pendingCategoryPickerAction = null; // 'editor' | 'generator'
+
+function openPromptCategoryPickerModal(action) {
+  _pendingCategoryPickerAction = action;
+  let modal = document.getElementById('promptCategoryPickerModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'promptCategoryPickerModal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6)';
+    modal.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 28px 22px;min-width:300px;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,0.4)">
+        <div style="font-size:1rem;font-weight:700;margin-bottom:4px;color:var(--text)">Kategorie wählen</div>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:20px">In welcher Sektion soll der Prompt erscheinen?</p>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+          <button onclick="selectPromptCategory(null)" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;text-align:left;font-size:0.88rem;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span style="font-size:1.2rem">📊</span>
+            <span><strong style="display:block">Analyse</strong><span style="font-size:0.75rem;color:var(--muted)">Eigene Prompts → Analysen-Tab</span></span>
+          </button>
+          <button onclick="selectPromptCategory('design')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;text-align:left;font-size:0.88rem;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span style="font-size:1.2rem">🎨</span>
+            <span><strong style="display:block">Design</strong><span style="font-size:0.75rem;color:var(--muted)">Design-Prompts → Design-Tab</span></span>
+          </button>
+          <button onclick="selectPromptCategory('foto')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;text-align:left;font-size:0.88rem;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span style="font-size:1.2rem">📸</span>
+            <span><strong style="display:block">Foto-Analyse</strong><span style="font-size:0.75rem;color:var(--muted)">Foto-Prompts → Fotos-Tab</span></span>
+          </button>
+        </div>
+        <button onclick="closePromptCategoryPickerModal()" style="width:100%;padding:9px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:0.83rem">Abbrechen</button>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) closePromptCategoryPickerModal();
+    });
+  }
+  modal.style.display = 'flex';
+}
+
+function selectPromptCategory(category) {
+  closePromptCategoryPickerModal();
+  if (_pendingCategoryPickerAction === 'editor') {
+    openPromptEditorModal(null, category);
+  } else {
+    openPromptGeneratorModal(category);
+  }
+  _pendingCategoryPickerAction = null;
+}
+
+function closePromptCategoryPickerModal() {
+  const m = document.getElementById('promptCategoryPickerModal');
+  if (m) m.style.display = 'none';
 }
 
 // ── Custom Prompt ausführen ──────────────────────
