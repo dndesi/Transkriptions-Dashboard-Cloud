@@ -760,10 +760,36 @@ function switchSessionTab(name) {
     const s = (typeof getSession === 'function') ? getSession() : null;
     if (s) renderHighlights(s);
   }
-  // Bei Fotos-Tab: Photo-Grid rendern (v5.57)
+  // Bei Fotos-Tab: Photo-Grid rendern + einmalig Session aus Drive refreshen (v5.57/v5.61)
   if (name === 'fotos' && typeof renderPhotoTab === 'function') {
     const s = (typeof getSession === 'function') ? getSession() : null;
-    if (s) renderPhotoTab(s);
+    if (s) {
+      renderPhotoTab(s);
+      // v5.61: Background-Refresh – holt frische session.photos[] aus Drive (einmalig pro Sitzung)
+      const refreshKey = '_photoTabRefreshed_' + s.id;
+      const hasToken = (typeof driveToken !== 'undefined') && driveToken;
+      if (hasToken && s._fileId && !sessionStorage.getItem(refreshKey)) {
+        sessionStorage.setItem(refreshKey, '1');
+        driveDownloadJSON(s._fileId).then(function(fresh) {
+          if (!fresh) return;
+          // photos[] und photoResults[] übernehmen wenn neuer als lokal
+          var changed = false;
+          if (fresh.photos && JSON.stringify(fresh.photos) !== JSON.stringify(s.photos)) {
+            s.photos = fresh.photos;
+            changed = true;
+          }
+          if (fresh.photoResults && JSON.stringify(fresh.photoResults) !== JSON.stringify(s.photoResults)) {
+            s.photoResults = fresh.photoResults;
+            changed = true;
+          }
+          if (changed) {
+            if (typeof saveSessions === 'function') saveSessions();
+            renderPhotoTab(s);
+            if (typeof renderPhotoResults === 'function') renderPhotoResults(s);
+          }
+        }).catch(function() { /* silent – Drive evtl. nicht erreichbar */ });
+      }
+    }
   }
 }
 

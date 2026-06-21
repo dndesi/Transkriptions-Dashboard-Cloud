@@ -322,7 +322,18 @@ async function runPhotoAnalysis(session) {
     // Ergebnis-Block
     var photoLabel  = photos.length === 1 ? photos[0].name : photos.length + ' Fotos';
     var promptLabel = selectedPrompt ? selectedPrompt.label : 'Foto-Analyse';
-    _insertPhotoResultBlock(promptLabel + ' – ' + photoLabel, result.text);
+    var resultTitle = promptLabel + ' – ' + photoLabel;
+    var resultId    = 'pr_' + Date.now();
+
+    // v5.61: Ergebnis in Session speichern → Drive-Sync → andere Geräte sehen es
+    if (!session.photoResults) session.photoResults = [];
+    session.photoResults.unshift({ id: resultId, title: resultTitle, text: result.text, createdAt: new Date().toISOString() });
+    saveSessions();
+    if (typeof saveToArchive === 'function') {
+      saveToArchive(session).catch(function(e) { console.warn('[Photo] Ergebnis Drive-Sync:', e); });
+    }
+
+    _insertPhotoResultBlock(resultId, resultTitle, result.text);
 
     showToast('Foto-Analyse abgeschlossen ✓', 'success');
   } catch (err) {
@@ -339,15 +350,16 @@ async function runPhotoAnalysis(session) {
 }
 
 // ── Ergebnis-Block in Analysen-Tab einfügen ───────
-function _insertPhotoResultBlock(title, text) {
+// resultId: gespeicherte ID in session.photoResults (für Delete-Sync)
+function _insertPhotoResultBlock(resultId, title, text) {
   switchSessionTab('analysen');
 
-  var analysenPanel = document.getElementById('sdc-panel-analysen');
-  if (!analysenPanel) return;
-
-  var blockId   = 'photoBlock_' + Date.now();
+  var blockId   = 'photoBlock_' + resultId;
   var safeTitle = (typeof escHtml === 'function') ? escHtml(title) : title;
   var safeText  = (typeof escHtml === 'function') ? escHtml(text)  : text;
+
+  // Doppelten Block verhindern (z.B. wenn renderPhotoResults + direktes Einfügen)
+  if (document.getElementById(blockId)) return;
 
   var html =
     '<div class="insights-block photo-result-block" id="' + blockId + '" ' +
@@ -359,7 +371,7 @@ function _insertPhotoResultBlock(title, text) {
         '</span>' +
         '<span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">' +
           '<button class="insights-export-btn" title="Block löschen" style="color:var(--muted)" ' +
-            'onclick="event.stopPropagation();var b=document.getElementById(\'' + blockId + '\');if(b)b.remove();if(typeof _refreshAnalysenSubtabs===\'function\')_refreshAnalysenSubtabs()">' +
+            'onclick="event.stopPropagation();deletePhotoResult(\'' + resultId + '\')">' +
             '<i data-lucide="trash-2" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;pointer-events:none"></i>' +
           '</button>' +
           '<span class="insights-block-chevron">&#9662;</span>' +
@@ -370,12 +382,13 @@ function _insertPhotoResultBlock(title, text) {
       '</div>' +
     '</div>';
 
-  // Einfügen: am Anfang des Analysen-Panels
-  var customContainer = analysenPanel.querySelector('#customAnalysesContainer');
-  if (customContainer) {
-    customContainer.insertAdjacentHTML('afterbegin', html);
+  // Einfügen in dedizierten Container (v5.61)
+  var container = document.getElementById('photoResultsContainer');
+  if (container) {
+    container.insertAdjacentHTML('afterbegin', html);
   } else {
-    analysenPanel.insertAdjacentHTML('afterbegin', html);
+    var analysenPanel = document.getElementById('sdc-panel-analysen');
+    if (analysenPanel) analysenPanel.insertAdjacentHTML('afterbegin', html);
   }
 
   var block = document.getElementById(blockId);
@@ -386,6 +399,68 @@ function _insertPhotoResultBlock(title, text) {
 
   if (typeof lucide !== 'undefined') lucide.createIcons();
   if (typeof _refreshAnalysenSubtabs === 'function') _refreshAnalysenSubtabs();
+}
+
+// ── Foto-Ergebnis löschen (DOM + Session + Drive) ──
+function deletePhotoResult(resultId) {
+  // DOM entfernen
+  var blockId = 'photoBlock_' + resultId;
+  var block = document.getElementById(blockId);
+  if (block) block.remove();
+
+  // Aus Session entfernen + Drive-Sync
+  var s = (typeof getSession === 'function') ? getSession() : null;
+  if (s && s.photoResults) {
+    s.photoResults = s.photoResults.filter(function(r) { return r.id !== resultId; });
+    if (typeof saveSessions === 'function') saveSessions();
+    if (typeof saveToArchive === 'function') {
+      saveToArchive(s).catch(function(e) { console.warn('[Photo] Delete Drive-Sync:', e); });
+    }
+  }
+
+  if (typeof _refreshAnalysenSubtabs === 'function') _refreshAnalysenSubtabs();
+}
+
+// ── Gespeicherte Foto-Ergebnisse rendern (v5.61) ──
+// Wird von renderInsights() aufgerufen – idempotent dank Container-Clear
+function renderPhotoResults(session) {
+  var container = document.getElementById('photoResultsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  var results = (session && session.photoResults) ? session.photoResults : [];
+  if (!results.length) return;
+
+  results.forEach(function(r) {
+    var blockId   = 'photoBlock_' + r.id;
+    var safeTitle = (typeof escHtml === 'function') ? escHtml(r.title) : r.title;
+    var safeText  = (typeof escHtml === 'function') ? escHtml(r.text)  : r.text;
+
+    var html =
+      '<div class="insights-block photo-result-block" id="' + blockId + '" ' +
+          'data-hl-source="' + safeTitle + '" data-has-content="1">' +
+        '<div class="insights-block-title" onclick="toggleInsightsBlock(\'' + blockId + '\')">' +
+          '<span style="display:inline-flex;align-items:center;gap:6px">' +
+            '<i data-lucide="camera" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>' +
+            safeTitle +
+          '</span>' +
+          '<span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">' +
+            '<button class="insights-export-btn" title="Block löschen" style="color:var(--muted)" ' +
+              'onclick="event.stopPropagation();deletePhotoResult(\'' + r.id + '\')">' +
+              '<i data-lucide="trash-2" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none;pointer-events:none"></i>' +
+            '</button>' +
+            '<span class="insights-block-chevron">&#9662;</span>' +
+          '</span>' +
+        '</div>' +
+        '<div class="insights-block-body">' +
+          '<div class="custom-result-text" style="white-space:pre-wrap">' + safeText + '</div>' +
+        '</div>' +
+      '</div>';
+
+    container.insertAdjacentHTML('beforeend', html);
+  });
+
+  if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [container] });
 }
 
 // ── Hilfsfunktion: Dateigröße ─────────────────────

@@ -1202,6 +1202,9 @@ function renderInsights(session) {
 
   section.style.display = anyVisible ? 'block' : 'none';
 
+  // v5.61: Foto-Analyse-Ergebnisse aus session.photoResults rendern
+  if (typeof renderPhotoResults === 'function') renderPhotoResults(session);
+
   // v4.81: Subtabs immer nach renderInsights aktualisieren (nicht nur beim Tab-Klick)
   if (typeof _refreshAnalysenSubtabs === 'function') _refreshAnalysenSubtabs();
   // v5.51: Lesezeichen-Marker + Badges nach jedem Render neu setzen
