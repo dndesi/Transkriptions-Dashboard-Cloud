@@ -515,9 +515,14 @@ function renderPhotoTab(session) {
       // Upload-Bereich
       '<div class="photo-upload-area" id="photoDropZone">' +
         '<input type="file" id="photoFileInput" accept="image/*" multiple style="display:none" onchange="handlePhotoFileSelect(event)">' +
+        '<input type="file" id="photoCameraInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoFileSelect(event)">' +
         '<label for="photoFileInput" class="photo-upload-btn">' +
           '<i data-lucide="image-plus" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;vertical-align:middle;margin-right:6px"></i>' +
-          'Foto(s) hinzufügen' +
+          'Foto(s) hochladen' +
+        '</label>' +
+        '<label for="photoCameraInput" class="photo-upload-btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)">' +
+          '<i data-lucide="camera" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;vertical-align:middle;margin-right:6px"></i>' +
+          'Kamera' +
         '</label>' +
         '<span class="photo-upload-hint">oder Bild hierher ziehen</span>' +
       '</div>' +
