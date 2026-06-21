@@ -1,21 +1,44 @@
 // ═══════════════════════════════════════════════════
-// FOTOS – Upload, Drive-Sync, Analyse  (v5.58)
+// FOTOS – Upload, Drive-Sync, Analyse  (v5.60)
 // ═══════════════════════════════════════════════════
 
 // ── Foto-Prompts aus Promptdatenbank ─────────────
-// EDITABLE_PROMPT_DEFAULTS (prompts.js) enthält alle Foto-Prompts mit category:'foto'
-// getPhotoPrompts() wird erst zur Laufzeit aufgerufen – prompts.js ist dann geladen.
+// v5.60: Built-in (gefiltert nach hiddenFotoPrompts) + eigene (category:'foto')
 function getPhotoPrompts() {
-  if (typeof EDITABLE_PROMPT_DEFAULTS === 'undefined') return [];
-  return EDITABLE_PROMPT_DEFAULTS
-    .filter(p => p.category === 'foto')
-    .map(p => ({
-      id:     p.id,
-      label:  p.name,
-      prompt: (typeof getEditablePromptText === 'function')
-        ? (getEditablePromptText(p.id) || p.prompt)
-        : p.prompt
-    }));
+  var hidden = [];
+  try { hidden = JSON.parse(localStorage.getItem('hiddenFotoPrompts') || '[]'); } catch(e) {}
+
+  var builtIn = [];
+  if (typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined') {
+    builtIn = EDITABLE_PROMPT_DEFAULTS
+      .filter(function(p) { return p.category === 'foto' && hidden.indexOf(p.id) === -1; })
+      .map(function(p) {
+        return {
+          id:     p.id,
+          label:  p.name,
+          prompt: (typeof getEditablePromptText === 'function')
+            ? (getEditablePromptText(p.id) || p.prompt)
+            : p.prompt
+        };
+      });
+  }
+
+  var custom = [];
+  if (typeof getCustomPrompts === 'function') {
+    custom = getCustomPrompts()
+      .filter(function(p) { return p.category === 'foto'; })
+      .map(function(p) {
+        return {
+          id:     p.id,
+          label:  p.name,
+          prompt: (typeof assemblePromptText === 'function')
+            ? assemblePromptText(p)
+            : (p.kontext || p.prompt || '')
+        };
+      });
+  }
+
+  return builtIn.concat(custom);
 }
 
 // ── Bild komprimieren: max 1200px, JPEG 0.75 ─────

@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.59" />
+  <link rel="stylesheet" href="css/styles.css?v=5.60" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.59</button>
+        onmouseout="this.style.color='var(--muted)'">v5.60</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -509,6 +509,48 @@
         <div class="hero-news-slider-wrap">
         <button class="hero-news-nav" id="heroSliderPrev" onclick="heroSliderScroll(-1)" title="Zurück">&#8249;</button>
         <div class="hero-news-slider" id="heroNewsSlider">
+
+          <!-- Kachel NEU: Foto-Analyse (v5.57-v5.60) -->
+          <a href="news.html#fotos" class="hero-news-tile" style="background:#0a1a14">
+            <svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+              <defs>
+                <linearGradient id="ng_foto" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="30%" stop-color="#0a1a14" stop-opacity="0"/>
+                  <stop offset="100%" stop-color="#0a1a14" stop-opacity="0.95"/>
+                </linearGradient>
+              </defs>
+              <!-- Kamera-Symbol zentral -->
+              <rect x="100" y="28" width="120" height="90" rx="10" fill="#112219" stroke="#22c55e" stroke-width="1.5"/>
+              <!-- Kamera-Linse -->
+              <circle cx="160" cy="73" r="26" fill="#0e1e15" stroke="#22c55e" stroke-width="1.2"/>
+              <circle cx="160" cy="73" r="18" fill="#16a34a" opacity="0.18"/>
+              <circle cx="160" cy="73" r="10" fill="#22c55e" opacity="0.35"/>
+              <!-- Flash-Dreieck -->
+              <rect x="192" y="35" width="16" height="10" rx="3" fill="#16a34a" opacity="0.7"/>
+              <!-- Foto-Grid Vorschau (3 Mini-Bilder) -->
+              <rect x="28" y="134" width="76" height="56" rx="6" fill="#112219" stroke="#1e3d28" stroke-width="1"/>
+              <rect x="28" y="134" width="76" height="28" rx="6" fill="#16a34a" opacity="0.12"/>
+              <line x1="28" y1="162" x2="104" y2="162" stroke="#1e3d28" stroke-width="0.8"/>
+              <text x="66" y="178" text-anchor="middle" font-size="7" fill="#4ade80" font-family="sans-serif">Whiteboard.jpg</text>
+              <rect x="122" y="134" width="76" height="56" rx="6" fill="#112219" stroke="#1e3d28" stroke-width="1"/>
+              <rect x="122" y="134" width="76" height="28" rx="6" fill="#3b82f6" opacity="0.10"/>
+              <text x="160" y="178" text-anchor="middle" font-size="7" fill="#4ade80" font-family="sans-serif">Skizze.jpg</text>
+              <rect x="216" y="134" width="76" height="56" rx="6" fill="#112219" stroke="#1e3d28" stroke-width="1"/>
+              <rect x="216" y="134" width="76" height="28" rx="6" fill="#f59e0b" opacity="0.10"/>
+              <text x="254" y="178" text-anchor="middle" font-size="7" fill="#4ade80" font-family="sans-serif">Notizen.jpg</text>
+              <!-- Analyse-Ergebnis-Badge -->
+              <rect x="82" y="100" width="156" height="22" rx="8" fill="#112219" stroke="#22c55e" stroke-width="0.8" opacity="0.9"/>
+              <circle cx="96" cy="111" r="5" fill="#22c55e" opacity="0.7"/>
+              <rect x="106" y="106" width="80" height="5" rx="2" fill="#4ade80" opacity="0.6"/>
+              <rect x="106" y="114" width="56" height="4" rx="2" fill="#1e3d28"/>
+              <rect x="0" y="0" width="320" height="240" fill="url(#ng_foto)"/>
+            </svg>
+            <div class="hero-news-tile-overlay">
+              <span class="hero-news-tile-label">v5.57 – v5.60</span>
+              <h4 class="hero-news-tile-title">Foto-Analyse</h4>
+              <p class="hero-news-tile-teaser">Whiteboards, Skizzen oder Handschriften hochladen – Claude analysiert die Bilder und speichert das Ergebnis im Analysen-Tab.</p>
+            </div>
+          </a>
 
           <!-- Kachel NEU: Lesezeichen (v5.50/5.51) -->
           <a href="news.html#lesezeichen" class="hero-news-tile" style="background:#0e1520">
@@ -985,6 +1027,10 @@
               <i data-lucide="bar-chart-2" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Analysen
               <button class="help-icon" data-help="KI-gestützte Auswertung der Sitzung: Vereinbarungen, Wünsche, offene Themen, Nächste Schritte. Starte eine Analyse über die rechte Sidebar." onclick="showHelpTooltip(this)">?</button>
             </button>
+            <button class="sdc-tab" id="sdcTab-fotos" onclick="switchSessionTab('fotos')">
+              <i data-lucide="camera" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Fotos
+              <button class="help-icon" data-help="Lade Whiteboards, Skizzen oder Handschriften hoch – die KI analysiert die Bilder und verknüpft sie mit dem Transkript." onclick="showHelpTooltip(this)">?</button>
+            </button>
             <button class="sdc-tab" id="sdcTab-mindmap" onclick="switchSessionTab('mindmap')">
               <i data-lucide="git-branch" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Mindmap
               <button class="help-icon" data-help="Visuelle Mindmap der Gesprächsthemen – automatisch aus dem Transkript generiert. Hilft dabei, Zusammenhänge auf einen Blick zu erfassen." onclick="showHelpTooltip(this)">?</button>
@@ -1000,10 +1046,6 @@
             <button class="sdc-tab" id="sdcTab-tags" onclick="switchSessionTab('tags')">
               <i data-lucide="tag" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Tags
               <button class="help-icon" data-help="Verschlagworte die Sitzung mit Tags um sie später schnell filtern und wiederfinden zu können." onclick="showHelpTooltip(this)">?</button>
-            </button>
-            <button class="sdc-tab" id="sdcTab-fotos" onclick="switchSessionTab('fotos')">
-              <i data-lucide="camera" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Fotos
-              <button class="help-icon" data-help="Lade Whiteboards, Skizzen oder Handschriften hoch – die KI analysiert die Bilder und verknüpft sie mit dem Transkript." onclick="showHelpTooltip(this)">?</button>
             </button>
             <!-- Sidebar-Toggle -->
             <button class="sdc-sidebar-toggle" id="sdcSidebarToggle" onclick="toggleSessionSidebar()" title="Assistent-Sidebar öffnen">
@@ -1172,6 +1214,17 @@
           </div>
           <!-- /analysen -->
 
+          <!-- ── TAB: Fotos ── -->
+          <div class="sdc-panel" id="sdc-panel-fotos">
+            <div class="photo-tab-wrap">
+              <div class="photo-empty">
+                <i data-lucide="camera-off" style="width:32px;height:32px;stroke:currentColor;stroke-width:1.5;fill:none;opacity:0.3"></i>
+                <p>Sitzung öffnen um Fotos hochzuladen.</p>
+              </div>
+            </div>
+          </div>
+          <!-- /fotos -->
+
           <!-- ── TAB: Mindmap ── -->
           <div class="sdc-panel" id="sdc-panel-mindmap">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">
@@ -1256,17 +1309,6 @@
             </div>
           </div>
           <!-- /tags -->
-
-          <!-- ── TAB: Fotos ── -->
-          <div class="sdc-panel" id="sdc-panel-fotos">
-            <div class="photo-tab-wrap">
-              <div class="photo-empty">
-                <i data-lucide="camera-off" style="width:32px;height:32px;stroke:currentColor;stroke-width:1.5;fill:none;opacity:0.3"></i>
-                <p>Sitzung öffnen um Fotos hochzuladen.</p>
-              </div>
-            </div>
-          </div>
-          <!-- /fotos -->
 
         </div>
         <!-- /sdc-main -->
@@ -1432,7 +1474,16 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
-      <!-- ── v5.59 ── -->
+      <!-- ── v5.60 ── -->
+        <div class="cl-header"><span class="cl-version">v5.60</span><span class="cl-date">21.06.2026</span></div>
+        <ul class="cl-list">
+          <li>Fotos-Tab direkt neben Analysen platziert (war zuvor am Ende der Tab-Leiste)</li>
+          <li>Eigene Foto-Analyse-Prompts erstellen: über Prompt-Editor oder Prompt-Generator in Kategorie „Foto" speichern</li>
+          <li>Foto-Prompts (eingebaut &amp; eigene) direkt in der Prompt-Bibliothek löschbar</li>
+          <li>getPhotoPrompts() liest jetzt auch eigene Foto-Prompts – sofort im Fotos-Tab verfügbar</li>
+          <li>Blogartikel + Hero-Kachel zum Foto-Feature</li>
+        </ul>
+      <!-- ── v5.59 (war) ── -->
         <div class="cl-header"><span class="cl-version">v5.59</span><span class="cl-date">21.06.2026</span></div>
         <ul class="cl-list">
           <li>photos.js komplett neu geschrieben – sauberere Architektur, robustere Fehlerbehandlung</li>
@@ -4264,32 +4315,32 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.59"></script>
-<script src="js/storage.js?v=5.59"></script>
-<script src="js/config.js?v=5.59"></script>
-<script src="js/auth.js?v=5.59"></script>
-<script src="js/drive.js?v=5.59"></script>
-<script src="js/sessions.js?v=5.59"></script>
-<script src="js/assemblyai.js?v=5.59"></script>
-<script src="js/claude.js?v=5.59"></script>
-<script src="js/ui.js?v=5.59"></script>
-<script src="js/tags.js?v=5.59"></script>
-<script src="js/notes.js?v=5.59"></script>
-<script src="js/photos.js?v=5.59"></script>
-<script src="js/persons.js?v=5.59"></script>
-<script src="js/audio.js?v=5.59"></script>
-<script src="js/recorder.js?v=5.59"></script>
-<script src="js/contacts.js?v=5.59"></script>
-<script src="js/app.js?v=5.59"></script>
+<script src="js/icons.js?v=5.60"></script>
+<script src="js/storage.js?v=5.60"></script>
+<script src="js/config.js?v=5.60"></script>
+<script src="js/auth.js?v=5.60"></script>
+<script src="js/drive.js?v=5.60"></script>
+<script src="js/sessions.js?v=5.60"></script>
+<script src="js/assemblyai.js?v=5.60"></script>
+<script src="js/claude.js?v=5.60"></script>
+<script src="js/ui.js?v=5.60"></script>
+<script src="js/tags.js?v=5.60"></script>
+<script src="js/notes.js?v=5.60"></script>
+<script src="js/photos.js?v=5.60"></script>
+<script src="js/persons.js?v=5.60"></script>
+<script src="js/audio.js?v=5.60"></script>
+<script src="js/recorder.js?v=5.60"></script>
+<script src="js/contacts.js?v=5.60"></script>
+<script src="js/app.js?v=5.60"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=5.59"></script>
-<script src="js/search.js?v=5.59"></script>
-<script src="js/calendar.js?v=5.59"></script>
-<script src="js/prompts.js?v=5.59"></script>
-<script src="js/projects.js?v=5.59"></script>
-<script src="js/import.js?v=5.59"></script>
+<script src="js/features.js?v=5.60"></script>
+<script src="js/search.js?v=5.60"></script>
+<script src="js/calendar.js?v=5.60"></script>
+<script src="js/prompts.js?v=5.60"></script>
+<script src="js/projects.js?v=5.60"></script>
+<script src="js/import.js?v=5.60"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

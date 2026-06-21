@@ -955,12 +955,18 @@ function _renderPromptsResults() {
         .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
     : [];
 
-  // Foto-Analyse-Prompts filtern (v5.58) – nur bei Typ-Filter 'all' oder 'foto'
+  // Foto-Analyse-Prompts filtern (v5.58/v5.60) – nur bei Typ-Filter 'all' oder 'foto'
   const fotoVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'foto');
-  const filteredFoto = fotoVisible
-    ? EDITABLE_PROMPT_DEFAULTS.filter(p => p.category === 'foto')
+  const _hiddenFotoIds = getHiddenFotoPromptIds();
+  const filteredFotoBuiltin = fotoVisible
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => p.category === 'foto' && !_hiddenFotoIds.includes(p.id))
         .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
     : [];
+  const filteredFotoCustom = fotoVisible
+    ? getCustomPrompts().filter(p => p.category === 'foto')
+        .filter(p => matchesSearch([p.name, p.description, assemblePromptText(p), ...(p.tags||[])]))
+    : [];
+  const filteredFoto = [...filteredFotoBuiltin, ...filteredFotoCustom];
 
   // Design-Prompts filtern: alle Prompts mit canvaDesignType (v5.24)
   const designVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'design');
@@ -1125,12 +1131,50 @@ function _renderPromptsResults() {
     </div>`;
   }
 
-  // Foto-Analyse-Prompts (v5.58) – nur im Fotos-Tab abrufbar
-  if (filteredFoto.length) {
-    html += `<div style="margin-bottom:24px">
-      ${sectionHead('Foto-Analyse-Prompts', `${icon('camera',11,'color:var(--muted);margin-left:2px')} <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar · nur im Fotos-Tab</span>`)}
-      <div class="prompts-grid">${filteredFoto.map(_cardEditable).join('')}</div>
-    </div>`;
+  // Foto-Analyse-Prompts (v5.58/v5.60) – nur im Fotos-Tab abrufbar
+  if (filteredFoto.length || fotoVisible) {
+    // Card für built-in Foto-Prompts (mit Löschen-Button)
+    const _cardFotoBuiltin = (p) => {
+      const txt = getEditablePromptText(p.id) || p.prompt || '';
+      return '<div class="prompt-card">'
+        + '<div class="prompt-card-header">'
+        + '<div class="prompt-card-icon">' + icon(p.icon || 'camera', 18, 'color:var(--muted)') + '</div>'
+        + '<div class="prompt-card-name" style="color:var(--text)">' + escHtml(p.name) + '</div>'
+        + '</div>'
+        + (p.description ? '<div class="prompt-card-desc" style="color:var(--muted)">' + escHtml(p.description) + '</div>' : '')
+        + '<div class="prompt-card-preview">' + escHtml(txt.slice(0, 120)) + (txt.length > 120 ? '…' : '') + '</div>'
+        + '<div class="prompt-card-actions">'
+        + '<button class="btn btn-ghost" onclick="openEditablePromptModal(\'' + p.id + '\')" style="padding:5px 7px" title="Anpassen">' + icon('edit-2',13) + '</button>'
+        + '<button class="btn btn-ghost" onclick="hideFotoBuiltinPrompt(\'' + p.id + '\')" style="padding:5px 7px;color:var(--red)" title="Entfernen">' + icon('trash-2',13) + '</button>'
+        + '</div>'
+        + '</div>';
+    };
+    // Card für eigene Foto-Prompts (mit Bearbeiten + Löschen)
+    const _cardFotoCustom = (p) => {
+      const preview = assemblePromptText(p);
+      return '<div class="prompt-card">'
+        + '<div class="prompt-card-header">'
+        + '<div class="prompt-card-icon">' + icon(p.icon || 'camera', 18, 'color:var(--accent)') + '</div>'
+        + '<div class="prompt-card-name">' + escHtml(p.name) + '</div>'
+        + '</div>'
+        + (p.description ? '<div class="prompt-card-desc">' + escHtml(p.description) + '</div>' : '')
+        + '<div class="prompt-card-preview">' + escHtml(preview.slice(0, 120)) + (preview.length > 120 ? '…' : '') + '</div>'
+        + '<div class="prompt-card-actions">'
+        + '<button class="btn btn-ghost" onclick="openPromptEditorModal(\'' + p.id + '\')" style="padding:5px 7px" title="Bearbeiten">' + icon('edit-2',13) + '</button>'
+        + '<button class="btn btn-ghost" onclick="deletePromptById(\'' + p.id + '\')" style="padding:5px 7px;color:var(--red)" title="Löschen">' + icon('trash-2',13) + '</button>'
+        + '</div>'
+        + '</div>';
+    };
+    html += '<div style="margin-bottom:24px">'
+      + sectionHead('Foto-Analyse-Prompts', icon('camera',11,'color:var(--muted);margin-left:2px') + ' <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— nur im Fotos-Tab verfügbar</span>')
+      + '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">'
+      + '<button class="btn btn-primary" onclick="openPromptEditorModal(null,\'foto\')" style="gap:6px;font-size:0.8rem;padding:6px 12px">' + icon('plus',13) + ' Neuer Foto-Prompt</button>'
+      + '<button class="btn btn-ghost" onclick="openPromptGeneratorModal(\'foto\')" style="gap:6px;font-size:0.8rem;padding:6px 12px">' + icon('wand-2',13) + ' Mit Generator erstellen</button>'
+      + '</div>'
+      + (filteredFotoBuiltin.length ? '<div class="prompts-grid" style="margin-bottom:16px">' + filteredFotoBuiltin.map(_cardFotoBuiltin).join('') + '</div>' : '')
+      + (filteredFotoCustom.length ? '<div class="prompts-grid">' + filteredFotoCustom.map(_cardFotoCustom).join('') + '</div>' : '')
+      + (filteredFoto.length === 0 ? '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem">Alle eingebauten Foto-Prompts wurden entfernt. Eigene erstellen über die Buttons oben.</div>' : '')
+      + '</div>';
   }
 
   // Eigene Prompts
@@ -1279,11 +1323,16 @@ function _editorRemoveField(id) {
   _renderEditorSchema();
 }
 
-function openPromptEditorModal(id) {
+function openPromptEditorModal(id, category) {
   const prompts  = getCustomPrompts();
   const existing = id ? prompts.find(p => p.id === id) : null;
+  // v5.60: Kategorie setzen (explizit übergeben oder von vorhandenem Prompt erben)
+  _pendingPromptCategory = category || existing?.category || null;
 
-  document.getElementById('promptEditorTitle').textContent = existing ? 'Eigener Prompt' : 'Neuer Prompt';
+  const titleLabel = _pendingPromptCategory === 'foto'
+    ? (existing ? 'Foto-Prompt bearbeiten' : 'Neuer Foto-Prompt')
+    : (existing ? 'Eigener Prompt' : 'Neuer Prompt');
+  document.getElementById('promptEditorTitle').textContent = titleLabel;
   document.getElementById('promptEditorId').value          = existing?.id          || '';
   document.getElementById('promptEditorName').value        = existing?.name        || '';
   document.getElementById('promptEditorDesc').value        = existing?.description || '';
@@ -1361,6 +1410,8 @@ function savePromptFromEditor() {
     }));
 
   const obj = { name, description: desc, icon: iconName, rolle, tonalitaet, grenzen, kontext, tags };
+  // v5.60: Kategorie übernehmen wenn gesetzt
+  if (_pendingPromptCategory) obj.category = _pendingPromptCategory;
   // outputSchema explizit setzen oder entfernen (nicht vom alten Objekt erben)
   if (schema.length > 0) obj.outputSchema = schema;
 
@@ -1375,6 +1426,7 @@ function savePromptFromEditor() {
   } else {
     prompts.push({ id: genPromptId(), ...obj });
   }
+  _pendingPromptCategory = null;
   saveCustomPrompts(prompts);
   closePromptEditorModal();
   _renderPromptsResults();
@@ -1385,6 +1437,18 @@ function deletePromptById(id) {
   saveCustomPrompts(getCustomPrompts().filter(p => p.id !== id));
   _renderPromptsResults();
   showToast('Prompt gelöscht', 'success');
+}
+
+// v5.60: Built-in Foto-Prompts soft-löschen
+function getHiddenFotoPromptIds() {
+  try { return JSON.parse(localStorage.getItem('hiddenFotoPrompts') || '[]'); } catch { return []; }
+}
+function hideFotoBuiltinPrompt(id) {
+  if (!confirm('Diesen eingebauten Foto-Prompt verstecken?\n(Kann über Browser-Einstellungen → localStorage zurückgesetzt werden)')) return;
+  const hidden = getHiddenFotoPromptIds();
+  if (!hidden.includes(id)) { hidden.push(id); localStorage.setItem('hiddenFotoPrompts', JSON.stringify(hidden)); }
+  _renderPromptsResults();
+  showToast('Foto-Prompt entfernt', 'success');
 }
 
 // ── Custom Prompt ausführen ──────────────────────
@@ -1651,6 +1715,7 @@ function importPrompts(event) {
 // ═══════════════════════════════════════════════════
 
 let _genState = null;
+let _pendingPromptCategory = null; // v5.60: gesetzt wenn Prompt in bestimmter Kategorie gespeichert werden soll
 
 // ── Zentrale Ausgabe-Feld-Konfiguration (v5.30) ──────────────────────────────
 // Einzige Quelle der Wahrheit für alle Typen: Dropdown, JSON-Vorschau,
@@ -1742,7 +1807,9 @@ const GEN_FIELD_TYPES = Object.entries(FIELD_TYPE_CONFIG).map(([value, c]) => ({
   value, label: c.label, icon: c.icon, group: c.group,
 }));
 
-function openPromptGeneratorModal() {
+function openPromptGeneratorModal(category) {
+  // v5.60: Kategorie setzen wenn übergeben
+  _pendingPromptCategory = category || null;
   _genState = {
     mode: null, step: 1,
     name: '', icon: 'sparkles', description: '',
@@ -1932,11 +1999,14 @@ function _genSave() {
     grenzen:     s.grenzen    || '',
     kontext:     s.kontext,
     tags:        s.tags,
-    ...(schema.length > 0 ? { outputSchema: schema } : {})
+    ...(schema.length > 0 ? { outputSchema: schema } : {}),
+    // v5.60: Kategorie übernehmen wenn gesetzt
+    ...(_pendingPromptCategory ? { category: _pendingPromptCategory } : {})
   };
 
   const prompts = getCustomPrompts();
   prompts.push(obj);
+  _pendingPromptCategory = null;
   saveCustomPrompts(prompts);
   closePromptGeneratorModal();
   _renderPromptsResults();
