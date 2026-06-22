@@ -1182,7 +1182,7 @@ function _renderPromptsResults() {
         + (p.description ? '<div class="prompt-card-desc" style="color:var(--muted)">' + escHtml(p.description) + '</div>' : '')
         + '<div class="prompt-card-preview">' + escHtml(txt.slice(0, 120)) + (txt.length > 120 ? '…' : '') + '</div>'
         + '<div class="prompt-card-actions">'
-        + '<button class="btn btn-ghost" onclick="openEditablePromptModal(\'' + p.id + '\')" style="padding:5px 7px" title="Anpassen">' + icon('edit-2',13) + '</button>'
+        + '<button class="btn btn-ghost" onclick="openEditablePromptEditor(\'' + p.id + '\')" style="padding:5px 7px" title="Anpassen">' + icon('edit-2',13) + '</button>'
         + '<button class="btn btn-ghost" onclick="exportSingleEditablePrompt(\'' + p.id + '\')" style="padding:5px 7px" title="Herunterladen">' + icon('download',13) + '</button>'
         + '<button class="btn btn-ghost" onclick="hideFotoBuiltinPrompt(\'' + p.id + '\')" style="padding:5px 7px;color:var(--red)" title="Entfernen">' + icon('trash-2',13) + '</button>'
         + '</div>'
