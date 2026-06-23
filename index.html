@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.73" />
+  <link rel="stylesheet" href="css/styles.css?v=5.74" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.73</button>
+        onmouseout="this.style.color='var(--muted)'">v5.74</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1478,6 +1478,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.74 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.74</span><span class="cl-date">23.06.2026</span></div>
+        <div class="cl-title">Projekt-Assistent – Chat über alle Projekt-Sitzungen</div>
+        <ul class="cl-list">
+          <li>Neuer Chat-Assistent direkt in der Projektdetailansicht – FAB rechts unten öffnet eine Sidebar</li>
+          <li>Claude kennt die Analyseergebnisse aller Sitzungen des Projekts als Kontext (max. 50.000 Zeichen, strukturiert nach Sitzung + Datum)</li>
+          <li>Multi-Turn: letzte 5 Runden werden als Gesprächsgedächtnis mitgeschickt</li>
+          <li>Rollen-Auswahl (wie in Analyse-Chat und Gesprächs-Chat)</li>
+          <li>Chatverlauf wird pro Projekt gespeichert und bleibt nach App-Neustart erhalten (Drive-Sync über saveProjects)</li>
+        </ul>
+        <div class="cl-tech">js/projects.js: openProjectAssistant(), sendProjectChatMessage(), _buildProjectAnalysisContext(), _updateProjectAssistFab(), _renderProjectChatMessages(). js/prompts.js: builtin_projekt_followup. index.html: #projAssistPanel, #projAssistFab, #projAssistOverlay. css/styles.css: .proj-assist-panel, .proj-assist-fab.</div>
+      </div>
 
       <!-- ── v5.73 ── -->
       <div class="cl-entry">
@@ -4405,32 +4419,32 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.73"></script>
-<script src="js/storage.js?v=5.73"></script>
-<script src="js/config.js?v=5.73"></script>
-<script src="js/auth.js?v=5.73"></script>
-<script src="js/drive.js?v=5.73"></script>
-<script src="js/sessions.js?v=5.73"></script>
-<script src="js/assemblyai.js?v=5.73"></script>
-<script src="js/claude.js?v=5.73"></script>
-<script src="js/ui.js?v=5.73"></script>
-<script src="js/tags.js?v=5.73"></script>
-<script src="js/notes.js?v=5.73"></script>
-<script src="js/photos.js?v=5.73"></script>
-<script src="js/persons.js?v=5.73"></script>
-<script src="js/audio.js?v=5.73"></script>
-<script src="js/recorder.js?v=5.73"></script>
-<script src="js/contacts.js?v=5.73"></script>
-<script src="js/app.js?v=5.73"></script>
+<script src="js/icons.js?v=5.74"></script>
+<script src="js/storage.js?v=5.74"></script>
+<script src="js/config.js?v=5.74"></script>
+<script src="js/auth.js?v=5.74"></script>
+<script src="js/drive.js?v=5.74"></script>
+<script src="js/sessions.js?v=5.74"></script>
+<script src="js/assemblyai.js?v=5.74"></script>
+<script src="js/claude.js?v=5.74"></script>
+<script src="js/ui.js?v=5.74"></script>
+<script src="js/tags.js?v=5.74"></script>
+<script src="js/notes.js?v=5.74"></script>
+<script src="js/photos.js?v=5.74"></script>
+<script src="js/persons.js?v=5.74"></script>
+<script src="js/audio.js?v=5.74"></script>
+<script src="js/recorder.js?v=5.74"></script>
+<script src="js/contacts.js?v=5.74"></script>
+<script src="js/app.js?v=5.74"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=5.73"></script>
-<script src="js/search.js?v=5.73"></script>
-<script src="js/calendar.js?v=5.73"></script>
-<script src="js/prompts.js?v=5.73"></script>
-<script src="js/projects.js?v=5.73"></script>
-<script src="js/import.js?v=5.73"></script>
+<script src="js/features.js?v=5.74"></script>
+<script src="js/search.js?v=5.74"></script>
+<script src="js/calendar.js?v=5.74"></script>
+<script src="js/prompts.js?v=5.74"></script>
+<script src="js/projects.js?v=5.74"></script>
+<script src="js/import.js?v=5.74"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
@@ -4584,6 +4598,58 @@
     <i data-lucide="panel-right-open" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i>
     <span>Assistent</span>
   </button>
+
+  <!-- ── Projekt-Assistent (v5.74) ──────────────────────────────────────── -->
+  <!-- FAB: erscheint wenn Projekt-Detailansicht aktiv -->
+  <button class="proj-assist-fab hidden" id="projAssistFab" onclick="toggleProjectAssistant()" title="Projekt-Assistent öffnen">
+    <i data-lucide="layers" style="width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none"></i>
+  </button>
+
+  <!-- Panel: Chat-Sidebar -->
+  <div class="proj-assist-panel" id="projAssistPanel">
+    <!-- Header -->
+    <div class="proj-assist-header">
+      <div style="display:flex;align-items:center;gap:8px;flex:1;overflow:hidden">
+        <i data-lucide="layers" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+        <span id="projAssistTitle" style="font-weight:600;font-size:0.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Projekt-Assistent</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <button onclick="clearProjectChat()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;font-size:0.74rem;cursor:pointer" title="Chatverlauf löschen">Löschen</button>
+        <button onclick="closeProjectAssistant()" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:5px;display:flex;align-items:center" title="Schließen">
+          <i data-lucide="x" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"></i>
+        </button>
+      </div>
+    </div>
+    <!-- Rollen-Auswahl -->
+    <div class="persona-select-bar">
+      <label style="font-size:0.75rem;color:var(--muted);flex-shrink:0">Rolle:</label>
+      <select id="projAssistPersonaSelect">
+        <option value="">Kein Systemprompt</option>
+      </select>
+    </div>
+    <!-- Kontext-Info -->
+    <div id="projAssistContextInfo" style="padding:6px 14px;font-size:0.75rem;color:var(--muted);border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)"></div>
+    <!-- Nachrichten -->
+    <div id="projAssistMessages" style="flex:1;overflow-y:auto;padding:14px;min-height:80px">
+      <div style="text-align:center;color:var(--muted);padding:24px 12px;font-size:0.85rem">
+        Stelle eine Frage zu diesem Projekt.<br>
+        <span style="font-size:0.78rem;opacity:0.7">z.B. „Welche offenen Aufgaben gibt es?"</span>
+      </div>
+    </div>
+    <!-- Eingabe -->
+    <div class="sdc-sidebar-input" style="flex-shrink:0">
+      <textarea id="projAssistInput" rows="2"
+        placeholder="Projekt-Frage… (Strg+Enter)"
+        onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){sendProjectChatMessage()}"
+        style="flex:1;resize:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-family:inherit;line-height:1.5;outline:none"></textarea>
+      <button id="projAssistSendBtn" onclick="sendProjectChatMessage()"
+        style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 16px;white-space:nowrap;flex-shrink:0;font-size:0.82rem;font-weight:600">
+        Senden
+      </button>
+    </div>
+  </div>
+  <!-- Overlay für mobile -->
+  <div class="proj-assist-overlay" id="projAssistOverlay" onclick="closeProjectAssistant()"></div>
 
 </body>
 </html>

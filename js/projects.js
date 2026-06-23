@@ -50,6 +50,9 @@ function toggleProjectsView() {
     _setHeaderBtn('navProjects', false);
     const bt = document.getElementById('browserToolbar');
     if (bt) bt.style.display = '';
+    closeProjectAssistant(); // v5.74
+    _currentProjectDetailId = null;
+    _updateProjectAssistFab();
   } else {
     // Öffnen
     if (typeof closeSessionSidebar === 'function') closeSessionSidebar(); // v5.17: Chat-Sidebar schließen
@@ -72,6 +75,8 @@ function renderProjectBrowser() {
   const el = document.getElementById('projectsView');
   if (!el) return;
   _currentProjectDetailId = null;
+  closeProjectAssistant(); // v5.74: Panel schließen wenn zurück zur Übersicht
+  _updateProjectAssistFab();
 
   const active   = projects.filter(p => p.status === 'active');
   const paused   = projects.filter(p => p.status === 'paused');
@@ -166,6 +171,7 @@ function showProjectDetail(id) {
   if (!proj || !el) return;
   _currentProjectDetailId = id;
   renderProjectDetail(id);
+  _updateProjectAssistFab(); // v5.74: FAB einblenden
 }
 
 function renderProjectDetail(id, searchVal = '', sortVal = 'date-desc') {
@@ -930,5 +936,242 @@ function _deleteProjectAnalysis(projId, idx) {
   saveProjects();
   const accordion = document.getElementById('projAnalysisAccordion');
   if (accordion) accordion.innerHTML = _renderProjectAnalysisAccordion(proj);
+}
+
+// ══════════════════════════════════════════════════════
+// PROJEKT-ASSISTENT (v5.74)
+// Chat-Sidebar mit Analysen aller Projekt-Sitzungen
+// ══════════════════════════════════════════════════════
+
+// ── FAB ein-/ausblenden wenn Projektdetail aktiv ────
+function _updateProjectAssistFab() {
+  const fab = document.getElementById('projAssistFab');
+  if (!fab) return;
+  const show = !!_currentProjectDetailId;
+  fab.classList.toggle('hidden', !show);
+  // Lucide-Icons rendern falls neu sichtbar
+  if (show && window.lucide) lucide.createIcons({ nodes: [fab] });
+}
+
+function toggleProjectAssistant() {
+  const panel = document.getElementById('projAssistPanel');
+  if (!panel) return;
+  if (panel.classList.contains('open')) {
+    closeProjectAssistant();
+  } else {
+    openProjectAssistant();
+  }
+}
+
+function openProjectAssistant() {
+  if (!_currentProjectDetailId) return;
+  const proj = getProjectById(_currentProjectDetailId);
+  if (!proj) return;
+
+  // Panel öffnen
+  const panel   = document.getElementById('projAssistPanel');
+  const overlay = document.getElementById('projAssistOverlay');
+  const title   = document.getElementById('projAssistTitle');
+  if (!panel) return;
+
+  panel.classList.add('open');
+  if (overlay) overlay.classList.add('active');
+  if (title) title.textContent = proj.name;
+
+  // Kontext-Info
+  const sessionsInProj = (typeof sessions !== 'undefined')
+    ? sessions.filter(s => s.projectId === proj.id && (s.status === 'done' || s.utterances?.length > 0))
+    : [];
+  const withAnalyses = sessionsInProj.filter(s =>
+    s.privateAnalysis || s.workAnalysis || s.claudeSentiment || s.claudeChapters || s.claudeTopics || Object.keys(s.customResults || {}).length
+  );
+  const infoEl = document.getElementById('projAssistContextInfo');
+  if (infoEl) {
+    infoEl.innerHTML = `${sessionsInProj.length} Sitzung${sessionsInProj.length !== 1 ? 'en' : ''} · ${withAnalyses.length} mit Analysen`;
+  }
+
+  // Rollen-Dropdown befüllen
+  if (typeof populatePersonaSelects === 'function') populatePersonaSelects();
+
+  // Nachrichten rendern
+  _renderProjectChatMessages(proj);
+
+  // Lucide neu zeichnen
+  if (window.lucide) lucide.createIcons({ nodes: [panel] });
+
+  // Fokus
+  setTimeout(() => document.getElementById('projAssistInput')?.focus(), 300);
+}
+
+function closeProjectAssistant() {
+  document.getElementById('projAssistPanel')?.classList.remove('open');
+  document.getElementById('projAssistOverlay')?.classList.remove('active');
+}
+
+// ── Nachrichten rendern ─────────────────────────────
+function _renderProjectChatMessages(proj) {
+  const container = document.getElementById('projAssistMessages');
+  if (!container) return;
+  const chat = proj?.claudeChat || [];
+  if (!chat.length) {
+    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding:24px 12px;font-size:0.85rem">
+      Stelle eine Frage zu diesem Projekt.<br>
+      <span style="font-size:0.78rem;opacity:0.7">z.B. „Welche offenen Aufgaben gibt es?"</span>
+    </div>`;
+    return;
+  }
+  container.innerHTML = chat.map((m, i) => `
+    <div style="margin-bottom:16px">
+      <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px">Du</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:0.88rem">${escHtml(m.question)}</div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+        <span style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Assistent</span>
+        <button onclick="_copyProjAssistAnswer(${i})"
+          style="background:none;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:0.7rem;color:var(--muted);cursor:pointer">
+          Kopieren
+        </button>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:0.9rem;white-space:pre-wrap;line-height:1.6">${escHtml(m.answer)}</div>
+    </div>
+  `).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function _copyProjAssistAnswer(idx) {
+  const proj = getProjectById(_currentProjectDetailId);
+  const text = proj?.claudeChat?.[idx]?.answer;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => showToast('Kopiert ✓', 'success'));
+}
+
+function clearProjectChat() {
+  const proj = getProjectById(_currentProjectDetailId);
+  if (!proj) return;
+  proj.claudeChat = [];
+  saveProjects();
+  _renderProjectChatMessages(proj);
+}
+
+// ── Analyse-Kontext aufbauen (max 50.000 Zeichen, strukturiert) ──────────
+function _buildProjectAnalysisContext(projectId) {
+  const projSessions = (typeof sessions !== 'undefined')
+    ? sessions.filter(s => s.projectId === projectId && (s.status === 'done' || s.utterances?.length > 0))
+    : [];
+
+  if (!projSessions.length) return '';
+
+  const MAX_CHARS = 50000;
+  let context = '';
+  const sorted = [...projSessions].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  for (const s of sorted) {
+    const dateStr = new Date(s.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+    let block = `\n## Sitzung: „${s.label}" | ${dateStr}\n`;
+
+    // Gesprächsanalyse
+    if (s.privateAnalysis) {
+      const pa = s.privateAnalysis;
+      if (pa.summary)    block += `Zusammenfassung: ${pa.summary}\n`;
+      if (pa.dynamics)   block += `Gesprächsdynamik: ${pa.dynamics}\n`;
+      if (pa.agreements?.length)  block += `Vereinbarungen: ${pa.agreements.join('; ')}\n`;
+      if (pa.nextSteps?.length)   block += `Nächste Schritte: ${pa.nextSteps.join('; ')}\n`;
+      if (pa.openTopics?.length)  block += `Offene Themen: ${pa.openTopics.join('; ')}\n`;
+    }
+
+    // Arbeitsanalyse
+    if (s.workAnalysis) {
+      const wa = s.workAnalysis;
+      if (wa.summary)    block += `Arbeits-Zusammenfassung: ${wa.summary}\n`;
+      if (wa.tasks?.length)       block += `Aufgaben: ${wa.tasks.map(t => typeof t === 'object' ? t.task : t).join('; ')}\n`;
+      if (wa.decisions?.length)   block += `Entscheidungen: ${wa.decisions.join('; ')}\n`;
+      if (wa.openQuestions?.length) block += `Offene Fragen: ${wa.openQuestions.join('; ')}\n`;
+      if (wa.risks?.length)       block += `Risiken: ${wa.risks.join('; ')}\n`;
+    }
+
+    // Themen
+    if (s.claudeTopics?.length) {
+      const topics = s.claudeTopics.map(t => typeof t === 'object' ? t.text : t);
+      block += `Themen: ${topics.join(', ')}\n`;
+    }
+
+    // Eigene Prompt-Ergebnisse
+    const customResults = s.customResults || {};
+    Object.values(customResults).forEach(r => {
+      if (r.text) block += `${r.promptName || 'Eigene Analyse'}: ${r.text.slice(0, 300)}\n`;
+    });
+
+    // Zeichenlimit prüfen
+    if (context.length + block.length > MAX_CHARS) {
+      context += '\n[… weitere Sitzungen wurden wegen Zeichenlimit gekürzt]';
+      break;
+    }
+    context += block;
+  }
+
+  return context.trim();
+}
+
+// ── Nachricht senden ────────────────────────────────
+async function sendProjectChatMessage() {
+  const proj = getProjectById(_currentProjectDetailId);
+  if (!proj) { showToast('Kein Projekt aktiv.', 'warning'); return; }
+  if (!anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'warning'); return; }
+
+  const input  = document.getElementById('projAssistInput');
+  const sendBtn = document.getElementById('projAssistSendBtn');
+  const question = input?.value?.trim();
+  if (!question) return;
+
+  const analysisContext = _buildProjectAnalysisContext(proj.id);
+  if (!analysisContext) {
+    showToast('Noch keine Analysen in diesem Projekt – bitte erst Sitzungen analysieren.', 'warning');
+    return;
+  }
+
+  // UI: Lade-Zustand
+  if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '…'; }
+  if (input) input.disabled = true;
+
+  // Rollen-System-Prompt
+  const personaId = document.getElementById('projAssistPersonaSelect')?.value || '';
+  const systemPrompt = typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null;
+
+  // Multi-Turn: letzte 5 Runden
+  const prevRounds = (proj.claudeChat || []).slice(-5);
+  const chatHistory = prevRounds.length
+    ? prevRounds.map((h, i) => `[Runde ${i + 1}]\nFrage: ${h.question}\nAntwort: ${h.answer.slice(0, 500)}${h.answer.length > 500 ? '…' : ''}`).join('\n\n')
+    : 'Keine bisherigen Nachrichten.';
+
+  const prompt = getEditablePromptText('builtin_projekt_followup')
+    .replace(/\{\{projektName\}\}/g, proj.name)
+    .replace(/\{\{projektAnalysen\}\}/g, analysisContext)
+    .replace(/\{\{chatHistory\}\}/g, chatHistory)
+    .replace(/\{\{question\}\}/g, question);
+
+  try {
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt, systemPrompt);
+
+    // Kosten auf erste Sitzung des Projekts buchen (Proxy-Lösung)
+    const firstSession = (typeof sessions !== 'undefined')
+      ? sessions.find(s => s.projectId === proj.id)
+      : null;
+    if (firstSession && typeof addTokensToSession === 'function') {
+      addTokensToSession(firstSession, inputTokens, outputTokens);
+      if (typeof saveSessions === 'function') saveSessions();
+    }
+
+    if (!proj.claudeChat) proj.claudeChat = [];
+    proj.claudeChat.push({ question, answer: text, ts: new Date().toISOString() });
+    saveProjects();
+    _renderProjectChatMessages(proj);
+    if (input) { input.value = ''; input.disabled = false; input.focus(); }
+  } catch (e) {
+    showToast('Fehler: ' + (e.message || 'Unbekannt'), 'error');
+    if (input) input.disabled = false;
+  } finally {
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Senden'; }
+  }
 }
 

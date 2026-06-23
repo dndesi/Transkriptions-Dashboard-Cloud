@@ -3811,3 +3811,68 @@ mark.search-highlight {
   transition: color 0.15s;
 }
 .hl-del-btn:hover { color: var(--red); }
+
+/* ══════════════════════════════════════════════════════
+   v5.74 – PROJEKT-ASSISTENT
+══════════════════════════════════════════════════════ */
+
+/* FAB – erscheint wenn Projektdetail aktiv (über projectsView) */
+.proj-assist-fab {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  z-index: 1201; /* über projectsView (z-index 1200) */
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 50px; height: 50px;
+  display: flex;
+  align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(108,99,255,0.45);
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  touch-action: manipulation;
+}
+.proj-assist-fab:hover { transform: scale(1.06); }
+.proj-assist-fab.hidden { display: none !important; }
+
+/* Chat-Panel */
+.proj-assist-panel {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 380px;
+  max-width: 100vw;
+  z-index: 1202;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: none;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.35);
+}
+.proj-assist-panel.open {
+  display: flex;
+}
+.proj-assist-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+/* Overlay für Mobile */
+.proj-assist-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1200;
+}
+.proj-assist-overlay.active { display: block; }
+
+@media (max-width: 768px) {
+  .proj-assist-panel { width: 100vw; }
+  .proj-assist-fab { bottom: calc(20px + env(safe-area-inset-bottom)); }
+}
