@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.69</button>
+        onmouseout="this.style.color='var(--muted)'">v5.70</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1478,6 +1478,12 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.70 ── -->
+        <div class="cl-header"><span class="cl-version">v5.70</span><span class="cl-date">23.06.2026</span></div>
+        <ul class="cl-list">
+          <li>Textfix: „Kontakt zuordnen" → „Kontext zuordnen" im Projekt-Bearbeiten-Dialog</li>
+        </ul>
 
       <!-- ── v5.69 ── -->
         <div class="cl-header"><span class="cl-version">v5.69</span><span class="cl-date">23.06.2026</span></div>
@@ -4516,11 +4522,11 @@
       <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Wird im Dashboard automatisch vorausgewählt.</div>
     </div>
     <div>
-      <label>Kontakt zuordnen</label>
+      <label>Kontext zuordnen</label>
       <select id="pmKontakt">
-        <option value="">Kein Kontakt</option>
+        <option value="">Kein Kontext</option>
       </select>
-      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Verknüpft dieses Projekt mit einem Kontakt.</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Verknüpft dieses Projekt mit einem Kontext.</div>
     </div>
     <div class="project-modal-footer">
       <button id="pmDeleteBtn" class="btn btn-ghost" style="margin-right:auto;color:var(--red);border-color:var(--red);display:none"
