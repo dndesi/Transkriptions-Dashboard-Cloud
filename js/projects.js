@@ -945,12 +945,13 @@ function _deleteProjectAnalysis(projId, idx) {
 
 // ── FAB ein-/ausblenden wenn Projektdetail aktiv ────
 function _updateProjectAssistFab() {
-  const fab = document.getElementById('projAssistFab');
-  if (!fab) return;
+  // v5.76: Fähnchen statt FAB
+  const flap = document.getElementById('projAssistFlap');
+  if (!flap) return;
   const show = !!_currentProjectDetailId;
-  fab.classList.toggle('hidden', !show);
+  flap.classList.toggle('hidden', !show);
   // Lucide-Icons rendern falls neu sichtbar
-  if (show && window.lucide) lucide.createIcons({ nodes: [fab] });
+  if (show && window.lucide) lucide.createIcons({ nodes: [flap] });
 }
 
 function toggleProjectAssistant() {
@@ -977,6 +978,8 @@ function openProjectAssistant() {
   panel.classList.add('open');
   if (overlay) overlay.classList.add('active');
   if (title) title.textContent = proj.name;
+  // v5.76: Fähnchen als "offen" markieren
+  document.getElementById('projAssistFlap')?.classList.add('proj-assist-flap-open');
 
   // Kontext-Info
   const sessionsInProj = (typeof sessions !== 'undefined')
@@ -1006,6 +1009,8 @@ function openProjectAssistant() {
 function closeProjectAssistant() {
   document.getElementById('projAssistPanel')?.classList.remove('open');
   document.getElementById('projAssistOverlay')?.classList.remove('active');
+  // v5.76: Fähnchen-State zurücksetzen
+  document.getElementById('projAssistFlap')?.classList.remove('proj-assist-flap-open');
 }
 
 // ── Nachrichten rendern ─────────────────────────────

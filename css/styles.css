@@ -3817,24 +3817,41 @@ mark.search-highlight {
 ══════════════════════════════════════════════════════ */
 
 /* FAB – erscheint wenn Projektdetail aktiv (über projectsView) */
-.proj-assist-fab {
+/* v5.76: Fähnchen-Tab statt rundem FAB */
+.proj-assist-flap {
   position: fixed;
-  bottom: 20px; right: 20px;
-  z-index: 1201; /* über projectsView (z-index 1200) */
+  right: 0;
+  top: 50vh;
+  transform: translateY(-50%);
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 50%;
-  width: 50px; height: 50px;
-  display: flex;
-  align-items: center; justify-content: center;
-  box-shadow: 0 4px 14px rgba(108,99,255,0.45);
+  font: inherit;
+  border-radius: 10px 0 0 10px;
+  padding: 14px 6px;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  z-index: 1201; /* über projectsView (1200) */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  box-shadow: -3px 0 12px rgba(108,99,255,0.35);
+  transition: right 0.22s ease, opacity 0.15s;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
 }
-.proj-assist-fab:hover { transform: scale(1.06); }
-.proj-assist-fab.hidden { display: none !important; }
+.proj-assist-flap span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  writing-mode: vertical-rl;
+}
+.proj-assist-flap:hover { background: var(--accent2, #7c6fdf); }
+.proj-assist-flap.proj-assist-flap-open { background: var(--accent2, #7c6fdf); }
+.proj-assist-flap.proj-assist-flap-open:hover { background: #c0392b; }
+.proj-assist-flap.hidden { display: none !important; }
 
 /* Chat-Panel */
 .proj-assist-panel {
@@ -3874,5 +3891,4 @@ mark.search-highlight {
 
 @media (max-width: 768px) {
   .proj-assist-panel { width: 100vw; }
-  .proj-assist-fab { bottom: calc(20px + env(safe-area-inset-bottom)); }
 }
