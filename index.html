@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.70</button>
+        onmouseout="this.style.color='var(--muted)'">v5.71</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1478,6 +1478,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.71 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.71</span><span class="cl-date">23.06.2026</span></div>
+        <div class="cl-title">Kategorie „Rolle" – System-Prompts für Folge-Gespräch</div>
+        <ul class="cl-list">
+          <li>Neue Prompt-Kategorie „Rolle": Prompts dieser Kategorie werden im Folge-Gespräch als System-Prompt an Claude gesendet – Claude übernimmt damit eine definierte Gesprächsrolle</li>
+          <li>5 Built-in-Rollen mitgeliefert: Life Coach, Erfahrene Führungskraft, Sparringspartner, Psychologischer Berater, Moderator – alle anpassbar</li>
+          <li>Rollen-Dropdown im Folge-Gespräch zeigt jetzt nur noch Rollen-Prompts (statt aller Custom Prompts)</li>
+          <li>Eigene Rollen erstell- und bearbeitbar über Prompt-Bibliothek → „Rolle" im Kategorie-Picker</li>
+          <li>Rollen erscheinen in eigener Sektion in der Prompt-Bibliothek, Typ-Filter „Rollen" ergänzt</li>
+        </ul>
+        <div class="cl-tech">js/claude.js: callClaudeAPI(prompt, systemPrompt) – optionaler system-Parameter; askFollowUp() nutzt _buildRoleSystemPrompt statt _buildPersonaPrefix. js/features.js: _buildRoleSystemPrompt() (liest EDITABLE_PROMPT_DEFAULTS + custom rolle); populatePersonaSelects() gefiltert. js/prompts.js: EDITABLE_PROMPT_DEFAULTS +5 Rollen; filteredRolleBuiltin/Custom; _CATEGORY_SECTIONS += rolle; Rollen-Sektion im Renderer; Typ-Filter; Kategorie-Picker; _categoryTitles.</div>
+      </div>
 
       <!-- ── v5.70 ── -->
         <div class="cl-header"><span class="cl-version">v5.70</span><span class="cl-date">23.06.2026</span></div>

@@ -742,6 +742,53 @@ Formatiere die Aufgaben als Checkliste (- [ ] Aufgabe) mit:
 - Priorität wenn erkennbar (Hoch / Mittel / Niedrig)
 - Verantwortliche Person wenn erkennbar
 - Deadline wenn erkennbar`
+  },
+
+  // ── Rollen-Prompts (v5.71) – werden als System-Prompt im Folge-Gespräch gesendet ──
+  {
+    id: 'builtin_rolle_coach',
+    category: 'rolle',
+    name: 'Life Coach',
+    description: 'Empathisch · Zielorientiert · Lösungsfokussiert',
+    usedIn: 'Sitzungsdetail → Folge-Gespräch',
+    icon: 'heart',
+    prompt: `Du bist ein erfahrener Life Coach. Dein Stil ist empathisch, warm und lösungsorientiert. Du hilfst dabei, Erkenntnisse aus Gesprächen in konkrete nächste Schritte umzuwandeln, Hindernisse zu identifizieren und nachhaltige Veränderungen anzustoßen. Stelle gezielte Reflexionsfragen und formuliere konstruktives, mutmachendes Feedback. Antworte auf Deutsch.`
+  },
+  {
+    id: 'builtin_rolle_manager',
+    category: 'rolle',
+    name: 'Erfahrene Führungskraft',
+    description: 'Strategisch · Direkt · Ergebnisorientiert',
+    usedIn: 'Sitzungsdetail → Folge-Gespräch',
+    icon: 'briefcase',
+    prompt: `Du bist eine erfahrene Führungskraft mit umfangreichem Erfahrungsschatz in Unternehmensführung und strategischer Planung. Dein Stil ist direkt, strukturiert und ergebnisorientiert. Du analysierst Situationen aus Managementperspektive, gibst klares Feedback zu Führungsentscheidungen und hilfst dabei, operative und strategische Herausforderungen konkret zu lösen. Antworte auf Deutsch.`
+  },
+  {
+    id: 'builtin_rolle_sparring',
+    category: 'rolle',
+    name: 'Sparringspartner',
+    description: 'Kritisch · Herausfordernd · Auf Augenhöhe',
+    usedIn: 'Sitzungsdetail → Folge-Gespräch',
+    icon: 'zap',
+    prompt: `Du bist ein herausfordernder Sparringspartner auf Augenhöhe. Du hinterfragst Annahmen kritisch, spielst devil's advocate und stellst unbequeme Fragen, um Denkmuster aufzudecken. Dein Ziel ist es, durch konstruktive Konfrontation zu schärferen Erkenntnissen zu führen – nicht Bestätigung zu geben, sondern Denken anzuregen und blinde Flecken sichtbar zu machen. Antworte auf Deutsch.`
+  },
+  {
+    id: 'builtin_rolle_psychologe',
+    category: 'rolle',
+    name: 'Psychologischer Berater',
+    description: 'Einfühlsam · Reflektierend · Tiefenorientiert',
+    usedIn: 'Sitzungsdetail → Folge-Gespräch',
+    icon: 'user',
+    prompt: `Du bist ein erfahrener psychologischer Berater. Dein Ansatz ist nicht-wertend, einfühlsam und auf Tiefenreflexion ausgerichtet. Du hilfst dabei, emotionale Muster, Denkschemata und innere Konflikte zu erkennen und zu verstehen. Du gibst keine direkten Ratschläge, sondern begleitest durch gezielte Fragen und Spiegelung zur Selbsterkenntnis. Keine klinischen Diagnosen. Antworte auf Deutsch.`
+  },
+  {
+    id: 'builtin_rolle_moderator',
+    category: 'rolle',
+    name: 'Moderator',
+    description: 'Neutral · Strukturierend · Zusammenfassend',
+    usedIn: 'Sitzungsdetail → Folge-Gespräch',
+    icon: 'git-branch',
+    prompt: `Du bist ein erfahrener Moderator. Du bringst Struktur in komplexe Themen, fasst Aussagen präzise und neutral zusammen und hilfst dabei, den roten Faden zu behalten. Dein Stil ist sachlich und ausgewogen – du bewertest nicht, sondern strukturierst, klärt und machst nächste Schritte sichtbar. Antworte auf Deutsch.`
   }
 ];
 
@@ -908,6 +955,7 @@ function renderPromptsView() {
           <option value="standard">Standard</option>
           <option value="design">Design</option>
           <option value="foto">Foto-Analyse</option>
+          <option value="rolle">Rollen</option>
           <option value="custom">Eigene</option>
         </select>
         <button class="btn btn-ghost" onclick="openPromptCategoryPickerModal('generator')" style="gap:6px;flex-shrink:0" title="Prompt per Wizard oder KI erstellen">
@@ -948,11 +996,11 @@ function _renderPromptsResults() {
     ? SYSTEM_PROMPTS.filter(p => matchesSearch([p.name, p.description, p.prompt]))
     : [];
 
-  // Standard-Prompts filtern: Standard-Analysen + Feature-Prompts (ohne Design, ohne Foto) zusammen (v5.24)
+  // Standard-Prompts filtern: Standard-Analysen + Feature-Prompts (ohne Design, ohne Foto, ohne Rollen) (v5.24/v5.71)
   const standardVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'standard');
   const _hiddenStandardIds = getHiddenStandardPromptIds();
   const filteredStandard = standardVisible
-    ? EDITABLE_PROMPT_DEFAULTS.filter(p => !p.canvaDesignType && p.category !== 'foto' && !_hiddenStandardIds.includes(p.id))
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => !p.canvaDesignType && p.category !== 'foto' && p.category !== 'rolle' && !_hiddenStandardIds.includes(p.id))
         .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
     : [];
 
@@ -986,9 +1034,20 @@ function _renderPromptsResults() {
         .filter(p => matchesSearch([p.name, p.description, assemblePromptText(p), ...(p.tags||[])]))
     : [];
 
-  // Eigene Prompts filtern – Kategorie-spezifische Prompts (design/foto/standard) ausblenden,
-  // da sie bereits in ihren eigenen Sektionen erscheinen (v5.67: standard ergänzt)
-  const _CATEGORY_SECTIONS = new Set(['design', 'foto', 'standard']);
+  // v5.71: Rollen-Prompts filtern – built-in + eigene mit category === 'rolle'
+  const rolleVisible = !tagFilterActive && (typeFilter === 'all' || typeFilter === 'rolle');
+  const filteredRolleBuiltin = rolleVisible
+    ? EDITABLE_PROMPT_DEFAULTS.filter(p => p.category === 'rolle')
+        .filter(p => matchesSearch([p.name, p.description, getEditablePromptText(p.id)]))
+    : [];
+  const filteredRolleCustom = rolleVisible
+    ? getCustomPrompts().filter(p => p.category === 'rolle')
+        .filter(p => matchesSearch([p.name, p.description, assemblePromptText(p), ...(p.tags||[])]))
+    : [];
+
+  // Eigene Prompts filtern – Kategorie-spezifische Prompts ausblenden,
+  // da sie bereits in ihren eigenen Sektionen erscheinen (v5.67: standard; v5.71: rolle ergänzt)
+  const _CATEGORY_SECTIONS = new Set(['design', 'foto', 'standard', 'rolle']);
   const customVisible = typeFilter === 'all' || typeFilter === 'custom';
   let filteredCustom = customVisible ? getCustomPrompts().filter(p => !_CATEGORY_SECTIONS.has(p.category)) : [];
   if (q) filteredCustom = filteredCustom.filter(p =>
@@ -1002,7 +1061,7 @@ function _renderPromptsResults() {
   }
 
   const allTags    = _getAllPromptTags();
-  const hasResults = filteredSystem.length || filteredStandard.length || filteredStandardCustom.length || filteredDesign.length || filteredDesignCustom.length || filteredFoto.length || filteredCustom.length;
+  const hasResults = filteredSystem.length || filteredStandard.length || filteredStandardCustom.length || filteredDesign.length || filteredDesignCustom.length || filteredFoto.length || filteredRolleBuiltin.length || filteredRolleCustom.length || filteredCustom.length;
 
   const sectionHead = (label, extra = '') => `
     <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:6px">
@@ -1221,6 +1280,47 @@ function _renderPromptsResults() {
       + '</div>';
   }
 
+  // v5.71: Rollen-Prompts – nur im Folge-Gespräch als System-Prompt nutzbar
+  if (filteredRolleBuiltin.length || filteredRolleCustom.length || rolleVisible) {
+    const _cardRolleBuiltin = (p) => {
+      const txt = getEditablePromptText(p.id) || p.prompt || '';
+      return '<div class="prompt-card">'
+        + '<div class="prompt-card-header">'
+        + '<div class="prompt-card-icon">' + icon(p.icon || 'user', 18, 'color:var(--muted)') + '</div>'
+        + '<div class="prompt-card-name" style="color:var(--text)">' + escHtml(p.name) + '</div>'
+        + '</div>'
+        + (p.description ? '<div class="prompt-card-desc" style="color:var(--muted)">' + escHtml(p.description) + '</div>' : '')
+        + '<div class="prompt-card-preview">' + escHtml(txt.slice(0, 120)) + (txt.length > 120 ? '…' : '') + '</div>'
+        + '<div class="prompt-card-actions">'
+        + '<button class="btn btn-ghost" onclick="openEditablePromptEditor(\'' + p.id + '\')" style="padding:5px 7px" title="Anpassen">' + icon('edit-2',13) + '</button>'
+        + '<button class="btn btn-ghost" onclick="exportSingleEditablePrompt(\'' + p.id + '\')" style="padding:5px 7px" title="Herunterladen">' + icon('download',13) + '</button>'
+        + '</div>'
+        + '</div>';
+    };
+    const _cardRolleCustom = (p) => {
+      const preview = assemblePromptText(p);
+      return '<div class="prompt-card">'
+        + '<div class="prompt-card-header">'
+        + '<div class="prompt-card-icon">' + icon(p.icon || 'user', 18, 'color:var(--accent)') + '</div>'
+        + '<div class="prompt-card-name">' + escHtml(p.name) + '</div>'
+        + '</div>'
+        + (p.description ? '<div class="prompt-card-desc">' + escHtml(p.description) + '</div>' : '')
+        + '<div class="prompt-card-preview">' + escHtml(preview.slice(0, 120)) + (preview.length > 120 ? '…' : '') + '</div>'
+        + '<div class="prompt-card-actions">'
+        + '<button class="btn btn-ghost" onclick="openPromptEditorModal(\'' + p.id + '\')" style="padding:5px 7px" title="Bearbeiten">' + icon('edit-2',13) + '</button>'
+        + '<button class="btn btn-ghost" onclick="exportSinglePrompt(\'' + p.id + '\')" style="padding:5px 7px" title="Herunterladen">' + icon('download',13) + '</button>'
+        + '<button class="btn btn-ghost" onclick="deletePromptById(\'' + p.id + '\')" style="padding:5px 7px;color:var(--red)" title="Löschen">' + icon('trash-2',13) + '</button>'
+        + '</div>'
+        + '</div>';
+    };
+    html += '<div style="margin-bottom:24px">'
+      + sectionHead('Rollen-Prompts', icon('user',11,'color:var(--muted);margin-left:2px') + ' <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— nur im Folge-Gespräch als Systemprompt</span>')
+      + (filteredRolleBuiltin.length ? '<div class="prompts-grid" style="margin-bottom:' + (filteredRolleCustom.length ? '16px' : '0') + '">' + filteredRolleBuiltin.map(_cardRolleBuiltin).join('') + '</div>' : '')
+      + (filteredRolleCustom.length ? '<div class="prompts-grid">' + filteredRolleCustom.map(_cardRolleCustom).join('') + '</div>' : '')
+      + ((filteredRolleBuiltin.length + filteredRolleCustom.length === 0) ? '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.85rem">Keine Rollen gefunden.</div>' : '')
+      + '</div>';
+  }
+
   // Eigene Prompts
   html += `<div>
     ${sectionHead('Eigene Prompts')}
@@ -1377,6 +1477,7 @@ function openPromptEditorModal(id, category) {
     foto:     existing ? 'Foto-Prompt bearbeiten'     : 'Neuer Foto-Prompt',
     design:   existing ? 'Design-Prompt bearbeiten'   : 'Neuer Design-Prompt',
     standard: existing ? 'Standard-Prompt bearbeiten' : 'Neuer Standard-Prompt', // v5.67
+    rolle:    existing ? 'Rollen-Prompt bearbeiten'   : 'Neuer Rollen-Prompt',   // v5.71
   };
   const titleLabel = _categoryTitles[_pendingPromptCategory] || (existing ? 'Eigener Prompt' : 'Neuer Prompt');
   document.getElementById('promptEditorTitle').textContent = titleLabel;
@@ -1552,6 +1653,10 @@ function openPromptCategoryPickerModal(action) {
           <button onclick="selectPromptCategory('standard')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;text-align:left;font-size:0.88rem;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
             <span style="font-size:1.2rem">⭐</span>
             <span><strong style="display:block">Standard</strong><span style="font-size:0.75rem;color:var(--muted)">Standard-Sektion → Analysen-Tab</span></span>
+          </button>
+          <button onclick="selectPromptCategory('rolle')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;text-align:left;font-size:0.88rem;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span style="font-size:1.2rem">🎭</span>
+            <span><strong style="display:block">Rolle</strong><span style="font-size:0.75rem;color:var(--muted)">System-Prompt → Folge-Gespräch</span></span>
           </button>
         </div>
         <button onclick="closePromptCategoryPickerModal()" style="width:100%;padding:9px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:0.83rem">Abbrechen</button>

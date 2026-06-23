@@ -44,13 +44,15 @@ async function _claudeFetchWithRetry(body, label) {
   }
 }
 
-async function callClaudeAPI(prompt) {
+async function callClaudeAPI(prompt, systemPrompt = null) {
   if (!anthropicKey) throw new Error('Kein Anthropic API-Key gesetzt. Bitte unter 🔑 API-Keys eintragen.');
-  return _claudeFetchWithRetry({
+  const body = {
     model: 'claude-sonnet-4-6',
     max_tokens: 8192,
     messages: [{ role: 'user', content: prompt }]
-  }, 'callClaudeAPI');
+  };
+  if (systemPrompt) body.system = systemPrompt; // v5.71: Rollen als System-Prompt
+  return _claudeFetchWithRetry(body, 'callClaudeAPI');
 }
 
 // Vision-API: content als Array (Text + Bilder)  (v5.57)
@@ -1854,14 +1856,15 @@ async function askFollowUp() {
   const transcript = buildTranscriptText(session);
 
   const personaId = document.getElementById('followupPersonaSelect')?.value || '';
-  const personaPrefix = typeof _buildPersonaPrefix === 'function' ? _buildPersonaPrefix(personaId) : '';
-  const prompt = personaPrefix + getEditablePromptText('builtin_followup')
+  // v5.71: Rolle als System-Prompt senden (statt als Text-Prefix in der User-Message)
+  const systemPrompt = typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null;
+  const prompt = getEditablePromptText('builtin_followup')
     .replace(/\{\{analyseContext\}\}/g, analysisContext)
     .replace(/\{\{transcript\}\}/g, trimTranscript(transcript, 100000))
     .replace(/\{\{question\}\}/g, question);
 
   try {
-    const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward), systemPrompt);
     addTokensToSession(session, inputTokens, outputTokens);
     const answer = deanonymizeObject(text, reverse);
 

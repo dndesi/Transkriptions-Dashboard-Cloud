@@ -624,9 +624,9 @@ async function sendToClaudeCustom(templateId) {
   }
 }
 
-// ── Persona / Rollen-Auswahl (v4.90) ─────────────────────────────────────────
+// ── Persona / Rollen-Auswahl (v4.90 / v5.71) ────────────────────────────────
 
-// Baut den Persona-Prefix aus einem Custom Prompt (rolle, tonalitaet, grenzen, kontext)
+// Baut den Persona-Prefix für askPersonaSelect (alle Custom Prompts, Transkript-Chat)
 function _buildPersonaPrefix(promptId) {
   if (!promptId) return '';
   const prompts = typeof getCustomPrompts === 'function' ? getCustomPrompts() : [];
@@ -642,15 +642,46 @@ function _buildPersonaPrefix(promptId) {
     : '';
 }
 
-// Befüllt beide Persona-Dropdowns mit den Custom Prompts aus der Bibliothek
+// v5.71: Baut den System-Prompt für followupPersonaSelect (Rollen-Kategorie)
+// Liest zuerst built-in Rollen aus EDITABLE_PROMPT_DEFAULTS, dann eigene Custom-Rollen
+function _buildRoleSystemPrompt(promptId) {
+  if (!promptId) return null;
+  // Built-in Rollen (EDITABLE_PROMPT_DEFAULTS mit category === 'rolle')
+  const builtins = typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : [];
+  const builtin = builtins.find(p => p.id === promptId && p.category === 'rolle');
+  if (builtin) {
+    return typeof getEditablePromptText === 'function' ? getEditablePromptText(promptId) : builtin.prompt;
+  }
+  // Eigene Custom-Rollen (category === 'rolle')
+  const customs = typeof getCustomPrompts === 'function' ? getCustomPrompts() : [];
+  const custom = customs.find(p => p.id === promptId && p.category === 'rolle');
+  if (custom) {
+    return typeof assemblePromptText === 'function' ? assemblePromptText(custom) : (custom.prompt || '');
+  }
+  return null;
+}
+
+// Befüllt Persona-Dropdowns:
+// askPersonaSelect    → alle Custom Prompts (Transkript-Chat, bisheriges Verhalten)
+// followupPersonaSelect → nur Rollen-Prompts: built-in + eigene mit category === 'rolle' (v5.71)
 function populatePersonaSelects() {
-  const prompts = typeof getCustomPrompts === 'function' ? getCustomPrompts() : [];
-  const opts = '<option value="">Standard (Systemprompt)</option>' +
-    prompts.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('');
-  ['askPersonaSelect', 'followupPersonaSelect'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = opts;
-  });
+  const allCustom = typeof getCustomPrompts === 'function' ? getCustomPrompts() : [];
+
+  // askPersonaSelect: alle Custom Prompts
+  const askOpts = '<option value="">Standard (Systemprompt)</option>' +
+    allCustom.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('');
+  const askEl = document.getElementById('askPersonaSelect');
+  if (askEl) askEl.innerHTML = askOpts;
+
+  // followupPersonaSelect: nur Rollen (built-in + custom)
+  const builtinRollen = (typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : [])
+    .filter(p => p.category === 'rolle');
+  const customRollen = allCustom.filter(p => p.category === 'rolle');
+  const rolleOpts = '<option value="">Kein Systemprompt</option>' +
+    builtinRollen.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('') +
+    customRollen.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('');
+  const followupEl = document.getElementById('followupPersonaSelect');
+  if (followupEl) followupEl.innerHTML = rolleOpts;
 }
 
 // Beim App-Start: Popovers mit gespeicherten Vorlagen befüllen
