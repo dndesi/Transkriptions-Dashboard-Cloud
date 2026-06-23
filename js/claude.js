@@ -63,6 +63,44 @@ async function callClaudeAPIVision(messageContent) {
   };
 }
 
+// v5.67: Pending-Fotos für die Analyse-Leiste (Analysen-Tab)
+let _analysisPendingPhotos = [];
+
+// Foto-Picker unterhalb der Analyse-Leiste rendern
+function renderAnalysePhotoAttach(session) {
+  const el = document.getElementById('analysePhotoAttach');
+  if (!el) return;
+  _analysisPendingPhotos = [];
+
+  const photos = (session && session.photos) ? session.photos : [];
+  if (!photos.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+
+  let html = `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+    <span style="font-size:0.76rem;color:var(--muted);display:inline-flex;align-items:center;gap:4px;white-space:nowrap">${icon('image',12)} Fotos mitschicken:</span>`;
+
+  photos.forEach(p => {
+    const safeName = escHtml(p.name || p.id);
+    html += `<label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:0.78rem;max-width:110px" title="${safeName}">
+      <input type="checkbox" class="analyse-photo-cb" data-photo-id="${p.id}" onchange="_updateAnalysisPendingPhotos()">
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</span>
+    </label>`;
+  });
+
+  html += `<button class="help-icon" style="margin-left:auto" data-help="Wähle Fotos aus dem Fotos-Tab als visuellen Kontext für eigene Prompts. Standard-Analysen (Gesprächs-, Arbeitsanalyse, …) berücksichtigen Fotos nicht." onclick="showHelpTooltip(this)">?</button>`;
+  html += `</div>`;
+
+  el.innerHTML = html;
+  el.style.display = 'block';
+}
+
+function _updateAnalysisPendingPhotos() {
+  const s = getSession();
+  if (!s) return;
+  const checked = Array.from(document.querySelectorAll('.analyse-photo-cb:checked'));
+  const checkedIds = new Set(checked.map(cb => cb.dataset.photoId));
+  _analysisPendingPhotos = (s.photos || []).filter(p => checkedIds.has(p.id));
+}
+
 // Hilfsfunktion: Token-Nutzung zur Session addieren
 // Jeder API-Call bekommt einen eigenen Eintrag mit Zeitstempel im claudeCostLog.
 // So können Kosten, die an verschiedenen Tagen entstehen, korrekt dem jeweiligen Monat zugeordnet werden.
@@ -275,7 +313,7 @@ async function runSingleAnalysis(type) {
     if (type === '360')            await analyse360(s, transcript);
     if (type.startsWith('custom:') && typeof runCustomPrompt === 'function') {
       const promptObj = getCustomPrompts().find(p => p.id === type.slice(7));
-      if (promptObj) await runCustomPrompt(s, promptObj, transcript);
+      if (promptObj) await runCustomPrompt(s, promptObj, transcript, _analysisPendingPhotos); // v5.67: Fotos
     }
     saveSessions();
     await saveToArchive(s);
@@ -1246,6 +1284,7 @@ function showTranscript(session) {
   // Marker werden am Ende von renderInsights() gesetzt (DOM muss erst gefüllt sein)
 
   renderInsights(session);
+  renderAnalysePhotoAttach(session); // v5.67: Foto-Picker im Analysen-Tab
   loadAudioForSession(session);
   renderUtterances(session);
   // Mindmap-Panel befüllen falls bereits generiert

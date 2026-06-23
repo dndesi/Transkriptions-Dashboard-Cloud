@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.66</button>
+        onmouseout="this.style.color='var(--muted)'">v5.67</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1131,6 +1131,9 @@
               <button class="help-icon" data-help="Wähle eine Analyse-Vorlage und klicke 'Starten'. Standard-Analysen (Zusammenfassung, Arbeits-/Gesprächsanalyse, Themen…) oder eigene Prompts. Das Ergebnis erscheint im Analysen-Tab dieser Sitzung." onclick="showHelpTooltip(this)">?</button>
             </div>
 
+            <!-- v5.67: Foto-Picker für eigene Prompts -->
+            <div id="analysePhotoAttach" style="display:none;margin:-4px 0 12px"></div>
+
             <!-- Sub-Tabs bestehender Analysen -->
             <div class="sdc-subtabs" id="analysenSubtabs"></div>
 
@@ -1475,6 +1478,13 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.67 ── -->
+        <div class="cl-header"><span class="cl-version">v5.67</span><span class="cl-date">23.06.2026</span></div>
+        <ul class="cl-list">
+          <li>Neu: „Standard" als 4. Kategorie im Prompt-Erstellen-Dialog – eigene Prompts können jetzt auch im Standard-Bereich erscheinen</li>
+          <li>Neu: Foto-Picker im Analysen-Tab – Fotos aus dem Fotos-Tab als visuellen Kontext zu eigenen Analyse-Prompts hinzufügen</li>
+        </ul>
 
       <!-- ── v5.66 ── -->
         <div class="cl-header"><span class="cl-version">v5.66</span><span class="cl-date">23.06.2026</span></div>

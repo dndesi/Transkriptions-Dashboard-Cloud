@@ -980,10 +980,17 @@ function _renderPromptsResults() {
     ? getCustomPrompts().filter(p => p.category === 'design')
         .filter(p => matchesSearch([p.name, p.description, assemblePromptText(p), ...(p.tags||[])]))
     : [];
+  // v5.67: Eigene Standard-Prompts (category === 'standard')
+  const filteredStandardCustom = standardVisible
+    ? getCustomPrompts().filter(p => p.category === 'standard')
+        .filter(p => matchesSearch([p.name, p.description, assemblePromptText(p), ...(p.tags||[])]))
+    : [];
 
-  // Eigene Prompts filtern
+  // Eigene Prompts filtern – Kategorie-spezifische Prompts (design/foto/standard) ausblenden,
+  // da sie bereits in ihren eigenen Sektionen erscheinen (v5.67: standard ergänzt)
+  const _CATEGORY_SECTIONS = new Set(['design', 'foto', 'standard']);
   const customVisible = typeFilter === 'all' || typeFilter === 'custom';
-  let filteredCustom = customVisible ? getCustomPrompts() : [];
+  let filteredCustom = customVisible ? getCustomPrompts().filter(p => !_CATEGORY_SECTIONS.has(p.category)) : [];
   if (q) filteredCustom = filteredCustom.filter(p =>
     matchesSearch([p.name, p.description, assemblePromptText(p), ...(p.tags||[])])
   );
@@ -995,7 +1002,7 @@ function _renderPromptsResults() {
   }
 
   const allTags    = _getAllPromptTags();
-  const hasResults = filteredSystem.length || filteredStandard.length || filteredDesign.length || filteredDesignCustom.length || filteredFoto.length || filteredCustom.length;
+  const hasResults = filteredSystem.length || filteredStandard.length || filteredStandardCustom.length || filteredDesign.length || filteredDesignCustom.length || filteredFoto.length || filteredCustom.length;
 
   const sectionHead = (label, extra = '') => `
     <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:6px">
@@ -1126,10 +1133,11 @@ function _renderPromptsResults() {
     </div>`;
   }
 
-  if (filteredStandard.length) {
+  if (filteredStandard.length || filteredStandardCustom.length) {
     html += `<div style="margin-bottom:24px">
       ${sectionHead('Standard-Prompts', `${icon('edit-2',11,'color:var(--muted);margin-left:2px')} <span style="font-size:0.68rem; font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted)">— anpassbar</span>`)}
-      <div class="prompts-grid">${filteredStandard.map(_cardEditable).join('')}</div>
+      ${filteredStandard.length ? `<div class="prompts-grid" style="margin-bottom:${filteredStandardCustom.length ? '16px' : '0'}">${filteredStandard.map(_cardEditable).join('')}</div>` : ''}
+      ${filteredStandardCustom.length ? `<div class="prompts-grid">${filteredStandardCustom.map(_cardCustom).join('')}</div>` : ''}
     </div>`;
   }
 
@@ -1366,8 +1374,9 @@ function openPromptEditorModal(id, category) {
   _pendingPromptCategory = category || existing?.category || null;
 
   const _categoryTitles = {
-    foto:   existing ? 'Foto-Prompt bearbeiten'   : 'Neuer Foto-Prompt',
-    design: existing ? 'Design-Prompt bearbeiten' : 'Neuer Design-Prompt',
+    foto:     existing ? 'Foto-Prompt bearbeiten'     : 'Neuer Foto-Prompt',
+    design:   existing ? 'Design-Prompt bearbeiten'   : 'Neuer Design-Prompt',
+    standard: existing ? 'Standard-Prompt bearbeiten' : 'Neuer Standard-Prompt', // v5.67
   };
   const titleLabel = _categoryTitles[_pendingPromptCategory] || (existing ? 'Eigener Prompt' : 'Neuer Prompt');
   document.getElementById('promptEditorTitle').textContent = titleLabel;
@@ -1540,6 +1549,10 @@ function openPromptCategoryPickerModal(action) {
             <span style="font-size:1.2rem">📸</span>
             <span><strong style="display:block">Foto-Analyse</strong><span style="font-size:0.75rem;color:var(--muted)">Foto-Prompts → Fotos-Tab</span></span>
           </button>
+          <button onclick="selectPromptCategory('standard')" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;text-align:left;font-size:0.88rem;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span style="font-size:1.2rem">⭐</span>
+            <span><strong style="display:block">Standard</strong><span style="font-size:0.75rem;color:var(--muted)">Standard-Sektion → Analysen-Tab</span></span>
+          </button>
         </div>
         <button onclick="closePromptCategoryPickerModal()" style="width:100%;padding:9px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:0.83rem">Abbrechen</button>
       </div>`;
@@ -1567,7 +1580,7 @@ function closePromptCategoryPickerModal() {
 }
 
 // ── Custom Prompt ausführen ──────────────────────
-async function runCustomPrompt(session, promptObj, transcript) {
+async function runCustomPrompt(session, promptObj, transcript, extraPhotos = []) { // v5.67: optionale Fotos
   const { forward, reverse } = buildAnonMap(session);
   const speakerA = session.speakerA || ownerName || 'Ich';
   const speakerB = session.speakerB || 'Gesprächspartner';
@@ -1598,7 +1611,21 @@ async function runCustomPrompt(session, promptObj, transcript) {
     promptText += `\n\nAntworte ausschließlich mit validem JSON, ohne Erklärungen, ohne Markdown-Blöcke.${hintBlock}\nExaktes Format:\n${JSON.stringify(jsonTemplate, null, 2)}`;
   }
 
-  const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(promptText, forward));
+  // v5.67: Multimodal-Support – wenn Fotos übergeben, Vision-API verwenden
+  let apiResult;
+  if (extraPhotos && extraPhotos.length > 0) {
+    showToast(extraPhotos.length + ' Foto(s) werden geladen…', 'info');
+    const content = [];
+    for (const photo of extraPhotos) {
+      const b64 = await _loadPhotoAsBase64(photo.driveFileId);
+      content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } });
+    }
+    content.push({ type: 'text', text: anonymizeText(promptText, forward) });
+    apiResult = await callClaudeAPIVision(content);
+  } else {
+    apiResult = await callClaudeAPI(anonymizeText(promptText, forward));
+  }
+  const { text, inputTokens, outputTokens } = apiResult;
   addTokensToSession(session, inputTokens, outputTokens);
   const result = deanonymizeText(text, reverse);
 
