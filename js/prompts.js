@@ -2201,7 +2201,9 @@ async function _genGenerateWithAI() {
 
 Der Nutzer möchte folgenden Analyse-Prompt: ${s.aiDesc}
 
-Erstelle einen vollständigen, professionellen Prompt. Antworte NUR mit einem JSON-Objekt, kein Markdown:
+Erstelle einen vollständigen, professionellen Prompt. Antworte NUR mit einem JSON-Objekt, kein Markdown.
+WICHTIG: Das JSON muss RFC-8259-konform sein. Verwende \\n für Zeilenumbrüche in Strings – KEINE echten Zeilenumbrüche innerhalb von String-Werten.
+
 {
   "name": "Prompt-Name auf Deutsch (3-5 Wörter)",
   "icon": "lucide-icon-name (Englisch, z.B. target, briefcase, heart)",
@@ -2209,7 +2211,7 @@ Erstelle einen vollständigen, professionellen Prompt. Antworte NUR mit einem JS
   "rolle": "Rollen-Beschreibung OHNE 'Du bist' Prefix und OHNE abschließenden Punkt (z.B. 'ein erfahrener Coach') – leer lassen wenn nicht sinnvoll",
   "tonalitaet": "Tonalität OHNE abschließenden Punkt (optional)",
   "grenzen": "Was der Prompt NICHT tun soll, OHNE abschließenden Punkt (optional)",
-  "kontext": "Der Prompt-Text. Nutze {{transkript}} als Platzhalter. Enthält die eigentliche Analyse-Anweisung. KEINE JSON-Format-Anweisungen einfügen – werden automatisch ergänzt.",
+  "kontext": "Der Prompt-Text als ein einzeiliger String mit \\n für Zeilenumbrüche. Nutze {{transkript}} als Platzhalter. Enthält die eigentliche Analyse-Anweisung. KEINE JSON-Format-Anweisungen einfügen – werden automatisch ergänzt.",
   "schema": [
     {"id": "f0", "label": "Feldname auf Deutsch", "type": "text|list|checklist|list_with_person"}
   ],
@@ -2218,7 +2220,14 @@ Erstelle einen vollständigen, professionellen Prompt. Antworte NUR mit einem JS
 
   try {
     const { text } = await callClaudeAPI(promptText);
-    const jsonStr = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    // v5.79: Markdown-Fence entfernen + JSON bereinigen (echte Zeilenumbrüche in Strings fixen)
+    let jsonStr = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    // Fallback: echte Newlines innerhalb von JSON-String-Werten durch \n ersetzen
+    try { JSON.parse(jsonStr); } catch(_) {
+      jsonStr = jsonStr.replace(/"((?:[^"\\]|\\.)*)"/gs, (_, inner) =>
+        '"' + inner.replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"'
+      );
+    }
     const data    = JSON.parse(jsonStr);
 
     s.name        = data.name        || '';

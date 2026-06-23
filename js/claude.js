@@ -19,8 +19,11 @@ async function _claudeFetchWithRetry(body, label) {
     });
     if (res.ok) {
       const data = await res.json();
+      // v5.79: Absicherung falls API leeren Content zurückgibt
+      const textVal = data?.content?.[0]?.text;
+      if (!textVal) throw new Error('Claude hat keine Antwort zurückgegeben (leerer Content). Bitte erneut versuchen.');
       return {
-        text: data.content[0].text.trim(),
+        text: textVal.trim(),
         inputTokens:  data.usage?.input_tokens  || 0,
         outputTokens: data.usage?.output_tokens || 0,
       };
