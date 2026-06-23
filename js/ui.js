@@ -414,6 +414,10 @@ function _setHeaderBtn(id, active) {
 
 function _showOverlay(viewId, btnId, renderFn) {
   hideHero(); // v4.92: Hero beim Öffnen jeder Overlay-View verstecken
+  // v5.74: sdcFlap + Projekt-Assistent-FAB ausblenden wenn Overlay öffnet
+  const flap = document.getElementById('sdcFlap');
+  if (flap) flap.classList.add('hidden');
+  if (typeof closeProjectAssistant === 'function') closeProjectAssistant();
   const isProjects = viewId === 'projectsView';
 
   // Andere Overlay-Views (innerhalb browserView) schließen
@@ -537,7 +541,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 5.74</span>
+          <span style="color:var(--accent); font-weight:600">Version 5.75</span>
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
