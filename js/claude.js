@@ -1858,10 +1858,19 @@ async function askFollowUp() {
   const personaId = document.getElementById('followupPersonaSelect')?.value || '';
   // v5.71: Rolle als System-Prompt senden (statt als Text-Prefix in der User-Message)
   const systemPrompt = typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null;
+
+  // v5.72: Gesprächshistorie – letzte 5 Runden als Kontext mitschicken
+  const _prevRounds = (session.claudeFollowUp || []).slice(-5);
+  const _historyPrefix = _prevRounds.length
+    ? _prevRounds.map((h, i) =>
+        `[Runde ${i + 1}]\nFrage: ${h.question}\nAntwort: ${h.answer.slice(0, 500)}${h.answer.length > 500 ? '…' : ''}`
+      ).join('\n\n') + '\n\n=== AKTUELLE FOLGEFRAGE ===\n'
+    : '';
+
   const prompt = getEditablePromptText('builtin_followup')
     .replace(/\{\{analyseContext\}\}/g, analysisContext)
     .replace(/\{\{transcript\}\}/g, trimTranscript(transcript, 100000))
-    .replace(/\{\{question\}\}/g, question);
+    .replace(/\{\{question\}\}/g, _historyPrefix + question);
 
   try {
     const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward), systemPrompt);
