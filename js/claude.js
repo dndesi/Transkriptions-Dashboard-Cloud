@@ -2031,10 +2031,20 @@ let _activeDesignVersionId = null;
 let _designEditMode        = false;
 
 function _migrateDesignData(session) {
-  if (session.designVersions) return; // bereits migriert
+  if (session.designVersions) {
+    // v5.80: canvaLink → designLinks migrieren (falls noch altes Format)
+    session.designVersions.forEach(v => {
+      if (!v.designLinks) {
+        v.designLinks = v.canvaLink ? [{ url: v.canvaLink, ts: v.ts }] : [];
+        delete v.canvaLink;
+      }
+    });
+    return;
+  }
   session.designVersions = [];
   if (session.claudePresentation?.data) {
     const pd = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === (session.claudePresentation.promptId || 'builtin_canva_presentation'));
+    const firstLink = session.claudeDesignLinks?.[0]?.url;
     session.designVersions.push({
       id: 'dv_migrated',
       promptId:    session.claudePresentation.promptId || 'builtin_canva_presentation',
@@ -2042,7 +2052,7 @@ function _migrateDesignData(session) {
       data:        session.claudePresentation.data,
       ts:          session.claudePresentation.ts || new Date().toISOString(),
       editedText:  null,
-      canvaLink:   session.claudeDesignLinks?.[0]?.url || null
+      designLinks: firstLink ? [{ url: firstLink, ts: session.claudePresentation.ts || new Date().toISOString() }] : []
     });
   }
 }
@@ -2129,19 +2139,23 @@ function renderDesignVersionTabs(session) {
   const linkHtml = `
     <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:16px">
       <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;display:flex;align-items:center;gap:5px">
-        <i data-lucide="link" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none"></i> Claude Design Link
+        <i data-lucide="link" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none"></i> Claude Design Links
       </div>
-      ${active.canvaLink ? `
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <a href="${escHtml(active.canvaLink)}" target="_blank" rel="noopener"
-             style="flex:1;font-size:0.83rem;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:6px;
-                    background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">
-            <i data-lucide="external-link" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-            ${escHtml(active.canvaLink)}
-          </a>
-          <button onclick="clearDesignVersionLink('${active.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px" title="Entfernen">
-            <i data-lucide="x" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
-          </button>
+      ${(active.designLinks || []).length > 0 ? `
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
+          ${(active.designLinks).map((dl, i) => `
+            <div style="display:flex;align-items:center;gap:8px">
+              <a href="${escHtml(dl.url)}" target="_blank" rel="noopener"
+                 style="flex:1;font-size:0.82rem;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:6px;
+                        background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">
+                <i data-lucide="external-link" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+                <span style="overflow:hidden;text-overflow:ellipsis;flex:1">${escHtml(dl.label || dl.url)}</span>
+                <span style="color:var(--muted);font-size:0.72rem;flex-shrink:0">${new Date(dl.ts).toLocaleDateString('de-DE')}</span>
+              </a>
+              <button onclick="removeDesignVersionLink('${active.id}',${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0" title="Entfernen">
+                <i data-lucide="x" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
+              </button>
+            </div>`).join('')}
         </div>` : ''}
       <div style="display:flex;gap:8px">
         <input id="designVersionLinkInput" type="url" placeholder="Claude Design Share-Link hier einfügen…"
@@ -2196,7 +2210,9 @@ function saveDesignVersionLink(id) {
   const url   = input?.value?.trim();
   if (!url)                   { showToast('Bitte Link eingeben.', 'warning'); return; }
   if (!url.startsWith('http')) { showToast('Kein gültiger Link.', 'warning'); return; }
-  version.canvaLink = url;
+  // v5.80: in Array speichern statt überschreiben
+  if (!version.designLinks) version.designLinks = [];
+  version.designLinks.push({ url, ts: new Date().toISOString() });
   if (input) input.value = '';
   saveSessions();
   saveToArchive(session);
@@ -2204,14 +2220,16 @@ function saveDesignVersionLink(id) {
   showToast('Design-Link gespeichert ✓', 'success');
 }
 
-function clearDesignVersionLink(id) {
+// v5.80: einzelnen Link per Index entfernen
+function removeDesignVersionLink(id, idx) {
   const session = getSession(currentSessionId);
   const version = session?.designVersions?.find(v => v.id === id);
-  if (!version) return;
-  version.canvaLink = null;
+  if (!version?.designLinks) return;
+  version.designLinks.splice(idx, 1);
   saveSessions();
   saveToArchive(session);
   renderDesignVersionTabs(session);
+  showToast('Link entfernt', 'ok');
 }
 
 // Strukturierte Daten → bearbeitbarer Plaintext
@@ -2333,7 +2351,7 @@ async function generatePresentation() {
         textOutput:  raw,
         ts:          new Date().toISOString(),
         editedText:  null,
-        canvaLink:   null
+        designLinks: []
       };
       session.designVersions.push(newVersion);
       _activeDesignVersionId = newVersion.id;
@@ -2371,7 +2389,7 @@ async function generatePresentation() {
         data:        json,
         ts:          new Date().toISOString(),
         editedText:  null,
-        canvaLink:   null
+        designLinks: []
       };
       session.designVersions.push(newVersion);
       _activeDesignVersionId = newVersion.id;
