@@ -1,66 +1,66 @@
 // CLAUDE ANALYSE
 // ═══════════════════════════════════════════════════
 
+// v5.69: Hilfsfunktion – bei 529 (Overloaded) bis zu 2× mit Pause wiederholen
+async function _claudeFetchWithRetry(body, label) {
+  const MAX_RETRIES = 2;
+  const RETRY_DELAY_MS = 4000;
+  let attempt = 0;
+  while (true) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        text: data.content[0].text.trim(),
+        inputTokens:  data.usage?.input_tokens  || 0,
+        outputTokens: data.usage?.output_tokens || 0,
+      };
+    }
+    const err = await res.json().catch(() => ({}));
+    const msg = err.error?.message || `HTTP ${res.status}`;
+    // 529 = Overloaded → retry
+    if (res.status === 529 && attempt < MAX_RETRIES) {
+      attempt++;
+      const waitSec = RETRY_DELAY_MS / 1000 * attempt;
+      console.warn(`[Claude] ${label} 529 Overloaded – Versuch ${attempt}/${MAX_RETRIES} in ${waitSec}s`);
+      if (typeof showToast === 'function') showToast(`Anthropic überlastet – Versuch ${attempt}/${MAX_RETRIES} in ${waitSec}s …`, 'warning');
+      await new Promise(r => setTimeout(r, RETRY_DELAY_MS * attempt));
+      continue;
+    }
+    console.error(`[Claude] ${label} Fehler:`, res.status, msg);
+    const friendlyMsg = res.status === 529
+      ? 'Anthropic ist gerade überlastet. Bitte versuche es in einer Minute erneut.'
+      : `Anthropic HTTP ${res.status}: ${msg}`;
+    throw new Error(friendlyMsg);
+  }
+}
+
 async function callClaudeAPI(prompt) {
   if (!anthropicKey) throw new Error('Kein Anthropic API-Key gesetzt. Bitte unter 🔑 API-Keys eintragen.');
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': anthropicKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 8192,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    const msg = err.error?.message || JSON.stringify(err) || `HTTP ${res.status}`;
-    console.error('Anthropic API Fehler:', res.status, msg);
-    throw new Error(`Anthropic HTTP ${res.status}: ${msg}`);
-  }
-  const data = await res.json();
-  // Token-Nutzung zurückgeben für Kostentracking
-  return {
-    text: data.content[0].text.trim(),
-    inputTokens:  data.usage?.input_tokens  || 0,
-    outputTokens: data.usage?.output_tokens || 0,
-  };
+  return _claudeFetchWithRetry({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 8192,
+    messages: [{ role: 'user', content: prompt }]
+  }, 'callClaudeAPI');
 }
 
 // Vision-API: content als Array (Text + Bilder)  (v5.57)
 async function callClaudeAPIVision(messageContent) {
   if (!anthropicKey) throw new Error('Kein Anthropic API-Key gesetzt. Bitte unter 🔑 API-Keys eintragen.');
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': anthropicKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 8192,
-      messages: [{ role: 'user', content: messageContent }]
-    })
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    const msg = err.error?.message || JSON.stringify(err) || `HTTP ${res.status}`;
-    console.error('Anthropic Vision API Fehler:', res.status, msg);
-    throw new Error(`Anthropic HTTP ${res.status}: ${msg}`);
-  }
-  const data = await res.json();
-  return {
-    text: data.content[0].text.trim(),
-    inputTokens:  data.usage?.input_tokens  || 0,
-    outputTokens: data.usage?.output_tokens || 0,
-  };
+  return _claudeFetchWithRetry({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 8192,
+    messages: [{ role: 'user', content: messageContent }]
+  }, 'callClaudeAPIVision');
 }
 
 // v5.67: Pending-Fotos für die Analyse-Leiste (Analysen-Tab)

@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.68</button>
+        onmouseout="this.style.color='var(--muted)'">v5.69</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1478,6 +1478,12 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.69 ── -->
+        <div class="cl-header"><span class="cl-version">v5.69</span><span class="cl-date">23.06.2026</span></div>
+        <ul class="cl-list">
+          <li>Auto-Retry bei HTTP 529 (Anthropic überlastet): bis zu 2× Wiederholung mit 4s / 8s Pause, Toast-Hinweis während des Wartens</li>
+        </ul>
 
       <!-- ── v5.68 ── -->
         <div class="cl-header"><span class="cl-version">v5.68</span><span class="cl-date">23.06.2026</span></div>
