@@ -400,9 +400,6 @@ Fasse in 4–6 Sätzen zusammen: Was war der rote Faden? Was waren die wichtigst
     kontext: `ANALYSEERGEBNISSE dieser Sitzung:
 {{analyseContext}}
 
-TRANSKRIPT-AUSZUG:
-{{transcript}}
-
 FOLGEFRAGE:
 {{question}}
 

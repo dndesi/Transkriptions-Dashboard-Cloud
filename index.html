@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.64" />
+  <link rel="stylesheet" href="css/styles.css?v=5.73" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.72</button>
+        onmouseout="this.style.color='var(--muted)'">v5.73</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1334,13 +1334,13 @@
 
           <!-- Mode-Buttons -->
           <div class="sdc-sidebar-modes">
-            <button class="sdc-mode-btn sdc-mode-active" id="sdcMode-fragen" onclick="openAskModal()">
-              <i data-lucide="message-circle" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Fragen
-              <button class="help-icon" data-help="Stelle beliebige Fragen zum Transkript. Claude antwortet mit Kontext aus dieser Sitzung – z.B. 'Was wurde bezüglich X entschieden?'" onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
-            </button>
-            <button class="sdc-mode-btn" id="sdcMode-folgefragen" onclick="setSidebarMode('folgefragen')">
-              <i data-lucide="messages-square" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Folge
+            <button class="sdc-mode-btn sdc-mode-active" id="sdcMode-analysechat" onclick="setSidebarMode('analysechat')">
+              <i data-lucide="messages-square" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Analyse-Chat
               <button class="help-icon" data-help="Führe ein freies Chat-Gespräch mit Claude über diese Sitzung. Claude kennt alle bisherigen Analyse-Ergebnisse als Kontext und erinnert sich an den Gesprächsverlauf." onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
+            </button>
+            <button class="sdc-mode-btn" id="sdcMode-gespraechschat" onclick="setSidebarMode('gespraechschat')">
+              <i data-lucide="message-circle" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> Gesprächs-Chat
+              <button class="help-icon" data-help="Stelle beliebige Fragen direkt zum Transkript. Claude antwortet mit dem vollen Gesprächskontext – z.B. 'Was hat Max über das Budget gesagt?'" onclick="showHelpTooltip(this)" style="margin-left:2px">?</button>
             </button>
             <button class="sdc-mode-btn" id="sdcMode-email" onclick="openGmailModal()">
               <i data-lucide="mail" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> E-Mail
@@ -1355,13 +1355,31 @@
           <!-- Content-Panels -->
           <div class="sdc-sidebar-content">
 
-            <!-- Fragen-Panel -->
-            <div class="sdc-sidebar-panel sdc-panel-active" id="sdc-sb-fragen">
-              <!-- Rollen-Auswahl (v4.90) -->
+            <!-- Analyse-Chat-Panel (v5.73: war Folgefragen) -->
+            <div class="sdc-sidebar-panel sdc-panel-active" id="sdc-sb-analysechat">
+              <div style="padding:10px 12px 8px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)">
+                <span style="font-size:0.78rem;color:var(--muted);flex:1">Claude kennt alle Analyse-Ergebnisse als Kontext.</span>
+                <button onclick="clearFollowUp()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;font-size:0.75rem;cursor:pointer">Löschen</button>
+              </div>
+              <!-- Rollen-Auswahl -->
+              <div class="persona-select-bar">
+                <label style="font-size:0.75rem;color:var(--muted);flex-shrink:0">Rolle:</label>
+                <select id="followupPersonaSelect">
+                  <option value="">Kein Systemprompt</option>
+                </select>
+              </div>
+              <div id="followUpMessages" style="flex:1;overflow-y:auto;padding:14px;min-height:80px">
+                <span style="color:var(--muted);font-size:0.85rem">Noch keine Nachrichten.</span>
+              </div>
+            </div>
+
+            <!-- Gesprächs-Chat-Panel (v5.73: war Fragen) -->
+            <div class="sdc-sidebar-panel" id="sdc-sb-gespraechschat">
+              <!-- Rollen-Auswahl (v5.73: nur Rollen-Kategorie) -->
               <div class="persona-select-bar">
                 <label style="font-size:0.75rem;color:var(--muted);flex-shrink:0">Rolle:</label>
                 <select id="askPersonaSelect">
-                  <option value="">Standard (Systemprompt)</option>
+                  <option value="">Kein Systemprompt</option>
                 </select>
               </div>
               <div id="askChatHistory" style="flex:1;overflow-y:auto;padding:14px;min-height:80px">
@@ -1369,24 +1387,6 @@
                   Stelle eine Frage zum Transkript.<br>
                   <span style="font-size:0.78rem;opacity:0.7">z.B. „Was hat Max über das Budget gesagt?"</span>
                 </div>
-              </div>
-            </div>
-
-            <!-- Folgefragen-Panel -->
-            <div class="sdc-sidebar-panel" id="sdc-sb-folgefragen">
-              <div style="padding:10px 12px 8px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)">
-                <span style="font-size:0.78rem;color:var(--muted);flex:1">Claude kennt alle Analyse-Ergebnisse als Kontext.</span>
-                <button onclick="clearFollowUp()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;font-size:0.75rem;cursor:pointer">Löschen</button>
-              </div>
-              <!-- Rollen-Auswahl (v4.90) -->
-              <div class="persona-select-bar">
-                <label style="font-size:0.75rem;color:var(--muted);flex-shrink:0">Rolle:</label>
-                <select id="followupPersonaSelect">
-                  <option value="">Standard (Systemprompt)</option>
-                </select>
-              </div>
-              <div id="followUpMessages" style="flex:1;overflow-y:auto;padding:14px;min-height:80px">
-                <span style="color:var(--muted);font-size:0.85rem">Noch keine Folgefragen gestellt.</span>
               </div>
             </div>
 
@@ -1431,13 +1431,13 @@
 
           <!-- Einheitliches Chat-Input (Fragen + Folgefragen) -->
           <div class="sdc-sidebar-input" id="sdcSidebarInput">
+            <textarea id="followUpInput" rows="2"
+              placeholder="Analyse-Chat Frage… (Strg+Enter)"
+              onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){askFollowUp()}"
+              style="flex:1;resize:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-family:inherit;line-height:1.5;outline:none"></textarea>
             <textarea id="askInput" rows="2"
               placeholder="Frage zum Transkript… (Strg+Enter)"
               onkeydown="askInputKeydown(event)"
-              style="flex:1;resize:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-family:inherit;line-height:1.5;outline:none"></textarea>
-            <textarea id="followUpInput" rows="2"
-              placeholder="Folgefrage… (Strg+Enter)"
-              onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){askFollowUp()}"
               style="display:none;flex:1;resize:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-family:inherit;line-height:1.5;outline:none"></textarea>
             <button id="askSendBtn" onclick="sendAskQuestion()"
               title="Frage senden"
@@ -1478,6 +1478,20 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.73 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.73</span><span class="cl-date">23.06.2026</span></div>
+        <div class="cl-title">Assistent: Umbenannt + Rollen für Gesprächs-Chat + Kostensparung</div>
+        <ul class="cl-list">
+          <li><strong>Analyse-Chat</strong> (war: Folgefragen) – Basiert nur noch auf Analysen, kein Transkript mehr. Spart bis zu 7 Cent pro Frage bei langen Gesprächen</li>
+          <li><strong>Gesprächs-Chat</strong> (war: Fragen) – Direktfragen zum Transkript mit vollem Gesprächskontext</li>
+          <li>Tab-Reihenfolge: Analyse-Chat ist jetzt der erste und Standard-Tab</li>
+          <li>Rollen-Auswahl auch im Gesprächs-Chat – beide Chat-Tabs teilen jetzt die gleiche Rollen-Logik (nur Rollen-Kategorie, als System-Prompt)</li>
+          <li>Hinweistext wenn noch keine Rollen angelegt wurden</li>
+        </ul>
+        <div class="cl-tech">js/claude.js: askFollowUp() – {{transcript}}-Replace entfernt. js/prompts.js: builtin_followup kontext – {{transcript}}-Block entfernt. js/features.js: sendAskQuestion() nutzt _buildRoleSystemPrompt statt _buildPersonaPrefix; populatePersonaSelects() – beide Selects zeigen nur Rollen; openAskModal() → setSidebarMode('gespraechschat'). index.html: Tabs getauscht + umbenannt (analysechat/gespraechschat). js/ui.js: setSidebarMode() + _currentSidebarMode aktualisiert.</div>
+      </div>
 
       <!-- ── v5.72 ── -->
       <div class="cl-entry">
@@ -4391,32 +4405,32 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.64"></script>
-<script src="js/storage.js?v=5.64"></script>
-<script src="js/config.js?v=5.64"></script>
-<script src="js/auth.js?v=5.64"></script>
-<script src="js/drive.js?v=5.64"></script>
-<script src="js/sessions.js?v=5.64"></script>
-<script src="js/assemblyai.js?v=5.64"></script>
-<script src="js/claude.js?v=5.64"></script>
-<script src="js/ui.js?v=5.64"></script>
-<script src="js/tags.js?v=5.64"></script>
-<script src="js/notes.js?v=5.64"></script>
-<script src="js/photos.js?v=5.64"></script>
-<script src="js/persons.js?v=5.64"></script>
-<script src="js/audio.js?v=5.64"></script>
-<script src="js/recorder.js?v=5.64"></script>
-<script src="js/contacts.js?v=5.64"></script>
-<script src="js/app.js?v=5.64"></script>
+<script src="js/icons.js?v=5.73"></script>
+<script src="js/storage.js?v=5.73"></script>
+<script src="js/config.js?v=5.73"></script>
+<script src="js/auth.js?v=5.73"></script>
+<script src="js/drive.js?v=5.73"></script>
+<script src="js/sessions.js?v=5.73"></script>
+<script src="js/assemblyai.js?v=5.73"></script>
+<script src="js/claude.js?v=5.73"></script>
+<script src="js/ui.js?v=5.73"></script>
+<script src="js/tags.js?v=5.73"></script>
+<script src="js/notes.js?v=5.73"></script>
+<script src="js/photos.js?v=5.73"></script>
+<script src="js/persons.js?v=5.73"></script>
+<script src="js/audio.js?v=5.73"></script>
+<script src="js/recorder.js?v=5.73"></script>
+<script src="js/contacts.js?v=5.73"></script>
+<script src="js/app.js?v=5.73"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=5.64"></script>
-<script src="js/search.js?v=5.64"></script>
-<script src="js/calendar.js?v=5.64"></script>
-<script src="js/prompts.js?v=5.64"></script>
-<script src="js/projects.js?v=5.64"></script>
-<script src="js/import.js?v=5.64"></script>
+<script src="js/features.js?v=5.73"></script>
+<script src="js/search.js?v=5.73"></script>
+<script src="js/calendar.js?v=5.73"></script>
+<script src="js/prompts.js?v=5.73"></script>
+<script src="js/projects.js?v=5.73"></script>
+<script src="js/import.js?v=5.73"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

@@ -1853,7 +1853,6 @@ async function askFollowUp() {
   btn.innerHTML = icon('loader', 13, 'margin-right:5px') + ' Analysiere…';
 
   const { forward, reverse } = buildAnonMap(session);
-  const transcript = buildTranscriptText(session);
 
   const personaId = document.getElementById('followupPersonaSelect')?.value || '';
   // v5.71: Rolle als System-Prompt senden (statt als Text-Prefix in der User-Message)
@@ -1867,9 +1866,10 @@ async function askFollowUp() {
       ).join('\n\n') + '\n\n=== AKTUELLE FOLGEFRAGE ===\n'
     : '';
 
+  // v5.73: Kein Transkript mehr – nur Analysen (Kosteneinsparung, war ursprüngliche Planung)
   const prompt = getEditablePromptText('builtin_followup')
     .replace(/\{\{analyseContext\}\}/g, analysisContext)
-    .replace(/\{\{transcript\}\}/g, trimTranscript(transcript, 100000))
+    .replace(/\{\{transcript\}\}/g, '')
     .replace(/\{\{question\}\}/g, _historyPrefix + question);
 
   try {

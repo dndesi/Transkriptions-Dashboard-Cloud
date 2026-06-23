@@ -126,7 +126,7 @@ function openAskModal() {
   const inp = document.getElementById('askInput');
   if (inp) inp.value = '';
   // v4.74: Sidebar statt Modal
-  if (typeof setSidebarMode === 'function') setSidebarMode('fragen');
+  if (typeof setSidebarMode === 'function') setSidebarMode('gespraechschat');
 }
 
 function closeAskModal() {
@@ -158,15 +158,16 @@ async function sendAskQuestion() {
       .join('\n');
 
     const personaId = document.getElementById('askPersonaSelect')?.value || '';
-    const personaPrefix = _buildPersonaPrefix(personaId);
-    const basePrompt = personaPrefix + getEditablePromptText('builtin_ask')
+    // v5.73: Rolle als System-Prompt (gleich wie Analyse-Chat)
+    const systemPrompt = typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null;
+    const basePrompt = getEditablePromptText('builtin_ask')
       .replace(/\{\{sessionLabel\}\}/g, s.label)
       .replace(/\{\{transkript\}\}/g, trimTranscript(transcript, 300000));
     const prompt = basePrompt +
       (historyText ? `\nBISHERIGE FRAGEN:\n${historyText}\n` : '') +
       `\nFRAGE: ${question}`;
 
-    const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward), systemPrompt);
     addTokensToSession(s, inputTokens, outputTokens);
     saveSessions();
     saveToArchive(s).catch(() => {}); // Token-Kosten auf Drive speichern
@@ -662,24 +663,29 @@ function _buildRoleSystemPrompt(promptId) {
 }
 
 // Befüllt Persona-Dropdowns:
-// askPersonaSelect    → alle Custom Prompts (Transkript-Chat, bisheriges Verhalten)
-// followupPersonaSelect → nur Rollen-Prompts: built-in + eigene mit category === 'rolle' (v5.71)
+// v5.73: Beide Dropdowns zeigen nur Rollen-Kategorie (built-in + custom)
+// askPersonaSelect    → Gesprächs-Chat (Transkript-Fragen, nur Rollen)
+// followupPersonaSelect → Analyse-Chat (Analyse-Fragen, nur Rollen)
 function populatePersonaSelects() {
   const allCustom = typeof getCustomPrompts === 'function' ? getCustomPrompts() : [];
 
-  // askPersonaSelect: alle Custom Prompts
-  const askOpts = '<option value="">Standard (Systemprompt)</option>' +
-    allCustom.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('');
-  const askEl = document.getElementById('askPersonaSelect');
-  if (askEl) askEl.innerHTML = askOpts;
-
-  // followupPersonaSelect: nur Rollen (built-in + custom)
+  // Rollen-Prompts zusammenstellen (built-in + custom mit category === 'rolle')
   const builtinRollen = (typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : [])
     .filter(p => p.category === 'rolle');
   const customRollen = allCustom.filter(p => p.category === 'rolle');
+
+  const noRollenHint = builtinRollen.length === 0 && customRollen.length === 0
+    ? '<option value="" disabled style="color:var(--muted)">Noch keine Rollen – in Prompt-Bibliothek anlegen</option>'
+    : '';
+
   const rolleOpts = '<option value="">Kein Systemprompt</option>' +
+    noRollenHint +
     builtinRollen.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('') +
     customRollen.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('');
+
+  const askEl = document.getElementById('askPersonaSelect');
+  if (askEl) askEl.innerHTML = rolleOpts;
+
   const followupEl = document.getElementById('followupPersonaSelect');
   if (followupEl) followupEl.innerHTML = rolleOpts;
 }
