@@ -341,12 +341,25 @@ async function processFile(file) {
 // ASSEMBLYAI API
 // ═══════════════════════════════════════════════════
 async function uploadAudio(file) {
+  // v5.66: MIME-Typ normalisieren – Android-Dateipicker liefert audio/x-wav,
+  // das AssemblyAI nicht erkennt. Normalisierung → audio/wav behebt den Transcoding-Fehler.
+  const MIME_NORMALIZE = {
+    'audio/x-wav':  'audio/wav',
+    'audio/wave':   'audio/wav',
+    'audio/x-m4a':  'audio/mp4',
+    'audio/x-mp3':  'audio/mpeg',
+  };
+  let body = file;
+  if (MIME_NORMALIZE[file.type]) {
+    body = new Blob([await file.arrayBuffer()], { type: MIME_NORMALIZE[file.type] });
+  }
+
   let res;
   try {
     res = await fetch(`${assemblyBase()}/v2/upload`, {
       method: 'POST',
       headers: { 'authorization': apiKey, 'transfer-encoding': 'chunked' },
-      body: file,
+      body,
     });
   } catch (networkErr) {
     throw new Error(`Netzwerkfehler beim Upload – mögliche Ursache: CORS oder keine Internetverbindung. Details: ${networkErr.message}`);
