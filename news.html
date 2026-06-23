@@ -312,7 +312,7 @@
     Zurück
   </a>
   <h1>📰 Was ist neu?</h1>
-  <span class="badge">v5.60</span>
+  <span class="badge">v5.72</span>
 </header>
 
 <div class="news-layout">
@@ -320,6 +320,7 @@
   <!-- ── Sidebar-Navigation ── -->
   <nav class="news-sidebar" aria-label="Artikel-Navigation">
     <p class="news-sidebar-title">Artikel</p>
+    <a href="#rollen"           class="news-sidebar-link" data-id="rollen"><span class="news-sidebar-version">v5.71</span>Rollen im Chat</a>
     <a href="#prompt-erstellen" class="news-sidebar-link" data-id="prompt-erstellen"><span class="news-sidebar-version">v5.65</span>Prompts erstellen</a>
     <a href="#fotos"            class="news-sidebar-link" data-id="fotos"><span class="news-sidebar-version">v5.60</span>Foto-Analyse</a>
     <a href="#lesezeichen"      class="news-sidebar-link" data-id="lesezeichen"><span class="news-sidebar-version">v5.51</span>Lesezeichen in Analysen</a>
@@ -335,6 +336,120 @@
 
   <!-- ── Artikel-Feed ── -->
   <main class="news-container">
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Rollen im Chat (v5.71 / v5.72)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="rollen">
+      <div class="news-meta">
+        <span class="news-version">v5.71 – v5.72</span>
+        <span class="news-date">23. Juni 2026</span>
+        <span class="news-category">Feature</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#12102a">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <defs><linearGradient id="nh_rolle" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#12102a" stop-opacity="0"/><stop offset="100%" stop-color="#12102a" stop-opacity="0.95"/></linearGradient></defs>
+          <circle cx="320" cy="120" r="200" fill="#6c63ff" opacity="0.05"/>
+
+          <!-- Linke Seite: Folge-Gespräch Panel -->
+          <rect x="42" y="28" width="258" height="208" rx="12" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="60" y="52" font-size="8.5" fill="#7a7f9a" font-family="sans-serif" font-weight="700">FOLGE-GESPRÄCH</text>
+          <line x1="42" y1="60" x2="300" y2="60" stroke="#2e3347" stroke-width="1"/>
+
+          <!-- Rollen-Select bar -->
+          <rect x="54" y="68" width="234" height="22" rx="5" fill="#22263a" stroke="#3a3d5c" stroke-width="1"/>
+          <text x="66" y="83" font-size="8.5" fill="#5a5f7a" font-family="sans-serif">Rolle:</text>
+          <text x="100" y="83" font-size="8.5" fill="#a78bfa" font-family="sans-serif" font-weight="600">🎭 Life Coach</text>
+          <text x="279" y="84" font-size="10" fill="#5a5f7a" font-family="sans-serif">▾</text>
+
+          <!-- User message -->
+          <rect x="124" y="100" width="160" height="28" rx="7" fill="#22263a"/>
+          <text x="138" y="114" font-size="8.5" fill="#c8cad6" font-family="sans-serif">Was sollte ich als nächstes</text>
+          <text x="138" y="124" font-size="8.5" fill="#c8cad6" font-family="sans-serif">priorisieren?</text>
+
+          <!-- Claude answer -->
+          <rect x="54" y="138" width="218" height="54" rx="7" fill="#1c2040" stroke="#2e3347" stroke-width="1"/>
+          <text x="68" y="154" font-size="8" fill="#a78bfa" font-family="sans-serif" font-weight="700">Life Coach</text>
+          <text x="68" y="166" font-size="8" fill="#c8cad6" font-family="sans-serif">Du hast bereits viel Klarheit über deine</text>
+          <text x="68" y="177" font-size="8" fill="#c8cad6" font-family="sans-serif">Ziele. Als nächster Schritt wäre es</text>
+          <text x="68" y="188" font-size="8" fill="#c8cad6" font-family="sans-serif">hilfreich, Prioritäten zu setzen…</text>
+
+          <!-- Input field -->
+          <rect x="54" y="202" width="234" height="26" rx="6" fill="#22263a" stroke="#3a3d5c" stroke-width="1"/>
+          <text x="68" y="219" font-size="8.5" fill="#4a4f6a" font-family="sans-serif">Nächste Folgefrage…</text>
+          <rect x="274" y="205" width="10" height="20" rx="3" fill="#6c63ff"/>
+
+          <!-- Rechte Seite: Rollen-Auswahl -->
+          <rect x="334" y="28" width="266" height="208" rx="12" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="354" y="52" font-size="10" fill="#e8eaf0" font-family="sans-serif" font-weight="700">Rolle wählen</text>
+          <rect x="490" y="38" width="96" height="18" rx="9" fill="rgba(108,99,255,0.15)" stroke="rgba(108,99,255,0.35)" stroke-width="1"/>
+          <text x="538" y="51" text-anchor="middle" font-size="7.5" fill="#a78bfa" font-family="sans-serif" font-weight="700">System-Prompt</text>
+          <line x1="334" y1="60" x2="600" y2="60" stroke="#2e3347" stroke-width="1"/>
+
+          <!-- Rolle 1: Life Coach – aktiv -->
+          <rect x="346" y="68" width="242" height="30" rx="6" fill="#1e1a40" stroke="#6c63ff" stroke-width="1.5"/>
+          <text x="360" y="84" font-size="10" fill="#a78bfa" font-family="sans-serif" font-weight="600">🧡  Life Coach</text>
+          <text x="448" y="84" font-size="7.5" fill="#6c63ff" font-family="sans-serif">Empathisch · Lösungsfokussiert</text>
+
+          <!-- Rolle 2 -->
+          <rect x="346" y="104" width="242" height="28" rx="6" fill="#22263a" stroke="#2e3347" stroke-width="1"/>
+          <text x="360" y="122" font-size="9.5" fill="#c8cad6" font-family="sans-serif">💼  Führungskraft</text>
+          <text x="456" y="122" font-size="7.5" fill="#4a4f6a" font-family="sans-serif">Direkt · Ergebnisorientiert</text>
+
+          <!-- Rolle 3 -->
+          <rect x="346" y="138" width="242" height="28" rx="6" fill="#22263a" stroke="#2e3347" stroke-width="1"/>
+          <text x="360" y="156" font-size="9.5" fill="#c8cad6" font-family="sans-serif">⚡  Sparringspartner</text>
+          <text x="466" y="156" font-size="7.5" fill="#4a4f6a" font-family="sans-serif">Kritisch · Herausfordernd</text>
+
+          <!-- Rolle 4 -->
+          <rect x="346" y="172" width="242" height="28" rx="6" fill="#22263a" stroke="#2e3347" stroke-width="1"/>
+          <text x="360" y="190" font-size="9.5" fill="#c8cad6" font-family="sans-serif">🧠  Psychologischer Berater</text>
+          <text x="506" y="190" font-size="7.5" fill="#4a4f6a" font-family="sans-serif">Tiefenorientiert</text>
+
+          <!-- Rolle 5 -->
+          <rect x="346" y="206" width="242" height="24" rx="6" fill="#22263a" stroke="#2e3347" stroke-width="1"/>
+          <text x="360" y="222" font-size="9.5" fill="#c8cad6" font-family="sans-serif">📋  Moderator</text>
+          <text x="426" y="222" font-size="7.5" fill="#4a4f6a" font-family="sans-serif">Neutral · Strukturierend</text>
+
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh_rolle)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v5.71</span>
+          <h3>Rollen für das Folge-Gespräch</h3>
+        </div>
+      </div>
+
+      <h2>Claude spricht mit dir – in der Rolle, die du wählst</h2>
+      <p class="lead">Das Folge-Gespräch bekommt eine neue Dimension: Über ein Rollen-Dropdown wählst du, wer Claude in diesem Gespräch sein soll. Life Coach, Führungskraft, Sparringspartner – die Rolle wird als System-Prompt direkt an die API geschickt und prägt jeden Satz der Antwort.</p>
+
+      <h3>Wie Rollen funktionieren</h3>
+      <p>Wenn du eine Rolle auswählst, wird der Rollen-Prompt nicht als Teil deiner Frage gesendet, sondern als <strong>System-Prompt</strong> – das heißt, Claude nimmt die Rolle von Beginn an ein, bevor er auch nur ein Wort liest. Das Ergebnis ist ein deutlich anderer Gesprächston als bei der Standard-Antwort: Eine Führungskraft gibt direktes Feedback zu Entscheidungen, ein Psychologischer Berater reflektiert Muster und stellt Fragen statt Ratschläge zu geben, ein Sparringspartner hinterfragt Annahmen und spielt devil's advocate.</p>
+
+      <h3>5 eingebaute Rollen</h3>
+      <ul class="news-feature-list">
+        <li><strong>🧡 Life Coach</strong>Empathisch, warm, lösungsorientiert. Hilft dabei, Erkenntnisse in konkrete nächste Schritte umzuwandeln und Hindernisse zu benennen.</li>
+        <li><strong>💼 Erfahrene Führungskraft</strong>Direkt, strategisch, ergebnisorientiert. Analysiert aus Managementperspektive und gibt klares Feedback zu Entscheidungen.</li>
+        <li><strong>⚡ Sparringspartner</strong>Kritisch, herausfordernd, auf Augenhöhe. Hinterfragt Annahmen, spielt devil's advocate – keine Bestätigung, sondern Schärfung des Denkens.</li>
+        <li><strong>🧠 Psychologischer Berater</strong>Nicht-wertend, tiefenorientiert. Begleitet durch Fragen und Spiegelung zur Selbsterkenntnis – keine Diagnosen, keine Ratschläge.</li>
+        <li><strong>📋 Moderator</strong>Neutral, strukturierend. Fasst zusammen, behält den roten Faden und macht nächste Schritte sichtbar – ohne zu werten.</li>
+      </ul>
+      <p>Alle eingebauten Rollen sind über die Prompt-Bibliothek anpassbar. Wer einen anderen Tonfall oder andere Grenzen möchte, ändert den Text direkt.</p>
+
+      <h3>Eigene Rollen erstellen</h3>
+      <p>In der Prompt-Bibliothek gibt es jetzt eine eigene Sektion <strong>Rollen-Prompts</strong>. Über den Kategorie-Picker (Neuer Prompt → „Rolle 🎭") lassen sich eigene Rollen erstellen – zum Beispiel ein Branchenexperte, ein Supervisor oder ein Gesprächspartner in einer bestimmten Sprache. Eigene Rollen erscheinen sofort im Dropdown des Folge-Gesprächs.</p>
+
+      <h3>Rollenwechsel jederzeit möglich</h3>
+      <p>Die Rolle wird beim Absenden jeder einzelnen Nachricht ausgelesen – du kannst also mitten im Gespräch wechseln. Stelle die erste Frage als Life Coach, dann dieselbe Frage als Sparringspartner und vergleiche die Perspektiven. „Kein Systemprompt" ist ebenfalls eine Option – dann verhält sich Claude wie gewohnt.</p>
+
+      <h3>Gesprächsgedächtnis (v5.72)</h3>
+      <p>Seit v5.72 schickt das Folge-Gespräch die letzten 5 Runden als Kontext mit. Claude kennt damit seine eigenen Vorantworten und kann den Faden weiterführen. Das macht besonders im Zusammenspiel mit Rollen einen großen Unterschied: Ein Coach, der sich an die vorherige Aussage erinnert, kann gezielter nachfragen als einer, der jeden Austausch frisch beginnt. Antworten werden dabei auf 500 Zeichen je Runde komprimiert, um den Token-Verbrauch im Rahmen zu halten.</p>
+
+      <div class="news-info-box">
+        <strong>So nutzt du Rollen:</strong> Sitzung öffnen → Folge-Gespräch aufklappen → im Dropdown oben eine Rolle wählen → Frage eingeben und absenden. Claude antwortet direkt in der gewählten Rolle. Die Rolle lässt sich jederzeit wechseln – auch mitten im Gespräch.
+      </div>
+    </article>
 
 
     <!-- ════════════════════════════════════════
@@ -401,7 +516,7 @@
          ════════════════════════════════════════ -->
     <article class="news-article" id="fotos">
       <div class="news-meta">
-        <span class="news-version">v5.57 – v5.60</span>
+        <span class="news-version">v5.57 – v5.68</span>
         <span class="news-date">21. Juni 2026</span>
         <span class="news-category">Feature</span>
       </div>
@@ -470,6 +585,18 @@
 
       <h3>Ergebnis im Analysen-Tab</h3>
       <p>Das Analyseergebnis erscheint als aufklappbarer Block im <strong>Analysen-Tab</strong> – im gleichen Stil wie alle anderen KI-Auswertungen. Der Bildname wird automatisch als Überschrift vorangestellt. Drive-Sync läuft im Hintergrund: andere Geräte sehen sowohl die hochgeladenen Fotos als auch die Analyseergebnisse.</p>
+
+      <h3>Fotos direkt im Analysen-Tab nutzen (v5.67)</h3>
+      <p>Seit v5.67 müssen Fotos nicht mehr zwingend über den Fotos-Tab analysiert werden. Eigene Analyse-Prompts können Bilder direkt im <strong>Analysen-Tab</strong> verarbeiten – ohne Umweg. Unterhalb der Prompt-Auswahl erscheint ein Foto-Picker mit allen Fotos der Sitzung. Ausgewählte Bilder werden zusammen mit dem Transkript und dem Prompt als multimodaler Request an Claude Sonnet geschickt.</p>
+
+      <p>Diese Möglichkeit steht ausschließlich bei <strong>eigenen Custom-Prompts</strong> zur Verfügung. Die eingebauten Standard-Analysen (Gesprächsanalyse, Arbeitsanalyse, 360° etc.) arbeiten ohne Bilder – ihr strukturiertes JSON-Format wäre mit visuellen Inhalten zu fragil. Für eigene Prompts hingegen kann die Kombination sehr mächtig sein: Transkript + Whiteboard-Foto, oder Meeting-Notizen + Handskizze in einem einzigen Durchgang.</p>
+
+      <h3>Thumbnail-Vorschau im Foto-Picker (v5.68)</h3>
+      <p>Statt kryptischer Drive-Dateinamen zeigt der Foto-Picker jetzt <strong>52×52 px große Thumbnails</strong> direkt aus Google Drive. Die Vorschaubilder laden asynchron mit einem Lade-Indikator und werden gecacht – beim zweiten Öffnen erscheinen sie sofort. Ausgewählte Fotos werden mit einem farbigen Rahmen markiert, sodass auf einen Blick klar ist, welche Bilder in die Analyse einfließen.</p>
+
+      <div class="news-info-box">
+        <strong>So nutzt du Fotos im Analysen-Tab:</strong> Sitzung öffnen → Analysen-Tab → eigenen Custom-Prompt auswählen → Foto-Picker erscheint automatisch → gewünschte Fotos antippen → „Analysieren". Claude bekommt Bilder und Transkript gleichzeitig und kann beides verknüpfen.
+      </div>
     </article>
 
     <!-- ════════════════════════════════════════
