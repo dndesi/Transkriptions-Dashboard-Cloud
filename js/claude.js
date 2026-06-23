@@ -66,7 +66,7 @@ async function callClaudeAPIVision(messageContent) {
 // v5.67: Pending-Fotos für die Analyse-Leiste (Analysen-Tab)
 let _analysisPendingPhotos = [];
 
-// Foto-Picker unterhalb der Analyse-Leiste rendern
+// v5.68: Foto-Picker mit Thumbnail-Vorschau
 function renderAnalysePhotoAttach(session) {
   const el = document.getElementById('analysePhotoAttach');
   if (!el) return;
@@ -75,22 +75,33 @@ function renderAnalysePhotoAttach(session) {
   const photos = (session && session.photos) ? session.photos : [];
   if (!photos.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
 
-  let html = `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
-    <span style="font-size:0.76rem;color:var(--muted);display:inline-flex;align-items:center;gap:4px;white-space:nowrap">${icon('image',12)} Fotos mitschicken:</span>`;
+  let html = `<div style="padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+    <div style="font-size:0.74rem;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px">
+      ${icon('image',12)} Fotos mitschicken (optional):
+      <button class="help-icon" style="margin-left:auto" data-help="Wähle Fotos als visuellen Kontext für eigene Prompts. Standard-Analysen (Gesprächs-, Arbeitsanalyse …) berücksichtigen Fotos nicht." onclick="showHelpTooltip(this)">?</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">`;
 
   photos.forEach(p => {
-    const safeName = escHtml(p.name || p.id);
-    html += `<label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:0.78rem;max-width:110px" title="${safeName}">
-      <input type="checkbox" class="analyse-photo-cb" data-photo-id="${p.id}" onchange="_updateAnalysisPendingPhotos()">
-      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</span>
+    const safeName  = escHtml(p.name || p.id);
+    const shortName = (p.name && p.name.length > 10) ? p.name.slice(0, 9) + '…' : (p.name || p.id.slice(0, 8));
+    html += `<label style="display:flex;flex-direction:column;align-items:center;cursor:pointer;gap:3px;user-select:none" title="${safeName}">
+      <input type="checkbox" class="analyse-photo-cb" data-photo-id="${p.id}" style="display:none"
+        onchange="_updateAnalysisPendingPhotos(); _toggleAnalysisThumbSelect(this)">
+      <img data-drive-id="${p.driveFileId}" src="" alt="${safeName}"
+        style="width:52px;height:52px;object-fit:cover;border-radius:7px;border:2px solid var(--border);transition:border-color 0.15s,box-shadow 0.15s;display:block;background:var(--surface)">
+      <span style="font-size:0.62rem;color:var(--muted);width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center">${escHtml(shortName)}</span>
     </label>`;
   });
 
-  html += `<button class="help-icon" style="margin-left:auto" data-help="Wähle Fotos aus dem Fotos-Tab als visuellen Kontext für eigene Prompts. Standard-Analysen (Gesprächs-, Arbeitsanalyse, …) berücksichtigen Fotos nicht." onclick="showHelpTooltip(this)">?</button>`;
-  html += `</div>`;
-
+  html += `</div></div>`;
   el.innerHTML = html;
   el.style.display = 'block';
+
+  // Thumbnails asynchron aus Drive laden (gleiche Funktion wie Fotos-Tab)
+  el.querySelectorAll('img[data-drive-id]').forEach(img => {
+    if (typeof _loadThumb === 'function') _loadThumb(img, img.dataset.driveId);
+  });
 }
 
 function _updateAnalysisPendingPhotos() {
@@ -99,6 +110,14 @@ function _updateAnalysisPendingPhotos() {
   const checked = Array.from(document.querySelectorAll('.analyse-photo-cb:checked'));
   const checkedIds = new Set(checked.map(cb => cb.dataset.photoId));
   _analysisPendingPhotos = (s.photos || []).filter(p => checkedIds.has(p.id));
+}
+
+// Selektions-Ring an Thumbnail ein-/ausblenden
+function _toggleAnalysisThumbSelect(cb) {
+  const img = cb.parentElement.querySelector('img');
+  if (!img) return;
+  img.style.borderColor = cb.checked ? 'var(--accent)' : 'var(--border)';
+  img.style.boxShadow   = cb.checked ? '0 0 0 2px var(--accent)' : 'none';
 }
 
 // Hilfsfunktion: Token-Nutzung zur Session addieren
