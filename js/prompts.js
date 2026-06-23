@@ -1968,6 +1968,9 @@ function importPrompts(event) {
 
       showToast(`${added} neue Prompt(s) importiert`, 'success');
       renderPromptsView();
+      // v5.78: Design-Dropdown + Persona-Selects neu befüllen nach Import
+      if (typeof populateCanvaPromptSelect === 'function') populateCanvaPromptSelect();
+      if (typeof populatePersonaSelects === 'function') populatePersonaSelects();
     } catch {
       showToast('Datei konnte nicht gelesen werden.', 'error');
     }

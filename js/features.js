@@ -694,8 +694,42 @@ function populatePersonaSelects() {
   if (projEl) projEl.innerHTML = rolleOpts;
 }
 
+// v5.78: Design-Tab Dropdown dynamisch befüllen (Built-ins + eigene category:'design')
+function populateCanvaPromptSelect() {
+  const sel = document.getElementById('canvaPromptSelect');
+  if (!sel) return;
+
+  const builtinHtml = `
+    <optgroup label="Dokumente">
+      <option value="builtin_canva_presentation">Präsentation (Folien)</option>
+      <option value="builtin_canva_summary">1-Pager / OnePager</option>
+      <option value="builtin_canva_action">Aktionsplan / Report</option>
+    </optgroup>
+    <optgroup label="Marketing &amp; Design">
+      <option value="builtin_canva_flyer">Flyer</option>
+      <option value="builtin_canva_poster">Poster</option>
+      <option value="builtin_canva_social">Social Media Post</option>
+    </optgroup>`;
+
+  const customDesign = typeof getCustomPrompts === 'function'
+    ? getCustomPrompts().filter(p => p.category === 'design')
+    : [];
+
+  const customHtml = customDesign.length
+    ? `<optgroup label="Eigene Design-Prompts">
+        ${customDesign.map(p => `<option value="custom_${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('')}
+       </optgroup>`
+    : '';
+
+  const prev = sel.value;
+  sel.innerHTML = builtinHtml + customHtml;
+  // Vorherige Auswahl wiederherstellen falls noch vorhanden
+  if (prev && sel.querySelector(`option[value="${CSS.escape(prev)}"]`)) sel.value = prev;
+}
+
 // Beim App-Start: Popovers mit gespeicherten Vorlagen befüllen
 function initFeatures() {
   updateCustomTemplatePopovers();
   populatePersonaSelects();
+  populateCanvaPromptSelect(); // v5.78
 }

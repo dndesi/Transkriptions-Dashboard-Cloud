@@ -1896,8 +1896,21 @@ function exportToClaudeDesign() {
   const session = getSession(currentSessionId);
   _migrateDesignData(session);
   const active = session?.designVersions?.find(v => v.id === _activeDesignVersionId);
-  if (!active?.data) {
+  if (!active?.data && !active?.textOutput) {
     showToast('Erst Design generieren.', 'warning');
+    return;
+  }
+
+  // v5.78: custom textOutput direkt als Prompt kopieren
+  if (active.textOutput) {
+    const promptText = active.editedText || active.textOutput;
+    navigator.clipboard.writeText(promptText).then(() => {
+      window.open('https://claude.ai/design', '_blank');
+      showToast('Prompt kopiert — in Claude Design einfügen (⌘V)', 'success');
+    }).catch(() => {
+      window.open('https://claude.ai/design', '_blank');
+      showToast('Clipboard-Zugriff verweigert — Prompt manuell kopieren.', 'warning');
+    });
     return;
   }
 
@@ -2075,13 +2088,14 @@ function renderDesignVersionTabs(session) {
   const active = versions.find(v => v.id === _activeDesignVersionId);
   if (!active) { contentEl.innerHTML = ''; return; }
 
+  // v5.78: custom textOutput ebenfalls Transfer-Button zeigen
   if (expBtn) expBtn.style.display = active.data ? 'inline-flex' : 'none';
-  if (trfBtn) trfBtn.style.display = active.data ? 'inline-flex' : 'none';
+  if (trfBtn) trfBtn.style.display = (active.data || active.textOutput) ? 'inline-flex' : 'none';
 
   // Vorschau oder Edit-Modus
   let previewHtml = '';
   if (_designEditMode) {
-    const currentText = active.editedText ?? _presentationDataToText(active.data);
+    const currentText = active.editedText ?? (active.textOutput || _presentationDataToText(active.data));
     previewHtml = `
       <textarea id="designEditTextarea" style="width:100%;min-height:280px;box-sizing:border-box;background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:12px;color:var(--text);font-size:0.83rem;line-height:1.6;resize:vertical;outline:none;font-family:inherit">${escHtml(currentText)}</textarea>
       <div style="display:flex;gap:8px;margin-top:10px">
@@ -2093,9 +2107,12 @@ function renderDesignVersionTabs(session) {
         </button>
       </div>`;
   } else {
+    // v5.78: custom textOutput als Pre-wrap anzeigen
     const rendered = active.editedText
       ? `<div style="white-space:pre-wrap;font-size:0.83rem;line-height:1.7;color:var(--text)">${escHtml(active.editedText)}</div>`
-      : _renderPresentationPreviewHtml(active.data);
+      : active.textOutput
+        ? `<div style="white-space:pre-wrap;font-size:0.83rem;line-height:1.7;color:var(--text)">${escHtml(active.textOutput)}</div>`
+        : _renderPresentationPreviewHtml(active.data);
     previewHtml = `
       <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
         <button onclick="_designEditMode=true;renderDesignVersionTabs(getSession(currentSessionId))" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:0.78rem;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px">
@@ -2263,16 +2280,12 @@ async function generatePresentation() {
   if (!session) { showToast('Keine aktive Sitzung.', 'warning'); return; }
   if (!anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'warning'); return; }
 
-  const promptId   = document.getElementById('canvaPromptSelect')?.value || 'builtin_canva_presentation';
-  const btn        = document.getElementById('canvaGenerateBtn');
-  const contentEl  = document.getElementById('designVersionContent');
-  const exportBtn  = document.getElementById('canvaExportBtn');
-
-  const analysisContext = _buildFollowUpContext(session);
-  if (!analysisContext) {
-    showToast('Noch keine Analysen vorhanden – bitte erst Analysen durchführen.', 'warning');
-    return;
-  }
+  const rawSelectVal = document.getElementById('canvaPromptSelect')?.value || 'builtin_canva_presentation';
+  const isCustom     = rawSelectVal.startsWith('custom_');
+  const promptId     = isCustom ? rawSelectVal.slice(7) : rawSelectVal; // strip 'custom_' prefix
+  const btn          = document.getElementById('canvaGenerateBtn');
+  const contentEl    = document.getElementById('designVersionContent');
+  const exportBtn    = document.getElementById('canvaExportBtn');
 
   btn.disabled = true;
   btn.innerHTML = icon('loader', 13, 'margin-right:5px') + ' Generiere…';
@@ -2280,40 +2293,91 @@ async function generatePresentation() {
   if (exportBtn) exportBtn.style.display = 'none';
 
   const { forward, reverse } = buildAnonMap(session);
-  const transcript = buildTranscriptText(session);
-  const dateStr = session.date ? new Date(session.date).toLocaleDateString('de-DE') : new Date().toLocaleDateString('de-DE');
-
-  const prompt = getEditablePromptText(promptId)
-    .replace(/\{\{analyseContext\}\}/g, analysisContext)
-    .replace(/\{\{transcript\}\}/g, trimTranscript(transcript, 80000))
-    .replace(/\{\{date\}\}/g, dateStr);
+  const transcript  = buildTranscriptText(session);
+  const dateStr     = session.date ? new Date(session.date).toLocaleDateString('de-DE') : new Date().toLocaleDateString('de-DE');
+  const analysisContext = _buildFollowUpContext(session) || '';
 
   try {
-    const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
-    addTokensToSession(session, inputTokens, outputTokens);
-    const raw = deanonymizeObject(text, reverse);
-    const json = JSON.parse(extractJSON(raw, '{'));
+    if (isCustom) {
+      // v5.78: Eigener Design-Prompt – gibt Freitext aus, kein JSON
+      const customPrompt = typeof getCustomPrompts === 'function'
+        ? getCustomPrompts().find(p => p.id === promptId)
+        : null;
+      if (!customPrompt) throw new Error('Prompt nicht gefunden: ' + promptId);
 
-    // v5.25: In designVersions speichern statt claudePresentation
-    const promptDef = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === promptId);
-    if (!session.designVersions) session.designVersions = [];
-    const newVersion = {
-      id:          'dv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-      promptId,
-      promptLabel: promptDef?.name || 'Design',
-      data:        json,
-      ts:          new Date().toISOString(),
-      editedText:  null,
-      canvaLink:   null
-    };
-    session.designVersions.push(newVersion);
-    _activeDesignVersionId = newVersion.id;
-    _designEditMode        = false;
-    saveSessions();
-    await saveToArchive(session);
+      let prompt = (typeof assemblePromptText === 'function' ? assemblePromptText(customPrompt) : customPrompt.kontext || '');
+      prompt = prompt
+        .replace(/\{\{transkript\}\}/gi, trimTranscript(transcript, 80000))
+        .replace(/\{\{transcript\}\}/gi,  trimTranscript(transcript, 80000))
+        .replace(/\{\{analyseContext\}\}/g, analysisContext)
+        .replace(/\{\{date\}\}/g, dateStr);
+      // Transkript anhängen falls kein Platzhalter
+      if (!/\{\{transkript\}\}|\{\{transcript\}\}/i.test(customPrompt.kontext || '') &&
+          !prompt.includes(trimTranscript(transcript, 80000).slice(0, 30))) {
+        prompt += `\n\nTranskript:\n${trimTranscript(transcript, 80000)}`;
+      }
 
-    renderDesignVersionTabs(session);
-    showToast('Design erstellt ✓', 'success');
+      const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
+      addTokensToSession(session, inputTokens, outputTokens);
+      const raw = deanonymizeObject(text, reverse);
+
+      if (!session.designVersions) session.designVersions = [];
+      const newVersion = {
+        id:          'dv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        promptId,
+        promptLabel: customPrompt.name || 'Design-Prompt',
+        type:        'custom',   // v5.78: Freitext-Output
+        textOutput:  raw,
+        ts:          new Date().toISOString(),
+        editedText:  null,
+        canvaLink:   null
+      };
+      session.designVersions.push(newVersion);
+      _activeDesignVersionId = newVersion.id;
+      _designEditMode        = false;
+      saveSessions();
+      await saveToArchive(session);
+      renderDesignVersionTabs(session);
+      showToast('Design-Prompt erstellt ✓', 'success');
+
+    } else {
+      // Bestehender Flow: Built-in Canva-Prompt → JSON-Output
+      if (!analysisContext) {
+        showToast('Noch keine Analysen vorhanden – bitte erst Analysen durchführen.', 'warning');
+        btn.disabled = false;
+        btn.innerHTML = icon('sparkles', 13, 'margin-right:5px') + ' Generieren';
+        return;
+      }
+
+      const prompt = getEditablePromptText(promptId)
+        .replace(/\{\{analyseContext\}\}/g, analysisContext)
+        .replace(/\{\{transcript\}\}/g, trimTranscript(transcript, 80000))
+        .replace(/\{\{date\}\}/g, dateStr);
+
+      const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
+      addTokensToSession(session, inputTokens, outputTokens);
+      const raw  = deanonymizeObject(text, reverse);
+      const json = JSON.parse(extractJSON(raw, '{'));
+
+      const promptDef = EDITABLE_PROMPT_DEFAULTS.find(p => p.id === promptId);
+      if (!session.designVersions) session.designVersions = [];
+      const newVersion = {
+        id:          'dv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        promptId,
+        promptLabel: promptDef?.name || 'Design',
+        data:        json,
+        ts:          new Date().toISOString(),
+        editedText:  null,
+        canvaLink:   null
+      };
+      session.designVersions.push(newVersion);
+      _activeDesignVersionId = newVersion.id;
+      _designEditMode        = false;
+      saveSessions();
+      await saveToArchive(session);
+      renderDesignVersionTabs(session);
+      showToast('Design erstellt ✓', 'success');
+    }
   } catch (e) {
     if (contentEl) contentEl.innerHTML = `<div style="color:var(--red);font-size:0.85rem">${escHtml(e.message || 'Fehler')}</div>`;
     showToast('Fehler: ' + (e.message || 'Unbekannt'), 'error');
