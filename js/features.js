@@ -688,6 +688,10 @@ function populatePersonaSelects() {
 
   const followupEl = document.getElementById('followupPersonaSelect');
   if (followupEl) followupEl.innerHTML = rolleOpts;
+
+  // v5.77: Projekt-Assistent ebenfalls befüllen
+  const projEl = document.getElementById('projAssistPersonaSelect');
+  if (projEl) projEl.innerHTML = rolleOpts;
 }
 
 // Beim App-Start: Popovers mit gespeicherten Vorlagen befüllen
