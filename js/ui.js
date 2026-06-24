@@ -541,7 +541,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 5.83</span>
+          <span style="color:var(--accent); font-weight:600">Version 5.83</span> · 23 JS-Module
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -573,9 +573,9 @@ function renderArchView() {
         <div style="font-weight:700; font-size:1rem; margin-bottom:6px">Distill Voice – Browser-App (GitHub Pages)</div>
         <div style="font-size:0.78rem; color:var(--muted); line-height:1.9">
           <span style="opacity:0.7">app.js · config.js · storage.js · ui.js · claude.js · drive.js</span><br>
-          <span style="opacity:0.7">assemblyai.js · recorder.js · sessions.js · auth.js</span><br>
-          <span style="color:var(--accent2); font-weight:500">features.js · search.js · calendar.js · persons.js</span><br>
-          <span style="color:var(--accent); font-weight:500">prompts.js · audio.js · tags.js · notes.js · import.js · contacts.js</span><br>
+          <span style="opacity:0.7">assemblyai.js · recorder.js · sessions.js · auth.js · icons.js</span><br>
+          <span style="color:var(--accent2); font-weight:500">features.js · search.js · calendar.js · persons.js · contacts.js</span><br>
+          <span style="color:var(--accent); font-weight:500">prompts.js · audio.js · tags.js · notes.js · import.js · photos.js · projects.js</span><br>
           <span style="color:var(--accent); font-size:0.72rem">dndesi.github.io/Transkriptions-Dashboard-Cloud</span>
         </div>
       </div>
@@ -598,7 +598,7 @@ function renderArchView() {
       ${flowCard('claude.js', 'KI-Analyse', 'Privat/Arbeit/Gedanken-Analyse, Kapitel, Themen, Stimmung, Anonymisierung, Token-Tracking · v4.81: renderInsights() ruft _refreshAnalysenSubtabs() am Ende – Subtabs aktualisieren sich nach jeder Analyse', '#a78bfa')}
       ${flowCard('drive.js', 'Cloud Storage', 'Google Drive OAuth, Ordner anlegen, Sessions als JSON speichern/laden/löschen', '#34d399')}
       ${flowCard('features.js', 'Erweiterte Features', '360°-Analyse, Aufnahme befragen (Chat), Mind Map (D3.js v7, JSON-Format, horizontal LTR, Zoom/Pan, SVG/PDF-Export)', '#f59e0b')}
-      ${flowCard('claude.js (Follow-Up)', 'Folgegespräch', 'Analyse-Kontext aufbauen (_buildFollowUpContext), Folgefragen stellen (askFollowUp), Verlauf in session.claudeFollowUp[] speichern', '#06b6d4')}
+      ${flowCard('claude.js (Follow-Up)', 'Folgegespräch', 'Analyse-Kontext aufbauen (_buildFollowUpContext), Folgefragen stellen (askFollowUp), Verlauf in session.claudeFollowUp[] speichern · v5.83: Feldnamen-Fix (entry.text + entry.promptName statt result/name)', '#06b6d4')}
       ${flowCard('ui.js (Navigation)', 'Sidenav', 'openUploadPanel/closeUploadPanel, toggleSidenav/closeSidenav, setSidenavActive – neue linke Navigation ersetzt 340px Upload-Sidebar', '#8b5cf6')}
       ${flowCard('claude.js (Präsentation)', 'Präsentation erstellen', 'generatePresentation(), _renderPresentationPreview(), exportPresentationPptx() via PptxGenJS. 3 Prompt-Typen wählbar. session.claudePresentation[] speichert Ergebnis', '#f43f5e')}
       ${flowCard('prompts.js', 'Prompt-Bibliothek', 'System/Standard/Feature-Prompts, editierbare Overrides in localStorage, eigene Prompts', '#a78bfa')}
@@ -612,8 +612,12 @@ function renderArchView() {
       ${flowCard('tags.js', 'Tags', 'Tag-System für Sitzungen, Chips-UI, Filter', '#f59e0b')}
       ${flowCard('import.js', 'Datei-Import', 'parseSamsungTranscript() (UTF-16 BOM), parsePlainText(), extractPdfText() (PDF.js). Multi-File: _importParsedDataList[], handleImportFileSelect() iteriert alle Dateien, startSamsungImport() erstellt eine Session pro Datei. Transkript-Editor: toggleTranscriptEdit(), saveTranscriptEdits() in claude.js', '#34d399')}
       ${flowCard('notes.js', 'Notizen', 'Persönliche Notizen pro Sitzung, Auto-Save', '#94a3b8')}
-      ${flowCard('projects.js', 'Projektarbeit', 'Projekt-Browser (Kacheln, Anlegen/Bearbeiten/Archivieren), Detailansicht, Dashboard mit Statistiken, Aufgaben-Tracking (checklistItem), Projekt-Analyse via Claude (builtin_project_analysis) · BUILTIN_PROJECT_ID = Allgemeines Projekt', '#f59e0b')}
+      ${flowCard('projects.js', 'Projektarbeit', 'Projekt-Browser (Kacheln, Anlegen/Bearbeiten/Archivieren), Detailansicht, Dashboard mit Statistiken, Aufgaben-Tracking (checklistItem), Projekt-Analyse via Claude (builtin_project_analysis) · BUILTIN_PROJECT_ID = Allgemeines Projekt · _buildProjectAnalysisContext(): MAX_CHARS=50000, v5.83: slice(0,300) entfernt', '#f59e0b')}
       ${flowCard('app.js', 'Initialisierung', 'async init() → await initStorage() → IndexedDB laden vor UI-Start · Theme-Toggle · Upload-Schrittvalidierung · Drag & Drop', '#c084fc')}
+      ${flowCard('auth.js', 'Google Auth', 'Progressive Auth: App startet ohne Login · GIS-Client initialisieren (initGoogleAuth) · Stille Token-Anfrage beim Laden · Werbeblocker-Fallback nach 15s', '#34d399')}
+      ${flowCard('icons.js', 'Icon-Helfer', 'Inline Lucide SVG via icon(name, size, style) · Kein CDN-Aufruf zur Laufzeit · Icons als SVG-Strings direkt ins DOM injiziert', '#94a3b8')}
+      ${flowCard('contacts.js', 'Kontakte', 'Manuelle Kontaktebene über Projekten: Kontakt → Projekt → Sitzung · CRUD (createContact/updateContact/deleteContact) · Farbkodierung · parallel zum Personen-System', '#f472b6')}
+      ${flowCard('photos.js', 'Foto-Analyse', 'Foto-Upload (Drag & Drop + File-Input) · Komprimierung (max 1200px, JPEG 0.75) · Drive-Unterordner pro Sitzung · Claude-Bildanalyse via Foto-Prompts · renderPhotoResults() in Analysen-Tab · session.photos[] + session.photoResults[]', '#f59e0b')}
     </div>
 
     <!-- Datenflüsse -->
@@ -640,7 +644,7 @@ function renderArchView() {
         ${techRow('E-Mail', 'Gmail API v1 · RFC 2822 · Base64url · Entwurfsmodus')}
         ${techRow('Mind Map', 'D3.js v7 (CDN) · horizontales LTR-Layout · JSON-Baumformat · gecacht in session.claudeMindmap · Zoom/Pan · SVG/PDF-Export · Mermaid-Fallback für Altdaten')}
         ${techRow('Folgegespräch', 'builtin_followup in Prompt-Bibliothek · Platzhalter: analyseContext/transcript/question · session.claudeFollowUp[] · DSGVO-Anonymisierung aktiv')}
-        ${techRow('Präsentation', 'PptxGenJS v3.12 (CDN) · 6 Prompt-Typen (builtin_canva_*) · .pptx-Export · Claude Design Integration (claude.ai/design) · session.claudePresentation + session.claudeDesignLinks[]')}
+        ${techRow('Präsentation', 'PptxGenJS v3.12 (CDN) · 6 Prompt-Typen (builtin_canva_*) · .pptx-Export · Claude Design Integration (claude.ai/design) · session.claudePresentation[] + session.designVersions[].designLinks[] (v5.80: Array statt einzelnem canvaLink)')}
         ${techRow('Prompt-System', 'Editierbare Prompts in localStorage · System/Standard/Feature/Eigene · usedIn-Badge zeigt Verwendungsort · assemblePromptText() aus Rolle/Tonalität/Grenzen/Kontext')}
         ${techRow('Session-Layout', 'Tab-Leiste (Transkript/Analysen/Mindmap/Design/Notizen/Tags) + einklappbare Assistent-Sidebar · Analysen: echte Sub-Tabs (Gespräch/Arbeit/Stimmung/Kapitel/Themen/360°) via switchAnalysenSubtab() · sdc-flap als vertikaler Streifen (Desktop + Mobile)')}
         ${techRow('OAuth Scopes', 'drive.file · userinfo.profile · calendar.events · gmail.compose')}
@@ -648,7 +652,7 @@ function renderArchView() {
         ${techRow('CORS-Proxy', 'Cloudflare Worker (optional, ~5 Min Setup)')}
         ${techRow('Wechselkurs', 'Frankfurter API (api.frankfurter.app) – USD → EUR')}
         ${techRow('Datenschutz', 'DSGVO: Anonymisierungs-Funktion vor API-Calls, Echtname bleibt lokal')}
-        ${techRow('Icons', 'Lucide Icons v0.383 (CDN) · createIcons() nach DOM-Render')}
+        ${techRow('Icons', 'icons.js · Inline Lucide SVG via icon() · kein CDN-Aufruf zur Laufzeit · Lucide Icons v0.383 (Lizenz: MIT)')}
       </div>
     </div>
 
