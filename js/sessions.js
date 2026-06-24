@@ -20,11 +20,11 @@ function hideLoadingScreen() {
 
 function initLoadingScreen() {
   updateLoadingScreen(5, 'Verbindung zu Drive wird aufgebaut…');
-  // Sicherheits-Timeout: nach 8 Sekunden automatisch schließen
+  // v5.84: Timeout auf 20s erhöht (viele Sessions brauchen länger als 8s)
   _loadingTimeout = setTimeout(() => {
     updateLoadingScreen(100, 'Zeitüberschreitung – lokale Daten werden verwendet');
     setTimeout(() => hideLoadingScreen(), 1200);
-  }, 8000);
+  }, 20000);
 }
 
 // DRIVE SESSION MANAGEMENT
@@ -130,6 +130,8 @@ async function loadFromDrive() {
     checkAndDeleteExpiredAudio().catch(() => {});
   } catch(e) {
     showToast('Drive laden fehlgeschlagen: ' + e.message, 'error');
+    // v5.84: Settings (Prompts, Projekte) trotzdem laden – auch wenn Sessions fehlschlugen
+    await loadSettingsFromDrive().catch(err => console.warn('[settings fallback]', err.message));
   }
 }
 

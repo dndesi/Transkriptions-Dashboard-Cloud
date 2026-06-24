@@ -1,10 +1,19 @@
 // ═══════════════════════════════════════════════════
 // GOOGLE DRIVE API
 // ═══════════════════════════════════════════════════
+
+// v5.84: fetch mit AbortController-Timeout – verhindert ewig hängende Drive-Requests
+function _fetchWithTimeout(url, options, ms = 15000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
 async function driveGet(path, params = {}) {
   const url = new URL(DRIVE_API + path);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  const r = await fetch(url, { headers: { Authorization: 'Bearer ' + driveToken } });
+  // v5.84: 15s Timeout
+  const r = await _fetchWithTimeout(url, { headers: { Authorization: 'Bearer ' + driveToken } });
   if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error?.message || 'Drive GET ' + r.status); }
   return r.json();
 }
@@ -110,7 +119,8 @@ async function driveUploadAudioResumable(name, blob, onProgress, parentId = null
 }
 
 async function driveDownloadJSON(fileId) {
-  const r = await fetch(DRIVE_API + '/files/' + fileId + '?alt=media', {
+  // v5.84: 15s Timeout
+  const r = await _fetchWithTimeout(DRIVE_API + '/files/' + fileId + '?alt=media', {
     headers: { Authorization: 'Bearer ' + driveToken }
   });
   if (!r.ok) throw new Error('JSON download failed: ' + r.status);
