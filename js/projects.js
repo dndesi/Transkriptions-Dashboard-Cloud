@@ -1104,7 +1104,8 @@ function _buildProjectAnalysisContext(projectId) {
     // Eigene Prompt-Ergebnisse
     const customResults = s.customResults || {};
     Object.values(customResults).forEach(r => {
-      if (r.text) block += `${r.promptName || 'Eigene Analyse'}: ${r.text.slice(0, 300)}\n`;
+      // v5.83: slice(0,300) entfernt – MAX_CHARS-Limit greift auf Block-Ebene
+      if (r.text) block += `${r.promptName || 'Eigene Analyse'}:\n${r.text}\n`;
     });
 
     // Zeichenlimit prüfen

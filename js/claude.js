@@ -1776,10 +1776,11 @@ function _buildFollowUpContext(session) {
     lines.push('');
   }
 
+  // v5.83: entry.result → entry.text, entry.name → entry.promptName (Feldnamen-Fix)
   if (session.customResults) {
     Object.entries(session.customResults).forEach(([id, entry]) => {
-      lines.push(`=== ${entry.name || id} ===`);
-      lines.push(entry.result || '');
+      lines.push(`=== ${entry.promptName || id} ===`);
+      lines.push(entry.text || '');
       lines.push('');
     });
   }
