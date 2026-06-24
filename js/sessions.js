@@ -215,6 +215,13 @@ async function saveSettingsToDrive() {
 
 async function loadSettingsFromDrive() {
   if (!driveToken || !driveFolderId) return;
+  // v5.85: Ausstehenden Debounce-Save sofort flushen – verhindert dass frisch erstellte
+  // Prompts/Projekte von alten Drive-Daten überschrieben werden (Race Condition)
+  if (_settingsSaveTimer) {
+    clearTimeout(_settingsSaveTimer);
+    _settingsSaveTimer = null;
+    await saveSettingsToDrive().catch(() => {});
+  }
   try {
     // Datei suchen
     const res = await driveGet('/files', {
