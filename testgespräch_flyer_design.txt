@@ -1,0 +1,101 @@
+Agentur  (00:05)
+Hallo Frau Becker, schön dass wir heute Zeit gefunden haben. Es geht ja um den Flyer für Ihre neue Produktlinie, richtig?
+
+Kunde  (00:14)
+Genau, wir möchten einen Flyer gestalten für unsere neue Pflegekosmetikserie "Naturell". Die soll im Oktober auf den Markt kommen und wir brauchen dringend ein Werbemittel, das wir in den Apotheken und Drogerien auslegen können.
+
+Agentur  (00:32)
+Sehr gut. Können Sie mir etwas mehr über die Zielgruppe erzählen? Für wen ist "Naturell" gedacht?
+
+Kunde  (00:40)
+Die Zielgruppe sind Frauen zwischen 35 und 60 Jahren, die Wert auf natürliche Inhaltsstoffe legen. Keine Chemie, keine Parabene. Unsere Kunden sind gebildet, kaufkräftig und achten sehr auf Nachhaltigkeit. Das soll man dem Flyer auch ansehen.
+
+Agentur  (01:02)
+Okay, also hochwertiger Auftritt, natürlich und nachhaltig. Welche Farben haben Sie sich vorgestellt? Gibt es schon ein Farbkonzept oder eine Markenfarbe?
+
+Kunde  (01:15)
+Wir haben ein Logo bereits, das ist in einem satten Dunkelgrün gehalten. So ein Waldgrün, nicht zu hell, nicht zu dunkel. Dazu möchten wir ein weiches Cremeweiß als Hintergrundfarbe. Und als dritte Akzentfarbe dachte ich an ein zartes Beige oder Terrakotta – etwas Erdiges, Warmes.
+
+Agentur  (01:38)
+Das klingt wirklich stimmig für eine Naturkosmetiklinie. Waldgrün, Cremeweiß, Terrakotta. Haben Sie das Logo als Datei, die wir verwenden können?
+
+Kunde  (01:48)
+Ja, ich schicke Ihnen das heute noch als SVG. Wir haben auch schon ein Produktfoto – ein Freisteller auf weißem Hintergrund, allerdings nur in einer Auflösung von 1200 mal 800 Pixeln. Reicht das für den Druck?
+
+Agentur  (02:03)
+Das hängt von der Flyer-Größe ab. Was haben Sie sich da vorgestellt? A5, DIN lang, A4?
+
+Kunde  (02:11)
+Ich dachte an DIN lang, also so das schmale Format, das man gut in Apotheken-Aufsteller legen kann. Einseitig bedruckt, damit es günstiger in der Produktion ist. Wir brauchen ungefähr 5000 Stück.
+
+Agentur  (02:26)
+Okay, DIN lang einseitig. Bei 5000 Stück und DIN lang würde ich sagen, das Foto mit 1200 mal 800 ist leider zu klein für Druckqualität. Wir bräuchten mindestens 300 dpi. Könnten Sie das Foto neu aufnehmen lassen oder haben Sie einen höher aufgelösten Original-Export?
+
+Kunde  (02:48)
+Ich frage kurz bei unserem Fotografen nach. Ich glaube der hat die Rohdateien noch. Aber weiter – was soll textlich drauf stehen?
+
+Agentur  (02:58)
+Genau das wollte ich auch besprechen. Was ist die Hauptbotschaft des Flyers? Was soll der Kunde als erstes sehen und denken?
+
+Kunde  (03:08)
+Der Claim soll sein: "Natur, die wirkt." Das ist unser Markenclaim. Darunter dann der Produktname "Naturell – Pflegeserie mit Wildkräuterextrakten". Dann vielleicht drei bis vier kurze Bullet Points mit den wichtigsten Vorteilen. Zum Beispiel: ohne Parabene, vegan, in Deutschland hergestellt, klinisch getestet.
+
+Agentur  (03:32)
+Perfekt. Das sind klar und knapp die wichtigsten USPs. Gibt es noch einen Call-to-Action? Also einen Hinweis, was der Kunde tun soll?
+
+Kunde  (03:41)
+Ja, wir möchten auf unsere Website hinweisen. Die Adresse ist www.naturell-kosmetik.de. Und dann noch ein QR-Code, der direkt zu einem einführenden Produktvideo führt. Das Video ist schon fertig.
+
+Agentur  (03:55)
+QR-Code ist eine sehr gute Idee bei der Zielgruppe. Haben Sie den Link für den QR-Code oder sollen wir den auch generieren?
+
+Kunde  (04:05)
+Den Link gebe ich Ihnen noch. Der geht auf YouTube, das Video läuft schon. Moment, ich habe ihn hier: youtu.be/naturell2024intro. Den können Sie nehmen.
+
+Agentur  (04:18)
+Sehr gut. Dann zum Stil – haben Sie Vorbilder oder Inspirationen, wie der Flyer aussehen soll? Eher minimalistisch, eher verspielt, eher medizinisch-seriös?
+
+Kunde  (04:31)
+Definitiv minimalistisch und hochwertig. Ich zeige Ihnen mal kurz etwas auf meinem Handy. Wir haben uns sehr an dieser Marke orientiert – Weleda macht das sehr gut. Viel Weißraum, klare Typografie, die Fotos stehen im Vordergrund. Keine Schnörkel, nichts Buntes.
+
+Agentur  (04:53)
+Weleda ist ein sehr gutes Referenzbeispiel. Viel Weißraum, eine klare serifenlose Schrift oder möchten Sie lieber eine Serifenschrift für mehr Eleganz?
+
+Kunde  (05:03)
+Oh, gute Frage. Ich denke eine feine Serifenschrift für die Überschriften, das wirkt edler und natürlicher zugleich. Für den Fließtext dann etwas sehr gut Lesbares, serifenlos.
+
+Agentur  (05:17)
+Das ist eine klassische Kombination. Ich denke an etwas wie Playfair Display oder Cormorant für die Headlines und Inter oder Lato für den Fließtext. Das passt sehr gut zu dem Konzept.
+
+Kunde  (05:30)
+Ja, das klingt gut. Ich kenne die Namen jetzt nicht auswendig, aber wenn Sie mir dann später Entwürfe zeigen, sehe ich sofort ob es stimmt oder nicht.
+
+Agentur  (05:41)
+Natürlich. Ich würde Ihnen zwei bis drei Richtungen zeigen. Wann brauchen Sie das Endergebnis druckfertig?
+
+Kunde  (05:50)
+Die Druckdaten müssten bis 15. September fertig sein, damit wir die 5000 Stück rechtzeitig für den Marktstart am 5. Oktober haben. Also Anfang Oktober. Bleibt ein bisschen knapp aber es sollte klappen.
+
+Agentur  (06:05)
+Das bedeutet, wir brauchen die erste Entwurfsrunde bis spätestens 25. August, damit wir genug Puffer für Korrekturrunden haben. Ich würde vorschlagen, wir planen zwei Korrekturschleifen ein.
+
+Kunde  (06:19)
+Ja, das klingt vernünftig. Und was den Preis angeht – ich hatte auf circa 400 bis 600 Euro für die Gestaltung gehofft. Ist das realistisch?
+
+Agentur  (06:31)
+Das ist durchaus machbar für ein DIN-lang-Flyer-Layout. Ich würde ein konkretes Angebot schreiben und Ihnen heute Abend noch zuschicken. Wir reden über reine Gestaltungskosten, den Druck organisieren Sie separat, richtig?
+
+Kunde  (06:47)
+Genau, den Druck machen wir über unsere eigene Druckerei. Die haben uns schon ein Angebot gemacht. Wir brauchen von Ihnen die fertige druckfähige PDF-Datei am Ende.
+
+Agentur  (06:58)
+Perfekt. Dann fassen wir kurz zusammen: DIN lang, einseitig, Waldgrün plus Cremeweiß plus Terrakotta, Claim "Natur, die wirkt", Produktname, vier USPs, Website und QR-Code. Serifenschrift für Headlines, serifenlos für Text. Foto als Freisteller sobald Sie die hochauflösende Version haben. Zwei Korrekturschleifen, Druckdaten bis 15. September.
+
+Kunde  (07:25)
+Ja, das haben Sie perfekt zusammengefasst. Ich freue mich auf die Entwürfe. Ach, noch eine Sache: wir würden sehr gerne das Logo Siegel "Vegan Society" integrieren. Wir sind zertifiziert und das darf auf dem Flyer nicht fehlen.
+
+Agentur  (07:40)
+Selbstverständlich, das Siegel bitte auch als Datei mitschicken wenn Sie das Logo schicken. Dann haben wir alles zusammen und ich mache mich ans Werk. Danke für das Gespräch, Frau Becker, ich melde mich heute noch mit dem Angebot.
+
+Kunde  (07:55)
+Sehr schön. Danke Ihnen auch, bis dann.

@@ -1326,6 +1326,9 @@ function showTranscript(session) {
   renderDesignVersionTabs(session);
   _restoreAccState(session.id);
   // v4.76: Faehnchen einblenden, Sidebar-Modus zuruecksetzen
+  // v5.80: Projekt-Assistenten schließen wenn Sitzung geöffnet wird
+  if (typeof closeProjectAssistant === 'function') closeProjectAssistant();
+  if (typeof _updateProjectAssistFab === 'function') _updateProjectAssistFab();
   const flap = document.getElementById('sdcFlap');
   if (flap) flap.classList.remove('hidden');
   if (typeof closeSessionSidebar === 'function') closeSessionSidebar();
