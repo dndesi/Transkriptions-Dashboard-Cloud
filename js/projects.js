@@ -1059,61 +1059,92 @@ function clearProjectChat() {
   _renderProjectChatMessages(proj);
 }
 
-// ── Analyse-Kontext aufbauen (max 50.000 Zeichen, strukturiert) ──────────
-function _buildProjectAnalysisContext(projectId) {
+// v5.88: Hilfe-Box Session-Erkennung togglen
+function toggleProjAssistHelp() {
+  const box = document.getElementById('projAssistHelpBox');
+  if (!box) return;
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── Analyse-Kontext aufbauen ──────────────────────────────────────────────
+// v5.87: Smarte Session-Erkennung + erhöhtes Zeichenlimit
+// - Wenn Frage Sitzungsnamen enthält → nur diese Sitzungen, kein Zeichenlimit
+// - Fallback: MAX_CHARS=100.000, pro-Sitzung-Budget, neueste zuerst
+function _buildProjectAnalysisContext(projectId, question = '') {
   const projSessions = (typeof sessions !== 'undefined')
     ? sessions.filter(s => s.projectId === projectId && (s.status === 'done' || s.utterances?.length > 0))
     : [];
 
   if (!projSessions.length) return '';
 
-  const MAX_CHARS = 50000;
-  let context = '';
-  const sorted = [...projSessions].sort((a, b) => new Date(a.date) - new Date(b.date));
+  // v5.87: Session-Erkennung – Wörter (≥4 Zeichen) aus label gegen Frage abgleichen
+  let targetSessions = projSessions;
+  const specificMode = question.length > 0 && (() => {
+    const q = question.toLowerCase();
+    const matched = projSessions.filter(s => {
+      const words = s.label.toLowerCase().split(/\s+/).filter(w => w.length >= 4);
+      return words.some(w => q.includes(w));
+    });
+    if (matched.length > 0) { targetSessions = matched; return true; }
+    return false;
+  })();
 
-  for (const s of sorted) {
+  let context = '';
+
+  // Hilfsfunktion: Block für eine Sitzung bauen
+  function _buildSessionBlock(s) {
     const dateStr = new Date(s.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
     let block = `\n## Sitzung: „${s.label}" | ${dateStr}\n`;
-
-    // Gesprächsanalyse
     if (s.privateAnalysis) {
       const pa = s.privateAnalysis;
-      if (pa.summary)    block += `Zusammenfassung: ${pa.summary}\n`;
-      if (pa.dynamics)   block += `Gesprächsdynamik: ${pa.dynamics}\n`;
-      if (pa.agreements?.length)  block += `Vereinbarungen: ${pa.agreements.join('; ')}\n`;
-      if (pa.nextSteps?.length)   block += `Nächste Schritte: ${pa.nextSteps.join('; ')}\n`;
-      if (pa.openTopics?.length)  block += `Offene Themen: ${pa.openTopics.join('; ')}\n`;
+      if (pa.summary)               block += `Zusammenfassung: ${pa.summary}\n`;
+      if (pa.dynamics)              block += `Gesprächsdynamik: ${pa.dynamics}\n`;
+      if (pa.agreements?.length)    block += `Vereinbarungen: ${pa.agreements.join('; ')}\n`;
+      if (pa.nextSteps?.length)     block += `Nächste Schritte: ${pa.nextSteps.join('; ')}\n`;
+      if (pa.openTopics?.length)    block += `Offene Themen: ${pa.openTopics.join('; ')}\n`;
     }
-
-    // Arbeitsanalyse
     if (s.workAnalysis) {
       const wa = s.workAnalysis;
-      if (wa.summary)    block += `Arbeits-Zusammenfassung: ${wa.summary}\n`;
-      if (wa.tasks?.length)       block += `Aufgaben: ${wa.tasks.map(t => typeof t === 'object' ? t.task : t).join('; ')}\n`;
-      if (wa.decisions?.length)   block += `Entscheidungen: ${wa.decisions.join('; ')}\n`;
+      if (wa.summary)               block += `Arbeits-Zusammenfassung: ${wa.summary}\n`;
+      if (wa.tasks?.length)         block += `Aufgaben: ${wa.tasks.map(t => typeof t === 'object' ? t.task : t).join('; ')}\n`;
+      if (wa.decisions?.length)     block += `Entscheidungen: ${wa.decisions.join('; ')}\n`;
       if (wa.openQuestions?.length) block += `Offene Fragen: ${wa.openQuestions.join('; ')}\n`;
-      if (wa.risks?.length)       block += `Risiken: ${wa.risks.join('; ')}\n`;
+      if (wa.risks?.length)         block += `Risiken: ${wa.risks.join('; ')}\n`;
     }
-
-    // Themen
     if (s.claudeTopics?.length) {
       const topics = s.claudeTopics.map(t => typeof t === 'object' ? t.text : t);
       block += `Themen: ${topics.join(', ')}\n`;
     }
-
-    // Eigene Prompt-Ergebnisse
     const customResults = s.customResults || {};
     Object.values(customResults).forEach(r => {
-      // v5.83: slice(0,300) entfernt – MAX_CHARS-Limit greift auf Block-Ebene
       if (r.text) block += `${r.promptName || 'Eigene Analyse'}:\n${r.text}\n`;
     });
+    return block;
+  }
 
-    // Zeichenlimit prüfen
-    if (context.length + block.length > MAX_CHARS) {
-      context += '\n[… weitere Sitzungen wurden wegen Zeichenlimit gekürzt]';
-      break;
+  if (specificMode) {
+    // Modus A: Spezifische Sitzungen → vollständig, kein Zeichenlimit
+    context += `[Modus: Gezielte Sitzungsauswahl – ${targetSessions.length} Sitzung(en) vollständig geladen]\n`;
+    for (const s of targetSessions) {
+      context += _buildSessionBlock(s);
     }
-    context += block;
+  } else {
+    // Modus B: Fallback → neueste zuerst, pro-Sitzung-Budget
+    const MAX_CHARS = 100000;
+    const perBudget = Math.floor(MAX_CHARS / targetSessions.length);
+    const sorted = [...targetSessions].sort((a, b) => new Date(b.date) - new Date(a.date));
+    context += `[Modus: Alle Sitzungen – ${sorted.length} Sitzung(en), neueste zuerst, Budget ${perBudget} Zeichen/Sitzung]\n`;
+    let total = context.length;
+    for (const s of sorted) {
+      const block = _buildSessionBlock(s);
+      const limited = block.length > perBudget ? block.slice(0, perBudget) + '\n[… Sitzungsinhalt wegen Budget gekürzt]\n' : block;
+      if (total + limited.length > MAX_CHARS) {
+        context += '\n[… weitere Sitzungen wurden wegen Gesamtlimit weggelassen]';
+        break;
+      }
+      context += limited;
+      total += limited.length;
+    }
   }
 
   return context.trim();
@@ -1130,7 +1161,7 @@ async function sendProjectChatMessage() {
   const question = input?.value?.trim();
   if (!question) return;
 
-  const analysisContext = _buildProjectAnalysisContext(proj.id);
+  const analysisContext = _buildProjectAnalysisContext(proj.id, question); // v5.87: question weitergeben
   if (!analysisContext) {
     showToast('Noch keine Analysen in diesem Projekt – bitte erst Sitzungen analysieren.', 'warning');
     return;

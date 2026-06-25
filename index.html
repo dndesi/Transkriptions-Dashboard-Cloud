@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.86" />
+  <link rel="stylesheet" href="css/styles.css?v=5.88" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.86</button>
+        onmouseout="this.style.color='var(--muted)'">v5.88</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1468,6 +1468,30 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.88 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.88</span><span class="cl-date">25.06.2026</span></div>
+        <div class="cl-title">UI: Hilfe-Icon beim Projekt-Assistenten – erklärt Sitzungserkennung</div>
+        <ul class="cl-list">
+          <li>? Icon neben dem „Projekt-Assistent"-Titel im Header — Klick blendet Info-Box ein/aus</li>
+          <li>Info-Box erklärt: Ein Wort aus dem Sitzungsnamen reicht, nur diese Sitzung wird geladen. Ohne Name: alle Sitzungen mit 100k-Limit</li>
+        </ul>
+        <div class="cl-tech">index.html: ? Button + #projAssistHelpBox (toggle). js/projects.js: toggleProjAssistHelp().</div>
+      </div>
+
+      <!-- ── v5.87 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.87</span><span class="cl-date">25.06.2026</span></div>
+        <div class="cl-title">Feature: Smarte Session-Erkennung im Projekt-Assistenten + erhöhtes Zeichenlimit</div>
+        <ul class="cl-list">
+          <li>Wenn die Frage Sitzungsnamen enthält (≥4-Zeichen-Wörter aus session.label, case-insensitiv): nur diese Sitzungen laden, vollständig, kein Zeichenlimit</li>
+          <li>Fallback (keine spezifischen Sitzungen erkannt): neueste zuerst, Gesamtlimit 100.000 Zeichen (statt 50.000), pro-Sitzung-Budget = 100.000 ÷ Sitzungsanzahl</li>
+          <li>Context-Header zeigt aktiven Modus an (Gezielte Auswahl vs. Alle Sitzungen mit Budget)</li>
+          <li>Hintergrund: vorher wurden immer älteste Sitzungen geladen – neueste Meetings wurden abgeschnitten. Und: spezifische Sitzungsfragen lasen unnötig alle Sitzungen</li>
+        </ul>
+        <div class="cl-tech">js/projects.js: _buildProjectAnalysisContext(projectId, question) – Session-Name-Matching, zwei Codepfade (specificMode / Fallback), _buildSessionBlock() extrahiert. sendProjectChatMessage() übergibt question.</div>
+      </div>
 
       <!-- ── v5.86 ── -->
       <div class="cl-entry">
@@ -4548,32 +4572,32 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.86"></script>
-<script src="js/storage.js?v=5.86"></script>
-<script src="js/config.js?v=5.86"></script>
-<script src="js/auth.js?v=5.86"></script>
-<script src="js/drive.js?v=5.86"></script>
-<script src="js/sessions.js?v=5.86"></script>
-<script src="js/assemblyai.js?v=5.86"></script>
-<script src="js/claude.js?v=5.86"></script>
-<script src="js/ui.js?v=5.86"></script>
-<script src="js/tags.js?v=5.86"></script>
-<script src="js/notes.js?v=5.86"></script>
-<script src="js/photos.js?v=5.86"></script>
-<script src="js/persons.js?v=5.86"></script>
-<script src="js/audio.js?v=5.86"></script>
-<script src="js/recorder.js?v=5.86"></script>
-<script src="js/contacts.js?v=5.86"></script>
-<script src="js/app.js?v=5.86"></script>
+<script src="js/icons.js?v=5.88"></script>
+<script src="js/storage.js?v=5.88"></script>
+<script src="js/config.js?v=5.88"></script>
+<script src="js/auth.js?v=5.88"></script>
+<script src="js/drive.js?v=5.88"></script>
+<script src="js/sessions.js?v=5.88"></script>
+<script src="js/assemblyai.js?v=5.88"></script>
+<script src="js/claude.js?v=5.88"></script>
+<script src="js/ui.js?v=5.88"></script>
+<script src="js/tags.js?v=5.88"></script>
+<script src="js/notes.js?v=5.88"></script>
+<script src="js/photos.js?v=5.88"></script>
+<script src="js/persons.js?v=5.88"></script>
+<script src="js/audio.js?v=5.88"></script>
+<script src="js/recorder.js?v=5.88"></script>
+<script src="js/contacts.js?v=5.88"></script>
+<script src="js/app.js?v=5.88"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=5.86"></script>
-<script src="js/search.js?v=5.86"></script>
-<script src="js/calendar.js?v=5.86"></script>
-<script src="js/prompts.js?v=5.86"></script>
-<script src="js/projects.js?v=5.86"></script>
-<script src="js/import.js?v=5.86"></script>
+<script src="js/features.js?v=5.88"></script>
+<script src="js/search.js?v=5.88"></script>
+<script src="js/calendar.js?v=5.88"></script>
+<script src="js/prompts.js?v=5.88"></script>
+<script src="js/projects.js?v=5.88"></script>
+<script src="js/import.js?v=5.88"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
@@ -4743,6 +4767,9 @@
       <div style="display:flex;align-items:center;gap:8px;flex:1;overflow:hidden">
         <i data-lucide="layers" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
         <span id="projAssistTitle" style="font-weight:600;font-size:0.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Projekt-Assistent</span>
+        <!-- v5.88: Hilfe-Icon Session-Erkennung -->
+        <button onclick="toggleProjAssistHelp()" title="Wie funktioniert die Sitzungserkennung?"
+          style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:50%;width:17px;height:17px;font-size:0.62rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;padding:0">?</button>
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
         <button onclick="clearProjectChat()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;font-size:0.74rem;cursor:pointer" title="Chatverlauf löschen">Löschen</button>
@@ -4750,6 +4777,13 @@
           <i data-lucide="x" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none"></i>
         </button>
       </div>
+    </div>
+    <!-- v5.88: Session-Erkennungs-Hilfe -->
+    <div id="projAssistHelpBox" style="display:none;padding:10px 14px;font-size:0.78rem;color:var(--text);background:var(--surface2);border-bottom:1px solid var(--border);line-height:1.5">
+      <strong style="color:var(--accent);display:block;margin-bottom:4px">💡 Smarte Sitzungserkennung</strong>
+      Nennst du einen Sitzungsnamen in deiner Frage, lädt der Assistent <strong>nur diese Sitzung(en)</strong> — vollständig, ohne Limit.<br>
+      <span style="color:var(--muted);font-size:0.74rem">Ein einzelnes Wort reicht: „Was lief beim <em>Webinar</em> schief?" lädt alle Sitzungen deren Name „Webinar" enthält.<br>
+      Ohne Sitzungsname: alle Sitzungen, neueste zuerst, mit 100.000 Zeichen Limit.</span>
     </div>
     <!-- Rollen-Auswahl -->
     <div class="persona-select-bar">
