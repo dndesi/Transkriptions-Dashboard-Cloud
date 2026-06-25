@@ -273,7 +273,7 @@ async function loadSettingsFromDrive() {
     }
 
     // ── Prompts: v5.22 userPrompts (unified) oder Legacy-Fallback ──────────────
-    // Drive ist autoritativ – eigene Prompts kommen vollständig von Drive
+    // v5.86: Merge-Strategie – Drive + lokale Prompts werden vereint (nicht überschrieben)
     const _refreshPromptsUI = (count) => {
       updateLoadingScreen(90, `${count} Prompt(s) geladen ✓`);
       if (typeof populatePersonaSelects === 'function') populatePersonaSelects();
@@ -284,15 +284,31 @@ async function loadSettingsFromDrive() {
     };
 
     if (data.userPrompts && typeof data.userPrompts === 'object') {
-      // Neues Format (v5.22): userPrompts direkt übernehmen (Drive gewinnt)
-      if (typeof saveUserPrompts === 'function') saveUserPrompts(data.userPrompts);
-      _refreshPromptsUI((data.userPrompts.custom || []).length);
+      // v5.86: Merge statt Überschreiben – lokale Prompts die Drive nicht kennt bleiben erhalten
+      // Vorher: Drive gewinnt komplett → frisch erstellte Prompts wurden gelöscht (Race Condition)
+      if (typeof getUserPrompts === 'function' && typeof saveUserPrompts === 'function') {
+        const driveUp  = data.userPrompts;
+        const localUp  = getUserPrompts();
+        // custom: Drive-Prompts + alle lokalen Prompts deren ID Drive nicht kennt
+        const driveIds = new Set((driveUp.custom || []).map(p => p.id));
+        const localOnly = (localUp.custom || []).filter(p => p.id && !driveIds.has(p.id));
+        const merged = {
+          custom: [...(driveUp.custom || []), ...localOnly],
+          // editableOverrides: lokal hat Priorität (User hat aktiv bearbeitet)
+          editableOverrides: { ...(driveUp.editableOverrides || {}), ...(localUp.editableOverrides || {}) },
+        };
+        saveUserPrompts(merged);
+        _refreshPromptsUI(merged.custom.length);
+      }
 
     } else {
       // Legacy-Fallback: alte customPrompts + editablePrompts Felder lesen
       if (Array.isArray(data.customPrompts) && typeof getUserPrompts === 'function') {
         const up = getUserPrompts();
-        up.custom = data.customPrompts;
+        // v5.86: auch hier Merge – lokale Prompts behalten
+        const driveIds = new Set(data.customPrompts.map(p => p.id));
+        const localOnly = (up.custom || []).filter(p => p.id && !driveIds.has(p.id));
+        up.custom = [...data.customPrompts, ...localOnly];
         // editablePrompts zusammenführen: Drive + lokal (lokal hat Priorität)
         if (data.editablePrompts && typeof data.editablePrompts === 'object') {
           up.editableOverrides = { ...data.editablePrompts, ...up.editableOverrides };
