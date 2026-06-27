@@ -1025,22 +1025,27 @@ function _renderProjectChatMessages(proj) {
     </div>`;
     return;
   }
-  container.innerHTML = chat.map((m, i) => `
+  container.innerHTML = chat.map((m, i) => {
+    const isRt = Array.isArray(m.roles) && m.roles.length >= 2;
+    const answerHtml = isRt && typeof _renderRoundtableAnswer === 'function'
+      ? _renderRoundtableAnswer(m.answer, m.roles)
+      : `<div style="white-space:pre-wrap;line-height:1.6;font-size:0.9rem">${escHtml(m.answer)}</div>`;
+    return `
     <div style="margin-bottom:16px">
       <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px">Du</div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:0.88rem">${escHtml(m.question)}</div>
     </div>
     <div style="margin-bottom:20px">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
-        <span style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Assistent</span>
+        <span style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">${isRt ? '<span style="color:var(--accent2)">Experten-Runde</span>' : 'Assistent'}</span>
         <button onclick="_copyProjAssistAnswer(${i})"
           style="background:none;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:0.7rem;color:var(--muted);cursor:pointer">
           Kopieren
         </button>
       </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:0.9rem;white-space:pre-wrap;line-height:1.6">${escHtml(m.answer)}</div>
-    </div>
-  `).join('');
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px">${answerHtml}</div>
+    </div>`;
+  }).join('');
   container.scrollTop = container.scrollHeight;
 }
 
@@ -1176,9 +1181,18 @@ async function sendProjectChatMessage() {
   const personaId2 = document.getElementById('projAssistPersonaSelect2')?.value || '';
   const personaId3 = document.getElementById('projAssistPersonaSelect3')?.value || '';
   const roleIds = [personaId, personaId2, personaId3].filter(Boolean);
-  const systemPrompt = roleIds.length >= 2
+  const isRoundtable = roleIds.length >= 2;
+  const systemPrompt = isRoundtable
     ? (typeof _buildRoundtableSystemPrompt === 'function' ? _buildRoundtableSystemPrompt(roleIds) : null)
     : (typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null);
+  // v5.92: Rollen-Namen für Badge-Rendering speichern
+  const _allRollenQuellen = [
+    ...(typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : []),
+    ...(typeof getCustomPrompts === 'function' ? getCustomPrompts() : [])
+  ];
+  const activeRoleNames = isRoundtable
+    ? roleIds.map(id => _allRollenQuellen.find(p => p.id === id)?.name || id)
+    : null;
 
   // Multi-Turn: letzte 5 Runden
   const prevRounds = (proj.claudeChat || []).slice(-5);
@@ -1205,7 +1219,9 @@ async function sendProjectChatMessage() {
     }
 
     if (!proj.claudeChat) proj.claudeChat = [];
-    proj.claudeChat.push({ question, answer: text, ts: new Date().toISOString() });
+    const entry = { question, answer: text, ts: new Date().toISOString() };
+    if (activeRoleNames) entry.roles = activeRoleNames; // v5.92: für Farb-Rendering
+    proj.claudeChat.push(entry);
     saveProjects();
     _renderProjectChatMessages(proj);
     if (input) { input.value = ''; input.disabled = false; input.focus(); }
