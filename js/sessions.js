@@ -958,8 +958,17 @@ function migrateSessionsToDefaultProject() {
 }
 
 // ═══════════════════════════════════════════════════
-// CHAT-GEDANKEN (v5.97)
+// CHAT-GEDANKEN (v5.98)
 // ═══════════════════════════════════════════════════
+
+// Zentraler Teaser-Titel-Builder: Datum, Rollen, Frage — kommagetrennt
+function _buildChatGedankeHeadline(item) {
+  const date = item.ts ? new Date(item.ts).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'2-digit' }) : '';
+  const roles = (item.roles || []).filter(Boolean);
+  const parts = [date, ...roles];
+  if (item.question) parts.push(item.question);
+  return parts.join(', ');
+}
 
 let _chatGedankenExpanded = new Set();
 
@@ -986,15 +995,11 @@ function renderChatGedanken(session) {
   }
   container.innerHTML = items.map((item, i) => {
     const isAnalyse = item.source === 'analyse';
-    const badgeColor = isAnalyse ? 'var(--accent)' : '#10b981';
-    const badgeBg   = isAnalyse ? 'rgba(108,99,255,0.12)' : 'rgba(16,185,129,0.12)';
-    const badgeLabel = isAnalyse ? 'Analyse-Chat' : 'Gesprächs-Chat';
-    const date = item.ts ? new Date(item.ts).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+    const dotColor = isAnalyse ? 'var(--accent)' : '#10b981';
+    const headline = escHtml(_buildChatGedankeHeadline(item));
     const expanded = _chatGedankenExpanded.has(i);
 
-    // Teaser: erste 120 Zeichen, Markdown-Syntax entfernen
-    const rawAnswer = (item.answer || '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1').replace(/^#{2,3}\s+/gm, '');
-    const teaser = rawAnswer.length > 120 ? rawAnswer.slice(0, 120).trimEnd() + ' …' : rawAnswer;
+    const sourceLabel = item.source === 'analyse' ? 'Analyse-Chat' : 'Gesprächs-Chat';
 
     // Vollständige Antwort mit Markdown-Rendering
     const isRoundtable = Array.isArray(item.roles) && item.roles.length >= 2;
@@ -1006,27 +1011,25 @@ function renderChatGedanken(session) {
 
     return `
     <div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--surface)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:0.68rem;font-weight:600;padding:2px 8px;border-radius:99px;color:${badgeColor};background:${badgeBg}">${badgeLabel}</span>
-          <span style="font-size:0.68rem;color:var(--muted)">${date}</span>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">
+        <div style="display:flex;align-items:flex-start;gap:7px;flex:1;min-width:0">
+          <span style="width:8px;height:8px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-top:4px"></span>
+          <span style="font-size:0.8rem;font-weight:600;color:var(--text);line-height:1.4">${headline}</span>
         </div>
-        <div style="display:flex;align-items:center;gap:4px">
-          <button onclick="deleteChatGedanke('${session.id}', ${i})"
-            style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center"
-            title="Löschen">
-            ${icon('trash-2', 13, 'pointer-events:none')}
-          </button>
-        </div>
+        <button onclick="deleteChatGedanke('${session.id}', ${i})"
+          style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center;flex-shrink:0"
+          title="Löschen">
+          ${icon('trash-2', 13, 'pointer-events:none')}
+        </button>
       </div>
-      <div onclick="toggleChatGedanke(${i})" style="cursor:pointer">
-        ${item.question ? `<div style="font-size:0.8rem;font-weight:600;color:var(--text);margin-bottom:5px;line-height:1.4">${escHtml(item.question)}</div>` : ''}
+      <div onclick="toggleChatGedanke(${i})" style="cursor:pointer;padding-left:15px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <span style="font-size:0.72rem;color:var(--muted)">${sourceLabel}</span>
+          <span style="flex-shrink:0;color:var(--accent);display:inline-flex">${icon(chevron, 13, 'pointer-events:none')}</span>
+        </div>
         ${expanded
           ? `<div style="font-size:0.88rem;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">${fullAnswerHtml}</div>`
-          : `<div style="font-size:0.8rem;color:var(--muted);line-height:1.5;display:flex;align-items:flex-end;justify-content:space-between;gap:8px">
-               <span>${escHtml(teaser)}</span>
-               <span style="flex-shrink:0;color:var(--accent);display:inline-flex">${icon(chevron, 13, 'pointer-events:none')}</span>
-             </div>`
+          : ''
         }
       </div>
     </div>`;
