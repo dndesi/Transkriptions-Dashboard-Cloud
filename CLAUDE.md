@@ -2,7 +2,7 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v5.89** (Stand: 27.06.2026)
+**v5.90** (Stand: 27.06.2026)
 
 ## Pflichtregeln bei jeder Änderung (IMMER, keine Ausnahme)
 1. Versionsnummer in `index.html` erhöhen (Header-Badge + alle `?v=X.XX` Script-Tags)
@@ -67,6 +67,73 @@ Der Unterschied liegt AUSSCHLIESSLICH im Kontext, der an Claude übergeben wird.
 - Vor jedem Claude-API-Call: `anonymizeText()` → API → `deanonymizeText()`
 - API-Keys verlassen den Browser nie (localStorage only)
 - Session-Daten in persönlicher Google Drive des Nutzers
+
+## UI-Struktur & Views
+Die App hat eine **linke Sidenav** + einen **Hauptbereich** + optionale Panels.
+
+### Sidenav-Navigation
+| Nav-Button | ID | Öffnet |
+|---|---|---|
+| + Neue Sitzung | — | Upload-Panel (openUploadPanel) |
+| Kontakte | navKontakte | contactsView |
+| Projekte | navProjects | projectsView (fixed, z-index:10) |
+| Sitzungen | navGrid | browserView (Timeline/Grid) |
+| Kosten | navCosts | costsView |
+| Prompts | navPrompts | promptsView |
+| Hilfe | — | help.html (neues Tab) |
+| API-Keys | — | openApiModal() |
+| Architektur | navArch | archView |
+| Theme | themeToggleBtn | toggleTheme() |
+
+### Haupt-Views (im Main-Bereich)
+- `heroView` — Startseite mit Hero-Banner, 4 Cards, News-Slider
+- `browserView` — Session-Browser (Timeline / Grid)
+- `timelineView` — Zeitstrahl nach Monat
+- `costsView` — Token-Kosten-Übersicht
+- `personsView` — Personen-Profile
+- `contactsView` — Kontakte-Verwaltung
+- `archView` — Systemarchitektur (renderArchView in ui.js)
+- `promptsView` — Prompt-Bibliothek
+- `projectsView` — Projektarbeit (fixed overlay)
+
+### Session-Detail (Einzelsitzung)
+Öffnet via `showTranscript()` als Overlay mit Tabs:
+- Transkript / Analysen / Mindmap / Design / Notizen / Tags
+- Analysen-Sub-Tabs: Gespräch / Arbeit / Stimmung / Kapitel / Themen / 360°
+- **Assistent-Sidebar** (sdc-flap, `sdcFlap`): einklappbare Sidebar mit zwei Tabs:
+  - **Analyse-Chat** (`followUpMessages`) — `_buildFollowUpContext()`, `followupPersonaSelect`
+  - **Gesprächs-Chat** (`askChatHistory`) — Rohtranskript, `askPersonaSelect`
+
+### Projekt-Assistent
+- Fähnchen: `projAssistFlap` (sichtbar wenn Projekt-Detail geöffnet)
+- Panel: `projAssistPanel` (slide-in von rechts)
+- `projAssistPersonaSelect` — Rollen-Auswahl
+- `projAssistHelpBox` — Info-Box zur Sitzungserkennung (v5.88)
+- `projAssistContextInfo` — zeigt aktiven Modus (Gezielt / Alle)
+
+### Upload-Panel
+Slide-in Panel mit zwei Tabs:
+- **Audio-Tab**: 4 Schritte (API-Key → Sitzungsname → Drive → Datei/Aufnahme)
+- **Import-Tab**: Samsung/Plain Text/PDF Import, Multi-File, Sprecher benennen
+
+### Hero News-Slider
+Kacheln mit aktuellen Features, verlinken auf news.html Anker.
+Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Ausgabe-Felder, Design-Versionen
+
+## Changelog-Highlights (letzte Versionen)
+| Version | Datum | Feature/Fix |
+|---|---|---|
+| v5.90 | 27.06.2026 | Experten-Runde: 3 Rollen im Analyse-Chat + Projekt-Assistent, Roundtable-Modus |
+| v5.89 | 26.06.2026 | Hero News-Kachel "Rollen" eingefügt |
+| v5.88 | 25.06.2026 | ? Hilfe-Icon beim Projekt-Assistenten (toggleProjAssistHelp) |
+| v5.87 | 25.06.2026 | Smarte Session-Erkennung + 100k Zeichenlimit im Projekt-Assistenten |
+| v5.86 | 25.06.2026 | Bugfix: Neue Prompts verschwinden nicht mehr (Merge-Strategie) |
+| v5.85 | 24.06.2026 | Bugfix: Debounce-Flush vor Drive-Sync |
+| v5.84 | 24.06.2026 | Bugfix: Drive-Fetch-Timeout (15s), Lade-Overlay-Timeout 20s |
+| v5.83 | 23.06.2026 | Bugfix: customResults Feldnamen-Fix (entry.text, entry.promptName) |
+| v5.82 | 23.06.2026 | Bugfix: Projekt-Assistent-Fähnchen nach Sitzungswechsel |
+| v5.81 | 23.06.2026 | Bugfix: Projekt-Assistent schließt beim Sitzungswechsel |
+| v5.80 | 23.06.2026 | Feature: Mehrere Claude Design Links pro Design-Version |
 
 ## Externe Dienste
 - **AssemblyAI** – Transkription (EU-Endpunkt, REST API v2)

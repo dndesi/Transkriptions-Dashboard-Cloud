@@ -1171,9 +1171,14 @@ async function sendProjectChatMessage() {
   if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '…'; }
   if (input) input.disabled = true;
 
-  // Rollen-System-Prompt
-  const personaId = document.getElementById('projAssistPersonaSelect')?.value || '';
-  const systemPrompt = typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null;
+  // v5.90: Experten-Runde — bis zu 3 Rollen, Roundtable wenn 2+ aktiv
+  const personaId  = document.getElementById('projAssistPersonaSelect')?.value  || '';
+  const personaId2 = document.getElementById('projAssistPersonaSelect2')?.value || '';
+  const personaId3 = document.getElementById('projAssistPersonaSelect3')?.value || '';
+  const roleIds = [personaId, personaId2, personaId3].filter(Boolean);
+  const systemPrompt = roleIds.length >= 2
+    ? (typeof _buildRoundtableSystemPrompt === 'function' ? _buildRoundtableSystemPrompt(roleIds) : null)
+    : (typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null);
 
   // Multi-Turn: letzte 5 Runden
   const prevRounds = (proj.claudeChat || []).slice(-5);

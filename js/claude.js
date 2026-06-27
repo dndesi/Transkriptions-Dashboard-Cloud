@@ -1861,9 +1861,14 @@ async function askFollowUp() {
 
   const { forward, reverse } = buildAnonMap(session);
 
-  const personaId = document.getElementById('followupPersonaSelect')?.value || '';
-  // v5.71: Rolle als System-Prompt senden (statt als Text-Prefix in der User-Message)
-  const systemPrompt = typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null;
+  // v5.90: Experten-Runde — bis zu 3 Rollen, Roundtable wenn 2+ aktiv
+  const personaId  = document.getElementById('followupPersonaSelect')?.value  || '';
+  const personaId2 = document.getElementById('followupPersonaSelect2')?.value || '';
+  const personaId3 = document.getElementById('followupPersonaSelect3')?.value || '';
+  const roleIds = [personaId, personaId2, personaId3].filter(Boolean);
+  const systemPrompt = roleIds.length >= 2
+    ? (typeof _buildRoundtableSystemPrompt === 'function' ? _buildRoundtableSystemPrompt(roleIds) : null)
+    : (typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null);
 
   // v5.72: Gesprächshistorie – letzte 5 Runden als Kontext mitschicken
   const _prevRounds = (session.claudeFollowUp || []).slice(-5);

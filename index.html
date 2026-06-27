@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.89" />
+  <link rel="stylesheet" href="css/styles.css?v=5.90" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.89</button>
+        onmouseout="this.style.color='var(--muted)'">v5.90</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1405,13 +1405,35 @@
                 <span style="font-size:0.78rem;color:var(--muted);flex:1">Claude kennt alle Analyse-Ergebnisse als Kontext.</span>
                 <button onclick="clearFollowUp()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;font-size:0.75rem;cursor:pointer">Löschen</button>
               </div>
-              <!-- Rollen-Auswahl -->
-              <div class="persona-select-bar">
-                <label style="font-size:0.75rem;color:var(--muted);flex-shrink:0">Rolle:</label>
-                <select id="followupPersonaSelect">
-                  <option value="">Kein Systemprompt</option>
-                </select>
+              <!-- Experten-Runde (v5.90) -->
+              <div class="runden-block" id="analyseRundenBlock">
+                <div class="runden-block-header">
+                  <span class="runden-block-title">Experten-Runde</span>
+                  <span class="runden-badge" id="analyseRundenBadge">Runde aktiv</span>
+                </div>
+                <div class="rolle-row">
+                  <span class="rolle-label">Rolle 1:</span>
+                  <div class="rolle-dot" style="background:#6c63ff"></div>
+                  <select class="rolle-select" id="followupPersonaSelect" onchange="updateRundenBadge('analyse')">
+                    <option value="">Kein Systemprompt</option>
+                  </select>
+                </div>
+                <div class="rolle-row">
+                  <span class="rolle-label">Rolle 2:</span>
+                  <div class="rolle-dot" style="background:#34d399"></div>
+                  <select class="rolle-select" id="followupPersonaSelect2" onchange="updateRundenBadge('analyse')">
+                    <option value="">– optional –</option>
+                  </select>
+                </div>
+                <div class="rolle-row">
+                  <span class="rolle-label">Rolle 3:</span>
+                  <div class="rolle-dot" style="background:#fbbf24"></div>
+                  <select class="rolle-select" id="followupPersonaSelect3" onchange="updateRundenBadge('analyse')">
+                    <option value="">– optional –</option>
+                  </select>
+                </div>
               </div>
+              <div class="runden-hint" id="analyseRundenHint">ℹ️ Rollen geändert — frühere Nachrichten wurden mit anderen Rollen geschrieben.</div>
               <div id="followUpMessages" style="flex:1;overflow-y:auto;padding:14px;min-height:80px">
                 <span style="color:var(--muted);font-size:0.85rem">Noch keine Nachrichten.</span>
               </div>
@@ -1522,6 +1544,18 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.90 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.90</span><span class="cl-date">27.06.2026</span></div>
+        <div class="cl-title">Feature: Experten-Runde (Roundtable) im Analyse-Chat + Projekt-Assistenten</div>
+        <ul class="cl-list">
+          <li>Bis zu 3 Rollen gleichzeitig wählbar — Runde aktiviert sich automatisch ab 2 Rollen</li>
+          <li>Moderations-System-Prompt: Claude antwortet strukturiert aus jeder Perspektive + Synthese</li>
+          <li>Badge „Runde aktiv" + Hinweis bei Rollen-Wechsel im laufenden Chat</li>
+        </ul>
+        <div class="cl-tech">index.html: Runden-Block ersetzt persona-select-bar in Analyse-Chat + Projekt-Assistent. css/styles.css: .runden-block, .rolle-row, .runden-badge, .runden-hint. js/features.js: populatePersonaSelects() + updateRundenBadge() + _buildRoundtableSystemPrompt(). js/claude.js: askFollowUp() – Roundtable-Modus. js/projects.js: Projekt-Assistent – Roundtable-Modus.</div>
+      </div>
 
       <!-- ── v5.89 ── -->
       <div class="cl-entry">
@@ -4637,32 +4671,32 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.89"></script>
-<script src="js/storage.js?v=5.89"></script>
-<script src="js/config.js?v=5.89"></script>
-<script src="js/auth.js?v=5.89"></script>
-<script src="js/drive.js?v=5.89"></script>
-<script src="js/sessions.js?v=5.89"></script>
-<script src="js/assemblyai.js?v=5.89"></script>
-<script src="js/claude.js?v=5.89"></script>
-<script src="js/ui.js?v=5.89"></script>
-<script src="js/tags.js?v=5.89"></script>
-<script src="js/notes.js?v=5.89"></script>
-<script src="js/photos.js?v=5.89"></script>
-<script src="js/persons.js?v=5.89"></script>
-<script src="js/audio.js?v=5.89"></script>
-<script src="js/recorder.js?v=5.89"></script>
-<script src="js/contacts.js?v=5.89"></script>
-<script src="js/app.js?v=5.89"></script>
+<script src="js/icons.js?v=5.90"></script>
+<script src="js/storage.js?v=5.90"></script>
+<script src="js/config.js?v=5.90"></script>
+<script src="js/auth.js?v=5.90"></script>
+<script src="js/drive.js?v=5.90"></script>
+<script src="js/sessions.js?v=5.90"></script>
+<script src="js/assemblyai.js?v=5.90"></script>
+<script src="js/claude.js?v=5.90"></script>
+<script src="js/ui.js?v=5.90"></script>
+<script src="js/tags.js?v=5.90"></script>
+<script src="js/notes.js?v=5.90"></script>
+<script src="js/photos.js?v=5.90"></script>
+<script src="js/persons.js?v=5.90"></script>
+<script src="js/audio.js?v=5.90"></script>
+<script src="js/recorder.js?v=5.90"></script>
+<script src="js/contacts.js?v=5.90"></script>
+<script src="js/app.js?v=5.90"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=5.89"></script>
-<script src="js/search.js?v=5.89"></script>
-<script src="js/calendar.js?v=5.89"></script>
-<script src="js/prompts.js?v=5.89"></script>
-<script src="js/projects.js?v=5.89"></script>
-<script src="js/import.js?v=5.89"></script>
+<script src="js/features.js?v=5.90"></script>
+<script src="js/search.js?v=5.90"></script>
+<script src="js/calendar.js?v=5.90"></script>
+<script src="js/prompts.js?v=5.90"></script>
+<script src="js/projects.js?v=5.90"></script>
+<script src="js/import.js?v=5.90"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
@@ -4850,13 +4884,35 @@
       <span style="color:var(--muted);font-size:0.74rem">Ein einzelnes Wort reicht: „Was lief beim <em>Webinar</em> schief?" lädt alle Sitzungen deren Name „Webinar" enthält.<br>
       Ohne Sitzungsname: alle Sitzungen, neueste zuerst, mit 100.000 Zeichen Limit.</span>
     </div>
-    <!-- Rollen-Auswahl -->
-    <div class="persona-select-bar">
-      <label style="font-size:0.75rem;color:var(--muted);flex-shrink:0">Rolle:</label>
-      <select id="projAssistPersonaSelect">
-        <option value="">Kein Systemprompt</option>
-      </select>
+    <!-- Experten-Runde Projekt-Assistent (v5.90) -->
+    <div class="runden-block" id="projRundenBlock">
+      <div class="runden-block-header">
+        <span class="runden-block-title">Experten-Runde</span>
+        <span class="runden-badge" id="projRundenBadge">Runde aktiv</span>
+      </div>
+      <div class="rolle-row">
+        <span class="rolle-label">Rolle 1:</span>
+        <div class="rolle-dot" style="background:#6c63ff"></div>
+        <select class="rolle-select" id="projAssistPersonaSelect" onchange="updateRundenBadge('proj')">
+          <option value="">Kein Systemprompt</option>
+        </select>
+      </div>
+      <div class="rolle-row">
+        <span class="rolle-label">Rolle 2:</span>
+        <div class="rolle-dot" style="background:#34d399"></div>
+        <select class="rolle-select" id="projAssistPersonaSelect2" onchange="updateRundenBadge('proj')">
+          <option value="">– optional –</option>
+        </select>
+      </div>
+      <div class="rolle-row">
+        <span class="rolle-label">Rolle 3:</span>
+        <div class="rolle-dot" style="background:#fbbf24"></div>
+        <select class="rolle-select" id="projAssistPersonaSelect3" onchange="updateRundenBadge('proj')">
+          <option value="">– optional –</option>
+        </select>
+      </div>
     </div>
+    <div class="runden-hint" id="projRundenHint">ℹ️ Rollen geändert — frühere Nachrichten wurden mit anderen Rollen geschrieben.</div>
     <!-- Kontext-Info -->
     <div id="projAssistContextInfo" style="padding:6px 14px;font-size:0.75rem;color:var(--muted);border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)"></div>
     <!-- Nachrichten -->

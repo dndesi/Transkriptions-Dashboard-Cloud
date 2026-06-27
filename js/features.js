@@ -664,12 +664,10 @@ function _buildRoleSystemPrompt(promptId) {
 
 // Befüllt Persona-Dropdowns:
 // v5.73: Beide Dropdowns zeigen nur Rollen-Kategorie (built-in + custom)
-// askPersonaSelect    → Gesprächs-Chat (Transkript-Fragen, nur Rollen)
-// followupPersonaSelect → Analyse-Chat (Analyse-Fragen, nur Rollen)
+// v5.90: Experten-Runde — je 3 Dropdowns für Analyse-Chat + Projekt-Assistent
 function populatePersonaSelects() {
   const allCustom = typeof getCustomPrompts === 'function' ? getCustomPrompts() : [];
 
-  // Rollen-Prompts zusammenstellen (built-in + custom mit category === 'rolle')
   const builtinRollen = (typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : [])
     .filter(p => p.category === 'rolle');
   const customRollen = allCustom.filter(p => p.category === 'rolle');
@@ -683,15 +681,78 @@ function populatePersonaSelects() {
     builtinRollen.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('') +
     customRollen.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('');
 
+  const rolleOptsOptional = '<option value="">– optional –</option>' +
+    builtinRollen.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('') +
+    customRollen.map(p => `<option value="${escHtml(p.id)}">${escHtml(p.name)}</option>`).join('');
+
+  // Gesprächs-Chat (einzeln, unverändert)
   const askEl = document.getElementById('askPersonaSelect');
   if (askEl) askEl.innerHTML = rolleOpts;
 
+  // Analyse-Chat: 3 Rollen
   const followupEl = document.getElementById('followupPersonaSelect');
   if (followupEl) followupEl.innerHTML = rolleOpts;
+  const followupEl2 = document.getElementById('followupPersonaSelect2');
+  if (followupEl2) followupEl2.innerHTML = rolleOptsOptional;
+  const followupEl3 = document.getElementById('followupPersonaSelect3');
+  if (followupEl3) followupEl3.innerHTML = rolleOptsOptional;
 
-  // v5.77: Projekt-Assistent ebenfalls befüllen
+  // Projekt-Assistent: 3 Rollen
   const projEl = document.getElementById('projAssistPersonaSelect');
   if (projEl) projEl.innerHTML = rolleOpts;
+  const projEl2 = document.getElementById('projAssistPersonaSelect2');
+  if (projEl2) projEl2.innerHTML = rolleOptsOptional;
+  const projEl3 = document.getElementById('projAssistPersonaSelect3');
+  if (projEl3) projEl3.innerHTML = rolleOptsOptional;
+}
+
+// v5.90: Badge + Hint aktualisieren wenn Rollen-Auswahl sich ändert
+function updateRundenBadge(mode) {
+  if (mode === 'analyse') {
+    const r2 = document.getElementById('followupPersonaSelect2')?.value || '';
+    const r3 = document.getElementById('followupPersonaSelect3')?.value || '';
+    const badge = document.getElementById('analyseRundenBadge');
+    if (badge) badge.classList.toggle('visible', !!(r2 || r3));
+    const hint = document.getElementById('analyseRundenHint');
+    if (hint) {
+      const session = typeof getSession === 'function' ? getSession(currentSessionId) : null;
+      hint.classList.toggle('visible', !!(session?.claudeFollowUp?.length));
+    }
+  } else if (mode === 'proj') {
+    const r2 = document.getElementById('projAssistPersonaSelect2')?.value || '';
+    const r3 = document.getElementById('projAssistPersonaSelect3')?.value || '';
+    const badge = document.getElementById('projRundenBadge');
+    if (badge) badge.classList.toggle('visible', !!(r2 || r3));
+  }
+}
+
+// v5.90: Moderations-System-Prompt aus mehreren Rollen bauen
+function _buildRoundtableSystemPrompt(roleIds) {
+  const prompts = roleIds
+    .filter(id => !!id)
+    .map(id => {
+      const text = typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(id) : null;
+      if (!text) return null;
+      const builtins = typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : [];
+      const customs = typeof getCustomPrompts === 'function' ? getCustomPrompts() : [];
+      const found = [...builtins, ...customs].find(p => p.id === id);
+      return { name: found?.name || id, text };
+    })
+    .filter(Boolean);
+
+  if (prompts.length < 2) return null;
+
+  const rollenBeschreibung = prompts.map((p, i) =>
+    `### Experte ${i + 1}: ${p.name}\n${p.text}`
+  ).join('\n\n');
+
+  return `Du moderierst eine Experten-Runde. Beantworte jede Frage strukturiert aus den folgenden Perspektiven:\n\n${rollenBeschreibung}\n\n` +
+    `Antworte immer in diesem Format:\n` +
+    `**[Name Experte 1]:** (2–4 Sätze aus dieser Perspektive)\n` +
+    `**[Name Experte 2]:** (2–4 Sätze aus dieser Perspektive)\n` +
+    `(weitere Experten falls vorhanden)\n` +
+    `**Synthese:** (1–3 Sätze die alle Perspektiven zusammenführen)\n\n` +
+    `Bleibe in jeder Perspektive klar und unterscheidbar. Vermeide Wiederholungen zwischen den Experten.`;
 }
 
 // v5.78: Design-Tab Dropdown dynamisch befüllen (Built-ins + eigene category:'design')
