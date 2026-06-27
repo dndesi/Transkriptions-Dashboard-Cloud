@@ -1029,7 +1029,7 @@ function _renderProjectChatMessages(proj) {
     const isRt = Array.isArray(m.roles) && m.roles.length >= 2;
     const answerHtml = isRt && typeof _renderRoundtableAnswer === 'function'
       ? _renderRoundtableAnswer(m.answer, m.roles)
-      : `<div style="white-space:pre-wrap;line-height:1.6;font-size:0.9rem">${escHtml(m.answer)}</div>`;
+      : (typeof _parseMarkdown === 'function' ? _parseMarkdown(m.answer) : `<div style="white-space:pre-wrap;line-height:1.6;font-size:0.9rem">${escHtml(m.answer)}</div>`);
     return `
     <div style="margin-bottom:16px">
       <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px">Du</div>

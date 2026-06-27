@@ -3891,12 +3891,13 @@ mark.search-highlight {
 
 /* FAB – erscheint wenn Projektdetail aktiv (über projectsView) */
 /* v5.76: Fähnchen-Tab statt rundem FAB */
+/* v5.93: Projekt-Assistent Fähnchen — grün */
 .proj-assist-flap {
   position: fixed;
   right: 0;
   top: 50vh;
   transform: translateY(-50%);
-  background: var(--accent);
+  background: #10b981;
   color: #fff;
   border: none;
   font: inherit;
@@ -3910,7 +3911,7 @@ mark.search-highlight {
   flex-direction: column;
   align-items: center;
   gap: 7px;
-  box-shadow: -3px 0 12px rgba(108,99,255,0.35);
+  box-shadow: -3px 0 12px rgba(16,185,129,0.35);
   transition: right 0.22s ease, opacity 0.15s;
   writing-mode: vertical-rl;
   text-orientation: mixed;
@@ -3921,9 +3922,9 @@ mark.search-highlight {
   letter-spacing: 0.05em;
   writing-mode: vertical-rl;
 }
-.proj-assist-flap:hover { background: var(--accent2, #7c6fdf); }
-.proj-assist-flap.proj-assist-flap-open { background: var(--accent2, #7c6fdf); }
-.proj-assist-flap.proj-assist-flap-open:hover { background: #c0392b; }
+.proj-assist-flap:hover { background: #059669; }
+.proj-assist-flap.proj-assist-flap-open { background: #059669; }
+.proj-assist-flap.proj-assist-flap-open:hover { background: #047857; }
 .proj-assist-flap.hidden { display: none !important; }
 
 /* Chat-Panel */

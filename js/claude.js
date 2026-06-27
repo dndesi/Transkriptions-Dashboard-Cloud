@@ -1788,37 +1788,96 @@ function _buildFollowUpContext(session) {
   return lines.join('\n').trim();
 }
 
-// v5.90: Rendert Roundtable-Antwort mit farbigen Rollen-Badges
+// v5.93: Inline-Markdown parsen (Bold, Italic) — auf bereits escHtml()-Text anwenden
+function _parseInline(escapedHtml) {
+  return escapedHtml
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+}
+
+// v5.93: Block-Markdown-Parser (Tabellen, Überschriften, Bold, Italic)
+function _parseMarkdown(text) {
+  if (!text) return '';
+  const lines = text.split('\n');
+  const out = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    // Tabelle: aufeinanderfolgende | Zeilen sammeln
+    if (line.trim().startsWith('|')) {
+      const tableLines = [];
+      while (i < lines.length && lines[i].trim().startsWith('|')) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      // Trenn-Zeilen (|---|---| oder |:---|:---|) herausfiltern
+      const dataRows = tableLines.filter(l => !l.match(/^\s*\|[\s:\-|]+\|\s*$/));
+      if (dataRows.length) {
+        const rows = dataRows.map(l =>
+          l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim())
+        );
+        const header = rows[0].map(c =>
+          `<th style="padding:5px 10px;text-align:left;font-size:0.78rem;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border)">${_parseInline(escHtml(c))}</th>`
+        ).join('');
+        const body = rows.slice(1).map(row =>
+          `<tr>${row.map(c => `<td style="padding:5px 10px;font-size:0.84rem;border-bottom:1px solid var(--border)">${_parseInline(escHtml(c))}</td>`).join('')}</tr>`
+        ).join('');
+        out.push(`<div style="overflow-x:auto;margin:8px 0"><table style="width:100%;border-collapse:collapse;background:var(--surface2);border-radius:6px"><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div>`);
+      }
+      continue;
+    }
+    // ## / ### Überschrift
+    const hMatch = line.match(/^(#{2,3})\s+(.+)/);
+    if (hMatch) {
+      const size = hMatch[1].length === 2 ? '0.92rem' : '0.86rem';
+      out.push(`<div style="font-weight:700;font-size:${size};color:var(--accent);margin:10px 0 3px">${_parseInline(escHtml(hMatch[2]))}</div>`);
+      i++; continue;
+    }
+    // Leerzeile
+    if (!line.trim()) { out.push('<div style="height:5px"></div>'); i++; continue; }
+    // Normale Zeile
+    out.push(`<div style="font-size:0.88rem;line-height:1.6">${_parseInline(escHtml(line))}</div>`);
+    i++;
+  }
+  return out.join('');
+}
+
+// v5.93: Rendert Roundtable-Antwort mit farbigen Rollen-Badges + Markdown
 function _renderRoundtableAnswer(text, roles) {
   const colors = ['#6c63ff', '#34d399', '#fbbf24'];
-  // Baut Map: Rollenname → Farbe
   const roleColorMap = {};
   (roles || []).forEach((name, i) => { if (name) roleColorMap[name] = colors[i] || colors[0]; });
 
-  // Zeilen durchgehen, **Name:** am Zeilenanfang erkennen
+  // Text in Sektionen aufteilen — jede beginnt mit **Name:** am Zeilenanfang
   const lines = text.split('\n');
-  const htmlLines = lines.map(line => {
-    // Match: **RollenName:** am Zeilenanfang (optional führende Leerzeichen)
+  const sections = [];
+  let current = null;
+
+  for (const line of lines) {
     const match = line.match(/^\s*\*\*(.+?):\*\*\s*(.*)/);
     if (match) {
-      const name = match[1].trim();
-      const rest = match[2] || '';
-      if (name === 'Synthese') {
-        return `<div style="margin-top:10px;padding:8px 10px;background:rgba(108,99,255,0.08);border-left:2px solid var(--accent);border-radius:0 6px 6px 0">` +
-          `<span style="font-size:0.72rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:3px">Synthese</span>` +
-          `<span>${escHtml(rest)}</span></div>`;
-      }
-      const color = roleColorMap[name] || 'var(--accent)';
-      return `<div style="margin-top:8px">` +
-        `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:4px;margin-bottom:4px;` +
-        `background:${color}22;color:${color}">${escHtml(name)}</span>` +
-        `${rest ? `<div style="font-size:0.88rem;line-height:1.6;padding:0 2px">${escHtml(rest)}</div>` : ''}` +
-        `</div>`;
+      if (current) sections.push(current);
+      current = { name: match[1].trim(), lines: match[2] ? [match[2]] : [] };
+    } else {
+      if (current) current.lines.push(line);
+      else { if (!sections.length || sections[sections.length-1].name !== null) sections.push({ name: null, lines: [] }); sections[sections.length-1].lines.push(line); }
     }
-    // Normale Zeile
-    return line.trim() ? `<div style="font-size:0.88rem;line-height:1.6;padding:0 2px">${escHtml(line)}</div>` : '<div style="height:4px"></div>';
-  });
-  return htmlLines.join('');
+  }
+  if (current) sections.push(current);
+
+  return sections.map(sec => {
+    const content = _parseMarkdown(sec.lines.join('\n'));
+    if (!sec.name) return content; // Präambel-Text
+    if (sec.name === 'Synthese') {
+      return `<div style="margin-top:12px;padding:8px 10px;background:rgba(108,99,255,0.08);border-left:2px solid var(--accent);border-radius:0 6px 6px 0">` +
+        `<span style="font-size:0.72rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px">Synthese</span>` +
+        `<div>${content}</div></div>`;
+    }
+    const color = roleColorMap[sec.name] || 'var(--accent)';
+    return `<div style="margin-top:10px">` +
+      `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:4px;margin-bottom:4px;background:${color}22;color:${color}">${escHtml(sec.name)}</span>` +
+      `<div style="padding:0 2px">${content}</div></div>`;
+  }).join('');
 }
 
 // Rendert alle gespeicherten Follow-Up-Nachrichten ins Panel
@@ -1834,7 +1893,7 @@ function renderFollowUpMessages(session) {
     const isRoundtable = Array.isArray(m.roles) && m.roles.length >= 2;
     const answerHtml = isRoundtable
       ? _renderRoundtableAnswer(m.answer, m.roles)
-      : `<div style="white-space:pre-wrap;line-height:1.6;font-size:0.9rem">${escHtml(m.answer)}</div>`;
+      : _parseMarkdown(m.answer);
     return `
     <div style="margin-bottom:16px">
       <div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">Deine Frage</div>

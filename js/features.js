@@ -647,17 +647,21 @@ function _buildPersonaPrefix(promptId) {
 // Liest zuerst built-in Rollen aus EDITABLE_PROMPT_DEFAULTS, dann eigene Custom-Rollen
 function _buildRoleSystemPrompt(promptId) {
   if (!promptId) return null;
+  // v5.93: Ausgabe-Formatierung für alle Assistenten
+  const _FORMAT_RULES = '\n\nAusgabe-Format: Verwende keine Emojis und keine Sonderzeichen-Icons (★, ✓, →, ◆, • als Icon etc.).';
   // Built-in Rollen (EDITABLE_PROMPT_DEFAULTS mit category === 'rolle')
   const builtins = typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : [];
   const builtin = builtins.find(p => p.id === promptId && p.category === 'rolle');
   if (builtin) {
-    return typeof getEditablePromptText === 'function' ? getEditablePromptText(promptId) : builtin.prompt;
+    const t = typeof getEditablePromptText === 'function' ? getEditablePromptText(promptId) : builtin.prompt;
+    return t ? t + _FORMAT_RULES : null;
   }
   // Eigene Custom-Rollen (category === 'rolle')
   const customs = typeof getCustomPrompts === 'function' ? getCustomPrompts() : [];
   const custom = customs.find(p => p.id === promptId && p.category === 'rolle');
   if (custom) {
-    return typeof assemblePromptText === 'function' ? assemblePromptText(custom) : (custom.prompt || '');
+    const t = typeof assemblePromptText === 'function' ? assemblePromptText(custom) : (custom.prompt || '');
+    return t ? t + _FORMAT_RULES : null;
   }
   return null;
 }
@@ -752,7 +756,7 @@ function _buildRoundtableSystemPrompt(roleIds) {
     `Verwende immer exakt dieses Format — nutze die Namen unverändert:\n\n` +
     `${formatLines}\n\n` +
     `**Synthese:**\n[Kurze Zusammenführung der Perspektiven]\n\n` +
-    `Behalte die Eigenheit jeder Rolle bei. Vermeide Wiederholungen zwischen den Perspektiven.`;
+    `Behalte die Eigenheit jeder Rolle bei. Vermeide Wiederholungen zwischen den Perspektiven.\n\nAusgabe-Format: Verwende keine Emojis und keine Sonderzeichen-Icons (★, ✓, →, ◆ etc.).`;
 }
 
 // v5.78: Design-Tab Dropdown dynamisch befüllen (Built-ins + eigene category:'design')
