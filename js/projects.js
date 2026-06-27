@@ -1303,37 +1303,62 @@ function _buildProjChatGedankenHtml(proj) {
       <span style="font-size:0.78rem;opacity:0.7">Klicke im Projekt-Assistenten auf „Merken" um Antworten hier zu sammeln.</span>
     </div>`;
   }
+  const sourceColor = '#8b5cf6';
+  const sourceBg = 'rgba(139,92,246,0.12)';
+  const roleColors = ['#6366f1','#f59e0b','#ef4444','#06b6d4'];
+
   return items.map((item, i) => {
-    const dotColor = '#8b5cf6';
-    const headline = escHtml(typeof _buildChatGedankeHeadline === 'function'
-      ? _buildChatGedankeHeadline(item)
-      : (item.question || ''));
     const expanded = _projChatGedankenExpanded.has(i);
-    const isRoundtable = Array.isArray(item.roles) && item.roles.length >= 2;
+    const chevron = expanded ? 'chevron-up' : 'chevron-down';
+
+    // Datum-Chip
+    const dateStr = item.ts ? new Date(item.ts).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'2-digit' }) : '';
+    const dateChip = dateStr
+      ? `<span style="font-size:0.68rem;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:1px 6px">${escHtml(dateStr)}</span>`
+      : '';
+
+    // Rollen-Chips
+    const roles = (item.roles || []).filter(Boolean);
+    const roleChips = roles.map((r, ri) => {
+      const c = roleColors[ri % roleColors.length];
+      return `<span style="font-size:0.68rem;background:${c}22;color:${c};border:1px solid ${c}44;border-radius:4px;padding:1px 6px">${escHtml(r)}</span>`;
+    }).join('');
+
+    // Quelle-Chip
+    const sourceChip = `<span style="font-size:0.68rem;background:${sourceBg};color:${sourceColor};border:1px solid ${sourceColor}44;border-radius:4px;padding:1px 6px">Projekt-Assistent</span>`;
+
+    // Fragen als Stichpunkte
+    const questions = (item.question || '').split('\n').map(q => q.trim()).filter(Boolean);
+    const questionList = questions.length
+      ? `<ul style="margin:6px 0 0 0;padding-left:16px;list-style:disc">${questions.map(q => `<li style="font-size:0.82rem;color:var(--text);line-height:1.5;margin-bottom:2px">${escHtml(q)}</li>`).join('')}</ul>`
+      : '';
+
+    // Vollständige Antwort
+    const isRoundtable = roles.length >= 2;
     const fullAnswerHtml = (typeof _renderRoundtableAnswer === 'function' && isRoundtable)
       ? _renderRoundtableAnswer(item.answer, item.roles)
       : (typeof _parseMarkdown === 'function' ? _parseMarkdown(item.answer) : escHtml(item.answer || ''));
-    const chevron = expanded ? 'chevron-up' : 'chevron-down';
+
     return `
-    <div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--surface)">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">
-        <div style="display:flex;align-items:flex-start;gap:7px;flex:1;min-width:0">
-          <span style="width:8px;height:8px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-top:4px"></span>
-          <span style="font-size:0.8rem;font-weight:600;color:var(--text);line-height:1.4">${headline}</span>
+    <div onclick="toggleProjChatGedanke(${i})" style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--surface);cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='${sourceColor}'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:0">
+          ${dateChip}${roleChips}${sourceChip}
         </div>
-        <button onclick="deleteProjChatGedanke('${proj.id}', ${i})"
-          style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center;flex-shrink:0"
-          title="Löschen">
-          ${icon('trash-2', 13, 'pointer-events:none')}
-        </button>
-      </div>
-      <div onclick="toggleProjChatGedanke(${i})" style="cursor:pointer;padding-left:15px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <span style="font-size:0.72rem;color:var(--muted)">Projekt-Assistent</span>
-          <span style="flex-shrink:0;color:var(--accent);display:inline-flex">${icon(chevron, 13, 'pointer-events:none')}</span>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+          <span style="color:${sourceColor};display:inline-flex">${icon(chevron, 13, 'pointer-events:none')}</span>
+          <button onclick="event.stopPropagation();deleteProjChatGedanke('${proj.id}', ${i})"
+            style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center"
+            title="Löschen">
+            ${icon('trash-2', 13, 'pointer-events:none')}
+          </button>
         </div>
-        ${expanded ? `<div style="font-size:0.88rem;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">${fullAnswerHtml}</div>` : ''}
       </div>
+      ${questionList}
+      ${expanded
+        ? `<div style="font-size:0.88rem;line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${fullAnswerHtml}</div>`
+        : ''
+      }
     </div>`;
   }).join('');
 }

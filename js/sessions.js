@@ -995,43 +995,61 @@ function renderChatGedanken(session) {
   }
   container.innerHTML = items.map((item, i) => {
     const isAnalyse = item.source === 'analyse';
-    const dotColor = isAnalyse ? 'var(--accent)' : '#10b981';
-    const headline = escHtml(_buildChatGedankeHeadline(item));
+    const sourceColor = isAnalyse ? 'var(--accent)' : '#10b981';
+    const sourceBg   = isAnalyse ? 'color-mix(in srgb,var(--accent) 12%,transparent)' : 'rgba(16,185,129,0.12)';
+    const sourceLabel = isAnalyse ? 'Analyse-Chat' : 'Gesprächs-Chat';
     const expanded = _chatGedankenExpanded.has(i);
+    const chevron = expanded ? 'chevron-up' : 'chevron-down';
 
-    const sourceLabel = item.source === 'analyse' ? 'Analyse-Chat' : 'Gesprächs-Chat';
+    // Datum-Chip
+    const dateStr = item.ts ? new Date(item.ts).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'2-digit' }) : '';
+    const dateChip = dateStr
+      ? `<span style="font-size:0.68rem;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:1px 6px">${escHtml(dateStr)}</span>`
+      : '';
 
-    // Vollständige Antwort mit Markdown-Rendering
-    const isRoundtable = Array.isArray(item.roles) && item.roles.length >= 2;
+    // Rollen-Chips
+    const roleColors = ['#6366f1','#f59e0b','#ef4444','#06b6d4'];
+    const roles = (item.roles || []).filter(Boolean);
+    const roleChips = roles.map((r, ri) => {
+      const c = roleColors[ri % roleColors.length];
+      return `<span style="font-size:0.68rem;background:${c}22;color:${c};border:1px solid ${c}44;border-radius:4px;padding:1px 6px">${escHtml(r)}</span>`;
+    }).join('');
+
+    // Quelle-Chip
+    const sourceChip = `<span style="font-size:0.68rem;background:${sourceBg};color:${sourceColor};border:1px solid ${sourceColor}44;border-radius:4px;padding:1px 6px">${escHtml(sourceLabel)}</span>`;
+
+    // Fragen als Stichpunkte
+    const questions = (item.question || '').split('\n').map(q => q.trim()).filter(Boolean);
+    const questionList = questions.length
+      ? `<ul style="margin:6px 0 0 0;padding-left:16px;list-style:disc">${questions.map(q => `<li style="font-size:0.82rem;color:var(--text);line-height:1.5;margin-bottom:2px">${escHtml(q)}</li>`).join('')}</ul>`
+      : '';
+
+    // Vollständige Antwort
+    const isRoundtable = roles.length >= 2;
     const fullAnswerHtml = (typeof _renderRoundtableAnswer === 'function' && isRoundtable)
       ? _renderRoundtableAnswer(item.answer, item.roles)
       : (typeof _parseMarkdown === 'function' ? _parseMarkdown(item.answer) : escHtml(item.answer || ''));
 
-    const chevron = expanded ? 'chevron-up' : 'chevron-down';
-
     return `
-    <div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--surface)">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">
-        <div style="display:flex;align-items:flex-start;gap:7px;flex:1;min-width:0">
-          <span style="width:8px;height:8px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-top:4px"></span>
-          <span style="font-size:0.8rem;font-weight:600;color:var(--text);line-height:1.4">${headline}</span>
+    <div onclick="toggleChatGedanke(${i})" style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--surface);cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='${sourceColor}'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:0">
+          ${dateChip}${roleChips}${sourceChip}
         </div>
-        <button onclick="deleteChatGedanke('${session.id}', ${i})"
-          style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center;flex-shrink:0"
-          title="Löschen">
-          ${icon('trash-2', 13, 'pointer-events:none')}
-        </button>
-      </div>
-      <div onclick="toggleChatGedanke(${i})" style="cursor:pointer;padding-left:15px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <span style="font-size:0.72rem;color:var(--muted)">${sourceLabel}</span>
-          <span style="flex-shrink:0;color:var(--accent);display:inline-flex">${icon(chevron, 13, 'pointer-events:none')}</span>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+          <span style="color:var(--accent);display:inline-flex">${icon(chevron, 13, 'pointer-events:none')}</span>
+          <button onclick="event.stopPropagation();deleteChatGedanke('${session.id}', ${i})"
+            style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center"
+            title="Löschen">
+            ${icon('trash-2', 13, 'pointer-events:none')}
+          </button>
         </div>
-        ${expanded
-          ? `<div style="font-size:0.88rem;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">${fullAnswerHtml}</div>`
-          : ''
-        }
       </div>
+      ${questionList}
+      ${expanded
+        ? `<div style="font-size:0.88rem;line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${fullAnswerHtml}</div>`
+        : ''
+      }
     </div>`;
   }).join('');
 }
