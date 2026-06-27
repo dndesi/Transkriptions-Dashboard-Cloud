@@ -14,6 +14,8 @@ let _projectsViewMode = localStorage.getItem('distillProjectsView') || 'list';
 let _projectModalMode = 'create'; // 'create' | 'edit'
 let _projectModalEditId = null;
 let _currentProjectDetailId = null;
+let _projChatGedankenVisible = false;
+let _projChatGedankenExpanded = new Set();
 
 // ── Sidenav-Badge aktualisieren ──────────────────────────────────────────
 function updateProjectBadge() {
@@ -212,6 +214,10 @@ function renderProjectDetail(id, searchVal = '', sortVal = 'date-desc') {
           <span class="project-card-status ${proj.status}" style="font-size:0.72rem">${statusLabel}</span>
         </div>
         <div style="display:flex;gap:8px;margin-left:auto">
+          <button class="btn btn-ghost" style="font-size:0.82rem${_projChatGedankenVisible ? ';background:var(--accent);color:#fff' : ''}" onclick="toggleProjChatGedankenView('${proj.id}')">
+            ${icon('bookmark',13)} Chat-Gedanken${proj.chatGedanken?.length ? ` (${proj.chatGedanken.length})` : ''}
+            <button class="help-icon" data-help="Gespeicherte Antworten aus dem Projekt-Assistenten – klicke im Chat auf 'Merken' um Antworten hier zu sammeln." onclick="showHelpTooltip(this)">?</button>
+          </button>
           <button class="btn btn-ghost" style="font-size:0.82rem" onclick="showProjectDashboard('${proj.id}')">
             ${icon('bar-chart-2',13)} Dashboard <button class="help-icon" data-help="Überblick über alle Sitzungen dieses Projekts: Aufgaben-Tracking, beteiligte Personen, häufige Themen und KI-Analyse über alle Sitzungen hinweg." onclick="showHelpTooltip(this)">?</button>
           </button>
@@ -242,9 +248,11 @@ function renderProjectDetail(id, searchVal = '', sortVal = 'date-desc') {
         </select>
       </div>
 
-      ${list.length === 0
-        ? `<div class="browser-empty">${searchVal ? 'Keine Treffer.' : 'Keine Sitzungen in diesem Projekt.'}</div>`
-        : `<div class="session-grid">${list.map(s => renderProjectSessionCard(s)).join('')}</div>`
+      ${_projChatGedankenVisible
+        ? `<div id="proj-chatgedanken-panel" style="margin-top:8px">${_buildProjChatGedankenHtml(proj)}</div>`
+        : (list.length === 0
+            ? `<div class="browser-empty">${searchVal ? 'Keine Treffer.' : 'Keine Sitzungen in diesem Projekt.'}</div>`
+            : `<div class="session-grid">${list.map(s => renderProjectSessionCard(s)).join('')}</div>`)
       }
     </div>
   `;
@@ -1042,6 +1050,10 @@ function _renderProjectChatMessages(proj) {
           style="background:none;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:0.7rem;color:var(--muted);cursor:pointer">
           Kopieren
         </button>
+        <button onclick="merkenProjChat(${i})"
+          style="background:none;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:0.7rem;color:var(--muted);cursor:pointer">
+          Merken
+        </button>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px">${answerHtml}</div>
     </div>`;
@@ -1231,5 +1243,98 @@ async function sendProjectChatMessage() {
   } finally {
     if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Senden'; }
   }
+}
+
+// ── Chat-Gedanken (Projekt-Assistent) v5.100 ────────────────────────────
+
+function _saveProjChatGedanke(projId, question, answer, roles) {
+  const proj = getProjectById(projId);
+  if (!proj) return;
+  if (!proj.chatGedanken) proj.chatGedanken = [];
+  proj.chatGedanken.unshift({
+    question, answer, roles: roles || [],
+    source: 'projekt',
+    ts: new Date().toISOString()
+  });
+  saveProjects();
+  showToast('Als Chat-Gedanke gespeichert ✓', 'success');
+}
+
+function merkenProjChat(idx) {
+  const proj = getProjectById(_currentProjectDetailId);
+  const m = proj?.claudeChat?.[idx];
+  if (!m) return;
+  _saveProjChatGedanke(_currentProjectDetailId, m.question, m.answer, m.roles || []);
+}
+
+function toggleProjChatGedanke(idx) {
+  if (_projChatGedankenExpanded.has(idx)) {
+    _projChatGedankenExpanded.delete(idx);
+  } else {
+    _projChatGedankenExpanded.add(idx);
+  }
+  const panel = document.getElementById('proj-chatgedanken-panel');
+  if (!panel) return;
+  const proj = getProjectById(_currentProjectDetailId);
+  if (proj) panel.innerHTML = _buildProjChatGedankenHtml(proj);
+}
+
+function deleteProjChatGedanke(projId, idx) {
+  const proj = getProjectById(projId);
+  if (!proj?.chatGedanken) return;
+  proj.chatGedanken.splice(idx, 1);
+  saveProjects();
+  const panel = document.getElementById('proj-chatgedanken-panel');
+  if (panel) panel.innerHTML = _buildProjChatGedankenHtml(proj);
+  showToast('Chat-Gedanke gelöscht', 'info');
+}
+
+function toggleProjChatGedankenView(projId) {
+  _projChatGedankenVisible = !_projChatGedankenVisible;
+  _projChatGedankenExpanded = new Set();
+  renderProjectDetail(projId);
+}
+
+function _buildProjChatGedankenHtml(proj) {
+  const items = proj?.chatGedanken || [];
+  if (!items.length) {
+    return `<div style="text-align:center;color:var(--muted);padding:40px 16px;font-size:0.85rem">
+      Noch keine Chat-Gedanken gespeichert.<br>
+      <span style="font-size:0.78rem;opacity:0.7">Klicke im Projekt-Assistenten auf „Merken" um Antworten hier zu sammeln.</span>
+    </div>`;
+  }
+  return items.map((item, i) => {
+    const dotColor = '#8b5cf6';
+    const headline = escHtml(typeof _buildChatGedankeHeadline === 'function'
+      ? _buildChatGedankeHeadline(item)
+      : (item.question || ''));
+    const expanded = _projChatGedankenExpanded.has(i);
+    const isRoundtable = Array.isArray(item.roles) && item.roles.length >= 2;
+    const fullAnswerHtml = (typeof _renderRoundtableAnswer === 'function' && isRoundtable)
+      ? _renderRoundtableAnswer(item.answer, item.roles)
+      : (typeof _parseMarkdown === 'function' ? _parseMarkdown(item.answer) : escHtml(item.answer || ''));
+    const chevron = expanded ? 'chevron-up' : 'chevron-down';
+    return `
+    <div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--surface)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">
+        <div style="display:flex;align-items:flex-start;gap:7px;flex:1;min-width:0">
+          <span style="width:8px;height:8px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-top:4px"></span>
+          <span style="font-size:0.8rem;font-weight:600;color:var(--text);line-height:1.4">${headline}</span>
+        </div>
+        <button onclick="deleteProjChatGedanke('${proj.id}', ${i})"
+          style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center;flex-shrink:0"
+          title="Löschen">
+          ${icon('trash-2', 13, 'pointer-events:none')}
+        </button>
+      </div>
+      <div onclick="toggleProjChatGedanke(${i})" style="cursor:pointer;padding-left:15px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <span style="font-size:0.72rem;color:var(--muted)">Projekt-Assistent</span>
+          <span style="flex-shrink:0;color:var(--accent);display:inline-flex">${icon(chevron, 13, 'pointer-events:none')}</span>
+        </div>
+        ${expanded ? `<div style="font-size:0.88rem;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">${fullAnswerHtml}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
