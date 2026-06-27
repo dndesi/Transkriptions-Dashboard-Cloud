@@ -746,13 +746,13 @@ function _buildRoundtableSystemPrompt(roleIds) {
     `### Experte ${i + 1}: ${p.name}\n${p.text}`
   ).join('\n\n');
 
-  return `Du moderierst eine Experten-Runde. Beantworte jede Frage strukturiert aus den folgenden Perspektiven:\n\n${rollenBeschreibung}\n\n` +
-    `Antworte immer in diesem Format:\n` +
-    `**[Name Experte 1]:** (2–4 Sätze aus dieser Perspektive)\n` +
-    `**[Name Experte 2]:** (2–4 Sätze aus dieser Perspektive)\n` +
-    `(weitere Experten falls vorhanden)\n` +
-    `**Synthese:** (1–3 Sätze die alle Perspektiven zusammenführen)\n\n` +
-    `Bleibe in jeder Perspektive klar und unterscheidbar. Vermeide Wiederholungen zwischen den Experten.`;
+  const formatLines = prompts.map(p => `**${p.name}:**\n[Antwort vollständig gemäß diesem Rollen-Prompt — Tonalität, Tiefe und Grenzen wie definiert]`).join('\n\n');
+
+  return `Du moderierst eine Experten-Runde. Beantworte jede Frage aus den folgenden Perspektiven — jede Rolle antwortet vollständig nach ihren eigenen Vorgaben (Tonalität, Grenzen, Kontext):\n\n${rollenBeschreibung}\n\n` +
+    `Verwende immer exakt dieses Format — nutze die Namen unverändert:\n\n` +
+    `${formatLines}\n\n` +
+    `**Synthese:**\n[Kurze Zusammenführung der Perspektiven]\n\n` +
+    `Behalte die Eigenheit jeder Rolle bei. Vermeide Wiederholungen zwischen den Perspektiven.`;
 }
 
 // v5.78: Design-Tab Dropdown dynamisch befüllen (Built-ins + eigene category:'design')

@@ -1788,6 +1788,39 @@ function _buildFollowUpContext(session) {
   return lines.join('\n').trim();
 }
 
+// v5.90: Rendert Roundtable-Antwort mit farbigen Rollen-Badges
+function _renderRoundtableAnswer(text, roles) {
+  const colors = ['#6c63ff', '#34d399', '#fbbf24'];
+  // Baut Map: Rollenname → Farbe
+  const roleColorMap = {};
+  (roles || []).forEach((name, i) => { if (name) roleColorMap[name] = colors[i] || colors[0]; });
+
+  // Zeilen durchgehen, **Name:** am Zeilenanfang erkennen
+  const lines = text.split('\n');
+  const htmlLines = lines.map(line => {
+    // Match: **RollenName:** am Zeilenanfang (optional führende Leerzeichen)
+    const match = line.match(/^\s*\*\*(.+?):\*\*\s*(.*)/);
+    if (match) {
+      const name = match[1].trim();
+      const rest = match[2] || '';
+      if (name === 'Synthese') {
+        return `<div style="margin-top:10px;padding:8px 10px;background:rgba(108,99,255,0.08);border-left:2px solid var(--accent);border-radius:0 6px 6px 0">` +
+          `<span style="font-size:0.72rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:3px">Synthese</span>` +
+          `<span>${escHtml(rest)}</span></div>`;
+      }
+      const color = roleColorMap[name] || 'var(--accent)';
+      return `<div style="margin-top:8px">` +
+        `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:4px;margin-bottom:4px;` +
+        `background:${color}22;color:${color}">${escHtml(name)}</span>` +
+        `${rest ? `<div style="font-size:0.88rem;line-height:1.6;padding:0 2px">${escHtml(rest)}</div>` : ''}` +
+        `</div>`;
+    }
+    // Normale Zeile
+    return line.trim() ? `<div style="font-size:0.88rem;line-height:1.6;padding:0 2px">${escHtml(line)}</div>` : '<div style="height:4px"></div>';
+  });
+  return htmlLines.join('');
+}
+
 // Rendert alle gespeicherten Follow-Up-Nachrichten ins Panel
 function renderFollowUpMessages(session) {
   const container = document.getElementById('followUpMessages');
@@ -1797,23 +1830,28 @@ function renderFollowUpMessages(session) {
     container.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">Noch keine Fragen gestellt – tippe unten eine Folgefrage ein.</span>';
     return;
   }
-  container.innerHTML = msgs.map((m, i) => `
+  container.innerHTML = msgs.map((m, i) => {
+    const isRoundtable = Array.isArray(m.roles) && m.roles.length >= 2;
+    const answerHtml = isRoundtable
+      ? _renderRoundtableAnswer(m.answer, m.roles)
+      : `<div style="white-space:pre-wrap;line-height:1.6;font-size:0.9rem">${escHtml(m.answer)}</div>`;
+    return `
     <div style="margin-bottom:16px">
       <div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px">Deine Frage</div>
       <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:0.9rem">${escHtml(m.question)}</div>
     </div>
     <div style="margin-bottom:24px">
       <div style="font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;display:flex;align-items:center;gap:8px">
-        Claude
+        ${isRoundtable ? '<span style="color:var(--accent2)">Experten-Runde</span>' : 'Claude'}
         <button onclick="copyFollowUpAnswer(${i})"
           style="background:none;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:0.7rem;color:var(--muted);cursor:pointer;font-weight:400;text-transform:none;letter-spacing:0;display:inline-flex;align-items:center;gap:3px"
           title="Antwort kopieren">
           ${icon('clipboard',10,'pointer-events:none')} Kopieren
         </button>
       </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:0.9rem;white-space:pre-wrap;line-height:1.6">${escHtml(m.answer)}</div>
-    </div>
-  `).join('');
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px">${answerHtml}</div>
+    </div>`;
+  }).join('');
   container.scrollTop = container.scrollHeight;
 }
 
@@ -1866,9 +1904,18 @@ async function askFollowUp() {
   const personaId2 = document.getElementById('followupPersonaSelect2')?.value || '';
   const personaId3 = document.getElementById('followupPersonaSelect3')?.value || '';
   const roleIds = [personaId, personaId2, personaId3].filter(Boolean);
-  const systemPrompt = roleIds.length >= 2
+  const isRoundtable = roleIds.length >= 2;
+  const systemPrompt = isRoundtable
     ? (typeof _buildRoundtableSystemPrompt === 'function' ? _buildRoundtableSystemPrompt(roleIds) : null)
     : (typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null);
+  // Rollennamen für Farb-Rendering ermitteln
+  const _allRollenQuellen = [
+    ...(typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : []),
+    ...(typeof getCustomPrompts === 'function' ? getCustomPrompts() : [])
+  ];
+  const activeRoleNames = isRoundtable
+    ? roleIds.map(id => _allRollenQuellen.find(p => p.id === id)?.name || id)
+    : null;
 
   // v5.72: Gesprächshistorie – letzte 5 Runden als Kontext mitschicken
   const _prevRounds = (session.claudeFollowUp || []).slice(-5);
@@ -1890,7 +1937,9 @@ async function askFollowUp() {
     const answer = deanonymizeObject(text, reverse);
 
     if (!session.claudeFollowUp) session.claudeFollowUp = [];
-    session.claudeFollowUp.push({ question, answer, ts: new Date().toISOString() });
+    const entry = { question, answer, ts: new Date().toISOString() };
+    if (activeRoleNames) entry.roles = activeRoleNames; // v5.90: für Farb-Rendering
+    session.claudeFollowUp.push(entry);
 
     saveSessions();
     await saveToArchive(session);

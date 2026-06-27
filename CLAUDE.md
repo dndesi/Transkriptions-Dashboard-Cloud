@@ -2,7 +2,7 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v5.90** (Stand: 27.06.2026)
+**v5.91** (Stand: 27.06.2026)
 
 ## Pflichtregeln bei jeder Änderung (IMMER, keine Ausnahme)
 1. Versionsnummer in `index.html` erhöhen (Header-Badge + alle `?v=X.XX` Script-Tags)
@@ -123,6 +123,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v5.91 | 27.06.2026 | Fix: Farbige Rollen-Badges in Roundtable-Antworten (_renderRoundtableAnswer) |
 | v5.90 | 27.06.2026 | Experten-Runde: 3 Rollen im Analyse-Chat + Projekt-Assistent, Roundtable-Modus |
 | v5.89 | 26.06.2026 | Hero News-Kachel "Rollen" eingefügt |
 | v5.88 | 25.06.2026 | ? Hilfe-Icon beim Projekt-Assistenten (toggleProjAssistHelp) |
