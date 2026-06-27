@@ -1991,18 +1991,42 @@ async function askFollowUp() {
   const personaId2 = document.getElementById('followupPersonaSelect2')?.value || '';
   const personaId3 = document.getElementById('followupPersonaSelect3')?.value || '';
   const roleIds = [personaId, personaId2, personaId3].filter(Boolean);
-  const isRoundtable = roleIds.length >= 2;
-  const systemPrompt = isRoundtable
-    ? (typeof _buildRoundtableSystemPrompt === 'function' ? _buildRoundtableSystemPrompt(roleIds) : null)
-    : (typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null);
+
   // Rollennamen für Farb-Rendering ermitteln
   const _allRollenQuellen = [
     ...(typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : []),
     ...(typeof getCustomPrompts === 'function' ? getCustomPrompts() : [])
   ];
+
+  // v6.3: @Rollenname: — Direktansprache einer aktiven Rolle
+  const atMatch = question.match(/^@([^:]+):\s*/);
+  let targetRoleId = null;
+  if (atMatch && roleIds.length > 0) {
+    const atQuery = atMatch[1].trim().toLowerCase();
+    const found = roleIds.find(id => {
+      const name = _allRollenQuellen.find(p => p.id === id)?.name || '';
+      return name.toLowerCase().includes(atQuery);
+    });
+    if (!found) {
+      showToast(`Rolle "@${atMatch[1].trim()}" ist nicht aktiv.`, 'warning');
+      btn.disabled = false;
+      btn.innerHTML = icon('send', 13, 'margin-right:5px') + ' Senden';
+      return;
+    }
+    targetRoleId = found;
+  }
+
+  const isRoundtable = !targetRoleId && roleIds.length >= 2;
+  const effectivePersonaId = targetRoleId || personaId;
+  const systemPrompt = isRoundtable
+    ? (typeof _buildRoundtableSystemPrompt === 'function' ? _buildRoundtableSystemPrompt(roleIds) : null)
+    : (typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(effectivePersonaId) : null);
+
   const activeRoleNames = isRoundtable
     ? roleIds.map(id => _allRollenQuellen.find(p => p.id === id)?.name || id)
-    : null;
+    : targetRoleId
+      ? [_allRollenQuellen.find(p => p.id === targetRoleId)?.name || targetRoleId]
+      : null;
 
   // v5.72: Gesprächshistorie – letzte 5 Runden als Kontext mitschicken
   const _prevRounds = (session.claudeFollowUp || []).slice(-5);
@@ -2013,10 +2037,12 @@ async function askFollowUp() {
     : '';
 
   // v5.73: Kein Transkript mehr – nur Analysen (Kosteneinsparung, war ursprüngliche Planung)
+  // v6.4: @name: Prefix aus Frage entfernen bevor an Claude gesendet wird
+  const cleanQuestion = atMatch ? question.slice(atMatch[0].length).trim() : question;
   const prompt = getEditablePromptText('builtin_followup')
     .replace(/\{\{analyseContext\}\}/g, analysisContext)
     .replace(/\{\{transcript\}\}/g, '')
-    .replace(/\{\{question\}\}/g, _historyPrefix + question);
+    .replace(/\{\{question\}\}/g, _historyPrefix + cleanQuestion);
 
   try {
     const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward), systemPrompt);
@@ -2038,6 +2064,67 @@ async function askFollowUp() {
     btn.disabled = false;
     btn.innerHTML = icon('send', 13, 'margin-right:5px') + ' Senden';
   }
+}
+
+// ─── v6.4: @-Autocomplete für Analyse-Chat ───────────────────────────────────
+let _atCompleteListenerAdded = false;
+
+function handleFollowUpAutocomplete(e) {
+  const textarea = e.target;
+  const val = textarea.value;
+  const dropdown = document.getElementById('followUpAtDropdown');
+  if (!dropdown) return;
+
+  // Nur auslösen wenn @ am Anfang und noch kein Doppelpunkt
+  if (!val.startsWith('@') || val.includes(':')) {
+    dropdown.style.display = 'none';
+    return;
+  }
+
+  const query = val.slice(1).toLowerCase();
+  const pId1 = document.getElementById('followupPersonaSelect')?.value  || '';
+  const pId2 = document.getElementById('followupPersonaSelect2')?.value || '';
+  const pId3 = document.getElementById('followupPersonaSelect3')?.value || '';
+  const activeIds = [pId1, pId2, pId3].filter(Boolean);
+  if (!activeIds.length) { dropdown.style.display = 'none'; return; }
+
+  const defs = [
+    ...(typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : []),
+    ...(typeof getCustomPrompts === 'function' ? getCustomPrompts() : [])
+  ];
+  const matches = activeIds
+    .map(id => ({ id, name: defs.find(p => p.id === id)?.name || id }))
+    .filter(r => !query || r.name.toLowerCase().includes(query));
+
+  if (!matches.length) { dropdown.style.display = 'none'; return; }
+
+  dropdown.innerHTML = matches.map(r =>
+    `<div class="fu-at-item" onclick="selectFollowUpAtRole('${r.name.replace(/'/g, "\\'")}')">${icon('at-sign', 12, 'margin-right:5px;opacity:0.6')}${r.name}</div>`
+  ).join('');
+  dropdown.style.display = 'block';
+
+  // Click-away: einmalig registrieren
+  if (!_atCompleteListenerAdded) {
+    _atCompleteListenerAdded = true;
+    document.addEventListener('click', (ev) => {
+      const dd = document.getElementById('followUpAtDropdown');
+      const ta = document.getElementById('followUpInput');
+      if (dd && !dd.contains(ev.target) && ev.target !== ta) {
+        dd.style.display = 'none';
+      }
+    });
+  }
+}
+
+function selectFollowUpAtRole(name) {
+  const ta = document.getElementById('followUpInput');
+  if (!ta) return;
+  ta.value = `@${name}: `;
+  ta.focus();
+  // Cursor ans Ende
+  ta.selectionStart = ta.selectionEnd = ta.value.length;
+  const dd = document.getElementById('followUpAtDropdown');
+  if (dd) dd.style.display = 'none';
 }
 
 function exportToClaudeDesign() {
