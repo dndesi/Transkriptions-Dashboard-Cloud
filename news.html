@@ -312,7 +312,7 @@
     Zurück
   </a>
   <h1>📰 Was ist neu?</h1>
-  <span class="badge">v5.72</span>
+  <span class="badge">v6.1</span>
 </header>
 
 <div class="news-layout">
@@ -320,6 +320,9 @@
   <!-- ── Sidebar-Navigation ── -->
   <nav class="news-sidebar" aria-label="Artikel-Navigation">
     <p class="news-sidebar-title">Artikel</p>
+    <a href="#chat-gedanken"    class="news-sidebar-link" data-id="chat-gedanken"><span class="news-sidebar-version">v6.1</span>Chat-Gedanken</a>
+    <a href="#experten-runde"   class="news-sidebar-link" data-id="experten-runde"><span class="news-sidebar-version">v5.90</span>Experten-Runde</a>
+    <a href="#session-erkennung" class="news-sidebar-link" data-id="session-erkennung"><span class="news-sidebar-version">v5.87</span>Smarte Session-Erkennung</a>
     <a href="#rollen"           class="news-sidebar-link" data-id="rollen"><span class="news-sidebar-version">v5.71</span>Rollen im Chat</a>
     <a href="#prompt-erstellen" class="news-sidebar-link" data-id="prompt-erstellen"><span class="news-sidebar-version">v5.65</span>Prompts erstellen</a>
     <a href="#fotos"            class="news-sidebar-link" data-id="fotos"><span class="news-sidebar-version">v5.60</span>Foto-Analyse</a>
@@ -336,6 +339,250 @@
 
   <!-- ── Artikel-Feed ── -->
   <main class="news-container">
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Chat-Gedanken (v5.95 – v6.1)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="chat-gedanken">
+      <div class="news-meta">
+        <span class="news-version">v5.95 – v6.1</span>
+        <span class="news-date">27. Juni 2026</span>
+        <span class="news-category">Feature</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#0f1117">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <defs><linearGradient id="nh_cg" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#0f1117" stop-opacity="0"/><stop offset="100%" stop-color="#0f1117" stop-opacity="0.95"/></linearGradient></defs>
+          <circle cx="320" cy="120" r="200" fill="#8b5cf6" opacity="0.05"/>
+
+          <!-- Merken-Button im Chat -->
+          <rect x="50" y="30" width="240" height="110" rx="10" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="68" y="52" font-size="8" fill="#7a7f9a" font-family="sans-serif" font-weight="700">PROJEKT-ASSISTENT</text>
+          <line x1="50" y1="60" x2="290" y2="60" stroke="#2e3347" stroke-width="1"/>
+          <rect x="66" y="68" width="208" height="34" rx="6" fill="#1c2040" stroke="#2e3347" stroke-width="1"/>
+          <text x="78" y="82" font-size="7.5" fill="#c8cad6" font-family="sans-serif">Welche Aufgaben sind noch offen</text>
+          <text x="78" y="92" font-size="7.5" fill="#c8cad6" font-family="sans-serif">aus dem letzten Meeting?</text>
+          <rect x="66" y="108" width="52" height="17" rx="5" fill="#22263a" stroke="#2e3347" stroke-width="1"/>
+          <text x="80" y="120" font-size="7.5" fill="#7a7f9a" font-family="sans-serif" text-anchor="middle">Kopieren</text>
+          <rect x="124" y="108" width="46" height="17" rx="5" fill="rgba(139,92,246,0.18)" stroke="rgba(139,92,246,0.5)" stroke-width="1"/>
+          <text x="147" y="120" font-size="7.5" fill="#a78bfa" font-family="sans-serif" text-anchor="middle" font-weight="700">Merken ✓</text>
+
+          <!-- Toast -->
+          <rect x="160" y="152" width="170" height="22" rx="8" fill="#166534" opacity="0.9"/>
+          <text x="245" y="167" text-anchor="middle" font-size="8.5" fill="#4ade80" font-family="sans-serif" font-weight="700">Als Chat-Gedanke gespeichert ✓</text>
+
+          <!-- Chat-Gedanken Karten -->
+          <rect x="350" y="25" width="248" height="220" rx="10" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="368" y="46" font-size="8" fill="#7a7f9a" font-family="sans-serif" font-weight="700">CHAT-GEDANKEN</text>
+          <line x1="350" y1="54" x2="598" y2="54" stroke="#2e3347" stroke-width="1"/>
+
+          <!-- Karte 1 -->
+          <rect x="362" y="62" width="224" height="60" rx="7" fill="#22263a" stroke="#2e3347" stroke-width="1"/>
+          <rect x="374" y="73" width="56" height="13" rx="3" fill="rgba(99,102,241,0.15)" stroke="rgba(99,102,241,0.4)" stroke-width="0.8"/>
+          <text x="402" y="83" font-size="7" fill="#6366f1" font-family="sans-serif" text-anchor="middle">27.06.26</text>
+          <rect x="436" y="73" width="66" height="13" rx="3" fill="rgba(139,92,246,0.15)" stroke="rgba(139,92,246,0.4)" stroke-width="0.8"/>
+          <text x="469" y="83" font-size="7" fill="#a78bfa" font-family="sans-serif" text-anchor="middle">Projekt-Ass.</text>
+          <text x="561" y="76" font-size="10" fill="#8b5cf6" font-family="sans-serif">›</text>
+          <circle cx="378" cy="98" r="2.5" fill="#8b5cf6"/>
+          <text x="385" y="101" font-size="7.5" fill="#c8cad6" font-family="sans-serif">Offene Aufgaben aus Meeting</text>
+          <circle cx="378" cy="112" r="2.5" fill="#8b5cf6"/>
+          <text x="385" y="115" font-size="7.5" fill="#c8cad6" font-family="sans-serif">Wer ist verantwortlich?</text>
+
+          <!-- Karte 2 -->
+          <rect x="362" y="130" width="224" height="50" rx="7" fill="#22263a" stroke="#2e3347" stroke-width="1"/>
+          <rect x="374" y="140" width="56" height="13" rx="3" fill="rgba(99,102,241,0.15)" stroke="rgba(99,102,241,0.4)" stroke-width="0.8"/>
+          <text x="402" y="150" font-size="7" fill="#6366f1" font-family="sans-serif" text-anchor="middle">26.06.26</text>
+          <rect x="436" y="140" width="62" height="13" rx="3" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.4)" stroke-width="0.8"/>
+          <text x="467" y="150" font-size="7" fill="#10b981" font-family="sans-serif" text-anchor="middle">Gesprächs-Chat</text>
+          <text x="561" y="144" font-size="10" fill="#10b981" font-family="sans-serif">›</text>
+          <circle cx="378" cy="163" r="2.5" fill="#10b981"/>
+          <text x="385" y="166" font-size="7.5" fill="#c8cad6" font-family="sans-serif">Stimmung im Team?</text>
+
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh_cg)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v5.95</span>
+          <h3>Chat-Gedanken — KI-Antworten sammeln</h3>
+        </div>
+      </div>
+
+      <h2>Antworten merken, wiederfinden, weiterverwenden</h2>
+      <p class="lead">Mit einem einzigen Klick auf „Merken" speicherst du jede KI-Antwort — ob aus dem Analyse-Chat, dem Gesprächs-Chat oder dem Projekt-Assistenten — in einer eigenen, strukturierten Ansicht. Kein Kopieren, kein Verlieren.</p>
+
+      <h3>Das Problem davor</h3>
+      <p>Wer regelmäßig mit den drei KI-Assistenten in Distill Voice arbeitet, kennt die Situation: Eine besonders treffende Antwort erscheint im Chat — und ist drei Sitzungen später nicht mehr auffindbar. Der Chatverlauf wächst, interessante Erkenntnisse verschwinden im Scrollen. Chat-Gedanken löst genau das.</p>
+
+      <h3>So funktioniert „Merken"</h3>
+      <p>Neben dem „Kopieren"-Button jeder KI-Antwort gibt es jetzt einen <strong>„Merken"-Button</strong>. Ein Klick darauf speichert die Antwort zusammen mit der zugehörigen Frage, dem Datum und den aktiven Rollen in einer persistenten Liste — direkt in der jeweiligen Sitzung oder im Projekt.</p>
+
+      <ul class="news-feature-list">
+        <li><strong>Sitzungen: neuer Tab „Chat-Gedanken"</strong>Im Session-Detail erscheint ein eigener Tab. Dort landen alle gespeicherten Antworten aus Analyse-Chat und Gesprächs-Chat dieser Sitzung — strukturiert, aufklappbar, löschbar.</li>
+        <li><strong>Projekte: Button im Projekt-Header</strong>Im Projekt-Detail gibt es einen „Chat-Gedanken"-Button mit Zähler. Er öffnet die gleiche Kartenansicht für alle gemerkten Antworten aus dem Projekt-Assistenten.</li>
+        <li><strong>Persistenz via Drive</strong>Chat-Gedanken werden automatisch mit dem Rest der Sitzungs- bzw. Projektdaten in Google Drive synchronisiert — kein Extra-Aufwand.</li>
+      </ul>
+
+      <h3>Die Karten-Ansicht (v6.1)</h3>
+      <p>Jede gespeicherte Antwort erscheint als Karte mit farbigen Chips: Datum, beteiligte Rollen und Quelle (Analyse-Chat, Gesprächs-Chat oder Projekt-Assistent). Die Fragen stehen als Stichpunkte darunter — kompakt und sofort lesbar. Ein Klick auf die Karte klappt die vollständige KI-Antwort inline auf, inklusive Markdown-Rendering und Roundtable-Formatierung bei mehreren Rollen.</p>
+
+      <div class="news-info-box">
+        <strong>So nutzt du Chat-Gedanken:</strong> Sitzung öffnen → Analyse-Chat oder Gesprächs-Chat nutzen → unter einer Antwort auf „Merken" klicken → Tab „Chat-Gedanken" öffnen. Für Projekte: Projekt-Assistent nutzen → „Merken" → im Projekt-Header auf „Chat-Gedanken" klicken.
+      </div>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Experten-Runde (v5.90)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="experten-runde">
+      <div class="news-meta">
+        <span class="news-version">v5.90</span>
+        <span class="news-date">27. Juni 2026</span>
+        <span class="news-category">Feature</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#12102a">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <defs><linearGradient id="nh_er" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#12102a" stop-opacity="0"/><stop offset="100%" stop-color="#12102a" stop-opacity="0.95"/></linearGradient></defs>
+          <circle cx="320" cy="120" r="200" fill="#6c63ff" opacity="0.05"/>
+
+          <!-- Rollen-Selector mit 3 aktiven Rollen -->
+          <rect x="50" y="25" width="540" height="40" rx="8" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="68" y="41" font-size="8" fill="#7a7f9a" font-family="sans-serif" font-weight="700">ROLLEN WÄHLEN (bis zu 3)</text>
+          <rect x="160" y="31" width="84" height="20" rx="5" fill="#1e1a40" stroke="#6c63ff" stroke-width="1.2"/>
+          <text x="202" y="45" font-size="7.5" fill="#a78bfa" font-family="sans-serif" text-anchor="middle" font-weight="700">🧡 Life Coach</text>
+          <rect x="252" y="31" width="100" height="20" rx="5" fill="#1e2a1a" stroke="#10b981" stroke-width="1.2"/>
+          <text x="302" y="45" font-size="7.5" fill="#10b981" font-family="sans-serif" text-anchor="middle" font-weight="700">💼 Führungskraft</text>
+          <rect x="360" y="31" width="106" height="20" rx="5" fill="#2a1a1a" stroke="#f59e0b" stroke-width="1.2"/>
+          <text x="413" y="45" font-size="7.5" fill="#f59e0b" font-family="sans-serif" text-anchor="middle" font-weight="700">⚡ Sparringspartner</text>
+          <rect x="496" y="33" width="74" height="16" rx="4" fill="#6c63ff" opacity="0.9"/>
+          <text x="533" y="44" font-size="7.5" fill="#fff" font-family="sans-serif" text-anchor="middle" font-weight="700">Experten-Runde</text>
+
+          <!-- Antwort-Block -->
+          <rect x="50" y="78" width="540" height="158" rx="10" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+
+          <!-- Rolle 1: Life Coach -->
+          <rect x="66" y="90" width="66" height="16" rx="4" fill="rgba(167,139,250,0.15)" stroke="rgba(167,139,250,0.4)" stroke-width="1"/>
+          <text x="99" y="101" font-size="7.5" fill="#a78bfa" font-family="sans-serif" text-anchor="middle" font-weight="700">🧡 Life Coach</text>
+          <rect x="66" y="112" width="490" height="8" rx="2" fill="#22263a"/>
+          <rect x="66" y="124" width="420" height="8" rx="2" fill="#22263a"/>
+          <rect x="66" y="136" width="460" height="8" rx="2" fill="#22263a"/>
+
+          <!-- Trennlinie -->
+          <line x1="66" y1="152" x2="556" y2="152" stroke="#2e3347" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <!-- Rolle 2: Führungskraft -->
+          <rect x="66" y="160" width="84" height="16" rx="4" fill="rgba(16,185,129,0.12)" stroke="rgba(16,185,129,0.4)" stroke-width="1"/>
+          <text x="108" y="171" font-size="7.5" fill="#10b981" font-family="sans-serif" text-anchor="middle" font-weight="700">💼 Führungskraft</text>
+          <rect x="66" y="182" width="490" height="8" rx="2" fill="#22263a"/>
+          <rect x="66" y="194" width="380" height="8" rx="2" fill="#22263a"/>
+
+          <!-- Trennlinie -->
+          <line x1="66" y1="210" x2="556" y2="210" stroke="#2e3347" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <!-- Rolle 3: Sparringspartner -->
+          <rect x="66" y="216" width="102" height="16" rx="4" fill="rgba(245,158,11,0.12)" stroke="rgba(245,158,11,0.4)" stroke-width="1"/>
+          <text x="117" y="227" font-size="7.5" fill="#f59e0b" font-family="sans-serif" text-anchor="middle" font-weight="700">⚡ Sparringspartner</text>
+
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh_er)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v5.90</span>
+          <h3>Experten-Runde — drei Perspektiven auf einmal</h3>
+        </div>
+      </div>
+
+      <h2>Drei Rollen. Eine Frage. Drei Antworten.</h2>
+      <p class="lead">Die Experten-Runde erweitert das Rollen-System: Wähle bis zu drei Rollen gleichzeitig — und alle drei antworten separat auf deine Frage. Jede Perspektive klar erkennbar, farblich abgegrenzt, in einem Durchgang.</p>
+
+      <h3>Vom Monolog zum Roundtable</h3>
+      <p>Bisher antwortete immer genau eine Rolle auf eine Frage. Mit der Experten-Runde kannst du dieselbe Frage gleichzeitig einem Life Coach, einer Führungskraft und einem Sparringspartner stellen — und die drei Sichtweisen direkt nebeneinander lesen. Das ist besonders wertvoll bei Entscheidungen, die mehrere Dimensionen haben: die emotionale, die strategische, die kritische.</p>
+
+      <h3>So funktioniert die Runden-Ansicht</h3>
+      <ul class="news-feature-list">
+        <li><strong>Bis zu 3 Rollen aktiv</strong>Wähle im Rollen-Dropdown bis zu drei Rollen. Sobald zwei oder mehr aktiv sind, schaltet die Antwort automatisch in den Roundtable-Modus.</li>
+        <li><strong>Farbige Badges pro Rolle</strong>Jede Antwort ist klar gekennzeichnet: farbiger Badge mit Rollenname, passende Akzentfarbe für den gesamten Abschnitt. Analyse-Chat, Gesprächs-Chat und Projekt-Assistent unterstützen alle den Roundtable-Modus.</li>
+        <li><strong>Gesprächsgedächtnis bleibt erhalten</strong>Auch in der Experten-Runde werden die letzten Runden als Kontext mitgeschickt. Alle drei Rollen wissen, was zuvor besprochen wurde.</li>
+        <li><strong>Rollen-Persistenz (v5.94)</strong>Die gewählten Rollen bleiben gespeichert — beim nächsten Öffnen des Assistenten sind sie automatisch wieder aktiv.</li>
+      </ul>
+
+      <div class="news-info-box">
+        <strong>So startest du eine Experten-Runde:</strong> Sitzung öffnen → Analyse-Chat oder Gesprächs-Chat aufklappen → im Rollen-Dropdown zwei oder drei Rollen auswählen → Frage eingeben. Claude antwortet dreifach — jede Rolle in ihrem eigenen Stil und mit ihrer eigenen Farbe.
+      </div>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Smarte Session-Erkennung (v5.87)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="session-erkennung">
+      <div class="news-meta">
+        <span class="news-version">v5.87</span>
+        <span class="news-date">25. Juni 2026</span>
+        <span class="news-category">Verbesserung</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#0f1a2a">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <defs><linearGradient id="nh_se" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#0f1a2a" stop-opacity="0"/><stop offset="100%" stop-color="#0f1a2a" stop-opacity="0.95"/></linearGradient></defs>
+          <circle cx="320" cy="130" r="200" fill="#3b82f6" opacity="0.05"/>
+
+          <!-- Eingabe-Feld mit erkanntem Sitzungsnamen -->
+          <rect x="60" y="30" width="520" height="44" rx="8" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="78" y="49" font-size="8" fill="#7a7f9a" font-family="sans-serif">Projekt-Assistent: Frage eingeben</text>
+          <rect x="78" y="55" width="400" height="14" rx="4" fill="#22263a"/>
+          <text x="84" y="65" font-size="8" fill="#c8cad6" font-family="sans-serif">Was wurde im </text>
+          <rect x="148" y="55" width="112" height="14" rx="4" fill="rgba(59,130,246,0.25)" stroke="rgba(59,130,246,0.6)" stroke-width="1"/>
+          <text x="204" y="65" font-size="8" fill="#93c5fd" font-family="sans-serif" text-anchor="middle" font-weight="700">Kick-off Meeting</text>
+          <text x="262" y="65" font-size="8" fill="#c8cad6" font-family="sans-serif"> entschieden?</text>
+
+          <!-- Kontext-Info-Box -->
+          <rect x="60" y="88" width="520" height="40" rx="8" fill="rgba(59,130,246,0.08)" stroke="rgba(59,130,246,0.25)" stroke-width="1"/>
+          <text x="78" y="104" font-size="8" fill="#93c5fd" font-family="sans-serif" font-weight="700">Gezielter Modus erkannt</text>
+          <text x="78" y="118" font-size="7.5" fill="#7a7f9a" font-family="sans-serif">Nur Sitzung „Kick-off Meeting" wird analysiert · kein Zeichenlimit</text>
+
+          <!-- Vergleich: Gezielt vs. Alle -->
+          <rect x="60" y="144" width="248" height="100" rx="8" fill="#1a1d27" stroke="rgba(59,130,246,0.4)" stroke-width="1.5"/>
+          <text x="78" y="163" font-size="8" fill="#3b82f6" font-family="sans-serif" font-weight="700">GEZIELT</text>
+          <text x="78" y="178" font-size="7.5" fill="#c8cad6" font-family="sans-serif">Sitzungsname erkannt →</text>
+          <text x="78" y="190" font-size="7.5" fill="#c8cad6" font-family="sans-serif">nur diese Sitzung · kein Limit</text>
+          <text x="78" y="208" font-size="7.5" fill="#4ade80" font-family="sans-serif" font-weight="700">⚡ Schnell · präzise</text>
+          <text x="78" y="222" font-size="7.5" fill="#7a7f9a" font-family="sans-serif">Volle Transkript-Tiefe</text>
+
+          <rect x="332" y="144" width="248" height="100" rx="8" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="350" y="163" font-size="8" fill="#7a7f9a" font-family="sans-serif" font-weight="700">ALLE SITZUNGEN</text>
+          <text x="350" y="178" font-size="7.5" fill="#c8cad6" font-family="sans-serif">Kein Name erkannt →</text>
+          <text x="350" y="190" font-size="7.5" fill="#c8cad6" font-family="sans-serif">alle Sitzungen · 100k Zeichen</text>
+          <text x="350" y="208" font-size="7.5" fill="#f59e0b" font-family="sans-serif" font-weight="700">📚 Breiter Überblick</text>
+          <text x="350" y="222" font-size="7.5" fill="#7a7f9a" font-family="sans-serif">Neueste zuerst · Budget pro Sitzung</text>
+
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh_se)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v5.87</span>
+          <h3>Smarte Session-Erkennung im Projekt-Assistenten</h3>
+        </div>
+      </div>
+
+      <h2>Der Assistent weiß, welche Sitzung du meinst</h2>
+      <p class="lead">Wenn deine Frage einen Sitzungsnamen enthält, erkennt der Projekt-Assistent das automatisch — und analysiert gezielt nur diese Sitzung, ohne Zeichenlimit. Bei allgemeinen Fragen läuft er im Breitenmode: alle Sitzungen, bis zu 100.000 Zeichen, neueste zuerst.</p>
+
+      <h3>Das Problem mit großen Projekten</h3>
+      <p>Projekte mit vielen Sitzungen erzeugen viel Kontext. Wer alles auf einmal an die KI schickt, riskiert abgeschnittene Inhalte oder schwammige Antworten — weil der Assistent aus zu vielen Quellen gleichzeitig schöpft. Wer manuell filtert, verliert Zeit. Die smarte Session-Erkennung löst beides automatisch.</p>
+
+      <h3>Wie die Erkennung funktioniert</h3>
+      <p>Beim Absenden wird die Frage gegen alle Sitzungsnamen des Projekts abgeglichen. Wörter mit vier oder mehr Zeichen werden verglichen — taucht ein Sitzungsname in der Frage auf, wechselt der Assistent in den <strong>gezielten Modus</strong>: Nur die passende Sitzung wird übertragen, ohne Zeichenlimit. Eine Info-Box zeigt dir, in welchem Modus der Assistent gerade arbeitet.</p>
+
+      <ul class="news-feature-list">
+        <li><strong>Gezielter Modus</strong>Sitzungsname in der Frage → nur diese Sitzung, voller Transkript-Inhalt, kein Limit. Ideal für Deep-Dives in einzelne Meetings.</li>
+        <li><strong>Breiten-Modus (Fallback)</strong>Kein Sitzungsname erkannt → alle Sitzungen des Projekts, max. 100.000 Zeichen, neueste zuerst, Budget gleichmäßig verteilt. Für Überblicksfragen über das gesamte Projekt.</li>
+        <li><strong>Transparente Anzeige</strong>Eine Info-Box direkt über dem Chat-Verlauf zeigt an, welcher Modus aktiv ist — und bei gezieltem Modus auch, welche Sitzung analysiert wird.</li>
+      </ul>
+
+      <div class="news-info-box">
+        <strong>Tipp:</strong> Nenne den Sitzungsnamen einfach in deiner Frage — zum Beispiel „Was wurde im Kick-off Meeting entschieden?" oder „Gibt es offene Punkte aus dem Design-Review?" Der Assistent erkennt den Namen automatisch und fokussiert sich darauf.
+      </div>
+    </article>
 
 
     <!-- ════════════════════════════════════════

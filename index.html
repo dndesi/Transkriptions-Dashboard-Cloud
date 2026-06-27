@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v6.1</button>
+        onmouseout="this.style.color='var(--muted)'">v6.2</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -509,6 +509,134 @@
         <div class="hero-news-slider-wrap">
         <button class="hero-news-nav" id="heroSliderPrev" onclick="heroSliderScroll(-1)" title="Zurück">&#8249;</button>
         <div class="hero-news-slider" id="heroNewsSlider">
+
+          <!-- Kachel NEU: Chat-Gedanken (v5.95–v6.1) -->
+          <a href="news.html#chat-gedanken" class="hero-news-tile" style="background:#0f1117">
+            <svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+              <defs><linearGradient id="ng_cg" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#0f1117" stop-opacity="0"/><stop offset="100%" stop-color="#0f1117" stop-opacity="0.95"/></linearGradient></defs>
+              <circle cx="160" cy="110" r="130" fill="#8b5cf6" opacity="0.06"/>
+              <!-- Merken-Button -->
+              <rect x="18" y="20" width="140" height="90" rx="7" fill="#1a1d27" stroke="#2e3347" stroke-width="1.2"/>
+              <text x="28" y="36" font-size="6" fill="#7a7f9a" font-family="sans-serif" font-weight="700">PROJEKT-ASSISTENT</text>
+              <line x1="18" y1="42" x2="158" y2="42" stroke="#2e3347" stroke-width="0.8"/>
+              <rect x="28" y="50" width="118" height="26" rx="5" fill="#1c2040" stroke="#2e3347" stroke-width="0.8"/>
+              <text x="34" y="61" font-size="6" fill="#c8cad6" font-family="sans-serif">Offene Aufgaben aus</text>
+              <text x="34" y="70" font-size="6" fill="#c8cad6" font-family="sans-serif">dem letzten Meeting?</text>
+              <rect x="28" y="82" width="36" height="14" rx="4" fill="#22263a" stroke="#2e3347" stroke-width="0.8"/>
+              <text x="46" y="91" font-size="6" fill="#7a7f9a" font-family="sans-serif" text-anchor="middle">Kopieren</text>
+              <rect x="70" y="82" width="36" height="14" rx="4" fill="rgba(139,92,246,0.2)" stroke="rgba(139,92,246,0.5)" stroke-width="0.8"/>
+              <text x="88" y="91" font-size="6" fill="#a78bfa" font-family="sans-serif" text-anchor="middle" font-weight="700">Merken ✓</text>
+              <!-- Karten -->
+              <rect x="168" y="20" width="136" height="200" rx="7" fill="#1a1d27" stroke="#2e3347" stroke-width="1.2"/>
+              <text x="178" y="36" font-size="6" fill="#7a7f9a" font-family="sans-serif" font-weight="700">CHAT-GEDANKEN</text>
+              <line x1="168" y1="42" x2="304" y2="42" stroke="#2e3347" stroke-width="0.8"/>
+              <!-- Karte 1 -->
+              <rect x="176" y="50" width="120" height="52" rx="5" fill="#22263a" stroke="#2e3347" stroke-width="0.8"/>
+              <rect x="182" y="57" width="38" height="10" rx="2.5" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.4)" stroke-width="0.6"/>
+              <text x="201" y="65" font-size="5.5" fill="#6366f1" font-family="sans-serif" text-anchor="middle">27.06.26</text>
+              <rect x="226" y="57" width="44" height="10" rx="2.5" fill="rgba(139,92,246,0.2)" stroke="rgba(139,92,246,0.4)" stroke-width="0.6"/>
+              <text x="248" y="65" font-size="5.5" fill="#a78bfa" font-family="sans-serif" text-anchor="middle">Projekt-Ass.</text>
+              <text x="286" y="60" font-size="8" fill="#8b5cf6" font-family="sans-serif">›</text>
+              <circle cx="184" cy="77" r="2" fill="#8b5cf6"/>
+              <text x="190" y="80" font-size="6" fill="#c8cad6" font-family="sans-serif">Offene Aufgaben</text>
+              <circle cx="184" cy="90" r="2" fill="#8b5cf6"/>
+              <text x="190" y="93" font-size="6" fill="#c8cad6" font-family="sans-serif">Verantwortlichkeit?</text>
+              <!-- Karte 2 -->
+              <rect x="176" y="108" width="120" height="44" rx="5" fill="#22263a" stroke="#2e3347" stroke-width="0.8"/>
+              <rect x="182" y="115" width="38" height="10" rx="2.5" fill="rgba(99,102,241,0.2)" stroke="rgba(99,102,241,0.4)" stroke-width="0.6"/>
+              <text x="201" y="123" font-size="5.5" fill="#6366f1" font-family="sans-serif" text-anchor="middle">26.06.26</text>
+              <rect x="226" y="115" width="46" height="10" rx="2.5" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.4)" stroke-width="0.6"/>
+              <text x="249" y="123" font-size="5.5" fill="#10b981" font-family="sans-serif" text-anchor="middle">Gesprächs-Chat</text>
+              <circle cx="184" cy="136" r="2" fill="#10b981"/>
+              <text x="190" y="139" font-size="6" fill="#c8cad6" font-family="sans-serif">Stimmung im Team?</text>
+              <rect x="0" y="0" width="320" height="240" fill="url(#ng_cg)"/>
+            </svg>
+            <div class="hero-news-tile-overlay">
+              <span class="hero-news-tile-label">v5.95 – v6.1</span>
+              <h4 class="hero-news-tile-title">Chat-Gedanken — KI-Antworten sammeln</h4>
+              <p class="hero-news-tile-teaser">Merken-Button in allen drei Assistenten. Antworten als Karten mit Chips, Stichpunkten und aufklappbarer Vollansicht.</p>
+            </div>
+          </a>
+
+          <!-- Kachel NEU: Experten-Runde (v5.90) -->
+          <a href="news.html#experten-runde" class="hero-news-tile" style="background:#12102a">
+            <svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+              <defs><linearGradient id="ng_er" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#12102a" stop-opacity="0"/><stop offset="100%" stop-color="#12102a" stop-opacity="0.95"/></linearGradient></defs>
+              <circle cx="160" cy="110" r="130" fill="#6c63ff" opacity="0.06"/>
+              <!-- Rollen-Badges -->
+              <rect x="18" y="22" width="284" height="26" rx="6" fill="#1a1d27" stroke="#2e3347" stroke-width="1.2"/>
+              <rect x="30" y="28" width="62" height="14" rx="4" fill="#1e1a40" stroke="#6c63ff" stroke-width="1"/>
+              <text x="61" y="38" font-size="6.5" fill="#a78bfa" font-family="sans-serif" text-anchor="middle" font-weight="700">🧡 Life Coach</text>
+              <rect x="98" y="28" width="74" height="14" rx="4" fill="#1e2a1a" stroke="#10b981" stroke-width="1"/>
+              <text x="135" y="38" font-size="6.5" fill="#10b981" font-family="sans-serif" text-anchor="middle" font-weight="700">💼 Führungskraft</text>
+              <rect x="178" y="28" width="84" height="14" rx="4" fill="#2a1a1a" stroke="#f59e0b" stroke-width="1"/>
+              <text x="220" y="38" font-size="6.5" fill="#f59e0b" font-family="sans-serif" text-anchor="middle" font-weight="700">⚡ Sparringspartner</text>
+              <!-- Antwort-Block -->
+              <rect x="18" y="56" width="284" height="150" rx="7" fill="#1a1d27" stroke="#2e3347" stroke-width="1.2"/>
+              <!-- Antwort 1 -->
+              <rect x="28" y="64" width="54" height="12" rx="3" fill="rgba(167,139,250,0.18)" stroke="rgba(167,139,250,0.45)" stroke-width="0.8"/>
+              <text x="55" y="73" font-size="6" fill="#a78bfa" font-family="sans-serif" text-anchor="middle" font-weight="700">🧡 Life Coach</text>
+              <rect x="28" y="80" width="264" height="6" rx="2" fill="#22263a"/>
+              <rect x="28" y="90" width="220" height="6" rx="2" fill="#22263a"/>
+              <rect x="28" y="100" width="240" height="6" rx="2" fill="#22263a"/>
+              <line x1="28" y1="112" x2="292" y2="112" stroke="#2e3347" stroke-width="0.8" stroke-dasharray="3,2"/>
+              <!-- Antwort 2 -->
+              <rect x="28" y="118" width="64" height="12" rx="3" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.4)" stroke-width="0.8"/>
+              <text x="60" y="127" font-size="6" fill="#10b981" font-family="sans-serif" text-anchor="middle" font-weight="700">💼 Führungskraft</text>
+              <rect x="28" y="134" width="264" height="6" rx="2" fill="#22263a"/>
+              <rect x="28" y="144" width="200" height="6" rx="2" fill="#22263a"/>
+              <line x1="28" y1="156" x2="292" y2="156" stroke="#2e3347" stroke-width="0.8" stroke-dasharray="3,2"/>
+              <!-- Antwort 3 -->
+              <rect x="28" y="162" width="80" height="12" rx="3" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.4)" stroke-width="0.8"/>
+              <text x="68" y="171" font-size="6" fill="#f59e0b" font-family="sans-serif" text-anchor="middle" font-weight="700">⚡ Sparringspartner</text>
+              <rect x="28" y="178" width="264" height="6" rx="2" fill="#22263a"/>
+              <rect x="28" y="188" width="230" height="6" rx="2" fill="#22263a"/>
+              <rect x="0" y="0" width="320" height="240" fill="url(#ng_er)"/>
+            </svg>
+            <div class="hero-news-tile-overlay">
+              <span class="hero-news-tile-label">v5.90</span>
+              <h4 class="hero-news-tile-title">Experten-Runde — drei Perspektiven auf einmal</h4>
+              <p class="hero-news-tile-teaser">Bis zu 3 Rollen gleichzeitig — Life Coach, Führungskraft, Sparringspartner antworten separat auf deine Frage.</p>
+            </div>
+          </a>
+
+          <!-- Kachel NEU: Smarte Session-Erkennung (v5.87) -->
+          <a href="news.html#session-erkennung" class="hero-news-tile" style="background:#0f1a2a">
+            <svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+              <defs><linearGradient id="ng_se" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#0f1a2a" stop-opacity="0"/><stop offset="100%" stop-color="#0f1a2a" stop-opacity="0.95"/></linearGradient></defs>
+              <circle cx="160" cy="120" r="130" fill="#3b82f6" opacity="0.05"/>
+              <!-- Frage-Eingabe -->
+              <rect x="18" y="22" width="284" height="36" rx="7" fill="#1a1d27" stroke="#2e3347" stroke-width="1.2"/>
+              <text x="28" y="36" font-size="6" fill="#7a7f9a" font-family="sans-serif">Projekt-Assistent: Frage</text>
+              <text x="28" y="50" font-size="6.5" fill="#c8cad6" font-family="sans-serif">Was wurde im </text>
+              <rect x="91" y="43" width="74" height="12" rx="3" fill="rgba(59,130,246,0.25)" stroke="rgba(59,130,246,0.6)" stroke-width="0.8"/>
+              <text x="128" y="52" font-size="6.5" fill="#93c5fd" font-family="sans-serif" text-anchor="middle" font-weight="700">Kick-off Meeting</text>
+              <text x="167" y="50" font-size="6.5" fill="#c8cad6" font-family="sans-serif"> entschieden?</text>
+              <!-- Info-Box -->
+              <rect x="18" y="66" width="284" height="30" rx="6" fill="rgba(59,130,246,0.08)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+              <text x="28" y="78" font-size="6.5" fill="#93c5fd" font-family="sans-serif" font-weight="700">Gezielter Modus erkannt</text>
+              <text x="28" y="90" font-size="6" fill="#7a7f9a" font-family="sans-serif">Nur „Kick-off Meeting" wird analysiert · kein Zeichenlimit</text>
+              <!-- Vergleich -->
+              <rect x="18" y="104" width="136" height="82" rx="6" fill="#1a1d27" stroke="rgba(59,130,246,0.4)" stroke-width="1.2"/>
+              <text x="28" y="118" font-size="6.5" fill="#3b82f6" font-family="sans-serif" font-weight="700">GEZIELT</text>
+              <text x="28" y="130" font-size="6" fill="#c8cad6" font-family="sans-serif">Name erkannt →</text>
+              <text x="28" y="140" font-size="6" fill="#c8cad6" font-family="sans-serif">nur diese Sitzung</text>
+              <text x="28" y="155" font-size="6.5" fill="#4ade80" font-family="sans-serif" font-weight="700">⚡ Schnell · präzise</text>
+              <text x="28" y="167" font-size="6" fill="#7a7f9a" font-family="sans-serif">Volle Tiefe</text>
+              <rect x="162" y="104" width="140" height="82" rx="6" fill="#1a1d27" stroke="#2e3347" stroke-width="1.2"/>
+              <text x="172" y="118" font-size="6.5" fill="#7a7f9a" font-family="sans-serif" font-weight="700">ALLE SITZUNGEN</text>
+              <text x="172" y="130" font-size="6" fill="#c8cad6" font-family="sans-serif">Kein Name →</text>
+              <text x="172" y="140" font-size="6" fill="#c8cad6" font-family="sans-serif">alle · 100k Zeichen</text>
+              <text x="172" y="155" font-size="6.5" fill="#f59e0b" font-family="sans-serif" font-weight="700">📚 Breiter Überblick</text>
+              <text x="172" y="167" font-size="6" fill="#7a7f9a" font-family="sans-serif">Neueste zuerst</text>
+              <rect x="0" y="0" width="320" height="240" fill="url(#ng_se)"/>
+            </svg>
+            <div class="hero-news-tile-overlay">
+              <span class="hero-news-tile-label">v5.87</span>
+              <h4 class="hero-news-tile-title">Smarte Session-Erkennung</h4>
+              <p class="hero-news-tile-teaser">Sitzungsname in der Frage → gezielt nur diese Sitzung analysiert. Sonst: alle Sitzungen bis 100.000 Zeichen.</p>
+            </div>
+          </a>
 
           <!-- Kachel NEU: Rollen im Chat (v5.71-v5.72) -->
           <a href="news.html#rollen" class="hero-news-tile" style="background:#12102a">
@@ -1554,6 +1682,16 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v6.2 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v6.2</span><span class="cl-date">27.06.2026</span></div>
+        <div class="cl-title">News: 3 neue Blogartikel + Hero-Kacheln</div>
+        <ul class="cl-list">
+          <li>news.html: Artikel für Chat-Gedanken, Experten-Runde, Smarte Session-Erkennung — je SVG-Hero + Text</li>
+          <li>index.html: 3 neue Hero-Kacheln an erster Position im Slider</li>
+        </ul>
+      </div>
 
       <!-- ── v6.1 ── -->
       <div class="cl-entry">
@@ -4792,32 +4930,32 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=6.1"></script>
-<script src="js/storage.js?v=6.1"></script>
-<script src="js/config.js?v=6.1"></script>
-<script src="js/auth.js?v=6.1"></script>
-<script src="js/drive.js?v=6.1"></script>
-<script src="js/sessions.js?v=6.1"></script>
-<script src="js/assemblyai.js?v=6.1"></script>
-<script src="js/claude.js?v=6.1"></script>
-<script src="js/ui.js?v=6.1"></script>
-<script src="js/tags.js?v=6.1"></script>
-<script src="js/notes.js?v=6.1"></script>
-<script src="js/photos.js?v=6.1"></script>
-<script src="js/persons.js?v=6.1"></script>
-<script src="js/audio.js?v=6.1"></script>
-<script src="js/recorder.js?v=6.1"></script>
-<script src="js/contacts.js?v=6.1"></script>
-<script src="js/app.js?v=6.1"></script>
+<script src="js/icons.js?v=6.2"></script>
+<script src="js/storage.js?v=6.2"></script>
+<script src="js/config.js?v=6.2"></script>
+<script src="js/auth.js?v=6.2"></script>
+<script src="js/drive.js?v=6.2"></script>
+<script src="js/sessions.js?v=6.2"></script>
+<script src="js/assemblyai.js?v=6.2"></script>
+<script src="js/claude.js?v=6.2"></script>
+<script src="js/ui.js?v=6.2"></script>
+<script src="js/tags.js?v=6.2"></script>
+<script src="js/notes.js?v=6.2"></script>
+<script src="js/photos.js?v=6.2"></script>
+<script src="js/persons.js?v=6.2"></script>
+<script src="js/audio.js?v=6.2"></script>
+<script src="js/recorder.js?v=6.2"></script>
+<script src="js/contacts.js?v=6.2"></script>
+<script src="js/app.js?v=6.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=6.1"></script>
-<script src="js/search.js?v=6.1"></script>
-<script src="js/calendar.js?v=6.1"></script>
-<script src="js/prompts.js?v=6.1"></script>
-<script src="js/projects.js?v=6.1"></script>
-<script src="js/import.js?v=6.1"></script>
+<script src="js/features.js?v=6.2"></script>
+<script src="js/search.js?v=6.2"></script>
+<script src="js/calendar.js?v=6.2"></script>
+<script src="js/prompts.js?v=6.2"></script>
+<script src="js/projects.js?v=6.2"></script>
+<script src="js/import.js?v=6.2"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
