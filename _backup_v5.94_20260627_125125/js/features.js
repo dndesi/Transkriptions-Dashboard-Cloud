@@ -195,7 +195,7 @@ function renderAskHistory() {
     return;
   }
 
-  container.innerHTML = askHistory.map((h, i) => {
+  container.innerHTML = askHistory.map(h => {
     if (h.role === 'user') {
       return `<div class="ask-bubble ask-user"><div class="ask-bubble-label">Du</div><div>${escHtml(h.text)}</div></div>`;
     } else if (h.role === 'assistant') {
@@ -205,17 +205,7 @@ function renderAskHistory() {
         const ms = (parts[0] * 60 + parts[1]) * 1000;
         return `<a href="#" onclick="event.preventDefault(); seekAudio(${ms}); closeAskModal();" style="color:var(--accent); font-weight:600; text-decoration:none;">[${ts} ▶]</a>`;
       });
-      return `<div class="ask-bubble ask-claude">
-        <div class="ask-bubble-label" style="display:flex;align-items:center;justify-content:space-between">
-          <span>Claude</span>
-          <button onclick="merkenAskAnswer(${i})"
-            style="background:none;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:0.7rem;color:var(--accent);cursor:pointer;font-weight:400;display:inline-flex;align-items:center;gap:3px"
-            title="Als Chat-Gedanke speichern">
-            ${icon('bookmark',10,'pointer-events:none')} Merken
-          </button>
-        </div>
-        <div style="line-height:1.6">${withLinks}</div>
-      </div>`;
+      return `<div class="ask-bubble ask-claude"><div class="ask-bubble-label">Claude</div><div style="line-height:1.6">${withLinks}</div></div>`;
     } else {
       return `<div class="ask-bubble ask-error">${icon('alert-triangle',13,'margin-right:5px;color:var(--yellow)')} ${escHtml(h.text)}</div>`;
     }
@@ -229,20 +219,6 @@ function askInputKeydown(e) {
     e.preventDefault();
     sendAskQuestion();
   }
-}
-
-// v5.95: Merken im Gesprächs-Chat — sucht vorherige user-Nachricht als Frage
-function merkenAskAnswer(idx) {
-  const answer = askHistory[idx]?.text;
-  if (!answer) return;
-  // Vorherige user-Nachricht als Frage suchen
-  let question = '';
-  for (let i = idx - 1; i >= 0; i--) {
-    if (askHistory[i].role === 'user') { question = askHistory[i].text; break; }
-  }
-  const sid = (typeof currentSessionId !== 'undefined') ? currentSessionId : null;
-  if (!sid) return;
-  _saveChatGedanke(sid, question, answer, 'gespräch', []);
 }
 
 

@@ -1907,11 +1907,6 @@ function renderFollowUpMessages(session) {
           title="Antwort kopieren">
           ${icon('clipboard',10,'pointer-events:none')} Kopieren
         </button>
-        <button onclick="merkenFollowUp(${i})"
-          style="background:none;border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:0.7rem;color:var(--accent);cursor:pointer;font-weight:400;text-transform:none;letter-spacing:0;display:inline-flex;align-items:center;gap:3px"
-          title="Als Chat-Gedanke speichern">
-          ${icon('bookmark',10,'pointer-events:none')} Merken
-        </button>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px">${answerHtml}</div>
     </div>`;
@@ -1928,29 +1923,6 @@ function copyFollowUpAnswer(idx) {
   }).catch(() => {
     showToast('Kopieren fehlgeschlagen', 'error');
   });
-}
-
-// v5.95: Chat-Gedanken — zentraler Helper
-function _saveChatGedanke(sessionId, question, answer, source, roles) {
-  const session = getSession(sessionId);
-  if (!session) return;
-  if (!session.chatGedanken) session.chatGedanken = [];
-  session.chatGedanken.unshift({
-    question,
-    answer,
-    source, // 'analyse' oder 'gespräch'
-    roles: roles || [],
-    ts: new Date().toISOString()
-  });
-  saveSessions();
-  showToast('Als Chat-Gedanke gespeichert ✓', 'success');
-}
-
-function merkenFollowUp(idx) {
-  const session = getSession(currentSessionId);
-  const m = session?.claudeFollowUp?.[idx];
-  if (!m) return;
-  _saveChatGedanke(currentSessionId, m.question, m.answer, 'analyse', m.roles);
 }
 
 async function askFollowUp() {
