@@ -513,7 +513,7 @@ function toggleContactsView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v5.86';
+  const title = 'Distill Voice – Systemarchitektur v5.89';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }
@@ -541,7 +541,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 5.86</span> · 23 JS-Module
+          <span style="color:var(--accent); font-weight:600">Version 5.89</span> · 23 JS-Module
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -612,7 +612,7 @@ function renderArchView() {
       ${flowCard('tags.js', 'Tags', 'Tag-System für Sitzungen, Chips-UI, Filter', '#f59e0b')}
       ${flowCard('import.js', 'Datei-Import', 'parseSamsungTranscript() (UTF-16 BOM), parsePlainText(), extractPdfText() (PDF.js). Multi-File: _importParsedDataList[], handleImportFileSelect() iteriert alle Dateien, startSamsungImport() erstellt eine Session pro Datei. Transkript-Editor: toggleTranscriptEdit(), saveTranscriptEdits() in claude.js', '#34d399')}
       ${flowCard('notes.js', 'Notizen', 'Persönliche Notizen pro Sitzung, Auto-Save', '#94a3b8')}
-      ${flowCard('projects.js', 'Projektarbeit', 'Projekt-Browser (Kacheln, Anlegen/Bearbeiten/Archivieren), Detailansicht, Dashboard mit Statistiken, Aufgaben-Tracking (checklistItem), Projekt-Analyse via Claude (builtin_project_analysis) · BUILTIN_PROJECT_ID = Allgemeines Projekt · _buildProjectAnalysisContext(): MAX_CHARS=50000, v5.83: slice(0,300) entfernt', '#f59e0b')}
+      ${flowCard('projects.js', 'Projektarbeit', 'Projekt-Browser (Kacheln, Anlegen/Bearbeiten/Archivieren), Detailansicht, Dashboard mit Statistiken, Aufgaben-Tracking (checklistItem), Projekt-Analyse via Claude (builtin_project_analysis) · BUILTIN_PROJECT_ID = Allgemeines Projekt · _buildProjectAnalysisContext(projectId, question): v5.87: smarte Session-Erkennung (Sitzungsname in Frage → nur diese laden, kein Limit), Fallback: MAX_CHARS=100.000, pro-Sitzung-Budget, neueste zuerst', '#f59e0b')}
       ${flowCard('app.js', 'Initialisierung', 'async init() → await initStorage() → IndexedDB laden vor UI-Start · Theme-Toggle · Upload-Schrittvalidierung · Drag & Drop', '#c084fc')}
       ${flowCard('auth.js', 'Google Auth', 'Progressive Auth: App startet ohne Login · GIS-Client initialisieren (initGoogleAuth) · Stille Token-Anfrage beim Laden · Werbeblocker-Fallback nach 15s', '#34d399')}
       ${flowCard('icons.js', 'Icon-Helfer', 'Inline Lucide SVG via icon(name, size, style) · Kein CDN-Aufruf zur Laufzeit · Icons als SVG-Strings direkt ins DOM injiziert', '#94a3b8')}
@@ -653,6 +653,32 @@ function renderArchView() {
         ${techRow('Wechselkurs', 'Frankfurter API (api.frankfurter.app) – USD → EUR')}
         ${techRow('Datenschutz', 'DSGVO: Anonymisierungs-Funktion vor API-Calls, Echtname bleibt lokal')}
         ${techRow('Icons', 'icons.js · Inline Lucide SVG via icon() · kein CDN-Aufruf zur Laufzeit · Lucide Icons v0.383 (Lizenz: MIT)')}
+      </div>
+    </div>
+
+    <!-- Kontext-Aufbau -->
+    <div style="margin-bottom:14px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted)">Kontext-Aufbau der Assistenten</div>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:24px">
+      <p style="font-size:0.8rem; color:var(--muted); margin:0 0 16px">Alle drei Assistenten nutzen dieselben Rollen aus der Prompt-Bibliothek (<code>populatePersonaSelects()</code>). Der Unterschied liegt ausschließlich im Kontext, der an Claude übergeben wird.</p>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-bottom:16px">
+        <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px; border-top:3px solid #fbbf24">
+          <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:#fbbf24">💬 Gesprächs-Chat</div>
+          <div style="font-size:0.75rem; color:var(--muted); margin-bottom:8px"><code>features.js · askPersonaSelect</code></div>
+          <div style="font-size:0.78rem; color:var(--text); line-height:1.6">Kontext: <strong>Rohes Transkript</strong> der aktuellen Sitzung. Kein Analyse-Ergebnis.</div>
+        </div>
+        <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px; border-top:3px solid #06b6d4">
+          <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:#06b6d4">🔍 Analyse-Chat (Folgegespräch)</div>
+          <div style="font-size:0.75rem; color:var(--muted); margin-bottom:8px"><code>claude.js · _buildFollowUpContext()</code></div>
+          <div style="font-size:0.78rem; color:var(--text); line-height:1.6">Kontext: <strong>Alle Analyse-Felder</strong> – Gesprächs-/Arbeits-Analyse, Stimmung, Themen, Kapitel, 360°, eigene Prompt-Ergebnisse (<code>session.customResults</code>). Kein Rohtranskript.</div>
+        </div>
+        <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px; border-top:3px solid #f59e0b">
+          <div style="font-weight:700; font-size:0.85rem; margin-bottom:6px; color:#f59e0b">📁 Projekt-Assistent</div>
+          <div style="font-size:0.75rem; color:var(--muted); margin-bottom:8px"><code>projects.js · _buildProjectAnalysisContext()</code></div>
+          <div style="font-size:0.78rem; color:var(--text); line-height:1.6"><strong>v5.87:</strong> Session-Name in Frage erkannt → nur diese Sitzung(en), kein Limit. Fallback: alle Sitzungen des Projekts, max 100k Zeichen, neueste zuerst, pro-Sitzung-Budget.</div>
+        </div>
+      </div>
+      <div style="font-size:0.75rem; color:var(--muted); background:var(--surface2); border-radius:8px; padding:10px 14px; line-height:1.7">
+        ${icon('shield',12,'margin-right:4px;color:var(--accent)')} Vor jedem API-Call: <code>anonymizeText()</code> → Claude API → <code>deanonymizeText()</code> · Klarnamen verlassen den Browser nie.
       </div>
     </div>
 
