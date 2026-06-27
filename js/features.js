@@ -106,6 +106,9 @@ function render360Block(session) {
   // in renderInsights() sichtbar machen
   const section = document.getElementById('insightsSection');
   if (section) section.style.display = 'block';
+
+  // Tab-Leiste aktualisieren, damit 360°-Tab erscheint
+  if (typeof _refreshAnalysenSubtabs === 'function') _refreshAnalysenSubtabs();
 }
 
 
