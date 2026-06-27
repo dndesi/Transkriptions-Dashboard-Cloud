@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=5.95" />
+  <link rel="stylesheet" href="css/styles.css?v=5.96" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v5.95</button>
+        onmouseout="this.style.color='var(--muted)'">v5.96</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1554,6 +1554,16 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v5.96 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v5.96</span><span class="cl-date">27.06.2026</span></div>
+        <div class="cl-title">UX: Chat-Gedanken als Teaser-Liste (Frage + 120-Zeichen-Vorschau)</div>
+        <ul class="cl-list">
+          <li>renderChatGedanken() zeigt Karten mit Badge, Datum, Frage und gekürzter Antwort-Vorschau</li>
+          <li>Markdown-Syntax (**, *, ##) wird aus dem Teaser entfernt</li>
+        </ul>
+      </div>
 
       <!-- ── v5.95 ── -->
       <div class="cl-entry">
@@ -4739,32 +4749,32 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=5.95"></script>
-<script src="js/storage.js?v=5.95"></script>
-<script src="js/config.js?v=5.95"></script>
-<script src="js/auth.js?v=5.95"></script>
-<script src="js/drive.js?v=5.95"></script>
-<script src="js/sessions.js?v=5.95"></script>
-<script src="js/assemblyai.js?v=5.95"></script>
-<script src="js/claude.js?v=5.95"></script>
-<script src="js/ui.js?v=5.95"></script>
-<script src="js/tags.js?v=5.95"></script>
-<script src="js/notes.js?v=5.95"></script>
-<script src="js/photos.js?v=5.95"></script>
-<script src="js/persons.js?v=5.95"></script>
-<script src="js/audio.js?v=5.95"></script>
-<script src="js/recorder.js?v=5.95"></script>
-<script src="js/contacts.js?v=5.95"></script>
-<script src="js/app.js?v=5.95"></script>
+<script src="js/icons.js?v=5.96"></script>
+<script src="js/storage.js?v=5.96"></script>
+<script src="js/config.js?v=5.96"></script>
+<script src="js/auth.js?v=5.96"></script>
+<script src="js/drive.js?v=5.96"></script>
+<script src="js/sessions.js?v=5.96"></script>
+<script src="js/assemblyai.js?v=5.96"></script>
+<script src="js/claude.js?v=5.96"></script>
+<script src="js/ui.js?v=5.96"></script>
+<script src="js/tags.js?v=5.96"></script>
+<script src="js/notes.js?v=5.96"></script>
+<script src="js/photos.js?v=5.96"></script>
+<script src="js/persons.js?v=5.96"></script>
+<script src="js/audio.js?v=5.96"></script>
+<script src="js/recorder.js?v=5.96"></script>
+<script src="js/contacts.js?v=5.96"></script>
+<script src="js/app.js?v=5.96"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=5.95"></script>
-<script src="js/search.js?v=5.95"></script>
-<script src="js/calendar.js?v=5.95"></script>
-<script src="js/prompts.js?v=5.95"></script>
-<script src="js/projects.js?v=5.95"></script>
-<script src="js/import.js?v=5.95"></script>
+<script src="js/features.js?v=5.96"></script>
+<script src="js/search.js?v=5.96"></script>
+<script src="js/calendar.js?v=5.96"></script>
+<script src="js/prompts.js?v=5.96"></script>
+<script src="js/projects.js?v=5.96"></script>
+<script src="js/import.js?v=5.96"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
