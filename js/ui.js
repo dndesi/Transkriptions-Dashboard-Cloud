@@ -516,7 +516,7 @@ function toggleContactsView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v5.93';
+  const title = 'Distill Voice – Systemarchitektur v5.94';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }
@@ -544,7 +544,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 5.93</span> · 23 JS-Module
+          <span style="color:var(--accent); font-weight:600">Version 5.94</span> · 23 JS-Module
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">

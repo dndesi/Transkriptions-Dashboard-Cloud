@@ -2,7 +2,7 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v5.93** (Stand: 27.06.2026)
+**v5.94** (Stand: 27.06.2026)
 
 ## Pflichtregeln bei jeder Änderung (IMMER, keine Ausnahme)
 1. Versionsnummer in `index.html` erhöhen (Header-Badge + alle `?v=X.XX` Script-Tags)
@@ -123,6 +123,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v5.94 | 27.06.2026 | Feature: Rollen-Persistenz via localStorage (distill_analyse_rollen, distill_proj_rollen) |
 | v5.93 | 27.06.2026 | Markdown-Renderer, Emoji-Verbot, Fähnchen „Sitzungs-/Projekt-Assistent", Sichtbarkeits-Fix |
 | v5.92 | 27.06.2026 | Fix: Farbige Rollen-Badges im Projekt-Assistenten (m.roles + Renderer) |
 | v5.91 | 27.06.2026 | Fix: Farbige Rollen-Badges in Roundtable-Antworten (_renderRoundtableAnswer) |

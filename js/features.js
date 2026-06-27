@@ -708,9 +708,55 @@ function populatePersonaSelects() {
   if (projEl2) projEl2.innerHTML = rolleOptsOptional;
   const projEl3 = document.getElementById('projAssistPersonaSelect3');
   if (projEl3) projEl3.innerHTML = rolleOptsOptional;
+
+  // v5.94: Gespeicherte Rollen wiederherstellen
+  _restoreRollenAuswahl();
+}
+
+// v5.94: Rollen-Auswahl in localStorage speichern
+function _saveRollenAuswahl(mode) {
+  if (mode === 'analyse') {
+    const ids = [
+      document.getElementById('followupPersonaSelect')?.value  || '',
+      document.getElementById('followupPersonaSelect2')?.value || '',
+      document.getElementById('followupPersonaSelect3')?.value || ''
+    ];
+    localStorage.setItem('distill_analyse_rollen', JSON.stringify(ids));
+  } else if (mode === 'proj') {
+    const ids = [
+      document.getElementById('projAssistPersonaSelect')?.value  || '',
+      document.getElementById('projAssistPersonaSelect2')?.value || '',
+      document.getElementById('projAssistPersonaSelect3')?.value || ''
+    ];
+    localStorage.setItem('distill_proj_rollen', JSON.stringify(ids));
+  }
+}
+
+// v5.94: Gespeicherte Rollen-Auswahl wiederherstellen (nach populatePersonaSelects)
+function _restoreRollenAuswahl() {
+  try {
+    const analyseIds = JSON.parse(localStorage.getItem('distill_analyse_rollen') || '[]');
+    const ids = ['followupPersonaSelect','followupPersonaSelect2','followupPersonaSelect3'];
+    ids.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el && analyseIds[i]) el.value = analyseIds[i];
+    });
+  } catch(e) {}
+  try {
+    const projIds = JSON.parse(localStorage.getItem('distill_proj_rollen') || '[]');
+    const ids = ['projAssistPersonaSelect','projAssistPersonaSelect2','projAssistPersonaSelect3'];
+    ids.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el && projIds[i]) el.value = projIds[i];
+    });
+  } catch(e) {}
+  // Badges aktualisieren nach Restore
+  updateRundenBadge('analyse');
+  updateRundenBadge('proj');
 }
 
 // v5.90: Badge + Hint aktualisieren wenn Rollen-Auswahl sich ändert
+// v5.94: Speichert Auswahl zusätzlich in localStorage
 function updateRundenBadge(mode) {
   if (mode === 'analyse') {
     const r2 = document.getElementById('followupPersonaSelect2')?.value || '';
@@ -722,11 +768,13 @@ function updateRundenBadge(mode) {
       const session = typeof getSession === 'function' ? getSession(currentSessionId) : null;
       hint.classList.toggle('visible', !!(session?.claudeFollowUp?.length));
     }
+    _saveRollenAuswahl('analyse');
   } else if (mode === 'proj') {
     const r2 = document.getElementById('projAssistPersonaSelect2')?.value || '';
     const r3 = document.getElementById('projAssistPersonaSelect3')?.value || '';
     const badge = document.getElementById('projRundenBadge');
     if (badge) badge.classList.toggle('visible', !!(r2 || r3));
+    _saveRollenAuswahl('proj');
   }
 }
 
