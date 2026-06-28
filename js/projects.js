@@ -1002,8 +1002,9 @@ function openProjectAssistant() {
     infoEl.innerHTML = `${sessionsInProj.length} Sitzung${sessionsInProj.length !== 1 ? 'en' : ''} · ${withAnalyses.length} mit Analysen`;
   }
 
-  // Rollen-Dropdown befüllen
+  // Rollen-Dropdown befüllen + v6.10: zweiter expliziter Restore (belt + suspenders)
   if (typeof populatePersonaSelects === 'function') populatePersonaSelects();
+  if (typeof _restoreRollenAuswahl === 'function') _restoreRollenAuswahl();
 
   // Nachrichten rendern
   _renderProjectChatMessages(proj);
@@ -1016,6 +1017,8 @@ function openProjectAssistant() {
 }
 
 function closeProjectAssistant() {
+  // v6.10: Rollen explizit speichern beim Schließen (onchange feuert nicht bei programmatisc restaurierten Werten)
+  if (typeof _saveRollenAuswahl === 'function') _saveRollenAuswahl('proj');
   document.getElementById('projAssistPanel')?.classList.remove('open');
   document.getElementById('projAssistOverlay')?.classList.remove('active');
   // v5.76: Fähnchen-State zurücksetzen
@@ -1173,6 +1176,9 @@ async function sendProjectChatMessage() {
   const proj = getProjectById(_currentProjectDetailId);
   if (!proj) { showToast('Kein Projekt aktiv.', 'warning'); return; }
   if (!anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'warning'); return; }
+
+  // v6.10: Rollen vor Senden explizit sichern
+  if (typeof _saveRollenAuswahl === 'function') _saveRollenAuswahl('proj');
 
   const input  = document.getElementById('projAssistInput');
   const sendBtn = document.getElementById('projAssistSendBtn');
