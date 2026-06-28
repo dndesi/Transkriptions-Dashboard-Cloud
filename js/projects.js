@@ -16,6 +16,7 @@ let _projectModalEditId = null;
 let _currentProjectDetailId = null;
 let _projChatGedankenVisible = false;
 let _projChatGedankenExpanded = new Set();
+let _projChatGedankenEditing = null; // v6.9
 
 // ── Sidenav-Badge aktualisieren ──────────────────────────────────────────
 function updateProjectBadge() {
@@ -1283,10 +1284,77 @@ function deleteProjChatGedanke(projId, idx) {
   const proj = getProjectById(projId);
   if (!proj?.chatGedanken) return;
   proj.chatGedanken.splice(idx, 1);
+  _projChatGedankenEditing = null;
   saveProjects();
   const panel = document.getElementById('proj-chatgedanken-panel');
   if (panel) panel.innerHTML = _buildProjChatGedankenHtml(proj);
   showToast('Chat-Gedanke gelöscht', 'info');
+}
+
+// v6.9: Bearbeiten
+function editProjChatGedanke(projId, idx) {
+  _projChatGedankenEditing = idx;
+  const proj = getProjectById(projId);
+  const panel = document.getElementById('proj-chatgedanken-panel');
+  if (proj && panel) panel.innerHTML = _buildProjChatGedankenHtml(proj);
+}
+
+function cancelProjChatGedankeEdit(projId) {
+  _projChatGedankenEditing = null;
+  const proj = getProjectById(projId);
+  const panel = document.getElementById('proj-chatgedanken-panel');
+  if (proj && panel) panel.innerHTML = _buildProjChatGedankenHtml(proj);
+}
+
+function saveProjChatGedankeEdit(projId, idx) {
+  const proj = getProjectById(projId);
+  if (!proj?.chatGedanken?.[idx]) return;
+  const qEl = document.getElementById(`pcgEdit-q-${idx}`);
+  const aEl = document.getElementById(`pcgEdit-a-${idx}`);
+  if (qEl) proj.chatGedanken[idx].question = qEl.value;
+  if (aEl) proj.chatGedanken[idx].answer   = aEl.value;
+  _projChatGedankenEditing = null;
+  saveProjects();
+  const panel = document.getElementById('proj-chatgedanken-panel');
+  if (panel) panel.innerHTML = _buildProjChatGedankenHtml(proj);
+  showToast('Chat-Gedanke gespeichert', 'success');
+}
+
+// v6.9: Drucken / PDF
+function printProjChatGedanken(projId) {
+  const proj = getProjectById(projId);
+  if (!proj?.chatGedanken?.length) return;
+  const items = proj.chatGedanken;
+  const title = escHtml(proj.name || 'Chat-Gedanken');
+  const rows = items.map((item, i) => {
+    const dateStr = item.ts ? new Date(item.ts).toLocaleDateString('de-DE') : '';
+    const roles = (item.roles || []).filter(Boolean);
+    const roleStr = roles.length ? ` · ${roles.join(', ')}` : '';
+    return `<div class="item">
+      <div class="meta">${i+1}. Projekt-Assistent${escHtml(roleStr)}${dateStr ? ' · ' + escHtml(dateStr) : ''}</div>
+      <div class="question">${escHtml(item.question || '').replace(/\n/g,'<br>')}</div>
+      <div class="answer">${escHtml(item.answer || '').replace(/\n/g,'<br>')}</div>
+    </div>`;
+  }).join('');
+  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">
+    <title>Chat-Gedanken – ${title}</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 32px; color: #111; }
+      h1 { font-size: 1.2rem; margin-bottom: 4px; }
+      .subtitle { font-size: 0.8rem; color: #666; margin-bottom: 24px; }
+      .item { border: 1px solid #ddd; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; page-break-inside: avoid; }
+      .meta { font-size: 0.72rem; color: #888; margin-bottom: 6px; }
+      .question { font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: #333; }
+      .answer { font-size: 0.85rem; line-height: 1.6; color: #222; white-space: pre-wrap; }
+    </style>
+  </head><body>
+    <h1>Chat-Gedanken</h1>
+    <div class="subtitle">${title} · ${items.length} Einträge</div>
+    ${rows}
+    <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`;
+  const win = window.open('', '_blank');
+  if (win) { win.document.write(html); win.document.close(); }
 }
 
 function toggleProjChatGedankenView(projId) {
@@ -1307,7 +1375,18 @@ function _buildProjChatGedankenHtml(proj) {
   const sourceBg = 'rgba(139,92,246,0.12)';
   const roleColors = ['#6366f1','#f59e0b','#ef4444','#06b6d4'];
 
-  return items.map((item, i) => {
+  // v6.9: Header mit Print-Button
+  const header = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <span style="font-size:0.78rem;color:var(--muted)">${items.length} Gedanke${items.length !== 1 ? 'n' : ''} gespeichert</span>
+    <button onclick="printProjChatGedanken('${proj.id}')"
+      style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--muted);font-size:0.75rem;display:inline-flex;align-items:center;gap:5px"
+      title="Drucken / Als PDF speichern">
+      ${icon('printer', 13, 'pointer-events:none')} Drucken
+    </button>
+  </div>`;
+
+  const cards = items.map((item, i) => {
+    const isEditing = _projChatGedankenEditing === i;
     const expanded = _projChatGedankenExpanded.has(i);
     const chevron = expanded ? 'chevron-up' : 'chevron-down';
 
@@ -1326,6 +1405,28 @@ function _buildProjChatGedankenHtml(proj) {
 
     // Quelle-Chip
     const sourceChip = `<span style="font-size:0.68rem;background:${sourceBg};color:${sourceColor};border:1px solid ${sourceColor}44;border-radius:4px;padding:1px 6px">Projekt-Assistent</span>`;
+
+    // v6.9: Edit-Modus
+    if (isEditing) {
+      return `
+      <div style="border:1px solid ${sourceColor};border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--surface)">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${dateChip}${roleChips}${sourceChip}</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px">Frage / Thema:</div>
+        <textarea id="pcgEdit-q-${i}" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:0.82rem;color:var(--text);resize:vertical;min-height:60px;font-family:inherit">${escHtml(item.question || '')}</textarea>
+        <div style="font-size:0.75rem;color:var(--muted);margin:8px 0 4px">Antwort:</div>
+        <textarea id="pcgEdit-a-${i}" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:0.82rem;color:var(--text);resize:vertical;min-height:120px;font-family:inherit">${escHtml(item.answer || '')}</textarea>
+        <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+          <button onclick="cancelProjChatGedankeEdit('${proj.id}')"
+            style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;color:var(--muted)">
+            Abbrechen
+          </button>
+          <button onclick="saveProjChatGedankeEdit('${proj.id}', ${i})"
+            style="background:${sourceColor};border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;color:#fff;font-weight:600">
+            Speichern
+          </button>
+        </div>
+      </div>`;
+    }
 
     // Fragen als Stichpunkte
     const questions = (item.question || '').split('\n').map(q => q.trim()).filter(Boolean);
@@ -1347,6 +1448,11 @@ function _buildProjChatGedankenHtml(proj) {
         </div>
         <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
           <span style="color:${sourceColor};display:inline-flex">${icon(chevron, 13, 'pointer-events:none')}</span>
+          <button onclick="event.stopPropagation();editProjChatGedanke('${proj.id}', ${i})"
+            style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center"
+            title="Bearbeiten">
+            ${icon('pencil', 13, 'pointer-events:none')}
+          </button>
           <button onclick="event.stopPropagation();deleteProjChatGedanke('${proj.id}', ${i})"
             style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center"
             title="Löschen">
@@ -1361,5 +1467,7 @@ function _buildProjChatGedankenHtml(proj) {
       }
     </div>`;
   }).join('');
+
+  return header + cards;
 }
 
