@@ -995,14 +995,9 @@ function renderChatGedanken(session) {
     return;
   }
 
-  // v6.9: Header mit Print-Button
-  const header = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+  // v6.10: Header nur Zähler, kein globaler Print-Button mehr
+  const header = `<div style="margin-bottom:12px">
     <span style="font-size:0.78rem;color:var(--muted)">${items.length} Gedanke${items.length !== 1 ? 'n' : ''} gespeichert</span>
-    <button onclick="printChatGedanken('${session.id}')"
-      style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--muted);font-size:0.75rem;display:inline-flex;align-items:center;gap:5px"
-      title="Drucken / Als PDF speichern">
-      ${icon('printer', 13, 'pointer-events:none')} Drucken
-    </button>
   </div>`;
 
   const cards = items.map((item, i) => {
@@ -1073,10 +1068,15 @@ function renderChatGedanken(session) {
         </div>
         <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
           <span style="color:var(--accent);display:inline-flex">${icon(chevron, 13, 'pointer-events:none')}</span>
+          <button onclick="event.stopPropagation();printSingleChatGedanke('${session.id}', ${i})"
+            style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center"
+            title="Drucken / Als PDF">
+            ${icon('printer', 13, 'pointer-events:none')}
+          </button>
           <button onclick="event.stopPropagation();editChatGedanke('${session.id}', ${i})"
             style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center"
             title="Bearbeiten">
-            ${icon('pencil', 13, 'pointer-events:none')}
+            ${icon('edit-2', 13, 'pointer-events:none')}
           </button>
           <button onclick="event.stopPropagation();deleteChatGedanke('${session.id}', ${i})"
             style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;display:inline-flex;align-items:center"
@@ -1132,39 +1132,108 @@ function saveChatGedankeEdit(sessionId, idx) {
   showToast('Chat-Gedanke gespeichert', 'success');
 }
 
-// v6.9: Drucken / PDF
-function printChatGedanken(sessionId) {
+// v6.10: Einzelnen Chat-Gedanken drucken / als PDF
+function printSingleChatGedanke(sessionId, idx) {
   const session = getSession(sessionId);
-  if (!session?.chatGedanken?.length) return;
-  const items = session.chatGedanken;
-  const title = escHtml(session.name || 'Chat-Gedanken');
-  const rows = items.map((item, i) => {
-    const dateStr = item.ts ? new Date(item.ts).toLocaleDateString('de-DE') : '';
-    const sourceLabel = item.source === 'analyse' ? 'Analyse-Chat' : 'Gesprächs-Chat';
-    const roles = (item.roles || []).filter(Boolean);
-    const roleStr = roles.length ? ` · ${roles.join(', ')}` : '';
-    return `<div class="item">
-      <div class="meta">${i+1}. ${escHtml(sourceLabel)}${escHtml(roleStr)}${dateStr ? ' · ' + escHtml(dateStr) : ''}</div>
-      <div class="question">${escHtml(item.question || '').replace(/\n/g,'<br>')}</div>
-      <div class="answer">${escHtml(item.answer || '').replace(/\n/g,'<br>')}</div>
-    </div>`;
-  }).join('');
+  const item = session?.chatGedanken?.[idx];
+  if (!item) return;
+  const sessionTitle = session.name || 'Chat-Gedanken';
+  const dateStr = item.ts ? new Date(item.ts).toLocaleDateString('de-DE') : '';
+  const sourceLabel = item.source === 'analyse' ? 'Analyse-Chat' : 'Gesprächs-Chat';
+  const roles = (item.roles || []).filter(Boolean);
+  const roleStr = roles.length ? ` · ${roles.join(', ')}` : '';
+  const metaStr = `${sourceLabel}${roleStr}${dateStr ? ' · ' + dateStr : ''}`;
+
+  // Mini Markdown-to-HTML Parser (inline im Print-Fenster)
+  const mdParser = `
+function mdToHtml(text) {
+  if (!text) return '';
+  const lines = text.split('\\n');
+  let html = '';
+  let inTable = false;
+  let tableHeaderDone = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    // Tabelle
+    if (/^\\s*\\|/.test(line)) {
+      const cells = line.split('|').slice(1,-1).map(c => c.trim());
+      if (!inTable) {
+        inTable = true;
+        tableHeaderDone = false;
+        html += '<table><thead><tr>';
+        cells.forEach(c => html += '<th>' + inlineFormat(c) + '</th>');
+        html += '</tr></thead>';
+      } else if (!tableHeaderDone && /^[-\\s|]+$/.test(line)) {
+        tableHeaderDone = true;
+        html += '<tbody>';
+      } else if (tableHeaderDone) {
+        html += '<tr>';
+        cells.forEach(c => html += '<td>' + inlineFormat(c) + '</td>');
+        html += '</tr>';
+      }
+      continue;
+    } else if (inTable) {
+      html += '</tbody></table>';
+      inTable = false;
+      tableHeaderDone = false;
+    }
+    // Überschriften
+    if (/^### /.test(line)) { html += '<h3>' + inlineFormat(line.slice(4)) + '</h3>'; continue; }
+    if (/^## /.test(line))  { html += '<h2>' + inlineFormat(line.slice(3)) + '</h2>'; continue; }
+    if (/^# /.test(line))   { html += '<h2>' + inlineFormat(line.slice(2)) + '</h2>'; continue; }
+    // Trennlinie
+    if (/^---+$/.test(line.trim())) { html += '<hr>'; continue; }
+    // Aufzählung
+    if (/^[\\-\\*] /.test(line)) { html += '<li>' + inlineFormat(line.slice(2)) + '</li>'; continue; }
+    // Leerzeile
+    if (line.trim() === '') { html += '<br>'; continue; }
+    // Normaler Absatz
+    html += '<p>' + inlineFormat(line) + '</p>';
+  }
+  if (inTable) html += '</tbody></table>';
+  return html;
+}
+function inlineFormat(t) {
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\\*\\*(.+?)\\*\\*/g,'<strong>$1</strong>')
+    .replace(/\\*(.+?)\\*/g,'<em>$1</em>')
+    .replace(/\`(.+?)\`/g,'<code>$1</code>');
+}`;
+
   const html = `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">
-    <title>Chat-Gedanken – ${title}</title>
+    <title>${sessionTitle}</title>
     <style>
       body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 32px; color: #111; }
-      h1 { font-size: 1.2rem; margin-bottom: 4px; }
-      .subtitle { font-size: 0.8rem; color: #666; margin-bottom: 24px; }
-      .item { border: 1px solid #ddd; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; page-break-inside: avoid; }
-      .meta { font-size: 0.72rem; color: #888; margin-bottom: 6px; }
-      .question { font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: #333; }
-      .answer { font-size: 0.85rem; line-height: 1.6; color: #222; white-space: pre-wrap; }
+      h1 { font-size: 1.1rem; margin-bottom: 2px; }
+      h2 { font-size: 1rem; margin: 16px 0 6px; }
+      h3 { font-size: 0.9rem; margin: 12px 0 4px; }
+      .meta { font-size: 0.72rem; color: #888; margin-bottom: 16px; }
+      .question { font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; color: #333; border-left: 3px solid #999; padding-left: 10px; }
+      .answer { font-size: 0.85rem; line-height: 1.6; color: #222; }
+      .answer p { margin: 4px 0; }
+      .answer li { margin: 2px 0 2px 16px; list-style: disc; }
+      .answer table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 0.82rem; }
+      .answer th { background: #f3f3f3; border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+      .answer td { border: 1px solid #ddd; padding: 5px 10px; }
+      .answer hr { border: none; border-top: 1px solid #ddd; margin: 12px 0; }
+      code { background: #f5f5f5; padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; }
     </style>
   </head><body>
-    <h1>Chat-Gedanken</h1>
-    <div class="subtitle">${title} · ${items.length} Einträge</div>
-    ${rows}
-    <script>window.onload=function(){window.print();}<\/script>
+    <h1>${sessionTitle}</h1>
+    <div class="meta">${metaStr}</div>
+    <div class="question" id="q"></div>
+    <div class="answer" id="a"></div>
+    <script>
+    ${mdParser}
+    window.onload = function() {
+      var rawQ = ${JSON.stringify(item.question || '')};
+      var rawA = ${JSON.stringify(item.answer || '')};
+      document.getElementById('q').innerHTML = mdToHtml(rawQ);
+      document.getElementById('a').innerHTML = mdToHtml(rawA);
+      window.print();
+    };
+    <\/script>
   </body></html>`;
   const win = window.open('', '_blank');
   if (win) { win.document.write(html); win.document.close(); }
