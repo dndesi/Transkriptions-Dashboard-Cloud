@@ -2445,19 +2445,23 @@ function renderDesignVersionTabs(session) {
                   <i data-lucide="x" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
                 </button>
               </div>
-              <div style="position:relative;width:100%;height:160px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--surface2)">
-                <img
-                  src="https://image.thum.io/get/width/600/crop/400/${encodeURIComponent(dl.url)}"
-                  style="width:100%;height:100%;object-fit:cover;object-position:top;display:block"
-                  loading="lazy"
-                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-                  onload="this.nextElementSibling.style.display='none'"
-                />
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px">
-                  <i data-lucide="image" style="width:20px;height:20px;stroke:var(--muted);stroke-width:1.5;fill:none"></i>
-                  <span style="font-size:0.72rem;color:var(--muted)">Vorschau nicht verfügbar</span>
-                </div>
-              </div>
+              ${dl.screenshot
+                ? `<div style="position:relative;width:100%;height:160px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+                     <img src="${dl.screenshot}" style="width:100%;height:100%;object-fit:cover;object-position:top;display:block" />
+                     <button onclick="removeDesignScreenshot('${active.id}',${i})"
+                       style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0"
+                       title="Screenshot entfernen">
+                       <i data-lucide="x" style="width:12px;height:12px;stroke:#fff;stroke-width:2.5;fill:none"></i>
+                     </button>
+                   </div>`
+                : `<div id="dlprev-${i}" onclick="activateDesignPaste('${active.id}',${i})"
+                     style="width:100%;height:90px;border-radius:8px;border:1.5px dashed var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;cursor:pointer;transition:border-color 0.15s,background 0.15s"
+                     onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(108,99,255,0.06)'"
+                     onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface2)'">
+                     <i data-lucide="clipboard" style="width:16px;height:16px;stroke:var(--muted);stroke-width:1.5;fill:none"></i>
+                     <span style="font-size:0.71rem;color:var(--muted)">Screenshot einfügen (Klick → Cmd+V)</span>
+                   </div>`
+              }
             </div>`).join('')}
         </div>` : ''}
       <div style="display:flex;gap:8px">
@@ -2472,6 +2476,72 @@ function renderDesignVersionTabs(session) {
 
   contentEl.innerHTML = previewHtml + linkHtml;
   if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [contentEl] });
+}
+
+// v6.6: Screenshot-Paste für Design-Links
+let _designPasteTarget = null; // { versionId, linkIndex }
+let _designPasteListenerAdded = false;
+
+function activateDesignPaste(versionId, linkIndex) {
+  _designPasteTarget = { versionId, linkIndex };
+  const el = document.getElementById(`dlprev-${linkIndex}`);
+  if (el) {
+    el.style.borderColor = 'var(--accent)';
+    el.style.background = 'rgba(108,99,255,0.1)';
+    const span = el.querySelector('span');
+    if (span) span.textContent = 'Bereit — jetzt Cmd+V drücken';
+  }
+  // Paste-Listener einmalig registrieren
+  if (!_designPasteListenerAdded) {
+    _designPasteListenerAdded = true;
+    document.addEventListener('paste', function(e) {
+      if (!_designPasteTarget) return;
+      // Nicht in Text-Inputs abfangen
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (!item.type.startsWith('image/')) continue;
+        const file = item.getAsFile();
+        if (!file) continue;
+        const reader = new FileReader();
+        const target = _designPasteTarget;
+        _designPasteTarget = null;
+        reader.onload = function(ev) {
+          const session = getSession(currentSessionId);
+          const version = session?.designVersions?.find(v => v.id === target.versionId);
+          if (!version?.designLinks?.[target.linkIndex]) return;
+          version.designLinks[target.linkIndex].screenshot = ev.target.result;
+          saveSessions();
+          saveToArchive(session);
+          renderDesignVersionTabs(session);
+          showToast('Screenshot gespeichert ✓', 'success');
+        };
+        reader.readAsDataURL(file);
+        e.preventDefault();
+        break;
+      }
+    });
+  }
+  // Auto-Reset nach 15s
+  setTimeout(() => {
+    if (_designPasteTarget?.versionId === versionId && _designPasteTarget?.linkIndex === linkIndex) {
+      _designPasteTarget = null;
+      renderDesignVersionTabs(getSession(currentSessionId));
+    }
+  }, 15000);
+}
+
+function removeDesignScreenshot(versionId, linkIndex) {
+  const session = getSession(currentSessionId);
+  const version = session?.designVersions?.find(v => v.id === versionId);
+  if (!version?.designLinks?.[linkIndex]) return;
+  delete version.designLinks[linkIndex].screenshot;
+  saveSessions();
+  saveToArchive(session);
+  renderDesignVersionTabs(session);
+  showToast('Screenshot entfernt', 'ok');
 }
 
 function switchDesignVersion(id) {
