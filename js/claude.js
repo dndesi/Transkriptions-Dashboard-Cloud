@@ -2764,7 +2764,7 @@ async function saveTranscriptEdits() {
   await saveSessions();
   saveToArchive(session).catch(() => {});
   renderUtterances(session);
-  showToast(changed > 0 ? `${changed} Abschnitt${changed === 1 ? '' : 'e'} gespeichert ✓` : 'Keine Änderungen.', 'ok');
+  showToast(changed > 0 ? `${changed} Abschnitt${changed === 1 ? '' : 'e'} gespeichert ✓` : 'Keine Änderungen.', 'success');
 }
 
 function renderUtterances(session) {
