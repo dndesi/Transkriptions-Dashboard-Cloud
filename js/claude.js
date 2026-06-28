@@ -2446,16 +2446,16 @@ function renderDesignVersionTabs(session) {
                 </button>
               </div>
               <div style="position:relative;width:100%;height:160px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--surface2)">
-                <iframe
-                  src="${escHtml(dl.url)}"
-                  style="width:960px;height:640px;border:none;pointer-events:none;transform:scale(0.31);transform-origin:0 0"
+                <img
+                  src="https://image.thum.io/get/width/600/crop/400/${encodeURIComponent(dl.url)}"
+                  style="width:100%;height:100%;object-fit:cover;object-position:top;display:block"
                   loading="lazy"
-                  sandbox="allow-scripts allow-same-origin"
-                  onload="this.previousElementSibling&&(this.previousElementSibling.style.display='none')"
-                  onerror="this.style.display='none'"
-                ></iframe>
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
-                  <span style="font-size:0.75rem;color:var(--muted)">Vorschau lädt…</span>
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                  onload="this.nextElementSibling.style.display='none'"
+                />
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px">
+                  <i data-lucide="image" style="width:20px;height:20px;stroke:var(--muted);stroke-width:1.5;fill:none"></i>
+                  <span style="font-size:0.72rem;color:var(--muted)">Vorschau nicht verfügbar</span>
                 </div>
               </div>
             </div>`).join('')}
