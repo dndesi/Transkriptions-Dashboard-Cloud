@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v6.4</button>
+        onmouseout="this.style.color='var(--muted)'">v6.5</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1693,6 +1693,16 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v6.5 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v6.5</span><span class="cl-date">28.06.2026</span></div>
+        <div class="cl-title">Feature: Design-Inhalts-Vorschau über gespeicherten Links</div>
+        <ul class="cl-list">
+          <li>Kompakte Thumbnail-Karte aus lokal gespeicherten version.data — Titel + erste 3 Folien-Überschriften</li>
+          <li>Klick auf Karte öffnet vollständige Vorschau inline — kein externer Zugriff nötig</li>
+        </ul>
+      </div>
 
       <!-- ── v6.4 ── -->
       <div class="cl-entry">
@@ -4961,32 +4971,32 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=6.4"></script>
-<script src="js/storage.js?v=6.4"></script>
-<script src="js/config.js?v=6.4"></script>
-<script src="js/auth.js?v=6.4"></script>
-<script src="js/drive.js?v=6.4"></script>
-<script src="js/sessions.js?v=6.4"></script>
-<script src="js/assemblyai.js?v=6.4"></script>
-<script src="js/claude.js?v=6.4"></script>
-<script src="js/ui.js?v=6.4"></script>
-<script src="js/tags.js?v=6.4"></script>
-<script src="js/notes.js?v=6.4"></script>
-<script src="js/photos.js?v=6.4"></script>
-<script src="js/persons.js?v=6.4"></script>
-<script src="js/audio.js?v=6.4"></script>
-<script src="js/recorder.js?v=6.4"></script>
-<script src="js/contacts.js?v=6.4"></script>
-<script src="js/app.js?v=6.4"></script>
+<script src="js/icons.js?v=6.5"></script>
+<script src="js/storage.js?v=6.5"></script>
+<script src="js/config.js?v=6.5"></script>
+<script src="js/auth.js?v=6.5"></script>
+<script src="js/drive.js?v=6.5"></script>
+<script src="js/sessions.js?v=6.5"></script>
+<script src="js/assemblyai.js?v=6.5"></script>
+<script src="js/claude.js?v=6.5"></script>
+<script src="js/ui.js?v=6.5"></script>
+<script src="js/tags.js?v=6.5"></script>
+<script src="js/notes.js?v=6.5"></script>
+<script src="js/photos.js?v=6.5"></script>
+<script src="js/persons.js?v=6.5"></script>
+<script src="js/audio.js?v=6.5"></script>
+<script src="js/recorder.js?v=6.5"></script>
+<script src="js/contacts.js?v=6.5"></script>
+<script src="js/app.js?v=6.5"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=6.4"></script>
-<script src="js/search.js?v=6.4"></script>
-<script src="js/calendar.js?v=6.4"></script>
-<script src="js/prompts.js?v=6.4"></script>
-<script src="js/projects.js?v=6.4"></script>
-<script src="js/import.js?v=6.4"></script>
+<script src="js/features.js?v=6.5"></script>
+<script src="js/search.js?v=6.5"></script>
+<script src="js/calendar.js?v=6.5"></script>
+<script src="js/prompts.js?v=6.5"></script>
+<script src="js/projects.js?v=6.5"></script>
+<script src="js/import.js?v=6.5"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

@@ -2367,12 +2367,42 @@ function renderDesignVersionTabs(session) {
       <div id="dvPreviewArea">${rendered}</div>`;
   }
 
+  // v6.4: Kompakte Design-Vorschau aus lokalen Daten
+  const _designThumbHtml = (() => {
+    const d = active.data;
+    const t = active.textOutput || active.editedText;
+    if (!d && !t) return '';
+    let inner = '';
+    if (d?.title || d?.slides?.length) {
+      const headings = (d.slides || []).slice(0, 3).map(s =>
+        `<div style="font-size:0.75rem;color:var(--text);padding:2px 0;display:flex;gap:6px"><span style="color:var(--accent);flex-shrink:0">›</span>${escHtml(s.heading || '')}</div>`
+      ).join('');
+      inner = `<div style="font-weight:700;font-size:0.85rem;color:var(--text);margin-bottom:5px">${escHtml(d.title || '')}</div>${headings}
+        ${(d.slides||[]).length > 3 ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:3px">+${(d.slides.length-3)} weitere Folien</div>` : ''}`;
+    } else if (d && typeof d === 'object') {
+      const first = Object.entries(d).slice(0, 3);
+      inner = first.map(([k,v]) => `<div style="font-size:0.75rem;color:var(--text);padding:1px 0"><span style="color:var(--muted)">${escHtml(k)}:</span> ${escHtml(Array.isArray(v)?v[0]:String(v)).slice(0,60)}</div>`).join('');
+    } else if (t) {
+      inner = `<div style="font-size:0.75rem;color:var(--text);line-height:1.5">${escHtml(t.slice(0,150))}${t.length>150?'…':''}</div>`;
+    }
+    return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px;cursor:pointer"
+      onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+      <div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;display:flex;align-items:center;gap:5px">
+        <i data-lucide="layout" style="width:10px;height:10px;stroke:currentColor;stroke-width:2;fill:none"></i> Inhalts-Vorschau
+        <span style="margin-left:auto;font-size:0.7rem;color:var(--muted)">▾ vollständig</span>
+      </div>
+      ${inner}
+    </div>
+    <div style="display:none">${_renderPresentationPreviewHtml(d)}</div>`;
+  })();
+
   // Canva-Link-Sektion (pro Version)
   const linkHtml = `
     <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:16px">
       <div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;display:flex;align-items:center;gap:5px">
         <i data-lucide="link" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none"></i> Claude Design Links
       </div>
+      ${_designThumbHtml}
       ${(active.designLinks || []).length > 0 ? `
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
           ${(active.designLinks).map((dl, i) => `

@@ -2,7 +2,7 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.4** (Stand: 28.06.2026)
+**v6.5** (Stand: 28.06.2026)
 
 ## Pflichtregeln bei jeder Änderung (IMMER, keine Ausnahme)
 1. Versionsnummer in `index.html` erhöhen (Header-Badge + alle `?v=X.XX` Script-Tags)
@@ -123,6 +123,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.5 | 28.06.2026 | Feature: Design-Inhalts-Vorschau aus version.data über gespeicherten Links |
 | v6.4 | 28.06.2026 | Feature: @Rollen-Direktansprache im Analyse-Chat — Autocomplete + Single-Call |
 | v6.3 | 28.06.2026 | Bugfix: 360°-Analyse als eigener Tab — render360Block() ruft _refreshAnalysenSubtabs() auf |
 | v6.2 | 27.06.2026 | News: 3 Blogartikel (Chat-Gedanken, Experten-Runde, Session-Erkennung) + 3 Hero-Kacheln |
