@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v6.7</button>
+        onmouseout="this.style.color='var(--muted)'">v6.8</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -244,10 +244,15 @@
           </div>
           <div class="upload-hint" id="uploadHint"></div>
           <input type="file" id="fileInput" accept="audio/*,video/*" onchange="handleFileSelect(event)" />
-          <button class="record-btn disabled" id="recordBtn" onclick="toggleRecording()" style="pointer-events:none;opacity:0.4">
-            <span class="record-dot" id="recordDot"></span>
-            <span id="recordBtnLabel" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="mic" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i> Direkt aufnehmen</span>
-          </button>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="record-btn disabled" id="recordBtn" onclick="toggleRecording()" style="margin-top:0;flex:1">
+              <span class="record-dot" id="recordDot"></span>
+              <span id="recordBtnLabel" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="mic" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"></i> Direkt aufnehmen</span>
+            </button>
+            <button id="pauseBtn" onclick="togglePause()" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;font-size:0.82rem;font-weight:600;color:var(--text);white-space:nowrap;touch-action:manipulation">
+              <span id="pauseBtnLabel" style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="pause" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Pause</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1693,6 +1698,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v6.8 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v6.8</span><span class="cl-date">28.06.2026</span></div>
+        <div class="cl-title">Feature: Pause/Resume bei Direktaufnahme + Button-Fix</div>
+        <ul class="cl-list">
+          <li>Pause-Button erscheint während Aufnahme — Timer stoppt, Aufnahme pausiert</li>
+          <li>Fortsetzen setzt Aufnahme nahtlos fort, Timer läuft weiter</li>
+          <li>Bugfix: button svg/icon pointer-events:none — Klick auf Icon-Fläche trifft jetzt immer den Button</li>
+          <li>Bugfix: touch-action:manipulation auf Buttons — iOS Tap-Delay entfernt</li>
+          <li>Bugfix: Textarea z-index explizit unter Senden-Button gesetzt</li>
+        </ul>
+      </div>
 
       <!-- ── v6.7 ── -->
       <div class="cl-entry">
@@ -4991,32 +5009,32 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=6.7"></script>
-<script src="js/storage.js?v=6.7"></script>
-<script src="js/config.js?v=6.7"></script>
-<script src="js/auth.js?v=6.7"></script>
-<script src="js/drive.js?v=6.7"></script>
-<script src="js/sessions.js?v=6.7"></script>
-<script src="js/assemblyai.js?v=6.7"></script>
-<script src="js/claude.js?v=6.7"></script>
-<script src="js/ui.js?v=6.7"></script>
-<script src="js/tags.js?v=6.7"></script>
-<script src="js/notes.js?v=6.7"></script>
-<script src="js/photos.js?v=6.7"></script>
-<script src="js/persons.js?v=6.7"></script>
-<script src="js/audio.js?v=6.7"></script>
-<script src="js/recorder.js?v=6.7"></script>
-<script src="js/contacts.js?v=6.7"></script>
-<script src="js/app.js?v=6.7"></script>
+<script src="js/icons.js?v=6.8"></script>
+<script src="js/storage.js?v=6.8"></script>
+<script src="js/config.js?v=6.8"></script>
+<script src="js/auth.js?v=6.8"></script>
+<script src="js/drive.js?v=6.8"></script>
+<script src="js/sessions.js?v=6.8"></script>
+<script src="js/assemblyai.js?v=6.8"></script>
+<script src="js/claude.js?v=6.8"></script>
+<script src="js/ui.js?v=6.8"></script>
+<script src="js/tags.js?v=6.8"></script>
+<script src="js/notes.js?v=6.8"></script>
+<script src="js/photos.js?v=6.8"></script>
+<script src="js/persons.js?v=6.8"></script>
+<script src="js/audio.js?v=6.8"></script>
+<script src="js/recorder.js?v=6.8"></script>
+<script src="js/contacts.js?v=6.8"></script>
+<script src="js/app.js?v=6.8"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=6.7"></script>
-<script src="js/search.js?v=6.7"></script>
-<script src="js/calendar.js?v=6.7"></script>
-<script src="js/prompts.js?v=6.7"></script>
-<script src="js/projects.js?v=6.7"></script>
-<script src="js/import.js?v=6.7"></script>
+<script src="js/features.js?v=6.8"></script>
+<script src="js/search.js?v=6.8"></script>
+<script src="js/calendar.js?v=6.8"></script>
+<script src="js/prompts.js?v=6.8"></script>
+<script src="js/projects.js?v=6.8"></script>
+<script src="js/import.js?v=6.8"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

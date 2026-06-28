@@ -1661,7 +1661,9 @@
       gap: 8px; padding: 10px; border-radius: 8px; font-size: 0.85rem;
       font-weight: 600; cursor: pointer; border: 1px solid var(--border);
       background: var(--bg); color: var(--text); transition: all 0.2s; margin-top: 8px;
+      touch-action: manipulation;
     }
+    .record-btn.disabled { pointer-events: none; opacity: 0.4; }
     .record-btn:hover { border-color: var(--red); color: var(--red); }
     .record-btn.recording { background: rgba(248,113,113,0.1); border-color: var(--red); color: var(--red); }
     .record-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--red); }
@@ -3075,7 +3077,17 @@ mark.search-highlight {
   background: var(--surface);
 }
 .sdc-sidebar-input.hidden { display: none; }
-#askSendBtn { cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 2; user-select: none; } /* v5.17: z-index über Textarea, kein Text-Cursor */
+/* v6.8: Globaler Button-Fix — SVG/Icon-Events auf Parent durchreichen, iOS Tap-Delay weg */
+button svg,
+button i[data-lucide] { pointer-events: none; }
+
+button { touch-action: manipulation; }
+
+/* v6.8: Textarea explizit unter Button stellen */
+#followUpInput,
+#askInput { position: relative; z-index: 0; }
+
+#askSendBtn { cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 3; user-select: none; touch-action: manipulation; } /* v5.17 + v6.8 */
 #askSendBtn:hover { opacity: 0.82; }
 #askSendBtn:disabled { opacity: 0.5; cursor: not-allowed !important; }
 

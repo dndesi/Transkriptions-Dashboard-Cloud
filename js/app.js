@@ -438,7 +438,7 @@ function checkUploadReady() {
     zone.classList.remove('disabled');
     hint.classList.remove('visible');
     const rb = document.getElementById('recordBtn');
-    if (rb) { rb.style.pointerEvents=''; rb.style.opacity='1'; }
+    if (rb) { rb.classList.remove('disabled'); rb.style.pointerEvents=''; rb.style.opacity=''; }
   } else {
     s4.className = 'step-block locked';
     zone.classList.add('disabled');
