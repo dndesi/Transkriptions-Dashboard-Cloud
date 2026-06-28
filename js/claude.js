@@ -2379,20 +2379,6 @@ function renderDesignVersionTabs(session) {
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px">
           ${(active.designLinks).map((dl, i) => `
             <div style="display:flex;align-items:flex-start;gap:10px">
-              <div style="flex:1;min-width:0">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                  <a href="${escHtml(dl.url)}" target="_blank" rel="noopener"
-                     style="flex:1;font-size:0.82rem;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:6px;
-                            background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">
-                    <i data-lucide="external-link" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-                    <span style="overflow:hidden;text-overflow:ellipsis;flex:1">${escHtml(dl.label || dl.url)}</span>
-                    <span style="color:var(--muted);font-size:0.72rem;flex-shrink:0">${new Date(dl.ts).toLocaleDateString('de-DE')}</span>
-                  </a>
-                  <button onclick="removeDesignVersionLink('${active.id}',${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0" title="Entfernen">
-                    <i data-lucide="x" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
-                  </button>
-                </div>
-              </div>
               ${dl.screenshot
                 ? `<div style="position:relative;width:120px;height:120px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--surface2);flex-shrink:0">
                      <img src="${dl.screenshot}" style="width:100%;height:100%;object-fit:contain;display:block" />
@@ -2410,6 +2396,20 @@ function renderDesignVersionTabs(session) {
                      <span style="font-size:0.68rem;color:var(--muted);text-align:center;line-height:1.3">Screenshot<br>einfügen<br>(Klick → Cmd+V)</span>
                    </div>`
               }
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <a href="${escHtml(dl.url)}" target="_blank" rel="noopener"
+                     style="flex:1;font-size:0.82rem;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:6px;
+                            background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">
+                    <i data-lucide="external-link" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+                    <span style="overflow:hidden;text-overflow:ellipsis;flex:1">${escHtml(dl.label || dl.url)}</span>
+                    <span style="color:var(--muted);font-size:0.72rem;flex-shrink:0">${new Date(dl.ts).toLocaleDateString('de-DE')}</span>
+                  </a>
+                  <button onclick="removeDesignVersionLink('${active.id}',${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0" title="Entfernen">
+                    <i data-lucide="x" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
+                  </button>
+                </div>
+              </div>
             </div>`).join('')}
         </div>` : ''}
       <div style="display:flex;gap:8px">
