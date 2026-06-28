@@ -1250,7 +1250,16 @@ async function sendProjectChatMessage() {
   // v6.12: @-Prefix aus Frage entfernen bevor an Claude gesendet
   const cleanQuestion = atMatch ? question.slice(atMatch[0].length).trim() : question;
 
-  const prompt = getEditablePromptText('builtin_projekt_followup')
+  // v6.13: Wenn Rolle aktiv, Rollen-Intro aus Nutzernachricht entfernen
+  // (assemblePromptText fügt "Du bist ein Projektbegleiter" vorne ein → konflikt mit System-Prompt)
+  const _projDef = (typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined')
+    ? EDITABLE_PROMPT_DEFAULTS.find(p => p.id === 'builtin_projekt_followup')
+    : null;
+  const _projSavedOverride = (typeof getEditablePrompts === 'function' ? getEditablePrompts() : {})['builtin_projekt_followup'];
+  const _promptTemplate = (systemPrompt && _projDef?.kontext && !_projSavedOverride)
+    ? _projDef.kontext  // Nur Kontext — kein "Du bist ein Projektbegleiter"
+    : (getEditablePromptText('builtin_projekt_followup') || '');
+  const prompt = _promptTemplate
     .replace(/\{\{projektName\}\}/g, proj.name)
     .replace(/\{\{projektAnalysen\}\}/g, analysisContext)
     .replace(/\{\{chatHistory\}\}/g, chatHistory)
