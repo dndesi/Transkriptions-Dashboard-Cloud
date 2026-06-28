@@ -2367,33 +2367,59 @@ function renderDesignVersionTabs(session) {
       <div id="dvPreviewArea">${rendered}</div>`;
   }
 
-  // v6.4: Kompakte Design-Vorschau aus lokalen Daten
+  // v6.5: Kompakte Design-Vorschau aus lokalen Daten
   const _designThumbHtml = (() => {
     const d = active.data;
-    const t = active.textOutput || active.editedText;
+    const t = active.editedText || active.textOutput;
     if (!d && !t) return '';
+
+    // Einfaches Markdown → HTML (fett, kursiv) für textOutput
+    const mdToHtml = str => escHtml(str)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
     let inner = '';
+    let fullHtml = '';
+
     if (d?.title || d?.slides?.length) {
+      // Strukturierte Daten (Präsentation, Flyer etc.)
       const headings = (d.slides || []).slice(0, 3).map(s =>
         `<div style="font-size:0.75rem;color:var(--text);padding:2px 0;display:flex;gap:6px"><span style="color:var(--accent);flex-shrink:0">›</span>${escHtml(s.heading || '')}</div>`
       ).join('');
       inner = `<div style="font-weight:700;font-size:0.85rem;color:var(--text);margin-bottom:5px">${escHtml(d.title || '')}</div>${headings}
         ${(d.slides||[]).length > 3 ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:3px">+${(d.slides.length-3)} weitere Folien</div>` : ''}`;
+      fullHtml = `<div style="padding:10px 12px;border-top:1px solid var(--border)">${_renderPresentationPreviewHtml(d)}</div>`;
     } else if (d && typeof d === 'object') {
-      const first = Object.entries(d).slice(0, 3);
-      inner = first.map(([k,v]) => `<div style="font-size:0.75rem;color:var(--text);padding:1px 0"><span style="color:var(--muted)">${escHtml(k)}:</span> ${escHtml(Array.isArray(v)?v[0]:String(v)).slice(0,60)}</div>`).join('');
+      // Key-Value-Daten (Poster, Flyer etc.)
+      inner = Object.entries(d).slice(0, 3).map(([k,v]) =>
+        `<div style="font-size:0.75rem;color:var(--text);padding:1px 0"><span style="color:var(--muted)">${escHtml(k)}:</span> ${escHtml(Array.isArray(v)?v[0]:String(v)).slice(0,80)}</div>`
+      ).join('');
+      fullHtml = `<div style="padding:10px 12px;border-top:1px solid var(--border)">${_renderPresentationPreviewHtml(d)}</div>`;
     } else if (t) {
-      inner = `<div style="font-size:0.75rem;color:var(--text);line-height:1.5">${escHtml(t.slice(0,150))}${t.length>150?'…':''}</div>`;
+      // Freier Text (Custom-Prompt) — erste Zeile als Titel, Rest als Teaser
+      const lines = t.trim().split('\n').filter(l => l.trim());
+      const headline = lines[0] || '';
+      const teaser = lines.slice(1).join(' ').trim();
+      inner = `<div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px">${mdToHtml(headline.slice(0,100))}</div>
+        ${teaser ? `<div style="font-size:0.75rem;color:var(--muted);line-height:1.5">${mdToHtml(teaser.slice(0,120))}${teaser.length>120?'…':''}</div>` : ''}`;
+      // Vollständige Text-Vorschau
+      const fullLines = lines.map(l => `<div style="font-size:0.8rem;color:var(--text);line-height:1.6;padding:1px 0">${mdToHtml(l)}</div>`).join('');
+      fullHtml = `<div style="padding:10px 12px;border-top:1px solid var(--border);max-height:300px;overflow-y:auto">${fullLines}</div>`;
     }
-    return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px;cursor:pointer"
-      onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-      <div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;display:flex;align-items:center;gap:5px">
-        <i data-lucide="layout" style="width:10px;height:10px;stroke:currentColor;stroke-width:2;fill:none"></i> Inhalts-Vorschau
-        <span style="margin-left:auto;font-size:0.7rem;color:var(--muted)">▾ vollständig</span>
+
+    return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;overflow:hidden">
+      <div style="padding:10px 12px;cursor:pointer;display:flex;align-items:flex-start;gap:8px"
+        onclick="var n=this.nextElementSibling;n.style.display=n.style.display==='none'?'block':'none';this.querySelector('.dv-arrow').textContent=n.style.display==='none'?'▾':'▴'">
+        <div style="flex:1">
+          <div style="font-size:0.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;display:flex;align-items:center;gap:4px">
+            <i data-lucide="layout" style="width:10px;height:10px;stroke:currentColor;stroke-width:2;fill:none"></i> Inhalts-Vorschau
+          </div>
+          ${inner}
+        </div>
+        <span class="dv-arrow" style="color:var(--muted);font-size:0.75rem;flex-shrink:0;margin-top:2px">▾</span>
       </div>
-      ${inner}
-    </div>
-    <div style="display:none">${_renderPresentationPreviewHtml(d)}</div>`;
+      <div style="display:none">${fullHtml}</div>
+    </div>`;
   })();
 
   // Canva-Link-Sektion (pro Version)
@@ -2404,19 +2430,34 @@ function renderDesignVersionTabs(session) {
       </div>
       ${_designThumbHtml}
       ${(active.designLinks || []).length > 0 ? `
-        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px">
           ${(active.designLinks).map((dl, i) => `
-            <div style="display:flex;align-items:center;gap:8px">
-              <a href="${escHtml(dl.url)}" target="_blank" rel="noopener"
-                 style="flex:1;font-size:0.82rem;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:6px;
-                        background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">
-                <i data-lucide="external-link" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
-                <span style="overflow:hidden;text-overflow:ellipsis;flex:1">${escHtml(dl.label || dl.url)}</span>
-                <span style="color:var(--muted);font-size:0.72rem;flex-shrink:0">${new Date(dl.ts).toLocaleDateString('de-DE')}</span>
-              </a>
-              <button onclick="removeDesignVersionLink('${active.id}',${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0" title="Entfernen">
-                <i data-lucide="x" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
-              </button>
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <a href="${escHtml(dl.url)}" target="_blank" rel="noopener"
+                   style="flex:1;font-size:0.82rem;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:6px;
+                          background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">
+                  <i data-lucide="external-link" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+                  <span style="overflow:hidden;text-overflow:ellipsis;flex:1">${escHtml(dl.label || dl.url)}</span>
+                  <span style="color:var(--muted);font-size:0.72rem;flex-shrink:0">${new Date(dl.ts).toLocaleDateString('de-DE')}</span>
+                </a>
+                <button onclick="removeDesignVersionLink('${active.id}',${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0" title="Entfernen">
+                  <i data-lucide="x" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i>
+                </button>
+              </div>
+              <div style="position:relative;width:100%;height:160px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--surface2)">
+                <iframe
+                  src="${escHtml(dl.url)}"
+                  style="width:960px;height:640px;border:none;pointer-events:none;transform:scale(0.31);transform-origin:0 0"
+                  loading="lazy"
+                  sandbox="allow-scripts allow-same-origin"
+                  onload="this.previousElementSibling&&(this.previousElementSibling.style.display='none')"
+                  onerror="this.style.display='none'"
+                ></iframe>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+                  <span style="font-size:0.75rem;color:var(--muted)">Vorschau lädt…</span>
+                </div>
+              </div>
             </div>`).join('')}
         </div>` : ''}
       <div style="display:flex;gap:8px">
