@@ -4,6 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Was ist neu – Distill Voice</title>
+
+  <!-- Open Graph / Social Preview -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="Distill Voice" />
+  <meta property="og:title"       content="Was ist neu – Distill Voice" />
+  <meta property="og:description" content="Neue Features, Verbesserungen und Fixes im Überblick. Transkribieren, analysieren, verstehen." />
+  <meta property="og:image"       content="https://dndesi.github.io/Transkriptions-Dashboard-Cloud/img/icon-512.png" />
+  <meta property="og:url"         content="https://dndesi.github.io/Transkriptions-Dashboard-Cloud/news.html" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:title"      content="Was ist neu – Distill Voice" />
+  <meta name="twitter:description" content="Neue Features, Verbesserungen und Fixes im Überblick." />
+  <meta name="twitter:image"      content="https://dndesi.github.io/Transkriptions-Dashboard-Cloud/img/icon-512.png" />
   <style>
     :root {
       --bg:       #0f1117;
@@ -1675,8 +1687,14 @@
       btn.addEventListener('click', function() {
         var url = window.location.origin + window.location.pathname + '#' + article.id;
         var title = (article.querySelector('h2, h3') || {}).textContent || 'Distill Voice News';
+        var lead  = (article.querySelector('p.lead') || article.querySelector('p') || {}).textContent || '';
+        var teaser = lead.length > 120 ? lead.slice(0, 120).trimEnd() + '…' : lead;
         if (navigator.share) {
-          navigator.share({ title: title, url: url }).catch(function() {});
+          navigator.share({
+            title: 'Distill Voice – ' + title,
+            text:  title + (teaser ? '\n' + teaser : ''),
+            url:   url
+          }).catch(function() {});
         } else {
           navigator.clipboard.writeText(url).then(function() {
             btn.innerHTML = shareIcon + 'Kopiert ✓';
