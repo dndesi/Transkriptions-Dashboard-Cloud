@@ -255,6 +255,26 @@
       margin-bottom: 2px;
     }
 
+    /* ── Share-Button ── */
+    .news-share-btn {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--accent2);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      text-decoration: none;
+    }
+    .news-share-btn:hover { background: rgba(108,99,255,0.12); border-color: rgba(108,99,255,0.6); }
+    .news-share-btn svg { flex-shrink: 0; }
+
     /* ── Info-Box ── */
     .news-info-box {
       margin-top: 24px;
@@ -1639,6 +1659,35 @@
     }, { rootMargin: '-5% 0px -82% 0px', threshold: 0 });
 
     articles.forEach(function(a) { observer.observe(a); });
+  })();
+
+  // ── Teilen-Button automatisch in jeden Artikel einfügen ──
+  (function() {
+    var shareIcon = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';
+
+    document.querySelectorAll('article.news-article[id]').forEach(function(article) {
+      var meta = article.querySelector('.news-meta');
+      if (!meta) return;
+      var btn = document.createElement('button');
+      btn.className = 'news-share-btn';
+      btn.title = 'Artikel-Link teilen';
+      btn.innerHTML = shareIcon + 'Teilen';
+      btn.addEventListener('click', function() {
+        var url = window.location.origin + window.location.pathname + '#' + article.id;
+        var title = (article.querySelector('h2, h3') || {}).textContent || 'Distill Voice News';
+        if (navigator.share) {
+          navigator.share({ title: title, url: url }).catch(function() {});
+        } else {
+          navigator.clipboard.writeText(url).then(function() {
+            btn.innerHTML = shareIcon + 'Kopiert ✓';
+            setTimeout(function() { btn.innerHTML = shareIcon + 'Teilen'; }, 2000);
+          });
+        }
+      });
+      meta.style.display = 'flex';
+      meta.style.alignItems = 'center';
+      meta.appendChild(btn);
+    });
   })();
 </script>
 
