@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v6.11</button>
+        onmouseout="this.style.color='var(--muted)'">v6.12</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1699,14 +1699,14 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
-      <!-- ── v6.11 ── -->
+      <!-- ── v6.12 ── -->
       <div class="cl-entry">
-        <div class="cl-header"><span class="cl-version">v6.11</span><span class="cl-date">29.06.2026</span></div>
-        <div class="cl-title">Bugfix: Rollen-Persistenz im Projekt-Assistenten</div>
+        <div class="cl-header"><span class="cl-version">v6.12</span><span class="cl-date">29.06.2026</span></div>
+        <div class="cl-title">Bugfix: Einzelne Rolle kennt sich selbst + @-Direktansprache im Projekt-Assistenten</div>
         <ul class="cl-list">
-          <li>Rollen werden beim Schließen des Projekt-Assistenten explizit gespeichert (closeProjectAssistant)</li>
-          <li>Beim Öffnen: doppelter Restore-Call sichert korrekte Wiederherstellung auch wenn onchange nicht feuerte</li>
-          <li>Rollen werden zusätzlich vor jeder gesendeten Nachricht gesichert</li>
+          <li>Fix: Einzelne Rolle erhält Meta-Hinweis im System-Prompt → ignoriert konkurrierende Standard-Rollenbeschreibung aus Basis-Prompt (claude.js + projects.js)</li>
+          <li>Feature: @-Direktansprache im Projekt-Assistenten — @Rollenname: adressiert genau eine aktive Rolle (wie im Sitzungs-Assistenten)</li>
+          <li>Autocomplete-Dropdown beim Tippen von @ zeigt aktive Rollen zur Auswahl</li>
         </ul>
       </div>
 
@@ -5294,10 +5294,14 @@
       </div>
     </div>
     <!-- Eingabe -->
-    <div class="sdc-sidebar-input" style="flex-shrink:0">
+    <div class="sdc-sidebar-input" style="flex-shrink:0;position:relative">
+      <!-- v6.12: @-Autocomplete Dropdown -->
+      <div id="projAssistAtDropdown" style="display:none;position:absolute;bottom:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:200;overflow:hidden;max-height:180px;overflow-y:auto"></div>
+      <style>.proj-at-item{padding:8px 14px;cursor:pointer;font-size:0.84rem;color:var(--text)}.proj-at-item:hover{background:var(--surface2)}</style>
       <textarea id="projAssistInput" rows="2"
-        placeholder="Projekt-Frage… (Strg+Enter)"
-        onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){sendProjectChatMessage()}"
+        placeholder="Projekt-Frage… (@Rolle: für Direktansprache · Strg+Enter)"
+        oninput="handleProjAssistAutocomplete(event)"
+        onkeydown="if(event.key==='Escape'){const d=document.getElementById('projAssistAtDropdown');if(d)d.style.display='none';}else if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){sendProjectChatMessage()}"
         style="flex:1;resize:none;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-family:inherit;line-height:1.5;outline:none"></textarea>
       <button id="projAssistSendBtn" onclick="sendProjectChatMessage()"
         style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 16px;white-space:nowrap;flex-shrink:0;font-size:0.82rem;font-weight:600">

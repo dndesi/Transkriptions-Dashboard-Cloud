@@ -1200,18 +1200,46 @@ async function sendProjectChatMessage() {
   const personaId2 = document.getElementById('projAssistPersonaSelect2')?.value || '';
   const personaId3 = document.getElementById('projAssistPersonaSelect3')?.value || '';
   const roleIds = [personaId, personaId2, personaId3].filter(Boolean);
-  const isRoundtable = roleIds.length >= 2;
-  const systemPrompt = isRoundtable
-    ? (typeof _buildRoundtableSystemPrompt === 'function' ? _buildRoundtableSystemPrompt(roleIds) : null)
-    : (typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(personaId) : null);
+
   // v5.92: Rollen-Namen für Badge-Rendering speichern
   const _allRollenQuellen = [
     ...(typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : []),
     ...(typeof getCustomPrompts === 'function' ? getCustomPrompts() : [])
   ];
+
+  // v6.12: @Rollenname: — Direktansprache einer aktiven Rolle
+  const atMatch = question.match(/^@([^:]+):\s*/);
+  let targetRoleId = null;
+  if (atMatch && roleIds.length > 0) {
+    const atQuery = atMatch[1].trim().toLowerCase();
+    const found = roleIds.find(id => {
+      const name = _allRollenQuellen.find(p => p.id === id)?.name || '';
+      return name.toLowerCase().includes(atQuery);
+    });
+    if (!found) {
+      showToast(`Rolle "@${atMatch[1].trim()}" ist nicht aktiv.`, 'warning');
+      if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Senden'; }
+      if (input) input.disabled = false;
+      return;
+    }
+    targetRoleId = found;
+  }
+
+  const isRoundtable = !targetRoleId && roleIds.length >= 2;
+  const effectivePersonaId = targetRoleId || personaId;
+  const _rawSystemPrompt = isRoundtable
+    ? (typeof _buildRoundtableSystemPrompt === 'function' ? _buildRoundtableSystemPrompt(roleIds) : null)
+    : (typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(effectivePersonaId) : null);
+  // v6.12: Meta-Hinweis verhindert Rollen-Konflikt mit Basis-Prompt-Beschreibung
+  const systemPrompt = _rawSystemPrompt
+    ? _rawSystemPrompt + '\n\nWICHTIG: Ignoriere etwaige Standard-Rollenbeschreibungen ("Du bist ein Projektbegleiter" o.ä.) in der Nutzernachricht. Du agierst ausschließlich in deiner oben definierten Rolle und Fachkompetenz.'
+    : null;
+
   const activeRoleNames = isRoundtable
     ? roleIds.map(id => _allRollenQuellen.find(p => p.id === id)?.name || id)
-    : null;
+    : targetRoleId
+      ? [_allRollenQuellen.find(p => p.id === targetRoleId)?.name || targetRoleId]
+      : null;
 
   // Multi-Turn: letzte 5 Runden
   const prevRounds = (proj.claudeChat || []).slice(-5);
@@ -1219,11 +1247,14 @@ async function sendProjectChatMessage() {
     ? prevRounds.map((h, i) => `[Runde ${i + 1}]\nFrage: ${h.question}\nAntwort: ${h.answer.slice(0, 500)}${h.answer.length > 500 ? '…' : ''}`).join('\n\n')
     : 'Keine bisherigen Nachrichten.';
 
+  // v6.12: @-Prefix aus Frage entfernen bevor an Claude gesendet
+  const cleanQuestion = atMatch ? question.slice(atMatch[0].length).trim() : question;
+
   const prompt = getEditablePromptText('builtin_projekt_followup')
     .replace(/\{\{projektName\}\}/g, proj.name)
     .replace(/\{\{projektAnalysen\}\}/g, analysisContext)
     .replace(/\{\{chatHistory\}\}/g, chatHistory)
-    .replace(/\{\{question\}\}/g, question);
+    .replace(/\{\{question\}\}/g, cleanQuestion);
 
   try {
     const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt, systemPrompt);
@@ -1250,6 +1281,54 @@ async function sendProjectChatMessage() {
   } finally {
     if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Senden'; }
   }
+}
+
+// ── @-Direktansprache Autocomplete (Projekt-Assistent) v6.12 ────────────
+
+let _projAtCompleteListenerAdded = false;
+
+function handleProjAssistAutocomplete(e) {
+  const textarea = e.target;
+  const val = textarea.value;
+  const dropdown = document.getElementById('projAssistAtDropdown');
+  if (!dropdown) return;
+  if (!val.startsWith('@') || val.includes(':')) { dropdown.style.display = 'none'; return; }
+  const query = val.slice(1).toLowerCase();
+  const pId1 = document.getElementById('projAssistPersonaSelect')?.value  || '';
+  const pId2 = document.getElementById('projAssistPersonaSelect2')?.value || '';
+  const pId3 = document.getElementById('projAssistPersonaSelect3')?.value || '';
+  const activeIds = [pId1, pId2, pId3].filter(Boolean);
+  if (!activeIds.length) { dropdown.style.display = 'none'; return; }
+  const defs = [
+    ...(typeof EDITABLE_PROMPT_DEFAULTS !== 'undefined' ? EDITABLE_PROMPT_DEFAULTS : []),
+    ...(typeof getCustomPrompts === 'function' ? getCustomPrompts() : [])
+  ];
+  const matches = activeIds
+    .map(id => ({ id, name: defs.find(p => p.id === id)?.name || id }))
+    .filter(r => !query || r.name.toLowerCase().includes(query));
+  if (!matches.length) { dropdown.style.display = 'none'; return; }
+  dropdown.innerHTML = matches.map(r =>
+    `<div class="proj-at-item" onclick="selectProjAssistAtRole('${r.name.replace(/'/g, "\\'")}')">@${r.name}</div>`
+  ).join('');
+  dropdown.style.display = 'block';
+  if (!_projAtCompleteListenerAdded) {
+    _projAtCompleteListenerAdded = true;
+    document.addEventListener('click', (ev) => {
+      const dd = document.getElementById('projAssistAtDropdown');
+      const ta = document.getElementById('projAssistInput');
+      if (dd && !dd.contains(ev.target) && ev.target !== ta) dd.style.display = 'none';
+    });
+  }
+}
+
+function selectProjAssistAtRole(name) {
+  const ta = document.getElementById('projAssistInput');
+  if (!ta) return;
+  ta.value = `@${name}: `;
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = ta.value.length;
+  const dd = document.getElementById('projAssistAtDropdown');
+  if (dd) dd.style.display = 'none';
 }
 
 // ── Chat-Gedanken (Projekt-Assistent) v5.100 ────────────────────────────

@@ -2,7 +2,7 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.11** (Stand: 29.06.2026)
+**v6.12** (Stand: 29.06.2026)
 
 ## Pflichtregeln bei jeder Änderung (IMMER, keine Ausnahme)
 1. Versionsnummer in `index.html` erhöhen (Header-Badge + alle `?v=X.XX` Script-Tags)
@@ -123,6 +123,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.12 | 29.06.2026 | Bugfix: Einzelne Rolle kennt sich selbst (Meta-Hint in System-Prompt, claude.js + projects.js) + @-Direktansprache im Projekt-Assistenten (Autocomplete-Dropdown, sendProjectChatMessage) |
 | v6.11 | 29.06.2026 | Bugfix: Rollen-Persistenz im Projekt-Assistenten — save on close, double restore on open, save on send |
 | v6.10 | 29.06.2026 | Bugfix: Edit-Icon (edit-2), Print pro Karte, Markdown-Parser im Print-Fenster (Tabellen korrekt) |
 | v6.9 | 29.06.2026 | Feature: Chat-Gedanken bearbeiten (Stift-Icon) + Drucken/PDF-Export (sessions.js + projects.js) |

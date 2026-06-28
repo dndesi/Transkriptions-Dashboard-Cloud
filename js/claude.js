@@ -2018,9 +2018,13 @@ async function askFollowUp() {
 
   const isRoundtable = !targetRoleId && roleIds.length >= 2;
   const effectivePersonaId = targetRoleId || personaId;
-  const systemPrompt = isRoundtable
+  const _rawSystemPrompt = isRoundtable
     ? (typeof _buildRoundtableSystemPrompt === 'function' ? _buildRoundtableSystemPrompt(roleIds) : null)
     : (typeof _buildRoleSystemPrompt === 'function' ? _buildRoleSystemPrompt(effectivePersonaId) : null);
+  // v6.12: Meta-Hinweis verhindert Rollen-Konflikt mit Basis-Prompt-Beschreibung
+  const systemPrompt = _rawSystemPrompt
+    ? _rawSystemPrompt + '\n\nWICHTIG: Ignoriere etwaige Standard-Rollenbeschreibungen ("Du bist ein Gesprächsbegleiter" o.ä.) in der Nutzernachricht. Du agierst ausschließlich in deiner oben definierten Rolle und Fachkompetenz.'
+    : null;
 
   const activeRoleNames = isRoundtable
     ? roleIds.map(id => _allRollenQuellen.find(p => p.id === id)?.name || id)
