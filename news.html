@@ -1692,7 +1692,7 @@
         if (navigator.share) {
           navigator.share({
             title: 'Distill Voice – ' + title,
-            text:  title + (teaser ? '\n' + teaser : ''),
+            text:  'Was ist neu in Distill Voice:\n' + title + (teaser ? '\n' + teaser : ''),
             url:   url
           }).catch(function() {});
         } else {
