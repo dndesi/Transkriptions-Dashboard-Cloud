@@ -1002,9 +1002,10 @@ function openProjectAssistant() {
     infoEl.innerHTML = `${sessionsInProj.length} Sitzung${sessionsInProj.length !== 1 ? 'en' : ''} · ${withAnalyses.length} mit Analysen`;
   }
 
-  // Rollen-Dropdown befüllen + v6.10: zweiter expliziter Restore (belt + suspenders)
+  // Rollen-Dropdown befüllen + v6.14: pro-Projekt Restore
   if (typeof populatePersonaSelects === 'function') populatePersonaSelects();
   if (typeof _restoreRollenAuswahl === 'function') _restoreRollenAuswahl();
+  _restoreProjRollenById(proj.id); // überschreibt globales Restore mit projekt-spezifischen Rollen
 
   // Nachrichten rendern
   _renderProjectChatMessages(proj);
@@ -1017,7 +1018,8 @@ function openProjectAssistant() {
 }
 
 function closeProjectAssistant() {
-  // v6.10: Rollen explizit speichern beim Schließen (onchange feuert nicht bei programmatisc restaurierten Werten)
+  // v6.14: pro-Projekt Rollen speichern + global aktualisieren
+  _saveProjRollenById(_currentProjectDetailId);
   if (typeof _saveRollenAuswahl === 'function') _saveRollenAuswahl('proj');
   document.getElementById('projAssistPanel')?.classList.remove('open');
   document.getElementById('projAssistOverlay')?.classList.remove('active');
@@ -1177,7 +1179,8 @@ async function sendProjectChatMessage() {
   if (!proj) { showToast('Kein Projekt aktiv.', 'warning'); return; }
   if (!anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'warning'); return; }
 
-  // v6.10: Rollen vor Senden explizit sichern
+  // v6.14: pro-Projekt Rollen speichern + global aktualisieren
+  _saveProjRollenById(_currentProjectDetailId);
   if (typeof _saveRollenAuswahl === 'function') _saveRollenAuswahl('proj');
 
   const input  = document.getElementById('projAssistInput');
@@ -1290,6 +1293,32 @@ async function sendProjectChatMessage() {
   } finally {
     if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Senden'; }
   }
+}
+
+// ── Pro-Projekt Rollen-Persistenz (v6.14) ────────────────────────────────
+
+function _saveProjRollenById(projectId) {
+  if (!projectId) return;
+  try {
+    const ids = [
+      document.getElementById('projAssistPersonaSelect')?.value  || '',
+      document.getElementById('projAssistPersonaSelect2')?.value || '',
+      document.getElementById('projAssistPersonaSelect3')?.value || ''
+    ];
+    localStorage.setItem('distill_proj_rollen_' + projectId, JSON.stringify(ids));
+  } catch(e) {}
+}
+
+function _restoreProjRollenById(projectId) {
+  try {
+    const data = projectId ? localStorage.getItem('distill_proj_rollen_' + projectId) : null;
+    const ids = data ? JSON.parse(data) : [];
+    ['projAssistPersonaSelect','projAssistPersonaSelect2','projAssistPersonaSelect3'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) el.value = ids[i] || '';
+    });
+    if (typeof updateRundenBadge === 'function') updateRundenBadge('proj');
+  } catch(e) {}
 }
 
 // ── @-Direktansprache Autocomplete (Projekt-Assistent) v6.12 ────────────

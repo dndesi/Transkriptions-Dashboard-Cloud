@@ -47,6 +47,32 @@ async function _claudeFetchWithRetry(body, label) {
   }
 }
 
+// ── Pro-Sitzung Rollen-Persistenz (v6.14) ────────────────────────────────
+
+function _saveAnalyseRollenById(sessionId) {
+  if (!sessionId) return;
+  try {
+    const ids = [
+      document.getElementById('followupPersonaSelect')?.value  || '',
+      document.getElementById('followupPersonaSelect2')?.value || '',
+      document.getElementById('followupPersonaSelect3')?.value || ''
+    ];
+    localStorage.setItem('distill_analyse_rollen_' + sessionId, JSON.stringify(ids));
+  } catch(e) {}
+}
+
+function _restoreAnalyseRollenById(sessionId) {
+  try {
+    const data = sessionId ? localStorage.getItem('distill_analyse_rollen_' + sessionId) : null;
+    const ids = data ? JSON.parse(data) : [];
+    ['followupPersonaSelect','followupPersonaSelect2','followupPersonaSelect3'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) el.value = ids[i] || '';
+    });
+    if (typeof updateRundenBadge === 'function') updateRundenBadge('analyse');
+  } catch(e) {}
+}
+
 async function callClaudeAPI(prompt, systemPrompt = null) {
   if (!anthropicKey) throw new Error('Kein Anthropic API-Key gesetzt. Bitte unter 🔑 API-Keys eintragen.');
   const body = {
@@ -1332,6 +1358,8 @@ function showTranscript(session) {
   const flap = document.getElementById('sdcFlap');
   if (flap) flap.classList.remove('hidden');
   if (typeof closeSessionSidebar === 'function') closeSessionSidebar();
+  // v6.14: Pro-Sitzung Rollen wiederherstellen
+  _restoreAnalyseRollenById(session.id);
 }
 
 
@@ -1991,6 +2019,8 @@ async function askFollowUp() {
   const personaId2 = document.getElementById('followupPersonaSelect2')?.value || '';
   const personaId3 = document.getElementById('followupPersonaSelect3')?.value || '';
   const roleIds = [personaId, personaId2, personaId3].filter(Boolean);
+  // v6.14: Rollen dieser Sitzung speichern (pro-Sitzung Persistenz)
+  _saveAnalyseRollenById(currentSessionId);
 
   // Rollennamen für Farb-Rendering ermitteln
   const _allRollenQuellen = [
