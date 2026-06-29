@@ -1358,8 +1358,6 @@ function showTranscript(session) {
   const flap = document.getElementById('sdcFlap');
   if (flap) flap.classList.remove('hidden');
   if (typeof closeSessionSidebar === 'function') closeSessionSidebar();
-  // v6.14: Pro-Sitzung Rollen wiederherstellen
-  _restoreAnalyseRollenById(session.id);
 }
 
 
@@ -2019,8 +2017,6 @@ async function askFollowUp() {
   const personaId2 = document.getElementById('followupPersonaSelect2')?.value || '';
   const personaId3 = document.getElementById('followupPersonaSelect3')?.value || '';
   const roleIds = [personaId, personaId2, personaId3].filter(Boolean);
-  // v6.14: Rollen dieser Sitzung speichern (pro-Sitzung Persistenz)
-  _saveAnalyseRollenById(currentSessionId);
 
   // Rollennamen für Farb-Rendering ermitteln
   const _allRollenQuellen = [
