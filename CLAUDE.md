@@ -2,7 +2,7 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.15** (Stand: 29.06.2026)
+**v6.17** (Stand: 26.07.2026)
 
 ## Pflichtregeln bei jeder Änderung (IMMER, keine Ausnahme)
 1. Versionsnummer in `index.html` erhöhen (Header-Badge + alle `?v=X.XX` Script-Tags)
@@ -123,6 +123,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.17 | 26.07.2026 | Bugfix: Custom Prompt Ausgabe-Felder — extractJSON() statt regex, robust gegen ```json Wrapper und Präambel |
 | v6.15 | 29.06.2026 | Bugfix: Sitzungs-Assistent Rollen-Persistenz wiederhergestellt — per-Sitzungs-Hooks aus claude.js entfernt, globale Persistenz wieder aktiv |
 | v6.14 | 29.06.2026 | Feature: Pro-Chat Rollen-Persistenz — Projekt-Assistent merkt eigene Rollen per localStorage-Key mit Projekt-ID |
 | v6.13 | 29.06.2026 | Bugfix: Root-Cause-Fix Rolle im Projekt-Assistenten — Rollen-Intro aus Nutzernachricht entfernt wenn Rolle aktiv (nur kontext-Teil wird gesendet) |

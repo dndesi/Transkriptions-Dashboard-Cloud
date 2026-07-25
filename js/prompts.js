@@ -1761,8 +1761,8 @@ async function runCustomPrompt(session, promptObj, transcript, extraPhotos = [])
   if (Array.isArray(schema) && schema.length > 0) {
     let structured = null;
     try {
-      const jsonStr = result.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-      structured = JSON.parse(jsonStr);
+      // v6.17: extractJSON() statt regex-replace — robust gegen Präambel-Text und ```json Wrapper
+      structured = JSON.parse(extractJSON(result, '{'));
     } catch(e) {
       console.warn('[customPrompt] JSON-Parse fehlgeschlagen, Fallback auf Freitext:', e.message);
     }
