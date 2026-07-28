@@ -304,6 +304,7 @@ function updateAnalyseDropdown() {
         const o = document.createElement('option');
         o.value = 'custom:' + p.id;
         o.textContent = p.name;
+        if (p.description) o.title = p.description; // v6.18: Tooltip bei Mouseover
         grp.appendChild(o);
       });
     } else {
