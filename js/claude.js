@@ -1739,9 +1739,20 @@ function _translitUmlaute(str) {
   return str.toLowerCase()
     .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
     .replace(/\s+v?\d+[\.\d]*$/i, '') // trailing " 2", " v2", " v1.2"
+    .replace(/&/g, '')                 // & entfernen
+    .replace(/[^a-z0-9\-\s]/g, '')    // nur Buchstaben, Zahlen, Bindestriche, Leerzeichen
     .replace(/\s+/g, '-')             // Leerzeichen → Bindestriche
     .replace(/-+/g, '-')              // keine doppelten Bindestriche
     .replace(/^-|-$/g, '');           // keine führenden/abschließenden Bindestriche
+}
+
+// Hilfsfunktion: Auf einen Satz + max 25 Wörter kürzen (v6.21)
+function _truncateToOneSentence(text) {
+  if (!text) return text;
+  const match = text.match(/^[^.!?]*[.!?]/);
+  const sentence = (match ? match[0] : text.split('\n')[0]).trim();
+  const words = sentence.split(/\s+/);
+  return words.length > 25 ? words.slice(0, 25).join(' ') + '…' : sentence;
 }
 
 // Hilfsfunktion: Code-Fence-Marker aus Text entfernen
@@ -1776,8 +1787,8 @@ function _buildMdFrontmatter(session, typ, perspektive) {
   const datum = _formatDateYmd(session.date);
   const projectName = _getProjectName(session.projectId);
   const projekte = projectName ? `[${projectName}]` : '[]';
-  const speakers = [session.speakerA, session.speakerB].filter(Boolean);
-  const teilnehmer = speakers.length ? `[${speakers.join(', ')}]` : '[]';
+  const speakers = [session.speakerA || '<unbekannt>', session.speakerB].filter(Boolean);
+  const teilnehmer = `[${speakers.join(', ')}]`;
   const tags = Array.isArray(session.tags) && session.tags.length
     ? `[${session.tags.map(t => (typeof t === 'object' ? t.text || t.label : t)).join(', ')}]`
     : '[]';
@@ -1922,7 +1933,7 @@ async function exportTranscriptMd() {
     '',
     `# Transkript: ${titel}`,
     '',
-    kernaussage || '<unbekannt>',
+    _truncateToOneSentence(kernaussage) || '<unbekannt>',
     '',
     '## Gesprächsverlauf',
     '',
@@ -1982,14 +1993,24 @@ async function exportAnalysisMd(type) {
   // Abschnitte als ## strukturieren
   const formattedContent = _buildAnalysisMdContent(type, session);
 
+  // v6.21: Kernbefund auf einen Satz / max 25 Wörter kürzen
+  const kernbefundClean = _truncateToOneSentence(kernbefund) || '<unbekannt>';
+
+  // v6.21: Wörtliche Duplikate des Kernbefunds aus dem Inhalt entfernen
+  const contentClean = kernbefundClean !== '<unbekannt>'
+    ? formattedContent.split('\n')
+        .filter(line => line.trim() !== kernbefundClean.trim())
+        .join('\n').replace(/\n{3,}/g, '\n\n')
+    : formattedContent;
+
   const md = [
     frontmatter,
     '',
     `# Auswertung (${perspektive}): ${titel}`,
     '',
-    kernbefund || '<unbekannt>',
+    kernbefundClean,
     '',
-    formattedContent,
+    contentClean,
   ].join('\n');
 
   _downloadMd(md, _mdFilename(session, _translitUmlaute(perspektive)));
