@@ -58,7 +58,8 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
     meineAufgaben:       json.meineAufgaben       || { titel: `Perspektive: ${speakerA}`, punkte: [] },
     andereErwartungen:   json.andereErwartungen   || { titel: `Perspektive: ${speakerB}`, punkte: [] },
     emotionaleEbene:     json.emotionaleEbene     || { titel: 'Emotionale Ebene',          punkte: [] },
-    strategischeEbene:   json.strategischeEbene   || { titel: 'Strategische Perspektive',  punkte: [] }
+    strategischeEbene:   json.strategischeEbene   || { titel: 'Strategische Perspektive',  punkte: [] },
+    kernbefund:          json.kernbefund           || '', // v6.19
   };
 }
 

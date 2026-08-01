@@ -613,6 +613,7 @@ async function analysePrivate(session, transcript) {
     keyThoughts:   Array.isArray(json.keyThoughts)  ? json.keyThoughts : [],
     nextSteps:     Array.isArray(json.nextSteps)    ? json.nextSteps   : [],
     summary:       json.summary       || '',
+    kernbefund:    json.kernbefund    || '', // v6.19
   };
 }
 
@@ -638,6 +639,7 @@ async function analyseWork(session, transcript) {
     risks:          Array.isArray(json.risks)         ? json.risks         : [],
     zwischenzeilen: json.zwischenzeilen || '',
     summary:        json.summary || '',
+    kernbefund:     json.kernbefund || '', // v6.19
   };
 }
 
@@ -652,7 +654,7 @@ async function analyseSentiment(session, transcript) {
   const { text, inputTokens, outputTokens } = await callClaudeAPI(anonymizeText(prompt, forward));
   addTokensToSession(session, inputTokens, outputTokens);
   const json = deanonymizeObject(JSON.parse(extractJSON(text, '{')), reverse);
-  session.claudeSentiment = json;
+  session.claudeSentiment = { ...json, kernbefund: json.kernbefund || '' }; // v6.19
 }
 
 async function analyseChapters(session, transcript) {
@@ -1270,6 +1272,7 @@ function renderInsights(session) {
                   ${icon('copy',11,'pointer-events:none')}TXT</button>
                 <button class="insights-export-btn" title="Drucken / PDF" onclick="event.stopPropagation();exportCustomResultPdf('${bid}')">
                   ${icon('printer',11,'pointer-events:none')}PDF</button>
+                <button class="insights-export-btn" title="Als Markdown speichern" onclick="event.stopPropagation();exportAnalysisMd('custom:${pid}')">MD</button>
                 <button class="insights-export-btn" title="Analyse löschen" style="color:var(--muted)" onclick="event.stopPropagation();deleteCustomAnalysis(this,'${pid}')">
                   ${icon('trash-2',11,'pointer-events:none')}</button>
                 <span class="insights-block-chevron">▾</span>
@@ -1719,6 +1722,343 @@ function exportSection(type, format) {
       </body></html>`);
     win.document.close();
   }
+}
+
+// ═══════════════════════════════════════════════════
+// MD-EXPORT v6.19
+// ═══════════════════════════════════════════════════
+
+// Hilfsfunktion: Umlaute umschreiben (für perspektive-Feld)
+function _translitUmlaute(str) {
+  return str.toLowerCase()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss');
+}
+
+// Hilfsfunktion: Session-Datum formatieren → YYYY-MM-DD
+function _formatDateYmd(dateVal) {
+  if (!dateVal) return '<unbekannt>';
+  try {
+    const d = new Date(dateVal);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  } catch { return '<unbekannt>'; }
+}
+
+// Hilfsfunktion: Projektname aus Projekt-ID ermitteln
+function _getProjectName(projectId) {
+  if (!projectId) return '';
+  if (typeof projects !== 'undefined' && Array.isArray(projects)) {
+    const p = projects.find(x => x.id === projectId);
+    if (p?.name) return p.name;
+  }
+  return '';
+}
+
+// Hilfsfunktion: YAML-Frontmatter bauen
+function _buildMdFrontmatter(session, typ, perspektive) {
+  const datum = _formatDateYmd(session.date);
+  const projectName = _getProjectName(session.projectId);
+  const projekte = projectName ? `[${projectName}]` : '[]';
+  const speakers = [session.speakerA, session.speakerB].filter(Boolean);
+  const teilnehmer = speakers.length ? `[${speakers.join(', ')}]` : '[]';
+  const tags = Array.isArray(session.tags) && session.tags.length
+    ? `[${session.tags.map(t => (typeof t === 'object' ? t.text || t.label : t)).join(', ')}]`
+    : '[]';
+  let yaml = `---\ndatum: ${datum}\nprojekte: ${projekte}\nteilnehmer: ${teilnehmer}\ntags: ${tags}\ntyp: ${typ}`;
+  if (perspektive) yaml += `\nperspektive: ${_translitUmlaute(perspektive)}`;
+  yaml += '\n---';
+  return yaml;
+}
+
+// kernbefund ermitteln – gespeichert oder auto-generiert (für Kapitel/Themen) oder Mini-Call
+async function _getKernbefund(type, session) {
+  // 1. Gespeicherte kernbefund-Felder aus neuen Analysen
+  if (type === 'private' && session.privateAnalysis?.kernbefund) return session.privateAnalysis.kernbefund;
+  if (type === 'work'    && session.workAnalysis?.kernbefund)    return session.workAnalysis.kernbefund;
+  if (type === 'sentiment' && session.claudeSentiment?.kernbefund) return session.claudeSentiment.kernbefund;
+  if (type === '360'     && session.claude360?.kernbefund)       return session.claude360.kernbefund;
+
+  // 2. Auto-Generierung für Kapitel und Themen (kein Claude-Call nötig)
+  if (type === 'chapters' && session.claudeChapters?.length) {
+    const titles = session.claudeChapters.slice(0, 4).map(c => c.title).join(', ');
+    return `Das Gespräch gliedert sich in ${session.claudeChapters.length} Kapitel: ${titles}${session.claudeChapters.length > 4 ? ' u.a.' : ''}.`;
+  }
+  if (type === 'topics' && session.claudeTopics?.length) {
+    const topicList = session.claudeTopics.slice(0, 6).map(t => typeof t === 'string' ? t : t.text).join(', ');
+    return `Das Gespräch behandelte folgende Themen: ${topicList}.`;
+  }
+
+  // 3. Custom Prompt: erstes text-Feld aus structured Result
+  if (type.startsWith('custom:')) {
+    const promptId = type.slice(7);
+    const res = session.customResults?.[promptId];
+    if (res?.structured && res?.schema) {
+      const firstTextField = res.schema.find(f => f.type === 'text');
+      if (firstTextField) {
+        const val = res.structured[firstTextField.field || firstTextField.name];
+        if (val && String(val).trim()) return String(val).trim().split('\n')[0];
+      }
+    }
+    if (res?.text) return res.text.split('\n')[0].slice(0, 200);
+  }
+
+  // 4. Fallback: Mini-Call
+  return await _kernbefundMiniCall(type, session);
+}
+
+// Mini-Call für kernaussage beim Transkript und fehlende kernbefunde
+async function _kernbefundMiniCall(type, session) {
+  if (!anthropicKey) return '<unbekannt>';
+  try {
+    const isTranscript = (type === 'transcript');
+    const content = isTranscript
+      ? buildTranscriptText(session).slice(0, 8000)
+      : (_buildSectionText(type, session) || '').slice(0, 6000);
+    if (!content) return '<unbekannt>';
+
+    const question = isTranscript
+      ? 'Worum ging es in diesem Gespräch? Antworte mit GENAU EINEM deutschen Satz.'
+      : 'Was ist der Kernbefund dieser Analyse? Antworte mit GENAU EINEM deutschen Satz.';
+
+    const { text } = await callClaudeAPI(`${question}\n\n${content}`);
+    const result = text.trim().split('\n')[0].replace(/^[-•*]\s*/, '');
+
+    // Ergebnis cachen
+    if (isTranscript && session.privateAnalysis) session.privateAnalysis.kernbefund = result;
+    saveSessions();
+    return result;
+  } catch { return '<unbekannt>'; }
+}
+
+// Transkript als MD exportieren
+async function exportTranscriptMd() {
+  const session = getSession(currentSessionId);
+  if (!session) return;
+
+  showToast('MD wird erstellt…', 'info');
+
+  // kernaussage: aus Gesprächsanalyse oder Mini-Call
+  let kernaussage = session.privateAnalysis?.kernbefund || '';
+  if (!kernaussage) kernaussage = await _kernbefundMiniCall('transcript', session);
+
+  const frontmatter = _buildMdFrontmatter(session, 'transkript', null);
+  const titel = session.label || '<unbekannt>';
+
+  // Gesprächsverlauf aus utterances
+  let verlauf = '';
+  if (session.utterances?.length) {
+    let lastSpeaker = '';
+    const lines = [];
+    session.utterances.forEach(u => {
+      const name = u.speaker === 'A' ? (session.speakerA || 'A') : (session.speakerB || 'B');
+      if (name !== lastSpeaker) { lines.push(`\n**${name}:** ${u.text}`); lastSpeaker = name; }
+      else lines.push(u.text);
+    });
+    verlauf = lines.join(' ');
+  } else {
+    verlauf = '<kein Transkript vorhanden>';
+  }
+
+  const md = [
+    frontmatter,
+    '',
+    `# Transkript: ${titel}`,
+    '',
+    kernaussage || '<unbekannt>',
+    '',
+    '## Gesprächsverlauf',
+    '',
+    verlauf.trim(),
+  ].join('\n');
+
+  _downloadMd(md, `${_mdSlug(titel)}-transkript`);
+}
+
+// Analyse als MD exportieren
+async function exportAnalysisMd(type) {
+  const session = getSession(currentSessionId);
+  if (!session) return;
+
+  showToast('MD wird erstellt…', 'info');
+
+  const perspektivMap = {
+    private:   'Gesprächsanalyse',
+    work:      'Arbeitsanalyse',
+    sentiment: 'Stimmungsanalyse',
+    chapters:  'Kapitel',
+    topics:    'Themen',
+    '360':     '360°-Auswertung',
+  };
+
+  let perspektive = '';
+  if (type.startsWith('custom:')) {
+    const promptId = type.slice(7);
+    const res = session.customResults?.[promptId];
+    perspektive = res?.promptName || 'Eigener Prompt';
+  } else {
+    perspektive = perspektivMap[type] || type;
+  }
+
+  const kernbefund = await _getKernbefund(type, session);
+  const frontmatter = _buildMdFrontmatter(session, 'auswertung', perspektive);
+  const titel = session.label || '<unbekannt>';
+
+  // Analyse-Inhalt aus _buildSectionText
+  const sectionText = _buildSectionText(type, session) || '';
+  // Überschriften-Zeilen herausfiltern (sind bereits im MD als ## enthalten)
+  const contentLines = sectionText.split('\n')
+    .filter(l => !l.startsWith('─') && l !== perspektive.toUpperCase() && l !== perspektive.toUpperCase() + ':')
+    .join('\n').trim();
+
+  // Abschnitte als ## strukturieren
+  const formattedContent = _buildAnalysisMdContent(type, session);
+
+  const md = [
+    frontmatter,
+    '',
+    `# Auswertung (${perspektive}): ${titel}`,
+    '',
+    kernbefund || '<unbekannt>',
+    '',
+    formattedContent,
+  ].join('\n');
+
+  _downloadMd(md, `${_mdSlug(titel)}-${_translitUmlaute(perspektive)}`);
+}
+
+// Analyse-Inhalt als strukturierte MD-Abschnitte aufbauen
+function _buildAnalysisMdContent(type, session) {
+  const lines = [];
+
+  if (type === 'private') {
+    const pa = session.privateAnalysis;
+    if (!pa) return '';
+    if (pa.summary)            { lines.push('## Zusammenfassung', '', pa.summary, ''); }
+    if (pa.dynamics)           { lines.push('## Gesprächsdynamik', '', pa.dynamics, ''); }
+    if (pa.zwischenzeilen)     { lines.push('## Zwischen den Zeilen', '', pa.zwischenzeilen, ''); }
+    if (pa.agreements?.length) { lines.push('## Vereinbarungen', '', ...pa.agreements.map(a => `- ${a}`), ''); }
+    if (pa.wishes?.length)     { lines.push('## Wünsche & Bedürfnisse', '', ...pa.wishes.map(w => `- ${typeof w === 'object' ? (w.person ? w.person + ': ' + w.wish : w.wish) : w}`), ''); }
+    if (pa.openTopics?.length) { lines.push('## Offene Themen', '', ...pa.openTopics.map(t => `- ${t}`), ''); }
+    if (pa.keyThoughts?.length){ lines.push('## Kerngedanken', '', ...pa.keyThoughts.map(t => `- ${t}`), ''); }
+    if (pa.nextSteps?.length)  { lines.push('## Nächste Schritte', '', ...pa.nextSteps.map(t => `- ${t}`), ''); }
+
+  } else if (type === 'work') {
+    const wa = session.workAnalysis;
+    if (!wa) return '';
+    if (wa.summary)              { lines.push('## Zusammenfassung', '', wa.summary, ''); }
+    if (wa.zwischenzeilen)       { lines.push('## Zwischen den Zeilen', '', wa.zwischenzeilen, ''); }
+    if (wa.tasks?.length)        { lines.push('## Aufgaben', '', ...wa.tasks.map(t => `- ${t.task}${t.person ? ' [' + t.person + ']' : ''}${t.deadline ? ' bis ' + t.deadline : ''}${t.priority ? ' (' + t.priority + ')' : ''}`), ''); }
+    if (wa.decisions?.length)    { lines.push('## Entscheidungen', '', ...wa.decisions.map(d => `- ${d}`), ''); }
+    if (wa.openQuestions?.length){ lines.push('## Offene Fragen', '', ...wa.openQuestions.map(q => `- ${q}`), ''); }
+    if (wa.risks?.length)        { lines.push('## Risiken', '', ...wa.risks.map(r => `- ${r}`), ''); }
+
+  } else if (type === 'sentiment') {
+    const cs = session.claudeSentiment;
+    if (!cs) return '';
+    if (cs.summary) { lines.push('## Gesprächsdynamik', '', cs.summary, ''); }
+    if (cs.speakers?.length) {
+      lines.push('## Stimmung pro Sprecher', '');
+      cs.speakers.forEach(sp => {
+        lines.push(`### ${sp.name || sp.speaker}`);
+        if (sp.overall)    lines.push(`- Grundstimmung: ${sp.overall}`);
+        if (sp.trend)      lines.push(`- Tendenz: ${sp.trend}`);
+        if (sp.highlight)  lines.push(`- Highlight: *„${sp.highlight}"*`);
+        lines.push('');
+      });
+    }
+
+  } else if (type === 'chapters') {
+    const chs = session.claudeChapters;
+    if (!chs?.length) return '';
+    lines.push('## Kapitelübersicht', '');
+    chs.forEach(c => {
+      lines.push(`### ${c.title}${c.timestamp ? ' (' + c.timestamp + ')' : ''}`);
+      if (c.summary) lines.push('', c.summary);
+      lines.push('');
+    });
+    if (session.claudeChapterSynthesis) {
+      lines.push('## Gesamtbild', '', session.claudeChapterSynthesis, '');
+    }
+
+  } else if (type === 'topics') {
+    const tp = session.claudeTopics;
+    if (!tp?.length) return '';
+    lines.push('## Themen', '');
+    tp.forEach(t => lines.push(`- ${typeof t === 'string' ? t : t.text}`));
+
+  } else if (type === '360') {
+    const d = session.claude360;
+    if (!d) return '';
+    ['meineAufgaben', 'andereErwartungen', 'emotionaleEbene', 'strategischeEbene'].forEach(key => {
+      const block = d[key];
+      if (!block) return;
+      lines.push(`## ${block.titel || key}`, '');
+      if (Array.isArray(block.punkte)) block.punkte.forEach(p => lines.push(`- ${p}`));
+      lines.push('');
+    });
+
+  } else if (type.startsWith('custom:')) {
+    const promptId = type.slice(7);
+    const res = session.customResults?.[promptId];
+    if (!res) return '';
+    if (res.structured && res.schema) {
+      res.schema.forEach(s => {
+        if (s.field === 'kernbefund' || s.name === 'kernbefund') return; // bereits in Kernbefund-Zeile
+        const val = res.structured[s.field || s.name];
+        if (val === undefined || val === null) return;
+        lines.push(`## ${s.label || s.name}`, '');
+        if (s.type === 'text') {
+          lines.push(String(val), '');
+        } else if (s.type === 'list' || s.type === 'list_with_person') {
+          (Array.isArray(val) ? val : []).forEach(item => {
+            if (typeof item === 'object') lines.push(`- ${item.person ? item.person + ': ' : ''}${item.text || JSON.stringify(item)}`);
+            else lines.push(`- ${String(item)}`);
+          });
+          lines.push('');
+        } else if (s.type === 'checklist') {
+          (Array.isArray(val) ? val : []).forEach(item => {
+            const text = typeof item === 'object' ? item.text : String(item);
+            const done = typeof item === 'object' && item.done;
+            lines.push(`- [${done ? 'x' : ' '}] ${text}`);
+          });
+          lines.push('');
+        } else if (s.type === 'table') {
+          const rows = Array.isArray(val) ? val : [];
+          if (s.columns?.length) {
+            lines.push('| ' + s.columns.join(' | ') + ' |');
+            lines.push('| ' + s.columns.map(() => '---').join(' | ') + ' |');
+          }
+          rows.forEach(row => {
+            const cells = Array.isArray(row) ? row : [row];
+            lines.push('| ' + cells.map(c => String(c ?? '').replace(/\|/g, '\\|')).join(' | ') + ' |');
+          });
+          lines.push('');
+        }
+      });
+    } else if (res.text) {
+      lines.push(res.text);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+// Dateiname-Slug
+function _mdSlug(label) {
+  return (label || 'export').replace(/[^a-z0-9äöüÄÖÜß\s]/gi, '').trim().replace(/\s+/g, '-').toLowerCase().slice(0, 60);
+}
+
+// MD-Datei herunterladen
+function _downloadMd(content, filename) {
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href: url, download: filename + '.md' });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('MD-Datei gespeichert', 'success');
 }
 
 function _updateTypeButtons(activeType) {

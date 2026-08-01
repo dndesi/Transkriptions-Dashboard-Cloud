@@ -110,7 +110,8 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
   "strategischeEbene": {
     "titel": "Strategische Perspektive",
     "punkte": ["Was langfristig wichtig ist, welche Muster sichtbar werden, was strukturell zu klären bleibt"]
-  }
+  },
+  "kernbefund": "GENAU EIN Satz: Was ist die wichtigste Erkenntnis aus der 360°-Perspektive dieses Gesprächs?"
 }`
   },
   {
@@ -183,7 +184,8 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
   "zwischenzeilen": "Was wurde NICHT direkt gesagt, aber war spürbar? Welche unausgesprochenen Bedürfnisse, Ängste, Hoffnungen oder Muster schwingen mit? Lies wirklich zwischen den Zeilen.",
   "keyThoughts": ["Das wirklich Wichtige in diesem Gespräch – emotional und inhaltlich"],
   "nextSteps": ["Konkreter nächster Schritt der genannt oder angedeutet wurde"],
-  "summary": "Kompakte Zusammenfassung in 2-4 Sätzen: Worum ging es wirklich, was war der emotionale Kern, was bleibt offen?"
+  "summary": "Kompakte Zusammenfassung in 2-4 Sätzen: Worum ging es wirklich, was war der emotionale Kern, was bleibt offen?",
+  "kernbefund": "GENAU EIN Satz: Worum ging es in diesem Gespräch – sachlich und neutral formuliert?"
 }
 Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`
   },
@@ -208,7 +210,8 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
   "zwischenzeilen": "Was liegt hinter diesen Gedanken? Welches tieferliegende Bedürfnis, welche Angst oder welcher Wunsch zeigt sich zwischen den Zeilen? Was wird vielleicht vermieden zu denken?",
   "keyThoughts": ["Kerngedanke 1 – das wirklich Wichtige, nicht nur Erwähntes"],
   "nextSteps": ["Konkreter nächster Schritt der genannt oder angedeutet wurde"],
-  "summary": "Ehrliche Zusammenfassung in 2-3 Sätzen: Was beschäftigt diese Person wirklich? Was trägt sie mit sich?"
+  "summary": "Ehrliche Zusammenfassung in 2-3 Sätzen: Was beschäftigt diese Person wirklich? Was trägt sie mit sich?",
+  "kernbefund": "GENAU EIN Satz: Womit beschäftigt sich diese Person wirklich – der Kern dieser Gedanken?"
 }
 Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`
   },
@@ -245,7 +248,8 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
     "Mögliches Problem, Risiko oder Konflikpunkt der erwähnt oder angedeutet wurde"
   ],
   "zwischenzeilen": "Was wurde nicht direkt angesprochen, aber war spürbar? Ungeklärte Dynamiken, Unsicherheiten, unausgesprochene Erwartungen, Spannungen oder Widerstände im Team.",
-  "summary": "Kompakte Zusammenfassung in 2-4 Sätzen: Was war der Anlass, was wurde besprochen, was ist das Ergebnis?"
+  "summary": "Kompakte Zusammenfassung in 2-4 Sätzen: Was war der Anlass, was wurde besprochen, was ist das Ergebnis?",
+  "kernbefund": "GENAU EIN Satz: Was ist das Kernergebnis dieses Arbeitsgesprächs?"
 }
 Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`
   },
@@ -276,7 +280,8 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
       "highlight": "Ein typischer oder markanter Satz dieser Person (auf Deutsch)"
     }
   ],
-  "summary": "1-2 Sätze zur Gesprächsdynamik (auf Deutsch)"
+  "summary": "1-2 Sätze zur Gesprächsdynamik (auf Deutsch)",
+  "kernbefund": "GENAU EIN Satz: Wie war die Stimmung in diesem Gespräch?"
 }`
   },
   {
@@ -2662,10 +2667,31 @@ function _renderGenModal() {
   if (window.lucide) lucide.createIcons({ nodes: [document.getElementById('promptGeneratorModal')] });
 }
 
+// ── v6.19: kernbefund-Migration für Custom Prompts ──────────────────────────
+// Einmalig: Fügt kernbefund-Feld zu allen Custom Prompts mit outputSchema hinzu
+function migrateCustomPromptsKernbefund() {
+  const FLAG = 'kernbefundMigrated_v619';
+  if (localStorage.getItem(FLAG)) return;
+  const prompts = getCustomPrompts();
+  let changed = false;
+  prompts.forEach(p => {
+    if (!Array.isArray(p.outputSchema)) return;
+    const hasKernbefund = p.outputSchema.some(f => f.field === 'kernbefund' || f.name === 'kernbefund');
+    if (!hasKernbefund) {
+      p.outputSchema.unshift({ field: 'kernbefund', name: 'kernbefund', type: 'text', label: 'Kernbefund' });
+      changed = true;
+    }
+  });
+  if (changed) saveCustomPrompts(prompts);
+  localStorage.setItem(FLAG, '1');
+  console.log('[prompts] kernbefund-Migration v6.19 ✓');
+}
+
 // ── Migration beim Seitenstart ausführen (v5.22) ─────────────────────────────
 // Nur einmalig – wenn userPrompts noch nicht existiert, werden alte Schlüssel übernommen
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', migrateToUserPrompts);
+  document.addEventListener('DOMContentLoaded', () => { migrateToUserPrompts(); migrateCustomPromptsKernbefund(); });
 } else {
   migrateToUserPrompts();
+  migrateCustomPromptsKernbefund();
 }
