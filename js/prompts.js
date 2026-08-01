@@ -185,7 +185,8 @@ Antworte NUR mit einem JSON-Objekt (kein Markdown, keine Erklärungen):
   "keyThoughts": ["Das wirklich Wichtige in diesem Gespräch – emotional und inhaltlich"],
   "nextSteps": ["Konkreter nächster Schritt der genannt oder angedeutet wurde"],
   "summary": "Kompakte Zusammenfassung in 2-4 Sätzen: Worum ging es wirklich, was war der emotionale Kern, was bleibt offen?",
-  "kernbefund": "GENAU EIN Satz: Worum ging es in diesem Gespräch – sachlich und neutral formuliert?"
+  "kernbefund": "GENAU EIN Satz: Worum ging es in diesem Gespräch – sachlich und neutral formuliert?",
+  "tags": ["2-4 spezifische Schlagworte die den INHALT dieses Gesprächs benennen – nicht die Gattung. Regeln: Keine Gattungsbegriffe (verboten: meeting, gespräch, besprechung, todo, aufgaben, teamarbeit, produktivität, notiz). Nichts wiederholen was in Datum/Projekt/Typ steht. Prüfe: Passt es auf die Mehrzahl aller Gespräche? → Weglassen. Kleinschreibung, Singular, Bindestriche statt Leerzeichen. Lieber 2 treffende als 4 beliebige."]
 }
 Wenn es keine Einträge für eine Kategorie gibt, gib ein leeres Array [] zurück.`
   },

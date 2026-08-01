@@ -2,7 +2,7 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.19** (Stand: 01.08.2026)
+**v6.20** (Stand: 01.08.2026)
 
 ## Pflichtregeln bei jeder Änderung (IMMER, keine Ausnahme)
 1. Versionsnummer in `index.html` erhöhen (Header-Badge + alle `?v=X.XX` Script-Tags)
@@ -123,6 +123,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.20 | 01.08.2026 | Fix: MD-Export SeBr-Qualität — Tags (SeBr-Regeln), CodeFences, Perspektive bereinigt, Datum-Präfix im Dateinamen |
 | v6.19 | 01.08.2026 | Feature: MD-Export — Transkript & Analysen als Markdown-Datei (YAML-Frontmatter, kernbefund, Second Brain) |
 | v6.18 | 28.07.2026 | UX: Tooltip im Analyse-Dropdown — Kurzbeschreibung bei Mouseover (title-Attribut auf option-Element) |
 | v6.17 | 26.07.2026 | Bugfix: Custom Prompt Ausgabe-Felder — extractJSON() statt regex, robust gegen ```json Wrapper und Präambel |

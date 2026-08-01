@@ -615,6 +615,12 @@ async function analysePrivate(session, transcript) {
     summary:       json.summary       || '',
     kernbefund:    json.kernbefund    || '', // v6.19
   };
+  // v6.20: Tags auto-speichern wenn Session noch keine hat
+  if (Array.isArray(json.tags) && json.tags.length && (!session.tags || !session.tags.length)) {
+    session.tags = json.tags.map(t => String(t).toLowerCase().replace(/\s+/g, '-')).filter(Boolean);
+    if (typeof renderTagChips === 'function') renderTagChips(session);
+    if (typeof updateTagFilter === 'function') updateTagFilter();
+  }
 }
 
 async function analyseWork(session, transcript) {
@@ -1728,11 +1734,19 @@ function exportSection(type, format) {
 // MD-EXPORT v6.19
 // ═══════════════════════════════════════════════════
 
-// Hilfsfunktion: Umlaute umschreiben (für perspektive-Feld)
+// Hilfsfunktion: Umlaute umschreiben + Leerzeichen → Bindestriche + Versionsnummer entfernen
 function _translitUmlaute(str) {
   return str.toLowerCase()
-    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
-    .replace(/ß/g, 'ss');
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .replace(/\s+v?\d+[\.\d]*$/i, '') // trailing " 2", " v2", " v1.2"
+    .replace(/\s+/g, '-')             // Leerzeichen → Bindestriche
+    .replace(/-+/g, '-')              // keine doppelten Bindestriche
+    .replace(/^-|-$/g, '');           // keine führenden/abschließenden Bindestriche
+}
+
+// Hilfsfunktion: Code-Fence-Marker aus Text entfernen
+function _stripCodeFences(text) {
+  return String(text).replace(/^```[\w]*\n?/gm, '').replace(/^```\n?/gm, '').trim();
 }
 
 // Hilfsfunktion: Session-Datum formatieren → YYYY-MM-DD
@@ -1833,12 +1847,53 @@ async function _kernbefundMiniCall(type, session) {
   } catch { return '<unbekannt>'; }
 }
 
+// v6.20: Tags per Mini-Call generieren (SeBr-Regeln)
+async function _generateTagsMiniCall(session) {
+  if (!anthropicKey) return [];
+  try {
+    const content = (typeof buildTranscriptText === 'function' ? buildTranscriptText(session) : '').slice(0, 6000) || session.label || '';
+    if (!content) return [];
+    const { text } = await callClaudeAPI(`Analysiere diesen Gesprächsinhalt und gib 2-4 spezifische Tags zurück, die den INHALT dieses konkreten Gesprächs beschreiben.
+
+Regeln:
+- Keine Gattungsbegriffe. Verboten: meeting, gespräch, besprechung, todo, aufgaben, teamarbeit, produktivität, notiz, transkript, auswertung.
+- Nichts wiederholen was schon in Datum, Projekt oder Typ steht.
+- Prüfe jedes Tag: Würde es auf die Mehrzahl aller Gespräche passen? → Weglassen.
+- Kleinschreibung, Singular, Bindestriche statt Leerzeichen.
+- Lieber 2 treffende Tags als 4 beliebige.
+
+Antworte NUR mit einem JSON-Array: ["tag1", "tag2"]
+
+${content}`);
+    const arr = JSON.parse(extractJSON(text, '['));
+    return Array.isArray(arr) ? arr.map(t => String(t).toLowerCase().replace(/\s+/g, '-')).filter(Boolean) : [];
+  } catch { return []; }
+}
+
+// Hilfsfunktion: Dateiname mit Datum-Präfix
+function _mdFilename(session, suffix) {
+  const date = _formatDateYmd(session.date).replace('<unbekannt>', '');
+  const slug = _mdSlug(session.label || 'export');
+  return date ? `${date}-${slug}-${suffix}` : `${slug}-${suffix}`;
+}
+
 // Transkript als MD exportieren
 async function exportTranscriptMd() {
   const session = getSession(currentSessionId);
   if (!session) return;
 
   showToast('MD wird erstellt…', 'info');
+
+  // v6.20: Tags auto-generieren wenn leer
+  if (!session.tags?.length) {
+    const generated = await _generateTagsMiniCall(session);
+    if (generated.length) {
+      session.tags = generated;
+      saveSessions();
+      if (typeof renderTagChips === 'function') renderTagChips(session);
+      if (typeof updateTagFilter === 'function') updateTagFilter();
+    }
+  }
 
   // kernaussage: aus Gesprächsanalyse oder Mini-Call
   let kernaussage = session.privateAnalysis?.kernbefund || '';
@@ -1874,7 +1929,7 @@ async function exportTranscriptMd() {
     verlauf.trim(),
   ].join('\n');
 
-  _downloadMd(md, `${_mdSlug(titel)}-transkript`);
+  _downloadMd(md, _mdFilename(session, 'transkript'));
 }
 
 // Analyse als MD exportieren
@@ -1883,6 +1938,17 @@ async function exportAnalysisMd(type) {
   if (!session) return;
 
   showToast('MD wird erstellt…', 'info');
+
+  // v6.20: Tags auto-generieren wenn leer
+  if (!session.tags?.length) {
+    const generated = await _generateTagsMiniCall(session);
+    if (generated.length) {
+      session.tags = generated;
+      saveSessions();
+      if (typeof renderTagChips === 'function') renderTagChips(session);
+      if (typeof updateTagFilter === 'function') updateTagFilter();
+    }
+  }
 
   const perspektivMap = {
     private:   'Gesprächsanalyse',
@@ -1926,7 +1992,7 @@ async function exportAnalysisMd(type) {
     formattedContent,
   ].join('\n');
 
-  _downloadMd(md, `${_mdSlug(titel)}-${_translitUmlaute(perspektive)}`);
+  _downloadMd(md, _mdFilename(session, _translitUmlaute(perspektive)));
 }
 
 // Analyse-Inhalt als strukturierte MD-Abschnitte aufbauen
@@ -2011,7 +2077,7 @@ function _buildAnalysisMdContent(type, session) {
         if (val === undefined || val === null) return;
         lines.push(`## ${s.label || s.name}`, '');
         if (s.type === 'text') {
-          lines.push(String(val), '');
+          lines.push(_stripCodeFences(val), '');
         } else if (s.type === 'list' || s.type === 'list_with_person') {
           (Array.isArray(val) ? val : []).forEach(item => {
             if (typeof item === 'object') lines.push(`- ${item.person ? item.person + ': ' : ''}${item.text || JSON.stringify(item)}`);
