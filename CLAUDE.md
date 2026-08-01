@@ -2,7 +2,7 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.22** (Stand: 01.08.2026)
+**v6.24** (Stand: 01.08.2026)
 
 ## Pflichtregeln bei jeder Änderung (IMMER, keine Ausnahme)
 1. Versionsnummer in `index.html` erhöhen (Header-Badge + alle `?v=X.XX` Script-Tags)
@@ -123,6 +123,8 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.24 | 01.08.2026 | Fix: MD-Überschrift — Perspektive bereinigt via _translitUmlaute() (kein & oder Sonderzeichen) |
+| v6.23 | 01.08.2026 | Fix: MD-Dateiname — Teilnehmer durch Bindestrich getrennt (speakerA-speakerB statt session.label) |
 | v6.22 | 01.08.2026 | Fix: MD-Export Teilnehmer — &lt;unbekannt&gt; statt ? für nicht identifizierbare Sprecher |
 | v6.21 | 01.08.2026 | Fix: MD-Export SeBr-Qualität II — Perspektive sauber (nur a-z+Bindestriche), Teilnehmer unbekannt, Vorspann 1 Satz/25 Wörter, kein Duplikat |
 | v6.20 | 01.08.2026 | Fix: MD-Export SeBr-Qualität — Tags (SeBr-Regeln), CodeFences, Perspektive bereinigt, Datum-Präfix im Dateinamen |

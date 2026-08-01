@@ -1884,7 +1884,11 @@ ${content}`);
 // Hilfsfunktion: Dateiname mit Datum-Präfix
 function _mdFilename(session, suffix) {
   const date = _formatDateYmd(session.date).replace('<unbekannt>', '');
-  const slug = _mdSlug(session.label || 'export');
+  // Slug aus Teilnehmern aufbauen (speakerA + speakerB, getrennt durch -), Fallback: session.label
+  const speakers = [session.speakerA, session.speakerB].filter(Boolean);
+  const slug = speakers.length
+    ? speakers.map(s => _translitUmlaute(s)).join('-')
+    : _mdSlug(session.label || 'export');
   return date ? `${date}-${slug}-${suffix}` : `${slug}-${suffix}`;
 }
 
@@ -2006,7 +2010,7 @@ async function exportAnalysisMd(type) {
   const md = [
     frontmatter,
     '',
-    `# Auswertung (${perspektive}): ${titel}`,
+    `# Auswertung (${_translitUmlaute(perspektive)}): ${titel}`,
     '',
     kernbefundClean,
     '',
