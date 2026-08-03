@@ -244,6 +244,78 @@ function renderClaudeSearchResult(text, allSessions) {
   container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+// ── Lokale Semantiksuche (Transformers.js, kein API-Call) ──
+async function runLocalSemanticSearch() {
+  const query = document.getElementById('searchInput')?.value.trim();
+  if (!query) { showToast('Bitte zuerst eine Frage eingeben', 'error'); return; }
+
+  const allSessions = (sessions || []).filter(s =>
+    s.utterances?.length || s.privateAnalysis || s.workAnalysis
+  );
+  if (!allSessions.length) { showToast('Keine Aufnahmen mit Inhalt gefunden', 'error'); return; }
+
+  const btn = document.getElementById('searchLocalBtn');
+  document.getElementById('searchClaudeResult').style.display = 'none';
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Lade Modell…'; }
+
+  try {
+    // Modell vorab laden (zeigt Fortschritt im Button)
+    await embInit((msg) => { if (btn) btn.textContent = msg; });
+
+    if (btn) btn.textContent = 'Suche…';
+    const results = await embSearch(query, allSessions, 8, (msg) => {
+      if (btn) btn.textContent = msg;
+    });
+
+    renderLocalSearchResults(results, query);
+  } catch(e) {
+    showToast('Lokale Suche fehlgeschlagen: ' + e.message, 'error');
+    console.error('[embSearch]', e);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⚡ Lokale Suche'; }
+  }
+}
+
+function renderLocalSearchResults(results, query) {
+  const container = document.getElementById('searchClaudeResult');
+  const content   = document.getElementById('searchClaudeContent');
+
+  if (!results.length) {
+    content.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Keine semantisch passenden Aufnahmen gefunden. Versuche eine andere Formulierung.</div>';
+    container.style.display = 'block';
+    return;
+  }
+
+  const header = `<div style="font-size:0.72rem;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+    <span style="background:var(--surface3,var(--surface2));border-radius:20px;padding:1px 8px;font-weight:600">⚡ Lokal</span>
+    ${results.length} Treffer · kein API-Call · kein Token-Verbrauch
+  </div>`;
+
+  const cards = results.map(({ session: s, score }) => {
+    const date     = new Date(s.date).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+    const pct      = Math.round(score * 100);
+    const snippet  = s.privateAnalysis?.kernbefund || s.workAnalysis?.kernbefund
+                   || s.privateAnalysis?.summary   || s.workAnalysis?.summary || '';
+    const badgeColor = pct >= 60 ? 'var(--accent)' : pct >= 40 ? '#f59e0b' : 'var(--muted)';
+
+    return `<div class="search-card" onclick="closeSearchModal(); openSessionById('${s.id}')">
+      <div class="search-card-header">
+        <div class="search-card-title">${escHtml(s.label || 'Unbenannt')}</div>
+        <div class="search-card-meta" style="display:flex;gap:8px;align-items:center">
+          ${escHtml(date)}
+          <span style="background:${badgeColor};color:#fff;border-radius:20px;padding:1px 8px;font-size:0.7rem;font-weight:700">${pct}%</span>
+        </div>
+      </div>
+      ${snippet ? `<div class="search-hit"><span class="search-hit-snippet">${escHtml(snippet.slice(0, 150))}${snippet.length > 150 ? '…' : ''}</span></div>` : ''}
+    </div>`;
+  }).join('');
+
+  content.innerHTML = header + cards;
+  container.style.display = 'block';
+  container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 // ── Tastatur-Shortcut: Cmd/Ctrl+K öffnet Suche ───────
 document.addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {

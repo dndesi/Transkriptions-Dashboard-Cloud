@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=6.24" />
+  <link rel="stylesheet" href="css/styles.css?v=6.25" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v6.24</button>
+        onmouseout="this.style.color='var(--muted)'">v6.25</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1707,9 +1707,20 @@
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
 
+      <!-- ── v6.25 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v6.25</span><span class="cl-date">03.08.2026</span></div>
+        <div class="cl-title">Feature: Lokale Semantiksuche — Transformers.js, kein API-Call, kein Token-Verbrauch</div>
+        <ul class="cl-list">
+          <li>embeddings.js (neu): Modell paraphrase-multilingual-MiniLM-L12-v2, Vektoren in IndexedDB gecacht</li>
+          <li>search.js: runLocalSemanticSearch() + renderLocalSearchResults() — Ergebnisse mit Relevanz-% Badge</li>
+          <li>index.html: Button „⚡ Lokale Suche" neben „Claude fragen"</li>
+        </ul>
+      </div>
+
       <!-- ── v6.24 ── -->
       <div class="cl-entry">
-        <div class="cl-header"><span class="cl-version">v6.24</span><span class="cl-date">01.08.2026</span></div>
+        <div class="cl-header"><span class="cl-version">v6.25</span><span class="cl-date">01.08.2026</span></div>
         <div class="cl-title">Fix: MD-Überschrift — Perspektive bereinigt (kein &amp; oder Sonderzeichen)</div>
         <ul class="cl-list">
           <li>claude.js: exportAnalysisMd() — Heading nutzt _translitUmlaute(perspektive) wie Frontmatter</li>
@@ -1718,7 +1729,7 @@
 
       <!-- ── v6.23 ── -->
       <div class="cl-entry">
-        <div class="cl-header"><span class="cl-version">v6.24</span><span class="cl-date">01.08.2026</span></div>
+        <div class="cl-header"><span class="cl-version">v6.25</span><span class="cl-date">01.08.2026</span></div>
         <div class="cl-title">Fix: MD-Dateiname — Teilnehmer durch Bindestrich getrennt (speakerA-speakerB)</div>
         <ul class="cl-list">
           <li>claude.js: _mdFilename() nutzt jetzt speakerA + speakerB als Slug statt session.label</li>
@@ -1727,7 +1738,7 @@
 
       <!-- ── v6.22 ── -->
       <div class="cl-entry">
-        <div class="cl-header"><span class="cl-version">v6.24</span><span class="cl-date">01.08.2026</span></div>
+        <div class="cl-header"><span class="cl-version">v6.25</span><span class="cl-date">01.08.2026</span></div>
         <div class="cl-title">Fix: Teilnehmer-Feld — &lt;unbekannt&gt; statt ? für nicht identifizierbare Sprecher</div>
         <ul class="cl-list">
           <li>claude.js: _buildMdFrontmatter() — speakerA || '&lt;unbekannt&gt;' (war fälschlicherweise '?')</li>
@@ -5137,32 +5148,33 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=6.24"></script>
-<script src="js/storage.js?v=6.24"></script>
-<script src="js/config.js?v=6.24"></script>
-<script src="js/auth.js?v=6.24"></script>
-<script src="js/drive.js?v=6.24"></script>
-<script src="js/sessions.js?v=6.24"></script>
-<script src="js/assemblyai.js?v=6.24"></script>
-<script src="js/claude.js?v=6.24"></script>
-<script src="js/ui.js?v=6.24"></script>
-<script src="js/tags.js?v=6.24"></script>
-<script src="js/notes.js?v=6.24"></script>
-<script src="js/photos.js?v=6.24"></script>
-<script src="js/persons.js?v=6.24"></script>
-<script src="js/audio.js?v=6.24"></script>
-<script src="js/recorder.js?v=6.24"></script>
-<script src="js/contacts.js?v=6.24"></script>
-<script src="js/app.js?v=6.24"></script>
+<script src="js/icons.js?v=6.25"></script>
+<script src="js/storage.js?v=6.25"></script>
+<script src="js/config.js?v=6.25"></script>
+<script src="js/auth.js?v=6.25"></script>
+<script src="js/drive.js?v=6.25"></script>
+<script src="js/sessions.js?v=6.25"></script>
+<script src="js/assemblyai.js?v=6.25"></script>
+<script src="js/claude.js?v=6.25"></script>
+<script src="js/ui.js?v=6.25"></script>
+<script src="js/tags.js?v=6.25"></script>
+<script src="js/notes.js?v=6.25"></script>
+<script src="js/photos.js?v=6.25"></script>
+<script src="js/persons.js?v=6.25"></script>
+<script src="js/audio.js?v=6.25"></script>
+<script src="js/recorder.js?v=6.25"></script>
+<script src="js/contacts.js?v=6.25"></script>
+<script src="js/app.js?v=6.25"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=6.24"></script>
-<script src="js/search.js?v=6.24"></script>
-<script src="js/calendar.js?v=6.24"></script>
-<script src="js/prompts.js?v=6.24"></script>
-<script src="js/projects.js?v=6.24"></script>
-<script src="js/import.js?v=6.24"></script>
+<script src="js/features.js?v=6.25"></script>
+<script src="js/search.js?v=6.25"></script>
+<script src="js/embeddings.js?v=6.25"></script>
+<script src="js/calendar.js?v=6.25"></script>
+<script src="js/prompts.js?v=6.25"></script>
+<script src="js/projects.js?v=6.25"></script>
+<script src="js/import.js?v=6.25"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
@@ -5188,9 +5200,14 @@
     <div style="flex:1; overflow-y:auto; min-height:100px;">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-shrink:0">
         <span id="searchStats" style="font-size:0.75rem; color:var(--muted)"></span>
-        <button id="searchClaudeBtn" onclick="runClaudeSearch()" class="btn btn-primary" style="font-size:0.8rem; padding:5px 14px">
-          ✦ Claude fragen
-        </button>
+        <div style="display:flex;gap:6px">
+          <button id="searchLocalBtn" onclick="runLocalSemanticSearch()" class="btn btn-ghost" style="font-size:0.8rem; padding:5px 14px" title="Semantische Suche ohne API-Call (Erstes Laden: ~30s)">
+            ⚡ Lokale Suche
+          </button>
+          <button id="searchClaudeBtn" onclick="runClaudeSearch()" class="btn btn-primary" style="font-size:0.8rem; padding:5px 14px">
+            ✦ Claude fragen
+          </button>
+        </div>
       </div>
       <div id="searchResults">
         <div class="search-hint">Tippe um in allen Aufnahmen zu suchen · <kbd style="background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:1px 5px; font-size:0.75rem">⌘K</kbd> öffnet diese Suche</div>
@@ -5203,7 +5220,9 @@
     </div>
 
     <p style="font-size:0.72rem; color:var(--muted); margin-top:10px; flex-shrink:0">
-      Sofortsuche durchsucht Titel · Transkript · Notizen · Tags · Themen · Personen &nbsp;·&nbsp; „Claude fragen" sucht semantisch über alle Inhalte
+      Sofortsuche durchsucht Titel · Transkript · Notizen · Tags · Themen · Personen &nbsp;·&nbsp;
+      ⚡ Lokale Suche: semantisch, kein Token-Verbrauch (erstes Laden ~30s) &nbsp;·&nbsp;
+      ✦ Claude fragen: analytische Fragen
     </p>
   </div>
 </div>

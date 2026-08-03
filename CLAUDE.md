@@ -2,7 +2,7 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.24** (Stand: 01.08.2026)
+**v6.25** (Stand: 03.08.2026)
 
 ## Pflichtregeln bei jeder Änderung (IMMER, keine Ausnahme)
 1. Versionsnummer in `index.html` erhöhen (Header-Badge + alle `?v=X.XX` Script-Tags)
@@ -36,7 +36,8 @@
 | `projects.js` | Projektarbeit, Projekt-Assistent, _buildProjectAnalysisContext() |
 | `prompts.js` | Prompt-Bibliothek: System/Standard/Feature/Eigene/Rollen, assemblePromptText() |
 | `ui.js` | Rendering, Sidenav, Systemarchitektur-Seite, renderArchView() |
-| `search.js` | Globale Suche (Text + Claude-Semantiksuche) |
+| `search.js` | Globale Suche (Text + Claude-Semantiksuche + lokale Vektorsuche) |
+| `embeddings.js` | Lokale Semantiksuche: Transformers.js, IDB-Cache, embSearch() |
 | `calendar.js` | Google Calendar API v3, Gmail API v1 |
 | `persons.js` | Personen-Profile, Beziehungskontext, Kosten |
 | `contacts.js` | Kontakte-Ebene über Projekten |
@@ -123,6 +124,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.25 | 03.08.2026 | Feature: Lokale Semantiksuche — Transformers.js, embeddings.js, Vektoren in IDB, kein API-Call |
 | v6.24 | 01.08.2026 | Fix: MD-Überschrift — Perspektive bereinigt via _translitUmlaute() (kein & oder Sonderzeichen) |
 | v6.23 | 01.08.2026 | Fix: MD-Dateiname — Teilnehmer durch Bindestrich getrennt (speakerA-speakerB statt session.label) |
 | v6.22 | 01.08.2026 | Fix: MD-Export Teilnehmer — &lt;unbekannt&gt; statt ? für nicht identifizierbare Sprecher |
