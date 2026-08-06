@@ -77,7 +77,7 @@ async function callClaudeAPI(prompt, systemPrompt = null) {
   if (!anthropicKey) throw new Error('Kein Anthropic API-Key gesetzt. Bitte unter 🔑 API-Keys eintragen.');
   const body = {
     model: 'claude-sonnet-4-6',
-    max_tokens: 8192,
+    max_tokens: 32000, // v6.26: von 8192 erhöht – lange Analysen (viele Themen) wurden abgeschnitten
     messages: [{ role: 'user', content: prompt }]
   };
   if (systemPrompt) body.system = systemPrompt; // v5.71: Rollen als System-Prompt
@@ -89,7 +89,7 @@ async function callClaudeAPIVision(messageContent) {
   if (!anthropicKey) throw new Error('Kein Anthropic API-Key gesetzt. Bitte unter 🔑 API-Keys eintragen.');
   return _claudeFetchWithRetry({
     model: 'claude-sonnet-4-6',
-    max_tokens: 8192,
+    max_tokens: 32000, // v6.26: von 8192 erhöht
     messages: [{ role: 'user', content: messageContent }]
   }, 'callClaudeAPIVision');
 }
@@ -1256,7 +1256,8 @@ function renderInsights(session) {
           bodyHtml = renderCustomSchemaResult(session, pid, res.structured, res.schema);
         }
         if (!bodyHtml && res.text) {
-          bodyHtml = `<div class="custom-result-text" style="white-space:pre-wrap">${escHtml(res.text)}</div>`;
+          // v6.26: Markdown wird jetzt geparst (Überschriften, Fett, Anker-Links) statt roh als Text angezeigt
+          bodyHtml = `<div class="custom-result-text">${_parseMarkdown(res.text)}</div>`;
         }
         if (!bodyHtml) return ''; // Kein Inhalt → Block überspringen
         const sid = session.id;
@@ -2250,7 +2251,14 @@ function _buildFollowUpContext(session) {
 function _parseInline(escapedHtml) {
   return escapedHtml
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+    .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>')
+    // v6.26: [Text](#anker) → klickbarer Sprung zur Überschrift mit passender id
+    .replace(/\[(.+?)\]\(#(.+?)\)/g, '<a href="javascript:void(0)" onclick="_jumpToAnchor(\'$2\')" style="color:var(--accent);text-decoration:underline;cursor:pointer">$1</a>');
+}
+
+// v6.26: Springt innerhalb der Analyse-Karte zur Überschrift mit passender id
+function _jumpToAnchor(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // v5.93: Block-Markdown-Parser (Tabellen, Überschriften, Bold, Italic)
@@ -2288,7 +2296,10 @@ function _parseMarkdown(text) {
     const hMatch = line.match(/^(#{2,3})\s+(.+)/);
     if (hMatch) {
       const size = hMatch[1].length === 2 ? '0.92rem' : '0.86rem';
-      out.push(`<div style="font-weight:700;font-size:${size};color:var(--accent);margin:10px 0 3px">${_parseInline(escHtml(hMatch[2]))}</div>`);
+      // v6.26: Überschriften die mit "N." beginnen bekommen eine id="thema-N" für Anker-Sprünge
+      const numMatch = hMatch[2].match(/^(\d+)\./);
+      const idAttr = numMatch ? ` id="thema-${numMatch[1]}"` : '';
+      out.push(`<div${idAttr} style="font-weight:700;font-size:${size};color:var(--accent);margin:10px 0 3px">${_parseInline(escHtml(hMatch[2]))}</div>`);
       i++; continue;
     }
     // Leerzeile

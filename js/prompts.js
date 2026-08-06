@@ -1167,6 +1167,9 @@ function _renderPromptsResults() {
         <button class="btn btn-ghost" onclick="openPromptEditorModal('${p.id}')" style="padding:5px 7px" title="Bearbeiten">
           ${icon('edit-2',13)}
         </button>
+        <button class="btn btn-ghost" onclick="duplicatePromptById('${p.id}')" style="padding:5px 7px" title="Duplizieren">
+          ${icon('layers',13)}
+        </button>
         <button class="btn btn-ghost" onclick="exportSinglePrompt('${p.id}')" style="padding:5px 7px" title="Exportieren">
           ${icon('download',13)}
         </button>
@@ -1612,6 +1615,17 @@ function deletePromptById(id) {
   saveCustomPrompts(getCustomPrompts().filter(p => p.id !== id));
   _renderPromptsResults();
   showToast('Prompt gelöscht', 'success');
+}
+
+// v6.26: Eigenen Prompt duplizieren (z.B. um dieselbe Analyse mit anderer Rolle zu nutzen)
+function duplicatePromptById(id) {
+  const prompts = getCustomPrompts();
+  const orig = prompts.find(p => p.id === id);
+  if (!orig) return;
+  const copy = { ...orig, id: genPromptId(), name: orig.name + ' (Kopie)' };
+  saveCustomPrompts([...prompts, copy]);
+  _renderPromptsResults();
+  showToast(`"${orig.name}" dupliziert`, 'success');
 }
 
 // v5.60: Built-in Foto-Prompts soft-löschen

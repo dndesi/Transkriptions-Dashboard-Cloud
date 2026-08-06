@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.25** (Stand: 03.08.2026)
+**v6.26** (Stand: 06.08.2026)
+- max_tokens 8192 → 32000 (claude.js) – lange Analysen wurden vorher abgeschnitten
+- Freitext-Ergebnisse eigener Prompts: echtes Markdown-Rendering (_parseMarkdown) + Anker-Links ([Text](#thema-N) → _jumpToAnchor())
+- Eigene Prompts duplizierbar (duplicatePromptById() in prompts.js)
 
 ## Pflichtregeln bei jeder Änderung (IMMER, keine Ausnahme)
 1. Versionsnummer in `index.html` erhöhen (Header-Badge + alle `?v=X.XX` Script-Tags)
