@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.26** (Stand: 06.08.2026)
+**v6.27** (Stand: 07.08.2026)
+- Icon-Feld eigener Prompts nutzt volles Lucide-Set (~1600 Icons) statt fester 62-Icon-Liste: iconLucide() in icons.js rendert über <i data-lucide> + lucide.createIcons() (CDN bereits geladen), icon() bleibt für feste UI-Icons bestehen
+
+## v6.26 (Stand: 06.08.2026)
 - max_tokens 8192 → 32000 (claude.js) – lange Analysen wurden vorher abgeschnitten
 - Freitext-Ergebnisse eigener Prompts: echtes Markdown-Rendering (_parseMarkdown) + Anker-Links ([Text](#thema-N) → _jumpToAnchor())
 - Eigene Prompts duplizierbar (duplicatePromptById() in prompts.js)

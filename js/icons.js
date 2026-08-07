@@ -81,3 +81,16 @@ function icon(name, size = 15, style = '') {
   if (!inner) return '';
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0;${style}">${inner}</svg>`;
 }
+
+/**
+ * v6.27: Wie icon(), aber für frei wählbare Icon-Namen (z.B. das "Icon"-Feld
+ * eigener Prompts). Rendert über das Lucide-CDN (~1600 Icons, siehe lucide.dev/icons)
+ * statt der festen 62-Icon-Liste in _ICO. Nach dem Einfügen ins DOM muss
+ * lucide.createIcons({ nodes: [...] }) laufen, damit aus <i> ein echtes <svg> wird.
+ * @param {string} name  - beliebiger Lucide-Icon-Name
+ * @param {number} size  - Größe in px (Standard: 15)
+ * @param {string} style - Zusätzliche CSS-Inline-Styles
+ */
+function iconLucide(name, size = 15, style = '') {
+  return `<i data-lucide="${name || 'sparkles'}" style="display:inline-block;vertical-align:middle;flex-shrink:0;width:${size}px;height:${size}px;${style}"></i>`;
+}

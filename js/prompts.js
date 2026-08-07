@@ -1105,7 +1105,7 @@ function _renderPromptsResults() {
   const _cardSystem = (p) => `
     <div class="prompt-card">
       <div class="prompt-card-header">
-        <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 18, 'color:var(--muted)')}</div>
+        <div class="prompt-card-icon">${iconLucide(p.icon || 'sparkles', 18, 'color:var(--muted)')}</div>
         <div class="prompt-card-name" style="color:var(--text)">${escHtml(p.name)}</div>
       </div>
       ${p.description ? `<div class="prompt-card-desc" style="color:var(--muted)">${escHtml(p.description)}</div>` : ''}
@@ -1124,7 +1124,7 @@ function _renderPromptsResults() {
     return `
     <div class="prompt-card">
       <div class="prompt-card-header">
-        <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 18, 'color:var(--accent)')}</div>
+        <div class="prompt-card-icon">${iconLucide(p.icon || 'sparkles', 18, 'color:var(--accent)')}</div>
         <div class="prompt-card-name">
           ${escHtml(p.name)}
           ${modified ? `<span style="font-size:0.62rem;background:rgba(108,99,255,0.15);color:var(--accent);padding:1px 5px;border-radius:8px;font-weight:600;margin-left:4px">angepasst</span>` : ''}
@@ -1156,7 +1156,7 @@ function _renderPromptsResults() {
     return `
     <div class="prompt-card">
       <div class="prompt-card-header">
-        <div class="prompt-card-icon">${icon(p.icon || 'sparkles', 18, 'color:var(--accent)')}</div>
+        <div class="prompt-card-icon">${iconLucide(p.icon || 'sparkles', 18, 'color:var(--accent)')}</div>
         <div class="prompt-card-name">${escHtml(p.name)}</div>
       </div>
       ${p.description ? `<div class="prompt-card-desc">${escHtml(p.description)}</div>` : ''}
@@ -1237,7 +1237,7 @@ function _renderPromptsResults() {
       const currentText = getEditablePromptText(p.id) || '';
       return '<div class="prompt-card">'
         + '<div class="prompt-card-header">'
-        + '<div class="prompt-card-icon">' + icon(p.icon || 'layout', 18, 'color:var(--accent)') + '</div>'
+        + '<div class="prompt-card-icon">' + iconLucide(p.icon || 'layout', 18, 'color:var(--accent)') + '</div>'
         + '<div class="prompt-card-name">' + escHtml(p.name)
         + (modified ? ' <span style="font-size:0.62rem;background:rgba(108,99,255,0.15);color:var(--accent);padding:1px 5px;border-radius:8px;font-weight:600;margin-left:4px">angepasst</span>' : '')
         + '</div>'
@@ -1273,7 +1273,7 @@ function _renderPromptsResults() {
       const txt = getEditablePromptText(p.id) || p.prompt || '';
       return '<div class="prompt-card">'
         + '<div class="prompt-card-header">'
-        + '<div class="prompt-card-icon">' + icon(p.icon || 'camera', 18, 'color:var(--muted)') + '</div>'
+        + '<div class="prompt-card-icon">' + iconLucide(p.icon || 'camera', 18, 'color:var(--muted)') + '</div>'
         + '<div class="prompt-card-name" style="color:var(--text)">' + escHtml(p.name) + '</div>'
         + '</div>'
         + (p.description ? '<div class="prompt-card-desc" style="color:var(--muted)">' + escHtml(p.description) + '</div>' : '')
@@ -1290,7 +1290,7 @@ function _renderPromptsResults() {
       const preview = assemblePromptText(p);
       return '<div class="prompt-card">'
         + '<div class="prompt-card-header">'
-        + '<div class="prompt-card-icon">' + icon(p.icon || 'camera', 18, 'color:var(--accent)') + '</div>'
+        + '<div class="prompt-card-icon">' + iconLucide(p.icon || 'camera', 18, 'color:var(--accent)') + '</div>'
         + '<div class="prompt-card-name">' + escHtml(p.name) + '</div>'
         + '</div>'
         + (p.description ? '<div class="prompt-card-desc">' + escHtml(p.description) + '</div>' : '')
@@ -1316,7 +1316,7 @@ function _renderPromptsResults() {
       const txt = getEditablePromptText(p.id) || p.prompt || '';
       return '<div class="prompt-card">'
         + '<div class="prompt-card-header">'
-        + '<div class="prompt-card-icon">' + icon(p.icon || 'user', 18, 'color:var(--muted)') + '</div>'
+        + '<div class="prompt-card-icon">' + iconLucide(p.icon || 'user', 18, 'color:var(--muted)') + '</div>'
         + '<div class="prompt-card-name" style="color:var(--text)">' + escHtml(p.name) + '</div>'
         + '</div>'
         + (p.description ? '<div class="prompt-card-desc" style="color:var(--muted)">' + escHtml(p.description) + '</div>' : '')
@@ -1331,7 +1331,7 @@ function _renderPromptsResults() {
       const preview = assemblePromptText(p);
       return '<div class="prompt-card">'
         + '<div class="prompt-card-header">'
-        + '<div class="prompt-card-icon">' + icon(p.icon || 'user', 18, 'color:var(--accent)') + '</div>'
+        + '<div class="prompt-card-icon">' + iconLucide(p.icon || 'user', 18, 'color:var(--accent)') + '</div>'
         + '<div class="prompt-card-name">' + escHtml(p.name) + '</div>'
         + '</div>'
         + (p.description ? '<div class="prompt-card-desc">' + escHtml(p.description) + '</div>' : '')
@@ -1898,7 +1898,7 @@ function renderCustomPromptCheckboxes() {
       ${prompts.map(p => `
         <label class="analyse-check-row" style="margin-bottom:8px">
           <input type="checkbox" id="chkCustom_${p.id}" />
-          <span style="display:inline-flex;align-items:center">${icon(p.icon || 'sparkles', 17, 'stroke:var(--muted);stroke-width:2;fill:none')}</span>
+          <span style="display:inline-flex;align-items:center">${iconLucide(p.icon || 'sparkles', 17, 'stroke:var(--muted);stroke-width:2;fill:none')}</span>
           <span>
             <div style="font-size:0.88rem; font-weight:600">${escHtml(p.name)}</div>
             ${p.description ? `<div style="font-size:0.75rem; color:var(--muted)">${escHtml(p.description)}</div>` : ''}

@@ -466,7 +466,7 @@ async function runAnalysisFromModal() {
   const stepLabels   = { work: icon('briefcase',12)+' Arbeits-Analyse', private: icon('message-circle',12)+' Gesprächs-Analyse', sentiment: icon('smile',12)+' Stimmungsanalyse', chapters: icon('book-open',12)+' Kapitel', topics: icon('tag',12)+' Themen', '360': icon('refresh-cw',12)+' 360°-Analyse' };
   // Custom Prompt Labels dynamisch hinzufügen
   if (typeof getCustomPrompts === 'function') {
-    getCustomPrompts().forEach(p => { stepLabels['custom:'+p.id] = icon(p.icon||'sparkles',12)+' '+p.name; });
+    getCustomPrompts().forEach(p => { stepLabels['custom:'+p.id] = iconLucide(p.icon||'sparkles',12)+' '+p.name; });
   }
   const stepsDone    = [];
 
@@ -478,6 +478,8 @@ async function runAnalysisFromModal() {
       t === type             ? `<span style="color:var(--accent);display:flex;align-items:center;gap:5px">${icon('loader',12)} ${stepLabels[t]||t}</span>` :
                                `<span style="opacity:0.4;display:flex;align-items:center;gap:5px">${icon('chevron-right',12)} ${stepLabels[t]||t}</span>`
     ).join('');
+    // v6.27: iconLucide() in stepLabels (eigene Prompts) braucht aktives Rendering
+    if (window.lucide) lucide.createIcons({ nodes: [loadingText, loadingSteps] });
   }
 
   try {
@@ -1270,7 +1272,7 @@ function renderInsights(session) {
           <div class="insights-block" id="${bid}" data-hl-source="${escHtml(res.promptName || 'Eigener Prompt')}">
             <div class="insights-block-title" onclick="toggleInsightsBlock('${bid}')">
               <span style="display:inline-flex;align-items:center;gap:6px">
-                ${icon(icoName,14,'stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0')}
+                ${iconLucide(icoName,14,'stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0')}
                 ${escHtml(res.promptName || 'Eigener Prompt')}
               </span>
               <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">
@@ -1289,6 +1291,8 @@ function renderInsights(session) {
           </div>`;
       }).filter(Boolean).join('');
       customContainer.innerHTML = blocks;
+      // v6.27: iconLucide() erzeugt <i data-lucide>, muss aktiv gerendert werden
+      if (window.lucide) lucide.createIcons({ nodes: [customContainer] });
       const firstBlock = customContainer.querySelector('.insights-block');
       if (firstBlock) {
         showInsightsBlock(firstBlock);
