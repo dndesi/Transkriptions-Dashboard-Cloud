@@ -352,7 +352,7 @@
   <!-- ── Sidebar-Navigation ── -->
   <nav class="news-sidebar" aria-label="Artikel-Navigation">
     <p class="news-sidebar-title">Artikel</p>
-    <a href="#scan-import"      class="news-sidebar-link" data-id="scan-import"><span class="news-sidebar-version">v6.28</span>Scan-Import</a>
+    <a href="#scan-import"      class="news-sidebar-link" data-id="scan-import"><span class="news-sidebar-version">v6.28–6.46</span>Scan-Import</a>
     <a href="#vorlagen"          class="news-sidebar-link" data-id="vorlagen"><span class="news-sidebar-version">v6.29</span>Vorlagen-Datenbank</a>
     <a href="#lokale-suche"      class="news-sidebar-link" data-id="lokale-suche"><span class="news-sidebar-version">v6.25</span>Lokale Semantiksuche</a>
     <a href="#md-export"         class="news-sidebar-link" data-id="md-export"><span class="news-sidebar-version">v6.19</span>MD-Export</a>
@@ -379,11 +379,11 @@
 
 
     <!-- ════════════════════════════════════════
-         ARTIKEL: Scan-Import (v6.28 – v6.40)
+         ARTIKEL: Scan-Import (v6.28 – v6.46)
          ════════════════════════════════════════ -->
     <article class="news-article" id="scan-import">
       <div class="news-meta">
-        <span class="news-version">v6.28 – v6.40</span>
+        <span class="news-version">v6.28 – v6.46</span>
         <span class="news-date">8. August 2026</span>
         <span class="news-category">Feature</span>
       </div>
@@ -453,6 +453,15 @@
       <h3>Doppelseiten, Reihenfolge, Fließtext (v6.33 – v6.44)</h3>
       <p>Wer ein aufgeschlagenes Buch fotografiert, aktiviert die <strong>Doppelseiten-Checkbox</strong>: jedes Foto wird dann vor der Erkennung in linke und rechte Hälfte geteilt — zwei Seiten aus einem Foto. Die Foto-Vorschauliste zeigt die erkannte Reihenfolge (automatisch nach Aufnahmezeitpunkt sortiert) und lässt sich manuell umsortieren oder einzelne Fotos entfernen, bevor die Erkennung startet. Seit v6.44 werden Druckzeilen, die mitten im Satz enden, automatisch zu echtem Fließtext zusammengezogen — inklusive Silbentrennungs-Auflösung.</p>
 
+      <h3>PDF-Upload: mehrseitige Dokumente direkt hochladen (ab v6.45)</h3>
+      <p>Der Scan-Tab akzeptiert jetzt auch PDFs — nicht nur Fotos. Eine mehrseitige PDF wird beim Upload automatisch erkannt, Seite für Seite in ein Bild umgewandelt und dann genauso durch PaddleOCR oder Claude Vision geschickt wie ein einzelnes Foto. Das Ergebnis: eine Sitzung mit einer Seite pro PDF-Seite, ohne dass man selbst Screenshots machen oder jede Seite einzeln fotografieren müsste.</p>
+
+      <p>Damit entsteht ein nahtloser Workflow: Dokument mit dem Handy einscannen, als PDF speichern, in Distill Voice hochladen — fertig. Als Scanner-App für Android empfehlen wir <strong>Adobe Scan</strong> (kostenlos, automatische Perspektivkorrektur, direkt als PDF exportierbar). Auf den meisten Android-Geräten ist alternativ auch der eingebaute Scanner in der <strong>Google Drive App</strong> geeignet: Blaues + → Scannen → als PDF sichern.</p>
+
+      <div class="news-info-box">
+        <strong>Workflow mit Adobe Scan:</strong> Dokument fotografieren → Perspektive wird automatisch korrigiert → als PDF exportieren → in Distill Voice: Scan-Tab → PDF hochladen → Text erkennen.
+      </div>
+
       <h3>Gute Fotos = gute Ergebnisse — Tipps für die Aufnahme</h3>
       <p>Die Erkennungsqualität hängt stark von der Fotoqualität ab. Ein paar einfache Regeln machen den größten Unterschied:</p>
       <ul class="news-feature-list">
@@ -464,7 +473,7 @@
       </ul>
 
       <div class="news-info-box">
-        <strong>So nutzt du den Scan-Import:</strong> Upload-Panel öffnen → Tab „Scan" → Fotos auswählen → Engine wählen → „Text erkennen". Die fertige Sitzung erscheint direkt in Distill Voice.
+        <strong>So nutzt du den Scan-Import:</strong> Upload-Panel öffnen → Tab „Scan" → Fotos <em>oder PDF</em> auswählen → Engine wählen → „Text erkennen". Die fertige Sitzung erscheint direkt in Distill Voice.
       </div>
     </article>
 
