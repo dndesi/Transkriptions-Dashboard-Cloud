@@ -968,40 +968,265 @@ function renderPromptsView() {
           <button class="help-icon" data-help="Verwalte und erstelle eigene KI-Analyse-Vorlagen. Standard-Prompts (Zusammenfassung, Arbeit, Gesprächsanalyse…) sind immer verfügbar. Eigene Prompts können strukturierte Felder (Schema) haben – das Ergebnis erscheint dann formatiert im Analysen-Tab." onclick="showHelpTooltip(this)">?</button>
         </h2>
       </div>
-      <div id="promptsToolbar" style="display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
-        <div class="search-box" style="flex:1; min-width:180px;">
-          ${icon('search',14,'color:var(--muted);flex-shrink:0')}
-          <input type="text" id="promptSearchInput" placeholder="Prompts durchsuchen…"
-            oninput="filterPromptsView()"
-            style="background:none; border:none; outline:none; color:var(--text); font-size:0.88rem; width:100%;" />
-        </div>
-        <select id="promptTypeSelect" onchange="setPromptTypeFilter(this.value)"
-          style="padding:7px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:0.83rem; cursor:pointer; outline:none;">
-          <option value="all">Alle Typen</option>
-          <option value="system">System</option>
-          <option value="standard">Standard</option>
-          <option value="design">Design</option>
-          <option value="foto">Foto-Analyse</option>
-          <option value="rolle">Rollen</option>
-          <option value="custom">Eigene</option>
-        </select>
-        <button class="btn btn-ghost" onclick="openPromptCategoryPickerModal('generator')" style="gap:6px;flex-shrink:0" title="Prompt per Wizard oder KI erstellen">
-          ${icon('wand-2',14)} Generator
-        </button>
-        <button class="btn btn-primary" onclick="openPromptCategoryPickerModal('editor')" style="gap:6px;flex-shrink:0">
-          ${icon('plus',14)} Neuer Prompt
-        </button>
-        <label class="btn btn-ghost" style="gap:6px;flex-shrink:0;cursor:pointer" title="Prompt importieren">
-          ${icon('upload',14)} Import
-          <input type="file" accept=".json" onchange="importPrompts(event)" style="display:none" />
-        </label>
+
+      <!-- v6.28: Menüpunkt-Umschalter Meine Prompts / Vorlagen-Datenbank -->
+      <div style="display:flex; gap:4px; margin-bottom:18px; border-bottom:1px solid var(--border)">
+        <button id="promptsTabOwn" onclick="_switchPromptsSubView('own')"
+          style="padding:9px 14px;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-size:0.86rem">Meine Prompts</button>
+        <button id="promptsTabLibrary" onclick="_switchPromptsSubView('library')"
+          style="padding:9px 14px;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-size:0.86rem">Vorlagen-Datenbank <span style="opacity:0.6">(${TEMPLATE_LIBRARY.length})</span></button>
       </div>
-      <div id="promptsResults"></div>
+
+      <div id="promptsOwnSection">
+        <div id="promptsToolbar" style="display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+          <div class="search-box" style="flex:1; min-width:180px;">
+            ${icon('search',14,'color:var(--muted);flex-shrink:0')}
+            <input type="text" id="promptSearchInput" placeholder="Prompts durchsuchen…"
+              oninput="filterPromptsView()"
+              style="background:none; border:none; outline:none; color:var(--text); font-size:0.88rem; width:100%;" />
+          </div>
+          <select id="promptTypeSelect" onchange="setPromptTypeFilter(this.value)"
+            style="padding:7px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:0.83rem; cursor:pointer; outline:none;">
+            <option value="all">Alle Typen</option>
+            <option value="system">System</option>
+            <option value="standard">Standard</option>
+            <option value="design">Design</option>
+            <option value="foto">Foto-Analyse</option>
+            <option value="rolle">Rollen</option>
+            <option value="custom">Eigene</option>
+          </select>
+          <button class="btn btn-ghost" onclick="openPromptCategoryPickerModal('generator')" style="gap:6px;flex-shrink:0" title="Prompt per Wizard oder KI erstellen">
+            ${icon('wand-2',14)} Generator
+          </button>
+          <button class="btn btn-primary" onclick="openPromptCategoryPickerModal('editor')" style="gap:6px;flex-shrink:0">
+            ${icon('plus',14)} Neuer Prompt
+          </button>
+          <label class="btn btn-ghost" style="gap:6px;flex-shrink:0;cursor:pointer" title="Prompt importieren">
+            ${icon('upload',14)} Import
+            <input type="file" accept=".json" onchange="importPrompts(event)" style="display:none" />
+          </label>
+        </div>
+        <div id="promptsResults"></div>
+      </div>
+
+      <div id="promptsLibrarySection" style="display:none"></div>
     </div>`;
     if (window.lucide) lucide.createIcons({ nodes: [el] });
   }
 
-  _renderPromptsResults();
+  _updatePromptsSubTabUI();
+  if (_promptsSubView === 'library') { _renderTemplateLibrary(); } else { _renderPromptsResults(); }
+}
+
+// ═══════════════════════════════════════════════════
+// VORLAGEN-DATENBANK (v6.29)
+// Browsierbare, filterbare Übersicht über TEMPLATE_LIBRARY
+// (js/templateLibrary.js) – aus einer Vorlage wird per KI-Generator
+// ein eigener, editierbarer Prompt erstellt.
+// ═══════════════════════════════════════════════════
+
+let _promptsSubView   = 'own'; // 'own' | 'library'
+let _libSearch         = '';
+let _libSort           = 'az'; // 'az' | 'category'
+let _libCategoryFilter = 'all';
+let _libOnlyFavorites  = false;
+let _libOnlyUnused     = false;
+
+function _switchPromptsSubView(view) {
+  _promptsSubView = view;
+  const ownEl = document.getElementById('promptsOwnSection');
+  const libEl = document.getElementById('promptsLibrarySection');
+  if (ownEl) ownEl.style.display = view === 'own' ? '' : 'none';
+  if (libEl) libEl.style.display = view === 'library' ? '' : 'none';
+  _updatePromptsSubTabUI();
+  if (view === 'library') _renderTemplateLibrary(); else _renderPromptsResults();
+}
+
+function _updatePromptsSubTabUI() {
+  const own = document.getElementById('promptsTabOwn');
+  const lib = document.getElementById('promptsTabLibrary');
+  if (!own || !lib) return;
+  const base     = 'padding:9px 14px;background:none;border:none;border-bottom:2px solid;cursor:pointer;font-size:0.86rem;';
+  const active   = 'color:var(--accent);border-bottom-color:var(--accent);font-weight:700';
+  const inactive = 'color:var(--muted);border-bottom-color:transparent;font-weight:500';
+  own.style.cssText = base + (_promptsSubView === 'own'     ? active : inactive);
+  lib.style.cssText = base + (_promptsSubView === 'library' ? active : inactive);
+}
+
+// ── Favoriten (localStorage) ──────────────────────────────────────────
+function _getTemplateFavorites() {
+  try { return JSON.parse(localStorage.getItem('distill_template_favorites') || '[]'); } catch { return []; }
+}
+function toggleTemplateFavorite(id) {
+  const favs = _getTemplateFavorites();
+  const idx = favs.indexOf(id);
+  if (idx >= 0) favs.splice(idx, 1); else favs.push(id);
+  localStorage.setItem('distill_template_favorites', JSON.stringify(favs));
+  _renderLibraryResults();
+}
+
+// ── "Bereits verwendet"-Status: aus den eigenen Prompts abgeleitet (sourceTemplateId) ──
+function _getTemplateUsageMap() {
+  const map = {};
+  getCustomPrompts().forEach(p => {
+    if (p.sourceTemplateId) (map[p.sourceTemplateId] = map[p.sourceTemplateId] || []).push({ id: p.id, name: p.name });
+  });
+  return map;
+}
+
+// ── Filter-Setter ──────────────────────────────────────────────────────
+function _setLibSearch(v) { _libSearch = v; _renderLibraryResults(); }
+function _setLibSort(v)   { _libSort = v; _renderLibraryResults(); }
+function _setLibCategory(c) { _libCategoryFilter = c; _renderLibraryResults(); }
+function _toggleLibFlag(which, checked) {
+  if (which === 'fav')    _libOnlyFavorites = checked;
+  if (which === 'unused') _libOnlyUnused    = checked;
+  _renderLibraryResults();
+}
+function _toggleLibGliederung(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── Toolbar nur einmal aufbauen, danach nur Ergebnisse neu rendern ──────
+function _renderTemplateLibrary() {
+  const el = document.getElementById('promptsLibrarySection');
+  if (!el) return;
+
+  if (!el.querySelector('#libToolbar')) {
+    const categories = [...new Set(TEMPLATE_LIBRARY.map(t => t.category))];
+    el.innerHTML = `
+      <div id="libStats" style="font-size:0.78rem;color:var(--muted);margin-bottom:14px"></div>
+      <div id="libToolbar" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px">
+        <div class="search-box" style="flex:1;min-width:180px">
+          ${icon('search',14,'color:var(--muted);flex-shrink:0')}
+          <input type="text" id="libSearchInput" placeholder="Vorlagen durchsuchen…"
+            oninput="_setLibSearch(this.value)"
+            style="background:none;border:none;outline:none;color:var(--text);font-size:0.88rem;width:100%">
+        </div>
+        <select id="libSortSelect" onchange="_setLibSort(this.value)"
+          style="padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.83rem;cursor:pointer;outline:none">
+          <option value="az">A–Z</option>
+          <option value="category">Nach Kategorie</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:5px;font-size:0.8rem;color:var(--muted);cursor:pointer">
+          <input type="checkbox" onchange="_toggleLibFlag('fav', this.checked)"> Nur Favoriten
+        </label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:0.8rem;color:var(--muted);cursor:pointer">
+          <input type="checkbox" onchange="_toggleLibFlag('unused', this.checked)"> Nur unbenutzte
+        </label>
+      </div>
+      <div id="libCategoryChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+      <div id="libCount" style="font-size:0.78rem;color:var(--muted);margin-bottom:10px"></div>
+      <div id="libResults" class="prompts-grid"></div>
+    `;
+    el.querySelector('#libCategoryChips').innerHTML = ['all', ...categories].map(c => `
+      <button class="lib-cat-chip" data-cat="${escHtml(c)}" onclick="_setLibCategory(this.dataset.cat)"
+        style="padding:4px 12px;font-size:0.76rem;border-radius:14px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer">
+        ${c === 'all' ? 'Alle' : escHtml(c)}
+      </button>`).join('');
+  }
+  _renderLibraryResults();
+}
+
+function _renderLibraryResults() {
+  const el = document.getElementById('promptsLibrarySection');
+  if (!el) return;
+
+  const favorites = _getTemplateFavorites();
+  const usageMap  = _getTemplateUsageMap();
+  const categories = [...new Set(TEMPLATE_LIBRARY.map(t => t.category))];
+
+  const q = _libSearch.trim().toLowerCase();
+  let items = TEMPLATE_LIBRARY.filter(t => {
+    if (_libCategoryFilter !== 'all' && t.category !== _libCategoryFilter) return false;
+    if (_libOnlyFavorites && !favorites.includes(t.id)) return false;
+    if (_libOnlyUnused && usageMap[t.id]) return false;
+    if (q) {
+      const hay = (t.name + ' ' + t.description + ' ' + t.gliederung.join(' ')).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  items.sort((a, b) => _libSort === 'category'
+    ? (a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
+    : a.name.localeCompare(b.name));
+
+  const usedCount = TEMPLATE_LIBRARY.filter(t => usageMap[t.id]).length;
+
+  const statsEl = el.querySelector('#libStats');
+  if (statsEl) statsEl.textContent = `${TEMPLATE_LIBRARY.length} Vorlagen · ${categories.length} Kategorien · ${usedCount} verwendet`;
+
+  const countEl = el.querySelector('#libCount');
+  if (countEl) countEl.textContent = `${items.length} Treffer`;
+
+  el.querySelectorAll('.lib-cat-chip').forEach(btn => {
+    const active = btn.dataset.cat === _libCategoryFilter;
+    btn.style.background   = active ? 'var(--accent)' : 'var(--surface2)';
+    btn.style.color        = active ? '#fff' : 'var(--text)';
+    btn.style.borderColor  = active ? 'var(--accent)' : 'var(--border)';
+    btn.style.fontWeight   = active ? '700' : '400';
+  });
+
+  const resultsEl = el.querySelector('#libResults');
+  if (resultsEl) {
+    resultsEl.innerHTML = items.length
+      ? items.map(t => _templateCard(t, favorites.includes(t.id), usageMap[t.id] || [])).join('')
+      : `<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted);font-size:0.85rem">Keine Treffer</div>`;
+    if (window.lucide) lucide.createIcons({ nodes: [resultsEl] });
+  }
+}
+
+function _templateCard(t, isFav, usedIn) {
+  const gid = 'libG_' + t.id;
+  const usedBadge = usedIn.length ? `
+    <div style="margin-top:6px;font-size:0.72rem;color:var(--green,#10b981);display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+      ${iconLucide('check-circle', 12)} ${usedIn.length}× verwendet ·
+      ${usedIn.map(p => `<button onclick="event.stopPropagation();openPromptEditorModal('${p.id}')" style="border:none;background:none;color:var(--accent);text-decoration:underline;cursor:pointer;font-size:0.72rem;padding:0">${escHtml(p.name)}</button>`).join(', ')}
+    </div>` : '';
+  return `
+    <div class="prompt-card">
+      <div class="prompt-card-header" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px;min-width:0">
+          <div class="prompt-card-icon">${iconLucide('layout-template', 18, 'color:var(--muted)')}</div>
+          <div class="prompt-card-name" style="min-width:0">${escHtml(t.name)}</div>
+        </div>
+        <button onclick="event.stopPropagation();toggleTemplateFavorite('${t.id}')" title="Favorit" style="border:none;background:none;cursor:pointer;flex-shrink:0;color:${isFav ? '#f59e0b' : 'var(--muted)'}">
+          ${iconLucide('star', 16)}
+        </button>
+      </div>
+      <div style="font-size:0.7rem;color:var(--muted);margin:2px 0 6px">${escHtml(t.category)}</div>
+      <div class="prompt-card-desc">${escHtml(t.description)}</div>
+      <button onclick="_toggleLibGliederung('${gid}')" style="border:none;background:none;color:var(--accent);font-size:0.76rem;padding:4px 0;cursor:pointer;display:flex;align-items:center;gap:3px">
+        ${iconLucide('chevron-right', 12)} Gliederung anzeigen
+      </button>
+      <ul id="${gid}" style="display:none;font-size:0.78rem;color:var(--muted);margin:0 0 8px;padding-left:18px;line-height:1.6">
+        ${t.gliederung.map(b => `<li>${escHtml(b)}</li>`).join('')}
+      </ul>
+      ${usedBadge}
+      <div class="prompt-card-actions">
+        <button class="btn btn-primary" style="width:100%;justify-content:center;gap:6px" onclick="useTemplateAsPrompt('${t.id}')">
+          ${iconLucide('wand-2', 13)} Als Prompt erstellen
+        </button>
+      </div>
+    </div>`;
+}
+
+// ── Vorlage → Prompt-Generator (KI-Modus, vorausgefüllt) ────────────────
+function useTemplateAsPrompt(templateId) {
+  const t = TEMPLATE_LIBRARY.find(x => x.id === templateId);
+  if (!t) return;
+  _pendingPromptCategory = null;
+  _genState = {
+    mode: 'ai', step: 2,
+    name: '', icon: 'sparkles', description: '',
+    rolle: '', tonalitaet: '', grenzen: '',
+    kontext: '', schema: [], tags: [], aiDesc: '', finalText: '',
+    sourceTemplateId: t.id
+  };
+  _genState.aiDesc = `${t.name}: ${t.description}\n\nGliederung:\n${t.gliederung.map(b => '- ' + b).join('\n')}`;
+  _renderGenModal();
+  document.getElementById('promptGeneratorModal').style.display = 'flex';
 }
 
 // ── Nur Ergebnisse neu rendern (Toolbar bleibt stabil) ──
@@ -2301,7 +2526,9 @@ function _genSave() {
     tags:        s.tags,
     ...(schema.length > 0 ? { outputSchema: schema } : {}),
     // v5.60: Kategorie übernehmen wenn gesetzt
-    ...(_pendingPromptCategory ? { category: _pendingPromptCategory } : {})
+    ...(_pendingPromptCategory ? { category: _pendingPromptCategory } : {}),
+    // v6.28: Herkunfts-Vorlage aus der Vorlagen-Datenbank merken (für "bereits verwendet"-Badge)
+    ...(s.sourceTemplateId ? { sourceTemplateId: s.sourceTemplateId } : {})
   };
 
   const prompts = getCustomPrompts();
@@ -2310,6 +2537,7 @@ function _genSave() {
   saveCustomPrompts(prompts);
   closePromptGeneratorModal();
   _renderPromptsResults();
+  if (document.getElementById('promptsLibrarySection')?.querySelector('#libToolbar')) _renderLibraryResults();
   showToast(`"${s.name}" wurde erstellt ✓`, 'success');
 }
 

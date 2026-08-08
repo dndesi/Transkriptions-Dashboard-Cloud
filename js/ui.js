@@ -544,7 +544,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 6.27</span> · 24 JS-Module
+          <span style="color:var(--accent); font-weight:600">Version 6.29</span> · 26 JS-Module
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -604,7 +604,8 @@ function renderArchView() {
       ${flowCard('claude.js (Follow-Up)', 'Folgegespräch', 'Analyse-Kontext aufbauen (_buildFollowUpContext), Folgefragen stellen (askFollowUp), Verlauf in session.claudeFollowUp[] speichern · v5.83: Feldnamen-Fix (entry.text + entry.promptName statt result/name)', '#06b6d4')}
       ${flowCard('ui.js (Navigation)', 'Sidenav', 'openUploadPanel/closeUploadPanel, toggleSidenav/closeSidenav, setSidenavActive – neue linke Navigation ersetzt 340px Upload-Sidebar', '#8b5cf6')}
       ${flowCard('claude.js (Präsentation)', 'Präsentation erstellen', 'generatePresentation(), _renderPresentationPreview(), exportPresentationPptx() via PptxGenJS. 3 Prompt-Typen wählbar. session.claudePresentation[] speichert Ergebnis', '#f43f5e')}
-      ${flowCard('prompts.js', 'Prompt-Bibliothek', 'System/Standard/Feature-Prompts, editierbare Overrides in localStorage, eigene Prompts · v6.26: duplicatePromptById() – eigene Prompts duplizieren · v6.27: Icon-Feld nutzt volles Lucide-Set via iconLucide()', '#a78bfa')}
+      ${flowCard('prompts.js', 'Prompt-Bibliothek', 'System/Standard/Feature-Prompts, editierbare Overrides in localStorage, eigene Prompts · v6.26: duplicatePromptById() – eigene Prompts duplizieren · v6.27: Icon-Feld nutzt volles Lucide-Set via iconLucide() · v6.29: Vorlagen-Datenbank-Tab (_renderTemplateLibrary), useTemplateAsPrompt() befüllt KI-Generator', '#a78bfa')}
+      ${flowCard('templateLibrary.js', 'Vorlagen-Datenbank', 'v6.29: TEMPLATE_LIBRARY[] – 220 eigene Prompt-Vorlagen-Zusammenfassungen in 15 Kategorien, Basis für die Vorlagen-Datenbank in prompts.js', '#fb923c')}
       ${flowCard('search.js', 'Globale Suche', 'Instant-Textsuche über alle Felder + Claude-Semantiksuche', '#6ee7b7')}
       ${flowCard('calendar.js', 'Kalender & Mail', 'Termine via Claude extrahieren → Google Calendar API · E-Mail-Entwürfe → Gmail API', '#f472b6')}
       ${flowCard('persons.js', 'Personen-Profile', 'Profil-Synthese, Selbst-Synthese, Beziehungskontext, Kosten-Übersicht, Ausblenden/Einblenden (toggleHiddenPersons/unhidePerson)', '#f472b6')}

@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.28** (Stand: 08.08.2026)
+**v6.29** (Stand: 08.08.2026)
+- Feature: Vorlagen-Datenbank in der Prompt-Bibliothek. js/templateLibrary.js (neu): TEMPLATE_LIBRARY[] – 220 eigene, umformulierte Prompt-Vorlagen-Zusammenfassungen in 15 Kategorien (General, Meeting, Speech, Call, Interview, Medical, Sales, Consulting, Education, Construction, IT & Engineering, Legal, Real Estate, Financial, Functional). prompts.js: neuer Tab "Vorlagen-Datenbank" neben "Meine Prompts" (_switchPromptsSubView, _renderTemplateLibrary, _renderLibraryResults) – filterbar nach Kategorie + Volltextsuche, sortierbar A-Z/Kategorie, Favoriten (localStorage distill_template_favorites), aufklappbare Gliederung pro Karte, "bereits verwendet"-Badge mit Link zum Prompt (abgeleitet aus sourceTemplateId, keine harte Sperre). useTemplateAsPrompt() befüllt den bestehenden KI-Modus des Prompt-Generators – Rolle/Ton/Grenzen/Kontext werden frisch generiert, nicht 1:1 übernommen.
+
+## v6.28 (Stand: 08.08.2026)
 - Feature: Scan-Import – neuer dritter Tab "Scan" im Upload-Panel. Fotos/Kamera-Aufnahmen von handschriftlichen Notizen/Dokumenten werden per Claude Vision (scan.js: _ocrImage(), OCR-Prompt für Notiz statt Dialog) zu Text erkannt, mit parsePlainText() zu einer Session zusammengefasst (mehrere Fotos = mehrseitige Notiz). session.source = 'scan_import', ein Sprecher, kein Dialog. claude.js: checkSpeakersNamed() behandelt scan_import wie Typ "gedanken". Session-Detail-Tab zeigt "Text" statt "Transkript" bei Scan-Sitzungen (sdcTabTranskriptLabel-Span, gesetzt in showTranscript()).
 
 ## v6.27 (Stand: 07.08.2026)
@@ -29,7 +32,7 @@
 - **KI-Modell:** claude-sonnet-4-6 (Browser-Fetch, direkt)
 - **Speicher:** IndexedDB (Sessions + Projekte via `storage.js`), localStorage (API-Keys, Prompts, Theme)
 
-## JS-Module (23 Dateien)
+## JS-Module (26 Dateien)
 | Datei | Aufgabe |
 |---|---|
 | `app.js` | Initialisierung, Theme, Drag & Drop |
@@ -44,6 +47,7 @@
 | `features.js` | Gesprächs-Chat, 360°, Mind Map (D3.js v7), Rollen-Logik, populatePersonaSelects() |
 | `projects.js` | Projektarbeit, Projekt-Assistent, _buildProjectAnalysisContext() |
 | `prompts.js` | Prompt-Bibliothek: System/Standard/Feature/Eigene/Rollen, assemblePromptText() |
+| `templateLibrary.js` | Vorlagen-Datenbank: TEMPLATE_LIBRARY[] – 220 Prompt-Vorlagen-Zusammenfassungen, 15 Kategorien |
 | `ui.js` | Rendering, Sidenav, Systemarchitektur-Seite, renderArchView() |
 | `search.js` | Globale Suche (Text + Claude-Semantiksuche + lokale Vektorsuche) |
 | `embeddings.js` | Lokale Semantiksuche: Transformers.js, IDB-Cache, embSearch() |
