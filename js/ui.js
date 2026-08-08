@@ -171,9 +171,11 @@ function renderBrowser(filter = '') {
         ${s.persons?.length ? `<div class="sc-persons" style="display:flex;align-items:center;gap:5px">${icon('users',12,'margin-right:3px')} ${s.persons.map(p=>escHtml(p)).join(' · ')}</div>` : ''}
         <div class="sc-meta">
           ${new Date(s.date).toLocaleDateString('de-DE', {day:'numeric',month:'long',year:'numeric'})}<br>
-          ${escHtml(s.filename || '')} · ${dur}
+          ${s.source === 'scan_import'
+            ? `Dokument · ${s.pageCount ?? (s.utterances||[]).length} Seite${((s.pageCount ?? (s.utterances||[]).length) !== 1) ? 'n' : ''}`
+            : `${escHtml(s.filename || '')} · ${dur}`}
         </div>
-        <div class="sc-speakers">
+        ${s.source !== 'scan_import' ? `<div class="sc-speakers">
           ${(()=>{
             const knownSpeakers = [...new Set((s.utterances||[]).map(u=>u.speaker))].sort();
             if (knownSpeakers.length === 0) knownSpeakers.push('A','B');
@@ -183,7 +185,7 @@ function renderBrowser(filter = '') {
               return `<span class="sc-speaker-tag"><span class="sc-dot" style="background:${co}"></span>${escHtml(nm)}</span>`;
             }).join('');
           })()}
-        </div>
+        </div>` : ''}
         ${s.archiveFolder ? `<div class="sc-folder">${icon('folder',12)} ${escHtml(s.archiveFolder)}</div>` : ''}
         ${tagsHtml ? `<div class="sc-tags">${tagsHtml}</div>` : ''}
         <span class="sc-status ${statusClass}">${statusLabel}</span>
@@ -516,7 +518,7 @@ function toggleContactsView() {
 function exportArchPdf() {
   const el = document.getElementById('archView');
   if (!el) return;
-  const title = 'Distill Voice – Systemarchitektur v6.45';
+  const title = 'Distill Voice – Systemarchitektur v6.46';
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 20px; color: #1a1a2e; background: #fff; }
@@ -544,7 +546,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 6.45</span> · 26 JS-Module
+          <span style="color:var(--accent); font-weight:600">Version 6.46</span> · 26 JS-Module
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">

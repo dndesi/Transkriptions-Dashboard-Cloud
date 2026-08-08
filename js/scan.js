@@ -332,7 +332,8 @@ async function startScanImport() {
       start: i * INTERVAL_MS,
       end:   (i + 1) * INTERVAL_MS,
     }));
-    const parsed = { utterances, duration: utterances.length * INTERVAL_MS / 1000 };
+    // v6.46: duration null – kein echtes Audio, fiktiver Wert wäre irreführend
+    const parsed = { utterances, duration: null };
 
     const customLabel  = document.getElementById('scanLabel').value.trim();
     const dateInputVal = document.getElementById('scanDate').value;
@@ -352,9 +353,10 @@ async function startScanImport() {
       date:         sessionDate,
       status:       'done',
       source:       'scan_import',
+      pageCount:    pageTexts.length,     // v6.46: Seitenanzahl statt fiktiver Audiodauer
       utterances:   parsed.utterances,
       transcriptId: null,
-      duration:     parsed.duration,
+      duration:     null,                 // v6.46: kein Audio, kein Zeitwert
       processedAt:  new Date().toISOString(),
     };
 

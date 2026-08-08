@@ -149,7 +149,10 @@ function renderTimeline(filter) {
         <div class="ti-date">${new Date(s.date).toLocaleDateString('de-DE',{day:'numeric',month:'short'})}</div>
         <div style="flex:1; min-width:0">
           <div class="ti-name">${escHtml(s.label)}</div>
-          <div class="ti-meta">${escHtml(s.speakerA||'A')} &amp; ${escHtml(s.speakerB||'B')}${dur?' · '+dur:''}</div>
+          <div class="ti-meta">${s.source === 'scan_import'
+            ? `Dokument · ${s.pageCount ?? (s.utterances||[]).length} Seite${((s.pageCount ?? (s.utterances||[]).length) !== 1) ? 'n' : ''}`
+            : `${escHtml(s.speakerA||'A')} &amp; ${escHtml(s.speakerB||'B')}${dur?' · '+dur:''}`
+          }</div>
           ${tagsHtml ? `<div class="sc-tags" style="margin-top:4px">${tagsHtml}</div>` : ''}
         </div>
       `;

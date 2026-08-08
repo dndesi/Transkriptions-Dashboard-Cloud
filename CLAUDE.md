@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.45** (Stand: 08.08.2026)
+**v6.46** (Stand: 08.08.2026)
+- Fix: Scan-Sitzungen zeigen korrekte Metadaten. Chronik + Grid zeigen "Dokument · X Seiten" statt "Ich & B · 3 min 15 s". Datenmodell: `duration: null` (kein echtes Audio), `pageCount: N` als neues Feld. Upload-Zone: "Foto(s) oder PDF auswählen". Betroffen: audio.js (renderTimeline), ui.js (renderBrowser), scan.js (startScanImport).
+
+## v6.45 (Stand: 08.08.2026)
 - Feature: PDF-Upload im Scan-Import. Scan-Tab akzeptiert jetzt auch PDFs (`accept="image/*,application/pdf"`). Neue Funktion `_pdfToImageFiles()` (scan.js) rendert jede Seite per PDF.js auf Canvas (scale 2.0 ≈ 144 dpi) und erzeugt ein JPEG — identisch zur Bildverarbeitung danach. `handleScanFileSelect()` ist jetzt async und erkennt PDFs automatisch. Rest der Pipeline (PaddleOCR/Claude Vision, Reflow, Session) bleibt unverändert. PDF.js war bereits geladen.
 
 ## v6.44 (Stand: 08.08.2026)
@@ -188,6 +191,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.46 | 08.08.2026 | Fix: Scan-Sitzungen zeigen "Dokument · X Seiten" statt Teilnehmer/Dauer, pageCount im Datenmodell |
 | v6.45 | 08.08.2026 | Feature: PDF-Upload im Scan-Import – automatische Seitenkonvertierung via PDF.js |
 | v6.44 | 08.08.2026 | Feature: Scan-Text wird zu Fließtext zusammengezogen (Silbentrennung korrekt aufgelöst) |
 | v6.43 | 08.08.2026 | Fix: Regression durch Small/Medium-Modell zurückgerollt, zurück auf Tiny (nachweislich bestes Ergebnis) |

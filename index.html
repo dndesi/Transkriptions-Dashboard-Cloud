@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=6.45" />
+  <link rel="stylesheet" href="css/styles.css?v=6.46" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v6.45</button>
+        onmouseout="this.style.color='var(--muted)'">v6.46</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -421,8 +421,8 @@
           </div>
           <div class="upload-zone" id="scanUploadZone" onclick="document.getElementById('scanFileInput').click()" style="cursor:pointer">
             <div class="upload-icon"><i data-lucide="scan-line" style="width:28px;height:28px;stroke:var(--muted);stroke-width:1.5;fill:none"></i></div>
-            <p><span>Foto(s) auswählen</span></p>
-            <p style="font-size:0.75rem;margin-top:4px;color:var(--muted)">Mehrere Seiten möglich · werden zu einer Notiz zusammengefasst</p>
+            <p><span>Foto(s) oder PDF auswählen</span></p>
+            <p style="font-size:0.75rem;margin-top:4px;color:var(--muted)">Bilder &amp; PDFs möglich · mehrere Seiten werden zu einer Notiz zusammengefasst</p>
           </div>
           <input type="file" id="scanFileInput" accept="image/*,application/pdf" onchange="handleScanFileSelect(event)" multiple style="display:none" />
           <div style="margin-top:8px">
@@ -1838,6 +1838,18 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v6.46 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v6.46</span><span class="cl-date">08.08.2026</span></div>
+        <div class="cl-title">Fix: Scan-Sitzungen zeigen korrekte Metadaten (keine Teilnehmer, keine fiktive Dauer)</div>
+        <ul class="cl-list">
+          <li>Chronik-Ansicht (audio.js): scan_import zeigt jetzt "Dokument · X Seiten" statt "Ich &amp; B · 3 min 15 s"</li>
+          <li>Grid-Ansicht (ui.js): sc-meta zeigt "Dokument · X Seiten", Sprecher-Tags werden ausgeblendet</li>
+          <li>Datenmodell (scan.js): duration: null (kein echtes Audio), pageCount: N als eigenes Feld gespeichert</li>
+          <li>Upload-Zone: Text geändert zu "Foto(s) oder PDF auswählen" + Info-Text angepasst</li>
+        </ul>
+      </div>
 
       <!-- ── v6.45 ── -->
       <div class="cl-entry">
@@ -5513,35 +5525,35 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=6.45"></script>
-<script src="js/storage.js?v=6.45"></script>
-<script src="js/config.js?v=6.45"></script>
-<script src="js/auth.js?v=6.45"></script>
-<script src="js/drive.js?v=6.45"></script>
-<script src="js/sessions.js?v=6.45"></script>
-<script src="js/assemblyai.js?v=6.45"></script>
-<script src="js/claude.js?v=6.45"></script>
-<script src="js/ui.js?v=6.45"></script>
-<script src="js/tags.js?v=6.45"></script>
-<script src="js/notes.js?v=6.45"></script>
-<script src="js/photos.js?v=6.45"></script>
-<script src="js/persons.js?v=6.45"></script>
-<script src="js/audio.js?v=6.45"></script>
-<script src="js/recorder.js?v=6.45"></script>
-<script src="js/contacts.js?v=6.45"></script>
-<script src="js/app.js?v=6.45"></script>
+<script src="js/icons.js?v=6.46"></script>
+<script src="js/storage.js?v=6.46"></script>
+<script src="js/config.js?v=6.46"></script>
+<script src="js/auth.js?v=6.46"></script>
+<script src="js/drive.js?v=6.46"></script>
+<script src="js/sessions.js?v=6.46"></script>
+<script src="js/assemblyai.js?v=6.46"></script>
+<script src="js/claude.js?v=6.46"></script>
+<script src="js/ui.js?v=6.46"></script>
+<script src="js/tags.js?v=6.46"></script>
+<script src="js/notes.js?v=6.46"></script>
+<script src="js/photos.js?v=6.46"></script>
+<script src="js/persons.js?v=6.46"></script>
+<script src="js/audio.js?v=6.46"></script>
+<script src="js/recorder.js?v=6.46"></script>
+<script src="js/contacts.js?v=6.46"></script>
+<script src="js/app.js?v=6.46"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=6.45"></script>
-<script src="js/search.js?v=6.45"></script>
-<script src="js/embeddings.js?v=6.45"></script>
-<script src="js/calendar.js?v=6.45"></script>
-<script src="js/templateLibrary.js?v=6.45"></script>
-<script src="js/prompts.js?v=6.45"></script>
-<script src="js/projects.js?v=6.45"></script>
-<script src="js/import.js?v=6.45"></script>
-<script src="js/scan.js?v=6.45"></script>
+<script src="js/features.js?v=6.46"></script>
+<script src="js/search.js?v=6.46"></script>
+<script src="js/embeddings.js?v=6.46"></script>
+<script src="js/calendar.js?v=6.46"></script>
+<script src="js/templateLibrary.js?v=6.46"></script>
+<script src="js/prompts.js?v=6.46"></script>
+<script src="js/projects.js?v=6.46"></script>
+<script src="js/import.js?v=6.46"></script>
+<script src="js/scan.js?v=6.46"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
