@@ -2,7 +2,16 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.34** (Stand: 08.08.2026)
+**v6.37** (Stand: 08.08.2026)
+- Fix: "Aufnahme"-Sektion (Audioplayer, "Audiodatei nicht verknüpft"-Warnung) und "Sprecher"-Sektion (Sprecher-A/B-Felder, "Tauschen"-Button) im Text-Tab jetzt für source==='scan_import' komplett ausgeblendet (index.html: #transkriptAufnahmeBlock/#transkriptSprecherBlock, Logik in showTranscript() claude.js). Zusätzliches Sektions-Label über der Textliste zeigt ebenfalls "Text" statt "Transkript" bei Scan-Sessions (sdcSectionTranskriptLabel).
+
+## v6.36 (Stand: 08.08.2026)
+- Fix: renderUtterances() (claude.js) zeigte im Text-Tab bei Scan-Sessions vor jedem Absatz "Ich" als Sprecher-Label inkl. Tausch-Icon und fiktivem Zeitstempel/Play-Button – irreführend ohne Dialog/Audio. Für source==='scan_import' jetzt kein Sprecher-Label mehr pro Absatz, stattdessen "Seite N"-Markierung (gleiches Muster wie MD-Export seit v6.32). Bearbeiten-Funktion bleibt unverändert (indiziert über .utterance-text, unabhängig vom Sprecher-Markup).
+
+## v6.35 (Stand: 08.08.2026)
+- Bugfix: Tesseract-Texterkennung erzeugte Wortsalat bei Fotos mit EXIF-Rotation (z.B. Handyfotos "liegend" gespeichert). _ocrImage() (Claude Vision) normalisiert das schon über _resizePhoto() (Canvas respektiert EXIF-Ausrichtung), _ocrImageTesseract() bekam das Foto bisher ungefiltert – jetzt läuft auch der Tesseract-Pfad zuerst durch _resizePhoto() (2000px statt 1600px, Tesseract profitiert stärker von Bildschärfe als ein Vision-Modell).
+
+## v6.34 (Stand: 08.08.2026)
 - Feature: Scan-Import Foto-Vorschau-Liste mit manuellem Umsortieren (▲▼-Buttons, _scanMoveFile()), Foto entfernen (×, _scanRemoveFile()) und "Zurücksetzen" (_scanResetFiles()). openScanTab() rendert die Liste jetzt beim erneuten Öffnen neu. Batch-Sortierung bei neuer Auswahl betrifft nur die neuen Dateien, nicht mehr die gesamte Liste (verhindert Überschreiben einer manuellen Umsortierung).
 - Feature: Checkbox "Doppelseite" – teilt jedes Foto vor der OCR per Canvas exakt vertikal in linke/rechte Hälfte (_splitImageHalves() in scan.js), beide Hälften werden als zwei separate Seiten behandelt. Funktioniert engine-unabhängig (reine Bildvorverarbeitung).
 
@@ -155,6 +164,9 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.37 | 08.08.2026 | Fix: Scan-Notizen im Text-Tab ohne "Aufnahme"- und "Sprecher"-Bereich (kein Audio, kein zweiter Sprecher) |
+| v6.36 | 08.08.2026 | Fix: Scan-Notizen im Text-Tab ohne wiederholtes "Ich"-Sprecher-Label, stattdessen "Seite N" |
+| v6.35 | 08.08.2026 | Bugfix: Tesseract-Wortsalat bei EXIF-rotierten Fotos – jetzt auch über _resizePhoto() normalisiert |
 | v6.34 | 08.08.2026 | Feature: Scan-Import manuelles Umsortieren/Entfernen/Zurücksetzen + Doppelseiten-Split |
 | v6.33 | 08.08.2026 | Fix: Scan-Import sortiert Fotos automatisch nach Aufnahmezeitpunkt + Kontroll-Liste |
 | v6.32 | 08.08.2026 | Fix: Scan-Import MD-Export (Seiten-Markierung statt "Ich"-Verschmelzung) + Tesseract.js als zweite OCR-Engine |

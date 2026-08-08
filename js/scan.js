@@ -155,7 +155,12 @@ async function _ocrImage(file) {
 // ── Ein Foto per Tesseract.js (lokal, kein API-Key) zu Text ──
 async function _ocrImageTesseract(file, onProgress) {
   if (typeof Tesseract === 'undefined') throw new Error('Tesseract.js konnte nicht geladen werden.');
-  const { data } = await Tesseract.recognize(file, 'deu', {
+  // v6.35: EXIF-Ausrichtung normalisieren (wie beim Claude-Vision-Pfad über
+  // _resizePhoto, das per <img>/Canvas automatisch korrekt dreht) – sonst
+  // versucht Tesseract rotierte Fotos zeilenweise zu lesen und erzeugt
+  // wortsalatartigen Müll statt sauberen Text
+  const resized = await _resizePhoto(file, 2000, 0.92);
+  const { data } = await Tesseract.recognize(resized.blob, 'deu', {
     logger: m => {
       if (m.status === 'recognizing text' && onProgress) onProgress(Math.round(m.progress * 100));
     }

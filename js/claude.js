@@ -1323,9 +1323,17 @@ function showTranscript(session) {
   card.classList.add('visible');
 
   document.getElementById('transcriptTitle').textContent = session.label;
-  // v6.28: Scan-Notizen sind kein Dialog – Tab-Label entsprechend anpassen
+  // v6.28/v6.37: Scan-Notizen sind kein Dialog – Tab-/Sektions-Label anpassen,
+  // Aufnahme- und Sprecher-Bereich ausblenden (kein Audio, kein zweiter Sprecher)
+  const isScanSession = session.source === 'scan_import';
   const transkriptLabel = document.getElementById('sdcTabTranskriptLabel');
-  if (transkriptLabel) transkriptLabel.textContent = (session.source === 'scan_import') ? 'Text' : 'Transkript';
+  if (transkriptLabel) transkriptLabel.textContent = isScanSession ? 'Text' : 'Transkript';
+  const sectionLabel = document.getElementById('sdcSectionTranskriptLabel');
+  if (sectionLabel) sectionLabel.textContent = isScanSession ? 'Text' : 'Transkript';
+  const aufnahmeBlock = document.getElementById('transkriptAufnahmeBlock');
+  if (aufnahmeBlock) aufnahmeBlock.style.display = isScanSession ? 'none' : '';
+  const sprecherBlock = document.getElementById('transkriptSprecherBlock');
+  if (sprecherBlock) sprecherBlock.style.display = isScanSession ? 'none' : '';
   const dur = session.duration ? ` · ${formatDuration(session.duration)}` : '';
   document.getElementById('transcriptMeta').textContent =
     `${session.filename}${dur} · ${new Date(session.date).toLocaleString('de-DE')}`;
@@ -3366,17 +3374,33 @@ function renderUtterances(session) {
     tBlock.style.display = 'block';
   }
 
+  // v6.36: Scan-Notizen sind kein Dialog – keine Sprecher-Labels/Tausch/Zeitstempel
+  // pro Absatz, stattdessen nur eine dezente "Seite N"-Markierung
+  const isScan = session.source === 'scan_import';
+
   session.utterances.forEach((u, idx) => {
+    const div = document.createElement('div');
+    div.className = 'utterance';
+    div.dataset.start = u.start;
+    div.dataset.end = u.end;
+
+    if (isScan) {
+      div.innerHTML = `
+        <div class="utterance-body">
+          <div style="font-size:0.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px">Seite ${idx + 1}</div>
+          <div class="utterance-text">${escHtml(u.text)}</div>
+        </div>
+      `;
+      container.appendChild(div);
+      return;
+    }
+
     const isA = u.speaker === 'A';
     const name  = getSpeakerName(u.speaker, session);
     const color = getSpeakerColor(u.speaker);
     const otherSpeaker = isA ? 'B' : 'A';
     const otherName = getSpeakerName(otherSpeaker, session);
 
-    const div = document.createElement('div');
-    div.className = 'utterance';
-    div.dataset.start = u.start;
-    div.dataset.end = u.end;
     div.innerHTML = `
       <div class="utterance-speaker-wrap">
         <div class="utterance-speaker" title="Nur diese Passage tauschen"
