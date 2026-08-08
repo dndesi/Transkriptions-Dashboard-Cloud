@@ -3019,3 +3019,24 @@ const TEMPLATE_LIBRARY = [
     ]
   }
 ];
+
+// v6.30: Deutsche Anzeige-Labels für die Kategorien (interner Key bleibt Englisch,
+// damit Filter/data-cat/sourceTemplateId-Zuordnung stabil bleiben)
+const TEMPLATE_CATEGORY_LABELS_DE = {
+  'General':          'Allgemein',
+  'Meeting':          'Besprechung',
+  'Speech':           'Vortrag',
+  'Call':             'Anruf',
+  'Interview':        'Interview',
+  'Medical':          'Medizin',
+  'Sales':            'Vertrieb',
+  'Consulting':       'Beratung',
+  'Education':        'Bildung',
+  'Construction':     'Bauwesen',
+  'IT & Engineering': 'IT & Technik',
+  'Legal':            'Recht',
+  'Real Estate':      'Immobilien',
+  'Financial':        'Finanzen',
+  'Functional':       'Funktional'
+};
+function _catLabelDe(cat) { return TEMPLATE_CATEGORY_LABELS_DE[cat] || cat; }

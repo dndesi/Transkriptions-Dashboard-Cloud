@@ -1123,10 +1123,31 @@ function _renderTemplateLibrary() {
     el.querySelector('#libCategoryChips').innerHTML = ['all', ...categories].map(c => `
       <button class="lib-cat-chip" data-cat="${escHtml(c)}" onclick="_setLibCategory(this.dataset.cat)"
         style="padding:4px 12px;font-size:0.76rem;border-radius:14px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer">
-        ${c === 'all' ? 'Alle' : escHtml(c)}
+        ${c === 'all' ? 'Alle' : escHtml(_catLabelDe(c))}
       </button>`).join('');
   }
   _renderLibraryResults();
+}
+
+// v6.30: Nutzer-Overrides (Bearbeiten) + Soft-Delete (Löschen) für Vorlagen, localStorage-basiert
+function _getTemplateOverrides() {
+  try { return JSON.parse(localStorage.getItem('distill_template_overrides') || '{}'); } catch { return {}; }
+}
+function _saveTemplateOverride(id, patch) {
+  const all = _getTemplateOverrides();
+  all[id] = { ...(all[id] || {}), ...patch };
+  localStorage.setItem('distill_template_overrides', JSON.stringify(all));
+}
+function _getHiddenTemplateIds() {
+  try { return JSON.parse(localStorage.getItem('distill_hidden_templates') || '[]'); } catch { return []; }
+}
+// Basis-Vorlagen + Bearbeitungen zusammengeführt, gelöschte ausgeblendet
+function _effectiveTemplates() {
+  const overrides = _getTemplateOverrides();
+  const hidden    = _getHiddenTemplateIds();
+  return TEMPLATE_LIBRARY
+    .filter(t => !hidden.includes(t.id))
+    .map(t => overrides[t.id] ? { ...t, ...overrides[t.id] } : t);
 }
 
 function _renderLibraryResults() {
@@ -1135,10 +1156,11 @@ function _renderLibraryResults() {
 
   const favorites = _getTemplateFavorites();
   const usageMap  = _getTemplateUsageMap();
+  const all       = _effectiveTemplates();
   const categories = [...new Set(TEMPLATE_LIBRARY.map(t => t.category))];
 
   const q = _libSearch.trim().toLowerCase();
-  let items = TEMPLATE_LIBRARY.filter(t => {
+  let items = all.filter(t => {
     if (_libCategoryFilter !== 'all' && t.category !== _libCategoryFilter) return false;
     if (_libOnlyFavorites && !favorites.includes(t.id)) return false;
     if (_libOnlyUnused && usageMap[t.id]) return false;
@@ -1149,13 +1171,13 @@ function _renderLibraryResults() {
     return true;
   });
   items.sort((a, b) => _libSort === 'category'
-    ? (a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
+    ? (_catLabelDe(a.category).localeCompare(_catLabelDe(b.category)) || a.name.localeCompare(b.name))
     : a.name.localeCompare(b.name));
 
-  const usedCount = TEMPLATE_LIBRARY.filter(t => usageMap[t.id]).length;
+  const usedCount = all.filter(t => usageMap[t.id]).length;
 
   const statsEl = el.querySelector('#libStats');
-  if (statsEl) statsEl.textContent = `${TEMPLATE_LIBRARY.length} Vorlagen · ${categories.length} Kategorien · ${usedCount} verwendet`;
+  if (statsEl) statsEl.textContent = `${all.length} Vorlagen · ${categories.length} Kategorien · ${usedCount} verwendet`;
 
   const countEl = el.querySelector('#libCount');
   if (countEl) countEl.textContent = `${items.length} Treffer`;
@@ -1191,11 +1213,19 @@ function _templateCard(t, isFav, usedIn) {
           <div class="prompt-card-icon">${iconLucide('layout-template', 18, 'color:var(--muted)')}</div>
           <div class="prompt-card-name" style="min-width:0">${escHtml(t.name)}</div>
         </div>
-        <button onclick="event.stopPropagation();toggleTemplateFavorite('${t.id}')" title="Favorit" style="border:none;background:none;cursor:pointer;flex-shrink:0;color:${isFav ? '#f59e0b' : 'var(--muted)'}">
-          ${iconLucide('star', 16)}
-        </button>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+          <button onclick="event.stopPropagation();openTemplateEditModal('${t.id}')" title="Bearbeiten" style="border:none;background:none;cursor:pointer;color:var(--muted)">
+            ${iconLucide('pencil', 15)}
+          </button>
+          <button onclick="event.stopPropagation();deleteTemplateFromLibrary('${t.id}')" title="Löschen" style="border:none;background:none;cursor:pointer;color:var(--muted)">
+            ${iconLucide('trash-2', 15)}
+          </button>
+          <button onclick="event.stopPropagation();toggleTemplateFavorite('${t.id}')" title="Favorit" style="border:none;background:none;cursor:pointer;color:${isFav ? '#f59e0b' : 'var(--muted)'}">
+            ${iconLucide('star', 16)}
+          </button>
+        </div>
       </div>
-      <div style="font-size:0.7rem;color:var(--muted);margin:2px 0 6px">${escHtml(t.category)}</div>
+      <div style="font-size:0.7rem;color:var(--muted);margin:2px 0 6px">${escHtml(_catLabelDe(t.category))}</div>
       <div class="prompt-card-desc">${escHtml(t.description)}</div>
       <button onclick="_toggleLibGliederung('${gid}')" style="border:none;background:none;color:var(--accent);font-size:0.76rem;padding:4px 0;cursor:pointer;display:flex;align-items:center;gap:3px">
         ${iconLucide('chevron-right', 12)} Gliederung anzeigen
@@ -1212,21 +1242,82 @@ function _templateCard(t, isFav, usedIn) {
     </div>`;
 }
 
-// ── Vorlage → Prompt-Generator (KI-Modus, vorausgefüllt) ────────────────
-function useTemplateAsPrompt(templateId) {
-  const t = TEMPLATE_LIBRARY.find(x => x.id === templateId);
+// ── Vorlage bearbeiten (Name/Beschreibung/Gliederung) ───────────────────
+function openTemplateEditModal(templateId) {
+  const t = _effectiveTemplates().find(x => x.id === templateId);
   if (!t) return;
-  _pendingPromptCategory = null;
-  _genState = {
-    mode: 'ai', step: 2,
-    name: '', icon: 'sparkles', description: '',
-    rolle: '', tonalitaet: '', grenzen: '',
-    kontext: '', schema: [], tags: [], aiDesc: '', finalText: '',
-    sourceTemplateId: t.id
-  };
+  let modal = document.getElementById('templateEditModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'templateEditModal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6)';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) { if (e.target === modal) closeTemplateEditModal(); });
+  }
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.4)">
+      <div style="font-size:1rem;font-weight:700;margin-bottom:16px">Vorlage bearbeiten</div>
+      <input type="hidden" id="tplEditId" value="${escHtml(templateId)}">
+      <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">Name</label>
+      <input type="text" id="tplEditName" value="${escHtml(t.name)}"
+        style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;box-sizing:border-box;margin-bottom:14px">
+      <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">Beschreibung</label>
+      <textarea id="tplEditDesc" rows="3"
+        style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;box-sizing:border-box;resize:vertical;margin-bottom:14px">${escHtml(t.description)}</textarea>
+      <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">Gliederung (eine Zeile pro Punkt)</label>
+      <textarea id="tplEditGliederung" rows="8"
+        style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.85rem;box-sizing:border-box;resize:vertical;margin-bottom:18px">${escHtml(t.gliederung.join('\n'))}</textarea>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeTemplateEditModal()">Abbrechen</button>
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="saveTemplateEdit()">Speichern</button>
+      </div>
+    </div>`;
+  modal.style.display = 'flex';
+}
+function closeTemplateEditModal() {
+  const m = document.getElementById('templateEditModal');
+  if (m) m.style.display = 'none';
+}
+function saveTemplateEdit() {
+  const id          = document.getElementById('tplEditId').value;
+  const name        = document.getElementById('tplEditName').value.trim();
+  const description = document.getElementById('tplEditDesc').value.trim();
+  const gliederung  = document.getElementById('tplEditGliederung').value.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!name) { showToast('Name fehlt.', 'warning'); return; }
+  _saveTemplateOverride(id, { name, description, gliederung });
+  closeTemplateEditModal();
+  _renderLibraryResults();
+  showToast('Vorlage aktualisiert', 'success');
+}
+
+// ── Vorlage löschen (Soft-Delete, wie bei eingebauten Foto/Design/Standard-Prompts) ──
+function deleteTemplateFromLibrary(id) {
+  if (!confirm('Diese Vorlage aus der Datenbank entfernen?\n(Kann über Browser-Einstellungen → localStorage zurückgesetzt werden)')) return;
+  const hidden = _getHiddenTemplateIds();
+  if (!hidden.includes(id)) { hidden.push(id); localStorage.setItem('distill_hidden_templates', JSON.stringify(hidden)); }
+  _renderLibraryResults();
+  showToast('Vorlage entfernt', 'success');
+}
+
+// ── Vorlage → Prompt-Generator (KI-Modus, vorausgefüllt) ────────────────
+// v6.30: fragt zuerst die Ziel-Kategorie ab (Analyse/Design/Foto/Standard/Rolle) über den
+// bestehenden Kategorie-Picker, bevor der KI-Generator geöffnet wird.
+let _pendingLibraryTemplateId = null;
+
+function useTemplateAsPrompt(templateId) {
+  _pendingLibraryTemplateId = templateId;
+  openPromptCategoryPickerModal('library');
+}
+
+function _startGeneratorFromTemplate(templateId, category) {
+  const t = _effectiveTemplates().find(x => x.id === templateId);
+  if (!t) return;
+  openPromptGeneratorModal(category); // baut _genState + _pendingPromptCategory korrekt auf
+  _genState.mode = 'ai';
+  _genState.step = 2;
   _genState.aiDesc = `${t.name}: ${t.description}\n\nGliederung:\n${t.gliederung.map(b => '- ' + b).join('\n')}`;
+  _genState.sourceTemplateId = t.id;
   _renderGenModal();
-  document.getElementById('promptGeneratorModal').style.display = 'flex';
 }
 
 // ── Nur Ergebnisse neu rendern (Toolbar bleibt stabil) ──
@@ -1939,6 +2030,9 @@ function selectPromptCategory(category) {
   closePromptCategoryPickerModal();
   if (_pendingCategoryPickerAction === 'editor') {
     openPromptEditorModal(null, category);
+  } else if (_pendingCategoryPickerAction === 'library') {
+    _startGeneratorFromTemplate(_pendingLibraryTemplateId, category);
+    _pendingLibraryTemplateId = null;
   } else {
     openPromptGeneratorModal(category);
   }

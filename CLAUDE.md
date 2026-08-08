@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.29** (Stand: 08.08.2026)
+**v6.30** (Stand: 08.08.2026)
+- Vorlagen-Datenbank Korrekturen: (1) Kategorien werden über TEMPLATE_CATEGORY_LABELS_DE/_catLabelDe() (templateLibrary.js) auf Deutsch angezeigt – Chips, Karten, Sortierung; interner Schlüssel bleibt Englisch für Filter/data-cat. (2) "Als Prompt erstellen" öffnet zuerst den bestehenden Kategorie-Picker (openPromptCategoryPickerModal('library') → selectPromptCategory() → _startGeneratorFromTemplate()), damit der Nutzer die Ziel-Sektion (Analyse/Design/Foto-Analyse/Standard/Rolle) wählt, bevor der KI-Generator befüllt wird. (3) Vorlagen sind jetzt bearbeitbar (openTemplateEditModal/saveTemplateEdit, Override in localStorage distill_template_overrides) und löschbar (deleteTemplateFromLibrary, Soft-Delete in localStorage distill_hidden_templates, Confirm-Dialog nach bestehendem Muster). _effectiveTemplates() führt Basis + Overrides zusammen und blendet Gelöschtes aus – wird jetzt überall statt der rohen TEMPLATE_LIBRARY verwendet.
+
+## v6.29 (Stand: 08.08.2026)
 - Feature: Vorlagen-Datenbank in der Prompt-Bibliothek. js/templateLibrary.js (neu): TEMPLATE_LIBRARY[] – 220 eigene, umformulierte Prompt-Vorlagen-Zusammenfassungen in 15 Kategorien (General, Meeting, Speech, Call, Interview, Medical, Sales, Consulting, Education, Construction, IT & Engineering, Legal, Real Estate, Financial, Functional). prompts.js: neuer Tab "Vorlagen-Datenbank" neben "Meine Prompts" (_switchPromptsSubView, _renderTemplateLibrary, _renderLibraryResults) – filterbar nach Kategorie + Volltextsuche, sortierbar A-Z/Kategorie, Favoriten (localStorage distill_template_favorites), aufklappbare Gliederung pro Karte, "bereits verwendet"-Badge mit Link zum Prompt (abgeleitet aus sourceTemplateId, keine harte Sperre). useTemplateAsPrompt() befüllt den bestehenden KI-Modus des Prompt-Generators – Rolle/Ton/Grenzen/Kontext werden frisch generiert, nicht 1:1 übernommen.
 
 ## v6.28 (Stand: 08.08.2026)
@@ -138,6 +141,8 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.30 | 08.08.2026 | Vorlagen-Datenbank: deutsche Kategorien, Kategorie-Picker vor Prompt-Erstellung, Vorlagen bearbeiten/löschen |
+| v6.29 | 08.08.2026 | Feature: Vorlagen-Datenbank — 220 Prompt-Vorlagen, filterbar (templateLibrary.js, prompts.js) |
 | v6.28 | 08.08.2026 | Feature: Scan-Import — Foto/Kamera → Claude Vision OCR → Session, kein Dialog (scan.js, neuer Upload-Tab) |
 | v6.25 | 03.08.2026 | Feature: Lokale Semantiksuche — Transformers.js, embeddings.js, Vektoren in IDB, kein API-Call |
 | v6.24 | 01.08.2026 | Fix: MD-Überschrift — Perspektive bereinigt via _translitUmlaute() (kein & oder Sonderzeichen) |
