@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.42** (Stand: 08.08.2026)
+**v6.43** (Stand: 08.08.2026)
+- Fix: Regression durch Small-Modell zurückgerollt. Lokaler Vergleichstest (gleiches Foto, außerhalb der App nachgestellt) bestätigte: Small-Modell liest bei diesem Dokument an mehreren Stellen schlechter als Tiny (z.B. "Einigkeit"→"Einigkit"), Medium-Modell (auch getestet) sogar noch schlechter und 3x langsamer. Die abgesenkte Erkennungsschwelle (0.4) war dabei NICHT die Hauptursache. Zurückgerollt auf Tiny-Modell + Standard-Schwelle 0.5. models/paddleocr/ enthält jetzt Tiny- statt Small-Dateien. Zusätzliche Einstell-Tests (Detection-Fläche, Auflösung, Padding) brachten keine Verbesserung für die eine hartnäckig fehlende Zeile – per Diagnose (isolierter Crop erneut erkannt) bestätigt: Erkennungssicherheit liegt für diese Zeile knapp an der Schwelle (~0.55), Text bleibt auch bei niedrigerer Schwelle unleserlich/falsch statt korrekt – ein Modell-Grenzfall, keine Einstellungssache. Empfehlung: Restfehler bei schwierigen Zeilen manuell im Text-Editor korrigieren.
+
+## v6.42 (Stand: 08.08.2026)
 - PaddleOCR-Modell-Dateien (Detection, Recognition, Wörterbuch) fest ins Repo vendort (models/paddleocr/, von Daniel heruntergeladen und Format-verifiziert). _getPaddleOcrService() (scan.js) lädt sie jetzt von dort statt von der externen GitHub-Quelle (PT-Perkasa-Pilar-Utama/ppu-paddle-ocr-models) – Distill Voice ist damit unabhängig von deren Fortbestand. Nur die Bibliothek selbst (Code) bleibt CDN-geladen.
 
 ## v6.41 (Stand: 08.08.2026)
@@ -179,6 +182,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.43 | 08.08.2026 | Fix: Regression durch Small/Medium-Modell zurückgerollt, zurück auf Tiny (nachweislich bestes Ergebnis) |
 | v6.42 | 08.08.2026 | PaddleOCR-Modell fest im Repo vendort (models/paddleocr/) – unabhängig von externer Quelle |
 | v6.41 | 08.08.2026 | PaddleOCR: Modell "Small" statt "Tiny" + Erkennungsschwelle gesenkt, models/paddleocr/-Ordner für Vendoring vorbereitet |
 | v6.40 | 08.08.2026 | PaddleOCR jetzt Standard-Engine, Tesseract entfernt (bewährt bei Spalten-/Label-Layouts) |

@@ -1,34 +1,29 @@
 # PaddleOCR-Modell (lokal vendort)
 
-Dieser Ordner soll die PaddleOCR-Modelldateien enthalten, damit Distill Voice
-beim Scan-Import nicht mehr von einer externen Quelle abhängt.
+Enthält die PaddleOCR-Modelldateien, damit Distill Voice beim Scan-Import
+nicht von einer externen Quelle abhängt (Modell-Bytes liegen fest im Repo,
+nur die Bibliothek selbst kommt per CDN).
 
-Modell-Stufe: **PP-OCRv6 Small** (volles Wörterbuch, robuster bei dichten/
-schwierigen Fotos als die Standard-"Tiny"-Stufe).
+Modell-Stufe: **PP-OCRv6 Tiny** (~6 MB).
 
-## Herunterladen (einmalig, ca. 30 MB)
+**Warum Tiny, nicht Small/Medium (Test vom 08.08.2026):** Ein Vergleichstest
+mit einem echten Buchfoto (Spalten-/Label-Layout) zeigte, dass die größeren
+Stufen bei diesem Dokument SCHLECHTER lesen als Tiny – Small hat z.B.
+"Einigkeit" zu "Einigkit" verstümmelt, Medium war noch schlechter (unlesbarer
+Seitenanfang, mehrere komplett fehlende Zeilen) und dazu 3x langsamer.
+"Größer" ist bei PaddleOCR also nicht automatisch "besser". Diverse
+Detection-Einstellungen (Flächen-Schwelle, Auflösung, Padding) wurden
+zusätzlich getestet und brachten keine Verbesserung für die eine
+hartnäckig unscharfe Zeile auf dem Testfoto – laut Diagnose lag deren
+Erkennungssicherheit einfach knapp am Modell-Limit. Für solche Einzelfälle:
+Text im Editor nachträglich korrigieren.
 
-Diese drei Links anklicken – der Browser lädt die Dateien automatisch
-herunter. Danach hier in diesen Ordner legen, Dateinamen **unverändert**
-lassen:
-
-1. Erkennungs-Modell (Text finden):
-   https://media.githubusercontent.com/media/PT-Perkasa-Pilar-Utama/ppu-paddle-ocr-models/main/detection/ort/PP-OCRv6_small_det.ort
-
-2. Lese-Modell (Text entziffern):
-   https://media.githubusercontent.com/media/PT-Perkasa-Pilar-Utama/ppu-paddle-ocr-models/main/recognition/ort/PP-OCRv6_small_rec.ort
-
-3. Zeichen-Wörterbuch:
-   https://raw.githubusercontent.com/PT-Perkasa-Pilar-Utama/ppu-paddle-ocr-models/main/recognition/ppocrv6_dict.txt
-
-Erwartete Dateien danach in diesem Ordner:
-- `PP-OCRv6_small_det.ort`
-- `PP-OCRv6_small_rec.ort`
-- `ppocrv6_dict.txt`
-
-Sobald die drei Dateien hier liegen, verweist scan.js (_getPaddleOcrService())
-auf diese lokalen Pfade statt auf die externe GitHub-Quelle.
+Enthaltene Dateien:
+- `PP-OCRv6_tiny_det.ort` – Erkennungs-Modell (findet Textblöcke)
+- `PP-OCRv6_tiny_rec.ort` – Lese-Modell (entziffert Zeichen)
+- `ppocrv6_tiny_dict.txt` – Zeichen-Wörterbuch
 
 Quelle/Lizenz: PaddleOCR (Baidu/PaddlePaddle), Apache-2.0. JS-Portierung/
-Modell-Hosting: ppu-paddle-ocr-models (PT Perkasa Pilar Utama).
+Modell-Hosting der Originaldateien: ppu-paddle-ocr-models (PT Perkasa Pilar
+Utama), https://github.com/PT-Perkasa-Pilar-Utama/ppu-paddle-ocr-models.
 Stand: 08.08.2026.

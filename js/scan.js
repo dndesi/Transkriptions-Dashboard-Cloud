@@ -170,6 +170,13 @@ async function _ocrImage(file) {
 // Quelle irgendwann verschwindet oder sich ändert. Nur die Bibliothek
 // selbst (reiner Programmcode) kommt weiterhin per CDN, wie bei allen
 // anderen hier eingebundenen Libraries (Tesseract war früher genauso).
+// v6.43: Rückbau auf Tiny-Modell + Standard-Schwelle (0.5) – lokaler
+// Vergleichstest (gleiches Foto, gleiche Datei) zeigte, dass "Small" bei
+// diesem Dokument an mehreren Stellen SCHLECHTER liest als "Tiny" (z.B.
+// "Einigkeit" → "Einigkit", mehrere Zeilen zu Buchstabensalat), entgegen
+// der Erwartung "größer = besser". Tiny + 0.5 war die im ersten Test
+// (08.08.2026) nachweislich bessere Kombination. models/paddleocr/ enthält
+// jetzt die Tiny-Dateien statt Small (siehe README dort).
 let _paddleOcrServicePromise = null;
 async function _getPaddleOcrService() {
   if (!_paddleOcrServicePromise) {
@@ -177,11 +184,10 @@ async function _getPaddleOcrService() {
       const { PaddleOcrService } = await import('https://cdn.jsdelivr.net/npm/ppu-paddle-ocr/web/+esm');
       const service = new PaddleOcrService({
         model: {
-          detection: 'models/paddleocr/PP-OCRv6_small_det.ort',
-          recognition: 'models/paddleocr/PP-OCRv6_small_rec.ort',
-          charactersDictionary: 'models/paddleocr/ppocrv6_dict.txt',
+          detection: 'models/paddleocr/PP-OCRv6_tiny_det.ort',
+          recognition: 'models/paddleocr/PP-OCRv6_tiny_rec.ort',
+          charactersDictionary: 'models/paddleocr/ppocrv6_tiny_dict.txt',
         },
-        recognition: { minimumConfidence: 0.4 },
         session: { executionProviders: ['wasm'] },
       });
       await service.initialize();
