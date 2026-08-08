@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════
-// SCAN-IMPORT  (v6.28, v6.32: zweite OCR-Engine Tesseract)
-// Fotos von handschriftlichen Notizen/Dokumenten → OCR (Claude Vision
-// oder Tesseract.js) → Session (kein Dialog, ein Sprecher). Mehrere
+// SCAN-IMPORT  (v6.28, v6.40: Standard-Engine PaddleOCR)
+// Fotos von handschriftlichen Notizen/Dokumenten → OCR (PaddleOCR
+// oder Claude Vision) → Session (kein Dialog, ein Sprecher). Mehrere
 // Fotos = eine Notiz.
 // ═══════════════════════════════════════════════════
 
@@ -152,35 +152,38 @@ async function _ocrImage(file) {
   return result.text.trim();
 }
 
-// ── Ein Foto per Tesseract.js (lokal, kein API-Key) zu Text ──
-async function _ocrImageTesseract(file, onProgress) {
-  if (typeof Tesseract === 'undefined') throw new Error('Tesseract.js konnte nicht geladen werden.');
-  // v6.35: EXIF-Ausrichtung normalisieren (wie beim Claude-Vision-Pfad über
-  // _resizePhoto, das per <img>/Canvas automatisch korrekt dreht) – sonst
-  // versucht Tesseract rotierte Fotos zeilenweise zu lesen und erzeugt
-  // wortsalatartigen Müll statt sauberen Text
-  const resized = await _resizePhoto(file, 2000, 0.92);
-  const { data } = await Tesseract.recognize(resized.blob, 'deu', {
-    logger: m => {
-      if (m.status === 'recognizing text' && onProgress) onProgress(Math.round(m.progress * 100));
-    }
-  });
-  return (data.text || '').trim();
-}
-
 // ── Ein Foto per PaddleOCR (lokal, kein API-Key) zu Text ──
-// v6.39: dritte Engine – erkennt Textblöcke einzeln statt als einen
-// durchgehenden Strom (Detection-Modell statt reiner Zeilen-Segmentierung
-// wie bei Tesseract) und sollte dadurch bei Spalten-/Label-Layouts
-// (siehe v6.35-Lehre) robuster sein. Bibliothek + Modell werden per CDN
-// geladen (jsDelivr/GitHub, quelloffen, Apache-2.0) – läuft komplett lokal
-// im Browser, keine Bild-/Textdaten verlassen das Gerät.
+// v6.39: erkennt Textblöcke einzeln statt als einen durchgehenden Strom
+// (Detection-Modell), dadurch robust bei Spalten-/Label-Layouts.
+// v6.40: Standard-Engine (löst Tesseract ab, das bei Spalten-Layouts oft
+// die Lesereihenfolge durcheinanderbrachte). Bibliothek + Modell werden
+// per CDN geladen (jsDelivr/GitHub, quelloffen, Apache-2.0) – läuft
+// komplett lokal im Browser, keine Bild-/Textdaten verlassen das Gerät.
+// v6.41: Modell-Stufe "Small" statt "Tiny" (volles Wörterbuch, robuster bei
+// Fotos/schlechtem Licht laut PaddleOCR-eigener Empfehlung) + Erkennungs-
+// Schwelle gesenkt (0.5 → 0.4), damit schwach erkannte Textblöcke (z.B. der
+// am 08.08.2026 komplett fehlende Einleitungsabsatz auf Seite 40) nicht
+// mehr verworfen werden, statt schlecht gelesen zu werden.
+// v6.42: Modell-Dateien liegen jetzt lokal im Repo (models/paddleocr/,
+// von Daniel heruntergeladen) statt von externer GitHub-Quelle geladen zu
+// werden – Distill Voice ist damit unabhängig davon, ob diese externe
+// Quelle irgendwann verschwindet oder sich ändert. Nur die Bibliothek
+// selbst (reiner Programmcode) kommt weiterhin per CDN, wie bei allen
+// anderen hier eingebundenen Libraries (Tesseract war früher genauso).
 let _paddleOcrServicePromise = null;
 async function _getPaddleOcrService() {
   if (!_paddleOcrServicePromise) {
     _paddleOcrServicePromise = (async () => {
       const { PaddleOcrService } = await import('https://cdn.jsdelivr.net/npm/ppu-paddle-ocr/web/+esm');
-      const service = new PaddleOcrService({ session: { executionProviders: ['wasm'] } });
+      const service = new PaddleOcrService({
+        model: {
+          detection: 'models/paddleocr/PP-OCRv6_small_det.ort',
+          recognition: 'models/paddleocr/PP-OCRv6_small_rec.ort',
+          charactersDictionary: 'models/paddleocr/ppocrv6_dict.txt',
+        },
+        recognition: { minimumConfidence: 0.4 },
+        session: { executionProviders: ['wasm'] },
+      });
       await service.initialize();
       return service;
     })();
@@ -189,7 +192,7 @@ async function _getPaddleOcrService() {
 }
 
 async function _ocrImagePaddleOCR(file) {
-  const resized = await _resizePhoto(file, 2000, 0.92); // EXIF-Ausrichtung normalisieren, wie bei Claude/Tesseract
+  const resized = await _resizePhoto(file, 2000, 0.92); // EXIF-Ausrichtung normalisieren, wie beim Claude-Vision-Pfad
   const service = await _getPaddleOcrService();
   const url = URL.createObjectURL(resized.blob);
   const img = await new Promise((resolve, reject) => {
@@ -210,7 +213,7 @@ async function _ocrImagePaddleOCR(file) {
 // ── Scan verarbeiten: alle Fotos → ein Text → eine Session ──
 async function startScanImport() {
   if (!_scanFiles.length) return;
-  const engine = document.getElementById('scanEngine')?.value || 'claude';
+  const engine = document.getElementById('scanEngine')?.value || 'paddleocr';
   if (engine === 'claude' && !anthropicKey) { showToast('Kein Anthropic API-Key gesetzt.', 'warning'); return; }
 
   const startBtn = document.getElementById('scanStartBtn');
@@ -238,11 +241,9 @@ async function startScanImport() {
     for (let i = 0; i < ocrUnits.length; i++) {
       statusEl.style.color = 'var(--muted)';
       statusEl.textContent = `⏳ Text wird erkannt (${i + 1}/${ocrUnits.length})…`;
-      const text = engine === 'tesseract'
-        ? await _ocrImageTesseract(ocrUnits[i], pct => { statusEl.textContent = `⏳ Text wird erkannt (${i + 1}/${ocrUnits.length}) – ${pct}%…`; })
-        : engine === 'paddleocr'
-        ? await _ocrImagePaddleOCR(ocrUnits[i])
-        : await _ocrImage(ocrUnits[i]);
+      const text = engine === 'claude'
+        ? await _ocrImage(ocrUnits[i])
+        : await _ocrImagePaddleOCR(ocrUnits[i]);
       if (text) pageTexts.push(text);
     }
 

@@ -2,7 +2,16 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.39** (Stand: 08.08.2026)
+**v6.42** (Stand: 08.08.2026)
+- PaddleOCR-Modell-Dateien (Detection, Recognition, Wörterbuch) fest ins Repo vendort (models/paddleocr/, von Daniel heruntergeladen und Format-verifiziert). _getPaddleOcrService() (scan.js) lädt sie jetzt von dort statt von der externen GitHub-Quelle (PT-Perkasa-Pilar-Utama/ppu-paddle-ocr-models) – Distill Voice ist damit unabhängig von deren Fortbestand. Nur die Bibliothek selbst (Code) bleibt CDN-geladen.
+
+## v6.41 (Stand: 08.08.2026)
+- PaddleOCR: Modell-Stufe "Small" statt "Tiny" (volles Wörterbuch, robuster bei Fotos/schlechtem Licht laut PaddleOCR-eigener Empfehlung), Erkennungs-Schwelle (minimumConfidence) von 0.5 auf 0.4 gesenkt – Ursache für den bei v6.40 beobachteten komplett fehlenden Einleitungsabsatz (Seite-40-Test) war vermutlich ein unter der Schwelle verworfener Textblock. Neuer Ordner `models/paddleocr/` mit README + Download-Links angelegt (Vorbereitung fürs Modell-Vendoring, siehe Memory project_scan_import) – Daniel lädt die 3 Dateien selbst herunter, danach Umstellung von CDN auf lokale Pfade in _getPaddleOcrService() (scan.js).
+
+## v6.40 (Stand: 08.08.2026)
+- PaddleOCR jetzt Standard-Engine im Scan-Tab, Tesseract komplett entfernt (scan.js: _ocrImageTesseract() gelöscht, index.html: Tesseract.js-CDN-Script-Tag entfernt, Dropdown-Option entfernt). Grund: Test mit echtem Buchfoto (Spalten-/Label-Layout, Seite 40) zeigte PaddleOCR liest die Reihenfolge korrekt (Label + zugehörige Frage zusammen), Tesseract hat das durcheinandergebracht. Claude Vision bleibt als Alternative für Handschrift. Offen: Modell-Vendoring ins eigene Repo weiterhin nicht umgesetzt – PaddleOCR lädt sein Modell aktuell noch von externer GitHub-Quelle.
+
+## v6.39 (Stand: 08.08.2026)
 - Feature: PaddleOCR als dritte, experimentelle Scan-Engine neben Claude Vision und Tesseract (scan.js: _ocrImagePaddleOCR(), Bibliothek "ppu-paddle-ocr" + KI-Modell per CDN geladen, quelloffen/Apache-2.0, komplett lokal im Browser). Grund: Tesseract liest Spalten-/Label-Layouts oft in falscher Reihenfolge (Text als durchgehender Strom); PaddleOCR erkennt Textblöcke einzeln (Detection-Modell zuerst), sollte dadurch robuster sein. Konnte im Entwicklungs-Sandbox nicht vorab getestet werden (Netzwerk-Einschränkung dort, siehe Memory feedback_sandbox_network_limits) – als "experimentell" markiert bis Daniel es live testet. Modell-Vendoring ins eigene Repo (Daniels Wunsch wegen Abhängigkeit von externer Quelle) noch nicht umgesetzt, siehe Memory project_scan_import.
 
 ## v6.38 (Stand: 08.08.2026)
@@ -170,6 +179,9 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.42 | 08.08.2026 | PaddleOCR-Modell fest im Repo vendort (models/paddleocr/) – unabhängig von externer Quelle |
+| v6.41 | 08.08.2026 | PaddleOCR: Modell "Small" statt "Tiny" + Erkennungsschwelle gesenkt, models/paddleocr/-Ordner für Vendoring vorbereitet |
+| v6.40 | 08.08.2026 | PaddleOCR jetzt Standard-Engine, Tesseract entfernt (bewährt bei Spalten-/Label-Layouts) |
 | v6.39 | 08.08.2026 | Feature: PaddleOCR als dritte, experimentelle Scan-Engine (Spalten/Layout-robuster als Tesseract) |
 | v6.38 | 08.08.2026 | Fix: Scan-Import zählte Absätze statt Fotos als "Seiten" – jetzt 1 Foto = 1 Seite |
 | v6.37 | 08.08.2026 | Fix: Scan-Notizen im Text-Tab ohne "Aufnahme"- und "Sprecher"-Bereich (kein Audio, kein zweiter Sprecher) |
