@@ -1,8 +1,11 @@
 // ═══════════════════════════════════════════════════
 // SCAN-IMPORT  (v6.28, v6.40: Standard-Engine PaddleOCR)
-// Fotos von handschriftlichen Notizen/Dokumenten → OCR (PaddleOCR
+// Fotos/PDFs von handschriftlichen Notizen/Dokumenten → OCR (PaddleOCR
 // oder Claude Vision) → Session (kein Dialog, ein Sprecher). Mehrere
-// Fotos = eine Notiz.
+// Seiten = eine Notiz.
+// v6.45: PDFs werden automatisch erkannt und per PDF.js Seite für Seite
+// als JPEG gerendert (scale 2.0 ≈ 144 dpi) – danach identisch zur
+// Bildverarbeitung, keine Änderung an OCR-Pipeline nötig.
 // ═══════════════════════════════════════════════════
 
 let _scanFiles = []; // File[]
@@ -21,21 +24,55 @@ function openScanTab() {
   _renderScanFileList(); // v6.34: Zustand beim erneuten Öffnen wieder anzeigen
 }
 
-// ── Foto(s) ausgewählt (mehrfach möglich, additiv) ───
-function handleScanFileSelect(event) {
-  const files = Array.from(event.target.files).filter(f => f.type.startsWith('image/'));
-  event.target.value = '';
-  if (!files.length) return;
+// ── PDF-Seiten per PDF.js in JPEG-Files rendern (v6.45) ─────────────────
+async function _pdfToImageFiles(file) {
+  if (!window.pdfjsLib) throw new Error('PDF.js nicht geladen.');
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const baseName = file.name.replace(/\.pdf$/i, '');
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page     = await pdf.getPage(i);
+    const viewport = page.getViewport({ scale: 2.0 }); // ~144 dpi – ausreichend für PaddleOCR
+    const canvas   = document.createElement('canvas');
+    canvas.width   = viewport.width;
+    canvas.height  = viewport.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
+    pages.push(new File([blob], `${baseName}-seite${i}.jpg`, { type: 'image/jpeg' }));
+  }
+  return pages;
+}
 
-  // v6.33: neue Fotos untereinander nach Aufnahme-/Änderungszeitpunkt sortieren.
-  // v6.34: nur den neuen Batch sortieren, nicht die gesamte Liste neu mischen –
-  // sonst würde ein manuelles Umsortieren durch eine weitere Auswahl überschrieben
-  files.sort((a, b) => (a.lastModified || 0) - (b.lastModified || 0));
-  _scanFiles = _scanFiles.concat(files);
+// ── Datei(en) ausgewählt (Bilder oder PDFs, mehrfach möglich, additiv) ───
+// v6.45: erkennt PDFs automatisch und wandelt sie seitenweise in Bilder um
+async function handleScanFileSelect(event) {
+  const allFiles = Array.from(event.target.files);
+  event.target.value = '';
+  if (!allFiles.length) return;
+
+  const imageFiles = allFiles.filter(f => f.type.startsWith('image/'));
+  const pdfFiles   = allFiles.filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+  if (!imageFiles.length && !pdfFiles.length) return;
 
   const statusEl = document.getElementById('scanStatus');
+
+  // v6.33/v6.34: Bilder nach Aufnahmezeitpunkt sortieren, nur den neuen Batch
+  imageFiles.sort((a, b) => (a.lastModified || 0) - (b.lastModified || 0));
+  _scanFiles = _scanFiles.concat(imageFiles);
+
+  // PDFs seitenweise rendern
+  if (pdfFiles.length) {
+    statusEl.style.color = 'var(--muted)';
+    statusEl.textContent = '⏳ PDF wird in Seiten aufgeteilt…';
+    for (const pdf of pdfFiles) {
+      const pages = await _pdfToImageFiles(pdf);
+      _scanFiles = _scanFiles.concat(pages);
+    }
+  }
+
   statusEl.style.color = 'var(--green)';
-  statusEl.textContent = `✓ ${_scanFiles.length} Foto${_scanFiles.length > 1 ? 's' : ''} ausgewählt`;
+  statusEl.textContent = `✓ ${_scanFiles.length} Seite${_scanFiles.length > 1 ? 'n' : ''} ausgewählt`;
   _renderScanFileList();
 
   const startBtn = document.getElementById('scanStartBtn');
@@ -89,7 +126,7 @@ function _scanRemoveFile(index) {
     startBtn.style.opacity = '0.4';
     startBtn.style.pointerEvents = 'none';
   } else {
-    statusEl.textContent = `✓ ${_scanFiles.length} Foto${_scanFiles.length > 1 ? 's' : ''} ausgewählt`;
+    statusEl.textContent = `✓ ${_scanFiles.length} Seite${_scanFiles.length > 1 ? 'n' : ''} ausgewählt`;
   }
 }
 

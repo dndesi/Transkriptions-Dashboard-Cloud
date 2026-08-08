@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.44** (Stand: 08.08.2026)
+**v6.45** (Stand: 08.08.2026)
+- Feature: PDF-Upload im Scan-Import. Scan-Tab akzeptiert jetzt auch PDFs (`accept="image/*,application/pdf"`). Neue Funktion `_pdfToImageFiles()` (scan.js) rendert jede Seite per PDF.js auf Canvas (scale 2.0 ≈ 144 dpi) und erzeugt ein JPEG — identisch zur Bildverarbeitung danach. `handleScanFileSelect()` ist jetzt async und erkennt PDFs automatisch. Rest der Pipeline (PaddleOCR/Claude Vision, Reflow, Session) bleibt unverändert. PDF.js war bereits geladen.
+
+## v6.44 (Stand: 08.08.2026)
 - Feature: Scan-Text wird zu echtem Fließtext zusammengezogen. OCR erkennt Buchseiten zeilenweise wie gedruckt – jede Druckzeile landete bisher als eigene Zeile im Text, auch mitten im Satz. Neue Funktion `_reflowOcrText()` (scan.js) zieht Zeilen zusammen, inkl. korrekter Silbentrennungs-Auflösung (Zeile endet auf "-" → Bindestrich weg, direkt anhängen statt Leerzeichen). Nummerierte Listenpunkte bleiben bewusst eigene Zeilen (sonst würden Aufzählungen verschmelzen, siehe v6.38-Test). Läuft komplett lokal, keine API. Betrifft nur neue Scans.
 
 ## v6.43 (Stand: 08.08.2026)
@@ -185,6 +188,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.45 | 08.08.2026 | Feature: PDF-Upload im Scan-Import – automatische Seitenkonvertierung via PDF.js |
 | v6.44 | 08.08.2026 | Feature: Scan-Text wird zu Fließtext zusammengezogen (Silbentrennung korrekt aufgelöst) |
 | v6.43 | 08.08.2026 | Fix: Regression durch Small/Medium-Modell zurückgerollt, zurück auf Tiny (nachweislich bestes Ergebnis) |
 | v6.42 | 08.08.2026 | PaddleOCR-Modell fest im Repo vendort (models/paddleocr/) – unabhängig von externer Quelle |
