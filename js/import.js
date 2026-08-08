@@ -11,8 +11,10 @@ let _importAudioFile  = null;
 function openAudioTab() {
   document.getElementById('audioTabBtn').classList.add('upload-tab-active');
   document.getElementById('importTabBtn').classList.remove('upload-tab-active');
+  document.getElementById('scanTabBtn').classList.remove('upload-tab-active');
   document.getElementById('audioTabContent').style.display = '';
   document.getElementById('importTabContent').style.display = 'none';
+  document.getElementById('scanTabContent').style.display = 'none';
   document.querySelector('.upload-panel-head h3').innerHTML =
     `<i data-lucide="mic" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Transkribieren`;
   if (window.lucide) lucide.createIcons();
@@ -21,8 +23,10 @@ function openAudioTab() {
 function openImportTab() {
   document.getElementById('importTabBtn').classList.add('upload-tab-active');
   document.getElementById('audioTabBtn').classList.remove('upload-tab-active');
+  document.getElementById('scanTabBtn').classList.remove('upload-tab-active');
   document.getElementById('importTabContent').style.display = '';
   document.getElementById('audioTabContent').style.display = 'none';
+  document.getElementById('scanTabContent').style.display = 'none';
   document.querySelector('.upload-panel-head h3').innerHTML =
     `<i data-lucide="file-text" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i> Importieren`;
   if (window.lucide) lucide.createIcons();

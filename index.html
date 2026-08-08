@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=6.27" />
+  <link rel="stylesheet" href="css/styles.css?v=6.28" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v6.27</button>
+        onmouseout="this.style.color='var(--muted)'">v6.28</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -135,6 +135,10 @@
       <button id="importTabBtn" class="upload-tab" onclick="openImportTab()">
         <i data-lucide="file-text" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Importieren
         <button class="help-icon" data-help="Importiere ein fertiges Transkript (TXT vom Samsung-Rekorder, Fließtext oder PDF). Es wird direkt als Sitzung gespeichert – ohne AssemblyAI." onclick="showHelpTooltip(this)">?</button>
+      </button>
+      <button id="scanTabBtn" class="upload-tab" onclick="openScanTab()">
+        <i data-lucide="scan-line" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Scan
+        <button class="help-icon" data-help="Foto von handschriftlichen Notizen oder Dokumenten hochladen. Claude erkennt den Text automatisch (auch Handschrift) und legt eine eigene Notiz-Sitzung an – kein Dialog, eine Person." onclick="showHelpTooltip(this)">?</button>
       </button>
     </div>
 
@@ -363,6 +367,68 @@
 
     </div>
     </div><!-- /importTabContent -->
+
+    <!-- ── SCAN TAB ── -->
+    <div id="scanTabContent" style="display:none">
+    <div class="upload-panel-body">
+
+      <!-- Scan Schritt 1: Metadaten -->
+      <div class="step-block" id="scanStep1">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <span class="step-title">Sitzungsname <button class="help-icon" data-help="Name, Datum und Typ der Notiz. Bei mehreren Fotos werden sie zu einer zusammenhängenden Notiz zusammengefasst." onclick="showHelpTooltip(this)">?</button></span>
+        </div>
+        <div class="step-body">
+          <div class="field" style="margin-bottom:10px">
+            <input type="text" id="scanLabel" placeholder="z.B. Notizen Meeting 8. Aug" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-size:0.9rem;outline:none" />
+          </div>
+          <div class="field" style="margin-bottom:10px">
+            <label style="font-size:0.75rem;color:var(--muted);margin-bottom:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Datum</label>
+            <input type="datetime-local" id="scanDate" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-size:0.9rem;outline:none" />
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label style="font-size:0.75rem;color:var(--muted);margin-bottom:4px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Typ</label>
+            <select id="scanType" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-size:0.88rem;outline:none;cursor:pointer">
+              <option value="gedanken" selected>Eigene Gedanken</option>
+              <option value="privat">Privat</option>
+              <option value="arbeit">Arbeit</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scan Schritt 2: Fotos hochladen -->
+      <div class="step-block" id="scanStep2">
+        <div class="step-header">
+          <span class="step-number">2</span>
+          <span class="step-title">Foto(s) hochladen <button class="help-icon" data-help="Foto oder Kamera-Aufnahme von handschriftlichen Notizen, Dokumenten oder Whiteboards. Claude Vision erkennt den Text automatisch (auch Handschrift). Mehrere Fotos = mehrere Seiten derselben Notiz." onclick="showHelpTooltip(this)">?</button></span>
+        </div>
+        <div class="step-body">
+          <div class="upload-zone" id="scanUploadZone" onclick="document.getElementById('scanFileInput').click()" style="cursor:pointer">
+            <div class="upload-icon"><i data-lucide="scan-line" style="width:28px;height:28px;stroke:var(--muted);stroke-width:1.5;fill:none"></i></div>
+            <p><span>Foto(s) auswählen</span></p>
+            <p style="font-size:0.75rem;margin-top:4px;color:var(--muted)">Mehrere Seiten möglich · werden zu einer Notiz zusammengefasst</p>
+          </div>
+          <input type="file" id="scanFileInput" accept="image/*" onchange="handleScanFileSelect(event)" multiple style="display:none" />
+          <div style="margin-top:8px">
+            <label for="scanCameraInput" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:0.82rem;color:var(--muted);cursor:pointer">
+              <i data-lucide="camera" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0"></i>
+              Kamera öffnen…
+            </label>
+            <input type="file" id="scanCameraInput" accept="image/*" capture="environment" onchange="handleScanFileSelect(event)" style="display:none" />
+          </div>
+          <p id="scanStatus" style="font-size:0.78rem;color:var(--green);margin-top:8px;min-height:18px;line-height:1.5"></p>
+
+          <button id="scanStartBtn" onclick="startScanImport()" disabled
+            style="width:100%;margin-top:16px;padding:11px 0;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;opacity:0.4;pointer-events:none">
+            <i data-lucide="sparkles" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none"></i>
+            Text erkennen &amp; Sitzung erstellen
+          </button>
+        </div>
+      </div>
+
+    </div>
+    </div><!-- /scanTabContent -->
   </div>
 
 <!-- ─── LAYOUT ───────────────────────────────────── -->
@@ -1211,7 +1277,7 @@
           <!-- Tab-Leiste -->
           <div class="sdc-tabs">
             <button class="sdc-tab sdc-tab-active" id="sdcTab-transkript" onclick="switchSessionTab('transkript')">
-              <i data-lucide="align-left" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> Transkript
+              <i data-lucide="align-left" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none"></i> <span id="sdcTabTranskriptLabel">Transkript</span>
               <button class="help-icon" data-help="Das vollständige Gesprächsprotokoll mit Sprecher-Labels. Du kannst einzelne Abschnitte direkt bearbeiten (Bearbeiten-Button rechts oben)." onclick="showHelpTooltip(this)">?</button>
             </button>
             <button class="sdc-tab" id="sdcTab-analysen" onclick="switchSessionTab('analysen')">
@@ -1706,6 +1772,19 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v6.28 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v6.28</span><span class="cl-date">08.08.2026</span></div>
+        <div class="cl-title">Feature: Scan-Import – Fotos von Notizen per Claude Vision zu einer Sitzung</div>
+        <ul class="cl-list">
+          <li>Neuer dritter Tab "Scan" im Upload-Panel neben Transkribieren/Importieren</li>
+          <li>scan.js: Foto(s)/Kamera hochladen → Claude Vision erkennt Text (OCR-Prompt für Notiz statt Dialog) → parsePlainText() → eine Session pro Upload (mehrere Fotos = mehrseitige Notiz, kein Dialog, ein Sprecher)</li>
+          <li>session.source = 'scan_import' als Marker für spätere Unterscheidung (z.B. beim Obsidian-MD-Export, siehe OBSIDIAN-LEITFADEN.md)</li>
+          <li>claude.js: checkSpeakersNamed() behandelt scan_import wie Typ "gedanken" – kein Pflichtfeld für Sprecher B</li>
+          <li>Session-Detail-Tab zeigt "Text" statt "Transkript" bei Scan-Sitzungen</li>
+        </ul>
+      </div>
 
       <!-- ── v6.27 ── -->
       <div class="cl-entry">
@@ -5171,33 +5250,34 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=6.27"></script>
-<script src="js/storage.js?v=6.27"></script>
-<script src="js/config.js?v=6.27"></script>
-<script src="js/auth.js?v=6.27"></script>
-<script src="js/drive.js?v=6.27"></script>
-<script src="js/sessions.js?v=6.27"></script>
-<script src="js/assemblyai.js?v=6.27"></script>
-<script src="js/claude.js?v=6.27"></script>
-<script src="js/ui.js?v=6.27"></script>
-<script src="js/tags.js?v=6.27"></script>
-<script src="js/notes.js?v=6.27"></script>
-<script src="js/photos.js?v=6.27"></script>
-<script src="js/persons.js?v=6.27"></script>
-<script src="js/audio.js?v=6.27"></script>
-<script src="js/recorder.js?v=6.27"></script>
-<script src="js/contacts.js?v=6.27"></script>
-<script src="js/app.js?v=6.27"></script>
+<script src="js/icons.js?v=6.28"></script>
+<script src="js/storage.js?v=6.28"></script>
+<script src="js/config.js?v=6.28"></script>
+<script src="js/auth.js?v=6.28"></script>
+<script src="js/drive.js?v=6.28"></script>
+<script src="js/sessions.js?v=6.28"></script>
+<script src="js/assemblyai.js?v=6.28"></script>
+<script src="js/claude.js?v=6.28"></script>
+<script src="js/ui.js?v=6.28"></script>
+<script src="js/tags.js?v=6.28"></script>
+<script src="js/notes.js?v=6.28"></script>
+<script src="js/photos.js?v=6.28"></script>
+<script src="js/persons.js?v=6.28"></script>
+<script src="js/audio.js?v=6.28"></script>
+<script src="js/recorder.js?v=6.28"></script>
+<script src="js/contacts.js?v=6.28"></script>
+<script src="js/app.js?v=6.28"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=6.27"></script>
-<script src="js/search.js?v=6.27"></script>
-<script src="js/embeddings.js?v=6.27"></script>
-<script src="js/calendar.js?v=6.27"></script>
-<script src="js/prompts.js?v=6.27"></script>
-<script src="js/projects.js?v=6.27"></script>
-<script src="js/import.js?v=6.27"></script>
+<script src="js/features.js?v=6.28"></script>
+<script src="js/search.js?v=6.28"></script>
+<script src="js/embeddings.js?v=6.28"></script>
+<script src="js/calendar.js?v=6.28"></script>
+<script src="js/prompts.js?v=6.28"></script>
+<script src="js/projects.js?v=6.28"></script>
+<script src="js/import.js?v=6.28"></script>
+<script src="js/scan.js?v=6.28"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

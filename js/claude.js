@@ -259,7 +259,7 @@ function buildTranscriptText(session) {
 function checkSpeakersNamed() {
   const s = getSession();
   if (!s || !s.utterances?.length) return true;
-  const isGedanken = s.type === 'gedanken';
+  const isGedanken = s.type === 'gedanken' || s.source === 'scan_import';
   if (!s.speakerA) return false;
   if (!isGedanken && !s.speakerB) return false;
   return true;
@@ -1323,6 +1323,9 @@ function showTranscript(session) {
   card.classList.add('visible');
 
   document.getElementById('transcriptTitle').textContent = session.label;
+  // v6.28: Scan-Notizen sind kein Dialog – Tab-Label entsprechend anpassen
+  const transkriptLabel = document.getElementById('sdcTabTranskriptLabel');
+  if (transkriptLabel) transkriptLabel.textContent = (session.source === 'scan_import') ? 'Text' : 'Transkript';
   const dur = session.duration ? ` · ${formatDuration(session.duration)}` : '';
   document.getElementById('transcriptMeta').textContent =
     `${session.filename}${dur} · ${new Date(session.date).toLocaleString('de-DE')}`;

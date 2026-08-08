@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.27** (Stand: 07.08.2026)
+**v6.28** (Stand: 08.08.2026)
+- Feature: Scan-Import – neuer dritter Tab "Scan" im Upload-Panel. Fotos/Kamera-Aufnahmen von handschriftlichen Notizen/Dokumenten werden per Claude Vision (scan.js: _ocrImage(), OCR-Prompt für Notiz statt Dialog) zu Text erkannt, mit parsePlainText() zu einer Session zusammengefasst (mehrere Fotos = mehrseitige Notiz). session.source = 'scan_import', ein Sprecher, kein Dialog. claude.js: checkSpeakersNamed() behandelt scan_import wie Typ "gedanken". Session-Detail-Tab zeigt "Text" statt "Transkript" bei Scan-Sitzungen (sdcTabTranskriptLabel-Span, gesetzt in showTranscript()).
+
+## v6.27 (Stand: 07.08.2026)
 - Icon-Feld eigener Prompts nutzt volles Lucide-Set (~1600 Icons) statt fester 62-Icon-Liste: iconLucide() in icons.js rendert über <i data-lucide> + lucide.createIcons() (CDN bereits geladen), icon() bleibt für feste UI-Icons bestehen
 
 ## v6.26 (Stand: 06.08.2026)
@@ -51,6 +54,7 @@
 | `tags.js` | Tag-System, Chips-UI, Filter |
 | `notes.js` | Notizen pro Sitzung, Auto-Save |
 | `import.js` | Samsung-Transcript, Plain Text, PDF.js – Multi-File |
+| `scan.js` | Scan-Import: Foto/Kamera → Claude Vision OCR → Session (kein Dialog, ein Sprecher) |
 | `photos.js` | Foto-Upload, Komprimierung, Claude-Bildanalyse |
 | `icons.js` | Inline Lucide SVG via icon(), kein CDN |
 
@@ -130,6 +134,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.28 | 08.08.2026 | Feature: Scan-Import — Foto/Kamera → Claude Vision OCR → Session, kein Dialog (scan.js, neuer Upload-Tab) |
 | v6.25 | 03.08.2026 | Feature: Lokale Semantiksuche — Transformers.js, embeddings.js, Vektoren in IDB, kein API-Call |
 | v6.24 | 01.08.2026 | Fix: MD-Überschrift — Perspektive bereinigt via _translitUmlaute() (kein & oder Sonderzeichen) |
 | v6.23 | 01.08.2026 | Fix: MD-Dateiname — Teilnehmer durch Bindestrich getrennt (speakerA-speakerB statt session.label) |

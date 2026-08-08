@@ -142,6 +142,7 @@ Abfragen nach Tag/Frontmatter-Wert sind robuster als Abfragen nach festem Ordner
 
 ## 9. Offene Entscheidungen / nächste Schritte
 
+- [ ] Scan-Import (seit v6.28, `scan.js`): Fotos von Notizen/Dokumenten landen jetzt als Sessions mit `session.source: 'scan_import'` in DiVo. MD-Export läuft technisch schon generisch mit – offen ist nur die Frontmatter-Feinheit: `typ: notiz` statt `typ: gespräch`, keine `teilnehmer`-Liste (kein Dialog, eine Person), ggf. `[[Wikilinks]]` zu Themen statt Personen. Wichtig fürs Wissensarchiv-Ziel aus DECISIONS.md.
 - [ ] Sammel-Export-Button bauen (Transkript + alle Analysen einer Sitzung, ein Klick).
 - [ ] Export um automatische `[[Links]]` für Personen/Projekte erweitern.
 - [ ] `session_id` ins Frontmatter aufnehmen.
