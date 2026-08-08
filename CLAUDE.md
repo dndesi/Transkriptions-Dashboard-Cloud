@@ -2,7 +2,18 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.31** (Stand: 08.08.2026)
+**v6.34** (Stand: 08.08.2026)
+- Feature: Scan-Import Foto-Vorschau-Liste mit manuellem Umsortieren (▲▼-Buttons, _scanMoveFile()), Foto entfernen (×, _scanRemoveFile()) und "Zurücksetzen" (_scanResetFiles()). openScanTab() rendert die Liste jetzt beim erneuten Öffnen neu. Batch-Sortierung bei neuer Auswahl betrifft nur die neuen Dateien, nicht mehr die gesamte Liste (verhindert Überschreiben einer manuellen Umsortierung).
+- Feature: Checkbox "Doppelseite" – teilt jedes Foto vor der OCR per Canvas exakt vertikal in linke/rechte Hälfte (_splitImageHalves() in scan.js), beide Hälften werden als zwei separate Seiten behandelt. Funktioniert engine-unabhängig (reine Bildvorverarbeitung).
+
+## v6.33 (Stand: 08.08.2026)
+- Fix: Scan-Import sortiert Fotos jetzt automatisch nach file.lastModified (Aufnahmezeitpunkt), bevor die Texterkennung startet – bei Mehrfachauswahl lieferte der Browser vorher oft alphabetische statt chronologische Reihenfolge. handleScanFileSelect() in scan.js sortiert _scanFiles[], neue Vorschau-Liste #scanFileList (_renderScanFileList()) zeigt die Reihenfolge vor dem Start zur Kontrolle an.
+
+## v6.32 (Stand: 08.08.2026)
+- Fix: Scan-Import MD-Export war kaputt bei mehreren Fotos – exportTranscriptMd() verschmolz alle Seiten zu einem "Ich:"-Block (Sprecher-Zusammenfassungslogik griff, da Scan-Sessions nur einen Sprecher haben). Jetzt für source==='scan_import': jede Seite eigener Absatz mit "Seite N"-Markierung statt Sprecher-Label, typ:"notiz" statt "transkript" im Frontmatter (_buildMdFrontmatter), keine Teilnehmer-Liste, Dateiname aus Sitzungsname statt "ich" (_mdFilename).
+- Feature: Zweite OCR-Engine Tesseract.js (js/scan.js: _ocrImageTesseract(), CDN cdn.jsdelivr.net/npm/tesseract.js, quelloffen, läuft im Browser, kein API-Key) wählbar im Scan-Tab neben Claude Vision. Grund: Claude Vision verweigert bei umfangreicher Wiedergabe aus veröffentlichten Büchern die wortwörtliche Transkription (Copyright), Tesseract als reine Zeichenerkennung hat diese Einschränkung nicht (dafür schwächer bei Handschrift).
+
+## v6.31 (Stand: 08.08.2026)
 - Feature: Neuer Sitzungstyp "Wissen" neben Privat/Arbeit/Gedanken. Option in allen drei Upload-Tabs (sessionType/importType/scanType) + 4. Button im Session-Header-Typ-Pill (changeSessionType('wissen'), brain-Icon). Verhält sich funktional wie Privat/Arbeit (zwei Sprecher, volles Gesprächsanalyse-Schema builtin_private) – keine Logik-Änderung nötig, da checkSpeakersNamed()/analysePrivate() nur explizit auf 'gedanken' verzweigen. Icon (brain) + Farbe (Teal, sc-type-wissen) ergänzt in ui.js, audio.js, persons.js (2×), projects.js, search.js, css/styles.css.
 
 ## v6.30 (Stand: 08.08.2026)
@@ -144,6 +155,9 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.34 | 08.08.2026 | Feature: Scan-Import manuelles Umsortieren/Entfernen/Zurücksetzen + Doppelseiten-Split |
+| v6.33 | 08.08.2026 | Fix: Scan-Import sortiert Fotos automatisch nach Aufnahmezeitpunkt + Kontroll-Liste |
+| v6.32 | 08.08.2026 | Fix: Scan-Import MD-Export (Seiten-Markierung statt "Ich"-Verschmelzung) + Tesseract.js als zweite OCR-Engine |
 | v6.31 | 08.08.2026 | Feature: Neuer Sitzungstyp "Wissen" neben Privat/Arbeit/Gedanken — verhält sich wie Privat/Arbeit |
 | v6.30 | 08.08.2026 | Vorlagen-Datenbank: deutsche Kategorien, Kategorie-Picker vor Prompt-Erstellung, Vorlagen bearbeiten/löschen |
 | v6.29 | 08.08.2026 | Feature: Vorlagen-Datenbank — 220 Prompt-Vorlagen, filterbar (templateLibrary.js, prompts.js) |

@@ -142,7 +142,8 @@ Abfragen nach Tag/Frontmatter-Wert sind robuster als Abfragen nach festem Ordner
 
 ## 9. Offene Entscheidungen / nächste Schritte
 
-- [ ] Scan-Import (seit v6.28, `scan.js`): Fotos von Notizen/Dokumenten landen jetzt als Sessions mit `session.source: 'scan_import'` in DiVo. MD-Export läuft technisch schon generisch mit – offen ist nur die Frontmatter-Feinheit: `typ: notiz` statt `typ: gespräch`, keine `teilnehmer`-Liste (kein Dialog, eine Person), ggf. `[[Wikilinks]]` zu Themen statt Personen. Wichtig fürs Wissensarchiv-Ziel aus DECISIONS.md.
+- [x] Scan-Import (seit v6.28, `scan.js`) MD-Export-Frontmatter: seit v6.32 `typ: notiz` statt `typ: transkript`, keine `teilnehmer`-Liste, Dateiname aus Sitzungsname (`_buildMdFrontmatter`/`_mdFilename` in claude.js). Offen bleibt: `[[Wikilinks]]` zu Themen statt Personen.
+- [ ] Scan-Import v6.32: zwei OCR-Engines wählbar (Claude Vision / Tesseract.js). Bei Fotos aus veröffentlichten Büchern verweigert Claude Vision oft die wortwörtliche Wiedergabe (Copyright) und liefert stattdessen eine Zusammenfassung – für Wissensarchiv-Zweck (exakte Textwiedergabe) ggf. Tesseract als Standard-Engine für gedruckten Text empfehlen, Claude Vision gezielt nur für Handschrift.
 - [ ] Sammel-Export-Button bauen (Transkript + alle Analysen einer Sitzung, ein Klick).
 - [ ] Export um automatische `[[Links]]` für Personen/Projekte erweitern.
 - [ ] `session_id` ins Frontmatter aufnehmen.

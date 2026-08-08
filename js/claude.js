@@ -1795,7 +1795,10 @@ function _buildMdFrontmatter(session, typ, perspektive) {
   const datum = _formatDateYmd(session.date);
   const projectName = _getProjectName(session.projectId);
   const projekte = projectName ? `[${projectName}]` : '[]';
-  const speakers = [session.speakerA || '<unbekannt>', session.speakerB].filter(Boolean);
+  // v6.32: Scan-Notizen sind kein Dialog – keine Teilnehmer-Liste
+  const speakers = session.source === 'scan_import'
+    ? []
+    : [session.speakerA || '<unbekannt>', session.speakerB].filter(Boolean);
   const teilnehmer = `[${speakers.join(', ')}]`;
   const tags = Array.isArray(session.tags) && session.tags.length
     ? `[${session.tags.map(t => (typeof t === 'object' ? t.text || t.label : t)).join(', ')}]`
@@ -1893,7 +1896,8 @@ ${content}`);
 function _mdFilename(session, suffix) {
   const date = _formatDateYmd(session.date).replace('<unbekannt>', '');
   // Slug aus Teilnehmern aufbauen (speakerA + speakerB, getrennt durch -), Fallback: session.label
-  const speakers = [session.speakerA, session.speakerB].filter(Boolean);
+  // v6.32: Scan-Notizen haben keinen "Teilnehmer" (nur speakerA="Ich") – immer Label-Slug nutzen
+  const speakers = session.source === 'scan_import' ? [] : [session.speakerA, session.speakerB].filter(Boolean);
   const slug = speakers.length
     ? speakers.map(s => _translitUmlaute(s)).join('-')
     : _mdSlug(session.label || 'export');
@@ -1922,20 +1926,27 @@ async function exportTranscriptMd() {
   let kernaussage = session.privateAnalysis?.kernbefund || '';
   if (!kernaussage) kernaussage = await _kernbefundMiniCall('transcript', session);
 
-  const frontmatter = _buildMdFrontmatter(session, 'transkript', null);
+  const isScan = session.source === 'scan_import';
+  const frontmatter = _buildMdFrontmatter(session, isScan ? 'notiz' : 'transkript', null);
   const titel = session.label || '<unbekannt>';
 
   // Gesprächsverlauf aus utterances
   let verlauf = '';
   if (session.utterances?.length) {
-    let lastSpeaker = '';
-    const lines = [];
-    session.utterances.forEach(u => {
-      const name = u.speaker === 'A' ? (session.speakerA || 'A') : (session.speakerB || 'B');
-      if (name !== lastSpeaker) { lines.push(`\n**${name}:** ${u.text}`); lastSpeaker = name; }
-      else lines.push(u.text);
-    });
-    verlauf = lines.join(' ');
+    if (isScan) {
+      // v6.32: Scan-Notizen sind kein Dialog – jede erkannte Seite als eigener Absatz
+      // in Upload-Reihenfolge, mit Seiten-Markierung statt Sprecher-Label
+      verlauf = session.utterances.map((u, i) => `**Seite ${i + 1}**\n\n${u.text}`).join('\n\n');
+    } else {
+      let lastSpeaker = '';
+      const lines = [];
+      session.utterances.forEach(u => {
+        const name = u.speaker === 'A' ? (session.speakerA || 'A') : (session.speakerB || 'B');
+        if (name !== lastSpeaker) { lines.push(`\n**${name}:** ${u.text}`); lastSpeaker = name; }
+        else lines.push(u.text);
+      });
+      verlauf = lines.join(' ');
+    }
   } else {
     verlauf = '<kein Transkript vorhanden>';
   }
@@ -1943,16 +1954,16 @@ async function exportTranscriptMd() {
   const md = [
     frontmatter,
     '',
-    `# Transkript: ${titel}`,
+    `# ${isScan ? 'Notiz' : 'Transkript'}: ${titel}`,
     '',
     _truncateToOneSentence(kernaussage) || '<unbekannt>',
     '',
-    '## Gesprächsverlauf',
+    isScan ? '## Erkannter Text' : '## Gesprächsverlauf',
     '',
     verlauf.trim(),
   ].join('\n');
 
-  _downloadMd(md, _mdFilename(session, 'transkript'));
+  _downloadMd(md, _mdFilename(session, isScan ? 'notiz' : 'transkript'));
 }
 
 // Analyse als MD exportieren
