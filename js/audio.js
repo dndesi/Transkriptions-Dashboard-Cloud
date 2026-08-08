@@ -128,20 +128,22 @@ function renderTimeline(filter) {
       const typeGradient = {
         arbeit:   'linear-gradient(135deg, rgba(99,102,241,0.10) 0%, rgba(167,139,250,0.05) 100%)',
         privat:   'linear-gradient(135deg, rgba(52,211,153,0.10) 0%, rgba(16,185,129,0.04) 100%)',
+        wissen:   'linear-gradient(135deg, rgba(13,148,136,0.10) 0%, rgba(20,184,166,0.04) 100%)',
         gedanken: 'linear-gradient(135deg, rgba(251,191,36,0.10) 0%, rgba(245,158,11,0.04) 100%)',
       }[s.type || 'privat'] || 'linear-gradient(135deg, rgba(52,211,153,0.10) 0%, rgba(16,185,129,0.04) 100%)';
       const typeBorder = {
         arbeit:   'rgba(99,102,241,0.35)',
         privat:   'rgba(52,211,153,0.35)',
+        wissen:   'rgba(13,148,136,0.35)',
         gedanken: 'rgba(251,191,36,0.35)',
       }[s.type || 'privat'] || 'rgba(52,211,153,0.35)';
-      const typeLabel = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), gedanken: icon('message-square',12) }[s.type || 'privat'] || icon('message-circle',12);
+      const typeLabel = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), wissen: icon('brain',12), gedanken: icon('message-square',12) }[s.type || 'privat'] || icon('message-circle',12);
 
       el.className = 'timeline-item';
       el.onclick = () => showTranscript(s);
       const dur = s.duration ? formatDuration(s.duration) : '';
       const tagsHtml = (s.tags||[]).map(t => `<span class="sc-tag">${escHtml(t)}</span>`).join('');
-      const tiIconName = { arbeit: 'briefcase', privat: 'message-circle', gedanken: 'message-square' }[s.type || 'privat'] || 'message-circle';
+      const tiIconName = { arbeit: 'briefcase', privat: 'message-circle', wissen: 'brain', gedanken: 'message-square' }[s.type || 'privat'] || 'message-circle';
       el.innerHTML = `
         <div class="ti-icon">${icon(tiIconName, 15)}</div>
         <div class="ti-date">${new Date(s.date).toLocaleDateString('de-DE',{day:'numeric',month:'short'})}</div>

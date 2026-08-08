@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.30** (Stand: 08.08.2026)
+**v6.31** (Stand: 08.08.2026)
+- Feature: Neuer Sitzungstyp "Wissen" neben Privat/Arbeit/Gedanken. Option in allen drei Upload-Tabs (sessionType/importType/scanType) + 4. Button im Session-Header-Typ-Pill (changeSessionType('wissen'), brain-Icon). Verhält sich funktional wie Privat/Arbeit (zwei Sprecher, volles Gesprächsanalyse-Schema builtin_private) – keine Logik-Änderung nötig, da checkSpeakersNamed()/analysePrivate() nur explizit auf 'gedanken' verzweigen. Icon (brain) + Farbe (Teal, sc-type-wissen) ergänzt in ui.js, audio.js, persons.js (2×), projects.js, search.js, css/styles.css.
+
+## v6.30 (Stand: 08.08.2026)
 - Vorlagen-Datenbank Korrekturen: (1) Kategorien werden über TEMPLATE_CATEGORY_LABELS_DE/_catLabelDe() (templateLibrary.js) auf Deutsch angezeigt – Chips, Karten, Sortierung; interner Schlüssel bleibt Englisch für Filter/data-cat. (2) "Als Prompt erstellen" öffnet zuerst den bestehenden Kategorie-Picker (openPromptCategoryPickerModal('library') → selectPromptCategory() → _startGeneratorFromTemplate()), damit der Nutzer die Ziel-Sektion (Analyse/Design/Foto-Analyse/Standard/Rolle) wählt, bevor der KI-Generator befüllt wird. (3) Vorlagen sind jetzt bearbeitbar (openTemplateEditModal/saveTemplateEdit, Override in localStorage distill_template_overrides) und löschbar (deleteTemplateFromLibrary, Soft-Delete in localStorage distill_hidden_templates, Confirm-Dialog nach bestehendem Muster). _effectiveTemplates() führt Basis + Overrides zusammen und blendet Gelöschtes aus – wird jetzt überall statt der rohen TEMPLATE_LIBRARY verwendet.
 
 ## v6.29 (Stand: 08.08.2026)
@@ -141,6 +144,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.31 | 08.08.2026 | Feature: Neuer Sitzungstyp "Wissen" neben Privat/Arbeit/Gedanken — verhält sich wie Privat/Arbeit |
 | v6.30 | 08.08.2026 | Vorlagen-Datenbank: deutsche Kategorien, Kategorie-Picker vor Prompt-Erstellung, Vorlagen bearbeiten/löschen |
 | v6.29 | 08.08.2026 | Feature: Vorlagen-Datenbank — 220 Prompt-Vorlagen, filterbar (templateLibrary.js, prompts.js) |
 | v6.28 | 08.08.2026 | Feature: Scan-Import — Foto/Kamera → Claude Vision OCR → Session, kein Dialog (scan.js, neuer Upload-Tab) |

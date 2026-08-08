@@ -261,9 +261,9 @@ function renderProjectDetail(id, searchVal = '', sortVal = 'date-desc') {
 
 function renderProjectSessionCard(s) {
   const dur = s.duration ? formatDuration(s.duration) : '?';
-  const typeIconMap = { arbeit:'briefcase', privat:'message-circle', gedanken:'message-square' };
-  const typeLabel   = { arbeit:'Arbeit', privat:'Privat', gedanken:'Gedanken' };
-  const typeCls     = { arbeit:'sc-type-arbeit', privat:'sc-type-privat', gedanken:'sc-type-gedanken' };
+  const typeIconMap = { arbeit:'briefcase', privat:'message-circle', wissen:'brain', gedanken:'message-square' };
+  const typeLabel   = { arbeit:'Arbeit', privat:'Privat', wissen:'Wissen', gedanken:'Gedanken' };
+  const typeCls     = { arbeit:'sc-type-arbeit', privat:'sc-type-privat', wissen:'sc-type-wissen', gedanken:'sc-type-gedanken' };
   const t = s.type || 'privat';
   const statusClass = s.status === 'done' ? 'done' : 'error';
   const statusLabel = s.status === 'done'

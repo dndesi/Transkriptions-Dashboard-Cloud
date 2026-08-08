@@ -179,7 +179,7 @@ function renderPersonsView() {
 function renderMeinProfil() {
   const el   = document.getElementById('personsView');
   const data = getMeinProfilData();
-  const typeIcons = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), gedanken: icon('message-square',12) };
+  const typeIcons = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), wissen: icon('brain',12), gedanken: icon('message-square',12) };
 
   const section = (title, items, renderItem) => items.length === 0 ? '' : `
     <div class="work-section">
@@ -294,7 +294,7 @@ async function synthesizeMeinProfil() {
 function renderPersonProfile(name) {
   const el   = document.getElementById('personsView');
   const data = getPersonData(name);
-  const typeIcons2 = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), gedanken: icon('message-square',12) };
+  const typeIcons2 = { arbeit: icon('briefcase',12), privat: icon('message-circle',12), wissen: icon('brain',12), gedanken: icon('message-square',12) };
 
   const firstDate = data.firstContact ? new Date(data.firstContact).toLocaleDateString('de-DE',{month:'long',year:'numeric'}) : '–';
   const lastDate  = data.lastContact  ? new Date(data.lastContact).toLocaleDateString('de-DE',{month:'long',year:'numeric'}) : '–';

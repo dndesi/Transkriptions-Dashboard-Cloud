@@ -154,9 +154,9 @@ function renderBrowser(filter = '') {
       ? `${icon('check-circle',11,'margin-right:3px;color:var(--green)')} Transkribiert`
       : `${icon('x-circle',11,'margin-right:3px;color:var(--red)')} Fehler`;
     const tagsHtml = (s.tags||[]).map(t => `<span class="sc-tag">${escHtml(t)}</span>`).join('');
-    const typeIconMap  = { arbeit: 'briefcase', privat: 'message-circle', gedanken: 'message-square' };
-    const typeLabel    = { arbeit: 'Arbeit', privat: 'Privat', gedanken: 'Gedanken' };
-    const typeCls      = { arbeit: 'sc-type-arbeit', privat: 'sc-type-privat', gedanken: 'sc-type-gedanken' };
+    const typeIconMap  = { arbeit: 'briefcase', privat: 'message-circle', wissen: 'brain', gedanken: 'message-square' };
+    const typeLabel    = { arbeit: 'Arbeit', privat: 'Privat', wissen: 'Wissen', gedanken: 'Gedanken' };
+    const typeCls      = { arbeit: 'sc-type-arbeit', privat: 'sc-type-privat', wissen: 'sc-type-wissen', gedanken: 'sc-type-gedanken' };
     const t = s.type || 'privat';
     card.innerHTML = `
       <div class="card-checkbox">${selectedIds.has(s.id) ? icon('check',11) : ''}</div>
@@ -612,7 +612,7 @@ function renderArchView() {
       ${flowCard('ui.js', 'UI-Rendering', 'Session-Browser, Zeitstrahl, Personen, Kosten, Systemarchitektur · v4.74: switchSessionTab(), toggleSessionSidebar(), setSidebarMode() · v4.82: switchAnalysenSubtab(), _analysenVisibleBlocks[] – echtes Tab-Verhalten in Analysen · v4.80: sdc-flap als Desktop-Stil auch auf Mobile (kein FAB)', '#c084fc')}
       ${flowCard('audio.js', 'Audio & Zeitstrahl', 'Audio-Player, Sync zu Utterances, Zeitstrahl-Ansicht nach Monat gruppiert', '#34d399')}
       ${flowCard('recorder.js', 'Audio-Aufnahme', 'MediaRecorder API, Mikrofon-Zugriff, WebM-Aufnahme direkt im Browser', '#34d399')}
-      ${flowCard('sessions.js', 'Session-Verwaltung', 'Session speichern, Google Drive Archiv, Sitzungstypen (privat/arbeit/gedanken) · editAnalysisItem/Field, addAnalysisItem, saveAnalysisItem/Field · v5.95: renderChatGedanken(), deleteChatGedanke()', '#60a5fa')}
+      ${flowCard('sessions.js', 'Session-Verwaltung', 'Session speichern, Google Drive Archiv, Sitzungstypen (privat/arbeit/wissen/gedanken) · editAnalysisItem/Field, addAnalysisItem, saveAnalysisItem/Field · v5.95: renderChatGedanken(), deleteChatGedanke() · v6.31: Typ "Wissen" ergänzt, verhält sich wie privat/arbeit (checkSpeakersNamed()/analysePrivate() verzweigen nur auf "gedanken")', '#60a5fa')}
       ${flowCard('tags.js', 'Tags', 'Tag-System für Sitzungen, Chips-UI, Filter', '#f59e0b')}
       ${flowCard('import.js', 'Datei-Import', 'parseSamsungTranscript() (UTF-16 BOM), parsePlainText(), extractPdfText() (PDF.js). Multi-File: _importParsedDataList[], handleImportFileSelect() iteriert alle Dateien, startSamsungImport() erstellt eine Session pro Datei. Transkript-Editor: toggleTranscriptEdit(), saveTranscriptEdits() in claude.js', '#34d399')}
       ${flowCard('scan.js', 'Scan-Import', 'v6.28: Foto(s)/Kamera hochladen → _ocrImage() per Claude Vision (OCR-Prompt für Notiz statt Dialog) → parsePlainText() → eine Session pro Upload (mehrere Fotos = mehrseitige Notiz). session.source = "scan_import", ein Sprecher, kein Dialog. startScanImport()', '#2dd4bf')}
