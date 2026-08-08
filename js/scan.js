@@ -216,6 +216,32 @@ async function _ocrImagePaddleOCR(file) {
   return (result.text || '').trim();
 }
 
+// ── Buchzeilen zu Fließtext zusammenziehen ──
+// v6.44: OCR erkennt Zeile für Zeile, wie im Buch gedruckt – jede Druckzeile
+// landet als eigene Zeile im Text, auch wenn sie mitten im Satz endet.
+// Zieht solche Zeilenumbrüche zu echtem Fließtext zusammen, inkl. korrekter
+// Auflösung von Silbentrennungen (Zeile endet auf "-" → Bindestrich weg,
+// nächste Zeile direkt anhängen statt mit Leerzeichen). Nummerierte
+// Listenpunkte ("1. ...", "2. ...") bleiben bewusst eigene Zeilen, sonst
+// würden Aufzählungen (siehe v6.38-Test) zu einem Textblock verschmelzen.
+function _reflowOcrText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (!lines.length) return text;
+  const paragraphs = [];
+  let current = lines[0];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\d+[.)]\s/.test(line)) {
+      paragraphs.push(current);
+      current = line;
+      continue;
+    }
+    current = current.endsWith('-') ? current.slice(0, -1) + line : current + ' ' + line;
+  }
+  paragraphs.push(current);
+  return paragraphs.join('\n\n');
+}
+
 // ── Scan verarbeiten: alle Fotos → ein Text → eine Session ──
 async function startScanImport() {
   if (!_scanFiles.length) return;
@@ -250,7 +276,7 @@ async function startScanImport() {
       const text = engine === 'claude'
         ? await _ocrImage(ocrUnits[i])
         : await _ocrImagePaddleOCR(ocrUnits[i]);
-      if (text) pageTexts.push(text);
+      if (text) pageTexts.push(_reflowOcrText(text));
     }
 
     if (!pageTexts.length) {

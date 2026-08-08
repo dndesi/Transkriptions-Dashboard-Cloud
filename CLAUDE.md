@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.43** (Stand: 08.08.2026)
+**v6.44** (Stand: 08.08.2026)
+- Feature: Scan-Text wird zu echtem Fließtext zusammengezogen. OCR erkennt Buchseiten zeilenweise wie gedruckt – jede Druckzeile landete bisher als eigene Zeile im Text, auch mitten im Satz. Neue Funktion `_reflowOcrText()` (scan.js) zieht Zeilen zusammen, inkl. korrekter Silbentrennungs-Auflösung (Zeile endet auf "-" → Bindestrich weg, direkt anhängen statt Leerzeichen). Nummerierte Listenpunkte bleiben bewusst eigene Zeilen (sonst würden Aufzählungen verschmelzen, siehe v6.38-Test). Läuft komplett lokal, keine API. Betrifft nur neue Scans.
+
+## v6.43 (Stand: 08.08.2026)
 - Fix: Regression durch Small-Modell zurückgerollt. Lokaler Vergleichstest (gleiches Foto, außerhalb der App nachgestellt) bestätigte: Small-Modell liest bei diesem Dokument an mehreren Stellen schlechter als Tiny (z.B. "Einigkeit"→"Einigkit"), Medium-Modell (auch getestet) sogar noch schlechter und 3x langsamer. Die abgesenkte Erkennungsschwelle (0.4) war dabei NICHT die Hauptursache. Zurückgerollt auf Tiny-Modell + Standard-Schwelle 0.5. models/paddleocr/ enthält jetzt Tiny- statt Small-Dateien. Zusätzliche Einstell-Tests (Detection-Fläche, Auflösung, Padding) brachten keine Verbesserung für die eine hartnäckig fehlende Zeile – per Diagnose (isolierter Crop erneut erkannt) bestätigt: Erkennungssicherheit liegt für diese Zeile knapp an der Schwelle (~0.55), Text bleibt auch bei niedrigerer Schwelle unleserlich/falsch statt korrekt – ein Modell-Grenzfall, keine Einstellungssache. Empfehlung: Restfehler bei schwierigen Zeilen manuell im Text-Editor korrigieren.
 
 ## v6.42 (Stand: 08.08.2026)
@@ -182,6 +185,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.44 | 08.08.2026 | Feature: Scan-Text wird zu Fließtext zusammengezogen (Silbentrennung korrekt aufgelöst) |
 | v6.43 | 08.08.2026 | Fix: Regression durch Small/Medium-Modell zurückgerollt, zurück auf Tiny (nachweislich bestes Ergebnis) |
 | v6.42 | 08.08.2026 | PaddleOCR-Modell fest im Repo vendort (models/paddleocr/) – unabhängig von externer Quelle |
 | v6.41 | 08.08.2026 | PaddleOCR: Modell "Small" statt "Tiny" + Erkennungsschwelle gesenkt, models/paddleocr/-Ordner für Vendoring vorbereitet |
