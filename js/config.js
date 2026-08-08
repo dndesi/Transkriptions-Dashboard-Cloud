@@ -36,7 +36,8 @@ function calculateSessionCost(session) {
   let assemblyai = 0;
   let claude = 0;
   // AssemblyAI: audio_duration in Sekunden
-  if (session.duration) {
+  // v6.47: scan_import wird nicht über AssemblyAI transkribiert → immer 0
+  if (session.duration && session.source !== 'scan_import') {
     const mins = session.duration / 60;
     assemblyai = mins * (PRICING.assemblyai.perMinute + PRICING.assemblyai.diarizationPerMin);
   }

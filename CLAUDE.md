@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.46** (Stand: 08.08.2026)
+**v6.47** (Stand: 08.08.2026)
+- Fix: `calculateSessionCost()` (config.js) berechnet AssemblyAI-Kosten jetzt nicht mehr für `source === 'scan_import'` — kein Audio, keine Transkription über AssemblyAI. Gilt auch für bestehende Sitzungen mit fiktiver Dauer. Claude-Kosten (claudeCostLog) bleiben unverändert korrekt.
+
+## v6.46 (Stand: 08.08.2026)
 - Fix: Scan-Sitzungen zeigen korrekte Metadaten. Chronik + Grid zeigen "Dokument · X Seiten" statt "Ich & B · 3 min 15 s". Datenmodell: `duration: null` (kein echtes Audio), `pageCount: N` als neues Feld. Upload-Zone: "Foto(s) oder PDF auswählen". Betroffen: audio.js (renderTimeline), ui.js (renderBrowser), scan.js (startScanImport).
 
 ## v6.45 (Stand: 08.08.2026)
@@ -191,6 +194,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.47 | 08.08.2026 | Fix: Keine AssemblyAI-Kosten für scan_import – calculateSessionCost() prüft jetzt source |
 | v6.46 | 08.08.2026 | Fix: Scan-Sitzungen zeigen "Dokument · X Seiten" statt Teilnehmer/Dauer, pageCount im Datenmodell |
 | v6.45 | 08.08.2026 | Feature: PDF-Upload im Scan-Import – automatische Seitenkonvertierung via PDF.js |
 | v6.44 | 08.08.2026 | Feature: Scan-Text wird zu Fließtext zusammengezogen (Silbentrennung korrekt aufgelöst) |
