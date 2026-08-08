@@ -832,6 +832,7 @@
       font-size: 0.92rem;
       line-height: 1.65;
       color: var(--text);
+      white-space: pre-line; /* v6.38: Absätze innerhalb einer Scan-Seite bleiben als eigene Zeilen lesbar */
     }
     .utterance-time {
       font-size: 0.72rem;

@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.37** (Stand: 08.08.2026)
+**v6.38** (Stand: 08.08.2026)
+- Fix: startScanImport() (scan.js) hat den OCR-Text aller Fotos zusammengeklebt und an parsePlainText() übergeben – diese Funktion splittet an jeder Leerzeile, wodurch eine einzelne fotografierte Seite mit mehreren Absätzen/Listenpunkten fälschlich als mehrere "Seiten" angezeigt wurde. Fix: pro Foto (bzw. Bildhälfte bei Doppelseite) wird jetzt direkt genau eine Utterance/"Seite" gebaut, kein Re-Splitting mehr. css/styles.css: .utterance-text hat jetzt white-space:pre-line, damit Absätze innerhalb einer Seite weiterhin als eigene Zeilen lesbar bleiben.
+
+## v6.37 (Stand: 08.08.2026)
 - Fix: "Aufnahme"-Sektion (Audioplayer, "Audiodatei nicht verknüpft"-Warnung) und "Sprecher"-Sektion (Sprecher-A/B-Felder, "Tauschen"-Button) im Text-Tab jetzt für source==='scan_import' komplett ausgeblendet (index.html: #transkriptAufnahmeBlock/#transkriptSprecherBlock, Logik in showTranscript() claude.js). Zusätzliches Sektions-Label über der Textliste zeigt ebenfalls "Text" statt "Transkript" bei Scan-Sessions (sdcSectionTranskriptLabel).
 
 ## v6.36 (Stand: 08.08.2026)
@@ -164,6 +167,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.38 | 08.08.2026 | Fix: Scan-Import zählte Absätze statt Fotos als "Seiten" – jetzt 1 Foto = 1 Seite |
 | v6.37 | 08.08.2026 | Fix: Scan-Notizen im Text-Tab ohne "Aufnahme"- und "Sprecher"-Bereich (kein Audio, kein zweiter Sprecher) |
 | v6.36 | 08.08.2026 | Fix: Scan-Notizen im Text-Tab ohne wiederholtes "Ich"-Sprecher-Label, stattdessen "Seite N" |
 | v6.35 | 08.08.2026 | Bugfix: Tesseract-Wortsalat bei EXIF-rotierten Fotos – jetzt auch über _resizePhoto() normalisiert |

@@ -210,8 +210,18 @@ async function startScanImport() {
       return;
     }
 
-    const fullText = pageTexts.join('\n\n');
-    const parsed   = parsePlainText(fullText);
+    // v6.38: Jedes Foto ist genau eine "Seite" – nicht mehr über parsePlainText()
+    // re-splitten (das würde jeden durch Leerzeile getrennten Absatz/Listenpunkt
+    // im OCR-Text fälschlich als eigene Seite behandeln, z.B. eine einzelne
+    // fotografierte Buchseite mit 8 nummerierten Punkten → 8 "Seiten" statt 1)
+    const INTERVAL_MS = 5000; // fiktiver Abstand pro Seite, kein Audio
+    const utterances = pageTexts.map((text, i) => ({
+      speaker: 'A',
+      text,
+      start: i * INTERVAL_MS,
+      end:   (i + 1) * INTERVAL_MS,
+    }));
+    const parsed = { utterances, duration: utterances.length * INTERVAL_MS / 1000 };
 
     const customLabel  = document.getElementById('scanLabel').value.trim();
     const dateInputVal = document.getElementById('scanDate').value;
