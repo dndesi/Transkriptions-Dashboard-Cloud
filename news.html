@@ -344,7 +344,7 @@
     Zurück
   </a>
   <h1>📰 Was ist neu?</h1>
-  <span class="badge">v6.1</span>
+  <span class="badge">v6.44</span>
 </header>
 
 <div class="news-layout">
@@ -352,6 +352,11 @@
   <!-- ── Sidebar-Navigation ── -->
   <nav class="news-sidebar" aria-label="Artikel-Navigation">
     <p class="news-sidebar-title">Artikel</p>
+    <a href="#scan-import"      class="news-sidebar-link" data-id="scan-import"><span class="news-sidebar-version">v6.28</span>Scan-Import</a>
+    <a href="#vorlagen"          class="news-sidebar-link" data-id="vorlagen"><span class="news-sidebar-version">v6.29</span>Vorlagen-Datenbank</a>
+    <a href="#lokale-suche"      class="news-sidebar-link" data-id="lokale-suche"><span class="news-sidebar-version">v6.25</span>Lokale Semantiksuche</a>
+    <a href="#md-export"         class="news-sidebar-link" data-id="md-export"><span class="news-sidebar-version">v6.19</span>MD-Export</a>
+    <a href="#pause-resume"      class="news-sidebar-link" data-id="pause-resume"><span class="news-sidebar-version">v6.8</span>Pause &amp; Resume</a>
     <a href="#chat-gedanken"    class="news-sidebar-link" data-id="chat-gedanken"><span class="news-sidebar-version">v6.1</span>Chat-Gedanken</a>
     <a href="#experten-runde"   class="news-sidebar-link" data-id="experten-runde"><span class="news-sidebar-version">v5.90</span>Experten-Runde</a>
     <a href="#session-erkennung" class="news-sidebar-link" data-id="session-erkennung"><span class="news-sidebar-version">v5.87</span>Smarte Session-Erkennung</a>
@@ -371,6 +376,389 @@
 
   <!-- ── Artikel-Feed ── -->
   <main class="news-container">
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Scan-Import (v6.28 – v6.40)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="scan-import">
+      <div class="news-meta">
+        <span class="news-version">v6.28 – v6.40</span>
+        <span class="news-date">8. August 2026</span>
+        <span class="news-category">Feature</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#0d1a12">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <defs><linearGradient id="nh_scan" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#0d1a12" stop-opacity="0"/><stop offset="100%" stop-color="#0d1a12" stop-opacity="0.95"/></linearGradient></defs>
+          <circle cx="200" cy="130" r="160" fill="#10b981" opacity="0.05"/>
+          <!-- Foto-Vorschau-Karte -->
+          <rect x="42" y="30" width="200" height="210" rx="12" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="60" y="54" font-size="8" fill="#7a7f9a" font-family="sans-serif" font-weight="700">SCAN-TAB</text>
+          <line x1="42" y1="62" x2="242" y2="62" stroke="#2e3347" stroke-width="1"/>
+          <!-- Foto-Karte 1 -->
+          <rect x="56" y="72" width="172" height="44" rx="7" fill="#22263a" stroke="#2e3347" stroke-width="1"/>
+          <rect x="68" y="82" width="32" height="24" rx="4" fill="#10b981" opacity="0.2"/>
+          <text x="84" y="98" font-size="14" fill="#10b981" font-family="sans-serif" text-anchor="middle">📄</text>
+          <text x="108" y="90" font-size="8" fill="#c8cad6" font-family="sans-serif">foto_001.jpg</text>
+          <text x="108" y="102" font-size="7" fill="#7a7f9a" font-family="sans-serif">2026-08-08 · 09:14</text>
+          <text x="208" y="97" font-size="14" fill="#4a4f6a" font-family="sans-serif">▲</text>
+          <!-- Foto-Karte 2 -->
+          <rect x="56" y="122" width="172" height="44" rx="7" fill="#22263a" stroke="#2e3347" stroke-width="1"/>
+          <rect x="68" y="132" width="32" height="24" rx="4" fill="#10b981" opacity="0.2"/>
+          <text x="84" y="148" font-size="14" fill="#10b981" font-family="sans-serif" text-anchor="middle">📄</text>
+          <text x="108" y="140" font-size="8" fill="#c8cad6" font-family="sans-serif">foto_002.jpg</text>
+          <text x="108" y="152" font-size="7" fill="#7a7f9a" font-family="sans-serif">2026-08-08 · 09:15</text>
+          <!-- Engine-Badge -->
+          <rect x="56" y="176" width="90" height="20" rx="6" fill="#1e2a1a" stroke="#10b981" stroke-width="1"/>
+          <text x="101" y="190" font-size="7.5" fill="#10b981" font-family="sans-serif" text-anchor="middle" font-weight="700">⚡ PaddleOCR</text>
+          <rect x="154" y="176" width="74" height="20" rx="6" fill="#22263a" stroke="#3a3d5c" stroke-width="1"/>
+          <text x="191" y="190" font-size="7.5" fill="#7a7f9a" font-family="sans-serif" text-anchor="middle">Claude Vision</text>
+          <!-- Start-Button -->
+          <rect x="56" y="206" width="172" height="24" rx="7" fill="#10b981" opacity="0.9"/>
+          <text x="142" y="222" font-size="9" fill="#fff" font-family="sans-serif" text-anchor="middle" font-weight="700">Text erkennen</text>
+          <!-- Ergebnis-Block rechts -->
+          <rect x="270" y="30" width="326" height="210" rx="12" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="290" y="54" font-size="8" fill="#7a7f9a" font-family="sans-serif" font-weight="700">ERKANNTER TEXT</text>
+          <line x1="270" y1="62" x2="596" y2="62" stroke="#2e3347" stroke-width="1"/>
+          <text x="290" y="82" font-size="7.5" fill="#4a4f6a" font-family="sans-serif">— Seite 1 —</text>
+          <rect x="286" y="90" width="280" height="8" rx="2" fill="#22263a"/>
+          <rect x="286" y="103" width="250" height="8" rx="2" fill="#22263a"/>
+          <rect x="286" y="116" width="265" height="8" rx="2" fill="#22263a"/>
+          <rect x="286" y="129" width="180" height="8" rx="2" fill="#22263a"/>
+          <text x="290" y="154" font-size="7.5" fill="#4a4f6a" font-family="sans-serif">— Seite 2 —</text>
+          <rect x="286" y="162" width="280" height="8" rx="2" fill="#22263a"/>
+          <rect x="286" y="175" width="240" height="8" rx="2" fill="#22263a"/>
+          <rect x="286" y="188" width="260" height="8" rx="2" fill="#22263a"/>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh_scan)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v6.28</span>
+          <h3>Scan-Import — Fotos werden zu Text</h3>
+        </div>
+      </div>
+
+      <h2>Handschrift, Buchseiten, Notizzettel — direkt in Distill Voice</h2>
+      <p class="lead">Der neue Scan-Tab im Upload-Panel verwandelt Fotos von handgeschriebenen Notizen, Dokumenten oder Buchseiten per Texterkennung in eine vollwertige Sitzung. Mehrere Fotos ergeben eine mehrseitige Sitzung — kein Abtippen, kein Umweg.</p>
+
+      <h3>So funktioniert der Scan-Import</h3>
+      <p>Im Upload-Panel gibt es jetzt drei Tabs: Audio, Import und <strong>Scan</strong>. Im Scan-Tab wählst du ein oder mehrere Fotos aus — zum Beispiel von deiner Handykamera. Die App erkennt den Text, fasst alle Seiten zu einer einzigen Sitzung zusammen und speichert sie wie jede andere Sitzung in Distill Voice. Analysen, Tags und alle anderen Funktionen stehen sofort zur Verfügung.</p>
+
+      <h3>Drei Erkennungs-Engines zur Wahl</h3>
+      <ul class="news-feature-list">
+        <li><strong>⚡ PaddleOCR (Standard ab v6.40)</strong>Läuft vollständig im Browser — kein API-Key, kein Token-Verbrauch, kein Copyright-Problem bei Büchern. Erkennt Textblöcke einzeln statt als Datenstrom, was Spalten- und Label-Layouts deutlich zuverlässiger macht. Das Modell wird einmalig geladen und dann lokal gecacht.</li>
+        <li><strong>✦ Claude Vision</strong>Beste Qualität bei schwieriger Handschrift und komplexen Layouts. Nutzt den Anthropic API-Key — Token-Verbrauch fällt an. Bei urheberrechtlich geschützten Buchseiten kann Claude die wortwörtliche Wiedergabe verweigern.</li>
+      </ul>
+
+      <h3>Doppelseiten, Reihenfolge, Fließtext (v6.33 – v6.44)</h3>
+      <p>Wer ein aufgeschlagenes Buch fotografiert, aktiviert die <strong>Doppelseiten-Checkbox</strong>: jedes Foto wird dann vor der Erkennung in linke und rechte Hälfte geteilt — zwei Seiten aus einem Foto. Die Foto-Vorschauliste zeigt die erkannte Reihenfolge (automatisch nach Aufnahmezeitpunkt sortiert) und lässt sich manuell umsortieren oder einzelne Fotos entfernen, bevor die Erkennung startet. Seit v6.44 werden Druckzeilen, die mitten im Satz enden, automatisch zu echtem Fließtext zusammengezogen — inklusive Silbentrennungs-Auflösung.</p>
+
+      <h3>Gute Fotos = gute Ergebnisse — Tipps für die Aufnahme</h3>
+      <p>Die Erkennungsqualität hängt stark von der Fotoqualität ab. Ein paar einfache Regeln machen den größten Unterschied:</p>
+      <ul class="news-feature-list">
+        <li><strong>Gerades Foto, flaches Dokument</strong>Das Dokument sollte möglichst plan auf einer Unterlage liegen und gerade (nicht schräg) fotografiert werden. Gekrümmte Buchseiten oder stark geneigte Aufnahmen verschlechtern die Erkennung deutlich — PaddleOCR versucht zwar, Perspektive zu korrigieren, aber nur bis zu einem gewissen Grad.</li>
+        <li><strong>Gute, gleichmäßige Beleuchtung</strong>Harte Schatten (z.B. durch Sonnenlicht von der Seite) können einzelne Zeilen unleserlich machen. Diffuses Licht — indirektes Tageslicht oder mehrere Lichtquellen — ist ideal. Ein weißes Blatt kann als Reflektor helfen.</li>
+        <li><strong>Ausreichende Auflösung</strong>Hochauflösende Fotos vom Hauptkamerasensor sind deutlich besser als Screenshots oder niedrig aufgelöste Webcam-Aufnahmen. Die App skaliert intern auf 2000px — Fotos mit mehr Pixeln geben der Erkennung mehr Details zum Arbeiten.</li>
+        <li><strong>Hoher Kontrast</strong>Schwarzer Text auf weißem Hintergrund: ideal. Grauer Text, farbiger Hintergrund oder verblasste Tinte reduzieren die Trefferquote. Falls möglich: im Fotoeditor Helligkeit und Kontrast kurz nachschärfen.</li>
+        <li><strong>Keine Reflexionen</strong>Glänzendes Papier oder laminierte Seiten können Lichtreflexe erzeugen, die Zeilen verdecken. Leicht schräger Kamerawinkel (2–5°) hilft, Reflexe zu vermeiden, ohne die Perspektive zu kippen.</li>
+      </ul>
+
+      <div class="news-info-box">
+        <strong>So nutzt du den Scan-Import:</strong> Upload-Panel öffnen → Tab „Scan" → Fotos auswählen → Engine wählen → „Text erkennen". Die fertige Sitzung erscheint direkt in Distill Voice.
+      </div>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Vorlagen-Datenbank (v6.29 – v6.30)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="vorlagen">
+      <div class="news-meta">
+        <span class="news-version">v6.29 – v6.30</span>
+        <span class="news-date">8. August 2026</span>
+        <span class="news-category">Feature</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#1a120f">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <defs><linearGradient id="nh_tpl" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#1a120f" stop-opacity="0"/><stop offset="100%" stop-color="#1a120f" stop-opacity="0.95"/></linearGradient></defs>
+          <circle cx="320" cy="130" r="180" fill="#f59e0b" opacity="0.05"/>
+          <!-- Kategorien-Tabs -->
+          <rect x="42" y="28" width="556" height="30" rx="8" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <rect x="50" y="33" width="70" height="20" rx="5" fill="#f59e0b" opacity="0.9"/>
+          <text x="85" y="47" font-size="8" fill="#fff" font-family="sans-serif" text-anchor="middle" font-weight="700">Meeting</text>
+          <rect x="126" y="33" width="66" height="20" rx="5" fill="#22263a"/>
+          <text x="159" y="47" font-size="8" fill="#7a7f9a" font-family="sans-serif" text-anchor="middle">Interview</text>
+          <rect x="198" y="33" width="60" height="20" rx="5" fill="#22263a"/>
+          <text x="228" y="47" font-size="8" fill="#7a7f9a" font-family="sans-serif" text-anchor="middle">Sales</text>
+          <rect x="264" y="33" width="76" height="20" rx="5" fill="#22263a"/>
+          <text x="302" y="47" font-size="8" fill="#7a7f9a" font-family="sans-serif" text-anchor="middle">Consulting</text>
+          <rect x="346" y="33" width="66" height="20" rx="5" fill="#22263a"/>
+          <text x="379" y="47" font-size="8" fill="#7a7f9a" font-family="sans-serif" text-anchor="middle">Medizin</text>
+          <text x="440" y="47" font-size="8" fill="#4a4f6a" font-family="sans-serif">+ 10 weitere</text>
+          <!-- Vorlage Karte 1 -->
+          <rect x="42" y="68" width="268" height="90" rx="10" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <rect x="56" y="80" width="80" height="16" rx="4" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.4)" stroke-width="1"/>
+          <text x="96" y="92" font-size="7.5" fill="#f59e0b" font-family="sans-serif" text-anchor="middle" font-weight="700">Meeting</text>
+          <text x="56" y="112" font-size="9.5" fill="#e8eaf0" font-family="sans-serif" font-weight="700">Aktionspunkte erfassen</text>
+          <text x="56" y="126" font-size="8" fill="#7a7f9a" font-family="sans-serif">Extrahiert To-dos, Verantwortliche</text>
+          <text x="56" y="138" font-size="8" fill="#7a7f9a" font-family="sans-serif">und Deadlines aus dem Gespräch.</text>
+          <rect x="232" y="126" width="66" height="22" rx="6" fill="#f59e0b" opacity="0.9"/>
+          <text x="265" y="141" font-size="7.5" fill="#fff" font-family="sans-serif" text-anchor="middle" font-weight="700">Verwenden</text>
+          <!-- Vorlage Karte 2 -->
+          <rect x="326" y="68" width="268" height="90" rx="10" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <rect x="340" y="80" width="74" height="16" rx="4" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.4)" stroke-width="1"/>
+          <text x="377" y="92" font-size="7.5" fill="#f59e0b" font-family="sans-serif" text-anchor="middle" font-weight="700">Meeting</text>
+          <rect x="560" y="78" width="22" height="18" rx="4" fill="rgba(245,158,11,0.2)"/>
+          <text x="571" y="91" font-size="11" fill="#f59e0b" font-family="sans-serif" text-anchor="middle">★</text>
+          <text x="340" y="112" font-size="9.5" fill="#e8eaf0" font-family="sans-serif" font-weight="700">Stimmungsbarometer</text>
+          <text x="340" y="126" font-size="8" fill="#7a7f9a" font-family="sans-serif">Bewertet Energie und Engagement</text>
+          <text x="340" y="138" font-size="8" fill="#7a7f9a" font-family="sans-serif">aller Beteiligten im Gespräch.</text>
+          <!-- Vorlage Karte 3 -->
+          <rect x="42" y="168" width="268" height="80" rx="10" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <rect x="56" y="180" width="68" height="16" rx="4" fill="rgba(99,102,241,0.15)" stroke="rgba(99,102,241,0.4)" stroke-width="1"/>
+          <text x="90" y="192" font-size="7.5" fill="#6366f1" font-family="sans-serif" text-anchor="middle" font-weight="700">Interview</text>
+          <text x="56" y="212" font-size="9.5" fill="#e8eaf0" font-family="sans-serif" font-weight="700">Kandidaten-Profil</text>
+          <text x="56" y="226" font-size="8" fill="#7a7f9a" font-family="sans-serif">Stärken, Bedenken und Empfehlung.</text>
+          <!-- Vorlage Karte 4 -->
+          <rect x="326" y="168" width="268" height="80" rx="10" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <rect x="340" y="180" width="56" height="16" rx="4" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.4)" stroke-width="1"/>
+          <text x="368" y="192" font-size="7.5" fill="#10b981" font-family="sans-serif" text-anchor="middle" font-weight="700">Sales</text>
+          <text x="340" y="212" font-size="9.5" fill="#e8eaf0" font-family="sans-serif" font-weight="700">Einwand-Analyse</text>
+          <text x="340" y="226" font-size="8" fill="#7a7f9a" font-family="sans-serif">Welche Einwände wurden geäußert?</text>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh_tpl)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v6.29</span>
+          <h3>Vorlagen-Datenbank — 220 Prompt-Vorlagen</h3>
+        </div>
+      </div>
+
+      <h2>Den richtigen Prompt finden, statt ihn von Null schreiben</h2>
+      <p class="lead">Die Prompt-Bibliothek bekommt einen zweiten Tab: die Vorlagen-Datenbank. 220 fertig formulierte Prompt-Ideen in 15 Kategorien — filterbar, durchsuchbar, als Startpunkt für den eigenen Prompt-Generator nutzbar.</p>
+
+      <h3>15 Kategorien, 220 Vorlagen</h3>
+      <p>Von allgemeinen Gesprächsanalysen über branchenspezifische Auswertungen bis zu Spezialfällen: Meeting, Interview, Sales, Consulting, Medizin, Recht, IT & Engineering, Bildung, Immobilien, Finanzen und mehr. Jede Vorlage beschreibt kurz, was sie extrahiert — damit man auf einen Blick erkennt, ob sie zum eigenen Gesprächstyp passt.</p>
+
+      <h3>Filtern, suchen, favorisieren</h3>
+      <p>Kategorie-Chips filtern die Ansicht auf einen Klick. Die Volltextsuche findet Vorlagen auch über Kategorie-Grenzen hinweg. Favoriten-Stern merkt sich die am häufigsten genutzten Vorlagen zwischen Sitzungen — gespeichert im Browser, kein Account nötig.</p>
+
+      <h3>„Verwenden" startet den Prompt-Generator</h3>
+      <p>Ein Klick auf „Verwenden" öffnet nicht den Prompt direkt, sondern schickt die Vorlage als Ausgangspunkt in den KI-Prompt-Generator. Der Generator erzeugt daraus einen vollständigen, angepassten Prompt — mit Ausgabe-Feldern, Tonalität und Kontext passend zur eigenen Nutzung. Wer eine Vorlage bereits genutzt hat, sieht ein „bereits verwendet"-Badge mit direktem Link zum fertigen Prompt.</p>
+
+      <h3>Vorlagen bearbeiten und löschen (v6.30)</h3>
+      <p>Seit v6.30 lassen sich Vorlagen anpassen und dauerhaft entfernen. Änderungen werden lokal gespeichert und überschreiben die Standardversion — bei einem Reset erscheint die Originalvorlage wieder. Gelöschte Vorlagen sind weich gelöscht und tauchen nicht mehr in der Liste auf, bleiben aber wiederherstellbar.</p>
+
+      <div class="news-info-box">
+        <strong>So nutzt du die Vorlagen-Datenbank:</strong> Prompt-Bibliothek öffnen → Tab „Vorlagen-Datenbank" → Kategorie wählen oder suchen → Vorlage aufklappen → „Verwenden" klicken → Generator befüllt sich automatisch.
+      </div>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Lokale Semantiksuche (v6.25)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="lokale-suche">
+      <div class="news-meta">
+        <span class="news-version">v6.25</span>
+        <span class="news-date">3. August 2026</span>
+        <span class="news-category">Feature</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#0f1117">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <defs><linearGradient id="nh_ls" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#0f1117" stop-opacity="0"/><stop offset="100%" stop-color="#0f1117" stop-opacity="0.95"/></linearGradient></defs>
+          <circle cx="320" cy="120" r="200" fill="#6366f1" opacity="0.05"/>
+          <!-- Suchleiste -->
+          <rect x="80" y="30" width="480" height="36" rx="10" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="106" y="53" font-size="10" fill="#4a4f6a" font-family="sans-serif">🔍</text>
+          <text x="126" y="53" font-size="9.5" fill="#c8cad6" font-family="sans-serif">Welche Sitzungen hatten Konflikte im Team?</text>
+          <!-- Buttons -->
+          <rect x="80" y="78" width="120" height="26" rx="7" fill="#22263a" stroke="#3a3d5c" stroke-width="1.2"/>
+          <text x="140" y="95" font-size="8.5" fill="#c8cad6" font-family="sans-serif" text-anchor="middle" font-weight="600">⚡ Lokale Suche</text>
+          <rect x="210" y="78" width="120" height="26" rx="7" fill="#6c63ff" opacity="0.9"/>
+          <text x="270" y="95" font-size="8.5" fill="#fff" font-family="sans-serif" text-anchor="middle" font-weight="600">✦ Claude fragen</text>
+          <!-- Ergebnis-Karten -->
+          <rect x="80" y="118" width="520" height="52" rx="9" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="100" y="139" font-size="9.5" fill="#e8eaf0" font-family="sans-serif" font-weight="600">Team-Retrospektive Q2</text>
+          <text x="100" y="155" font-size="8" fill="#7a7f9a" font-family="sans-serif">Es gab unterschiedliche Erwartungen zu den Lieferterminen...</text>
+          <rect x="538" y="128" width="46" height="18" rx="9" fill="#6366f1" opacity="0.9"/>
+          <text x="561" y="141" font-size="8" fill="#fff" font-family="sans-serif" text-anchor="middle" font-weight="700">87%</text>
+
+          <rect x="80" y="178" width="520" height="52" rx="9" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="100" y="199" font-size="9.5" fill="#e8eaf0" font-family="sans-serif" font-weight="600">Projektabstimmung März</text>
+          <text x="100" y="215" font-size="8" fill="#7a7f9a" font-family="sans-serif">Meinungsverschiedenheiten beim Scope, Einigung am Ende...</text>
+          <rect x="538" y="188" width="46" height="18" rx="9" fill="#f59e0b" opacity="0.9"/>
+          <text x="561" y="201" font-size="8" fill="#fff" font-family="sans-serif" text-anchor="middle" font-weight="700">61%</text>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh_ls)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v6.25</span>
+          <h3>Lokale Semantiksuche — kein API-Call</h3>
+        </div>
+      </div>
+
+      <h2>Semantisch suchen ohne Token zu verbrauchen</h2>
+      <p class="lead">Der neue Button „⚡ Lokale Suche" im Suchfenster findet inhaltlich passende Sitzungen — ohne einen einzigen API-Call. Das Sprachmodell läuft direkt im Browser, die Suchergebnisse erscheinen mit einem Relevanz-Prozentwert.</p>
+
+      <h3>Wie es funktioniert</h3>
+      <p>Beim ersten Klick lädt die App ein kompaktes mehrsprachiges Sprachmodell (<em>paraphrase-multilingual-MiniLM-L12-v2</em>, ~118 MB) einmalig in den Browser-Cache — danach ist es dauerhaft verfügbar, auch offline. Für jede Sitzung berechnet die App einen mathematischen Bedeutungsvektor aus Titel, Kernaussage und Tags und speichert ihn in der lokalen Datenbank. Bei der Suche wird die Anfrage in denselben Vektorraum übersetzt und mit allen gespeicherten Vektoren verglichen — reine Mathematik, null Netzwerk.</p>
+
+      <h3>Relevanz-% statt Ja/Nein</h3>
+      <p>Jedes Suchergebnis zeigt ein farbiges Prozentwert-Badge: Grün für hohe Übereinstimmung, Gelb für mittlere. Die Kernaussage der Sitzung erscheint als Vorschau direkt in der Ergebniskarte — so ist auf einen Blick erkennbar, warum eine Sitzung als relevant eingestuft wurde.</p>
+
+      <h3>Wann Claude fragen, wann lokal suchen?</h3>
+      <p>Die lokale Suche findet Sitzungen zu einem Thema zuverlässig und kostenlos. Claude ist weiterhin die bessere Wahl für analytische Fragen: „In welchen Sitzungen war die Stimmung schlecht?" oder „Was hat sich seit letztem Monat verändert?" — Fragen, die Interpretation statt reinen Bedeutungsabgleich brauchen. Beide Optionen stehen nebeneinander im Suchfenster.</p>
+
+      <div class="news-info-box">
+        <strong>So nutzt du die lokale Suche:</strong> ⌘K drücken → Suchbegriff oder Frage eingeben → „⚡ Lokale Suche" klicken. Beim ersten Mal: ~30 Sekunden Ladezeit für das Modell, danach sofort.
+      </div>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: MD-Export (v6.19)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="md-export">
+      <div class="news-meta">
+        <span class="news-version">v6.19</span>
+        <span class="news-date">1. August 2026</span>
+        <span class="news-category">Feature</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#0f1117">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <defs><linearGradient id="nh_md" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#0f1117" stop-opacity="0"/><stop offset="100%" stop-color="#0f1117" stop-opacity="0.95"/></linearGradient></defs>
+          <circle cx="200" cy="130" r="160" fill="#a78bfa" opacity="0.05"/>
+          <!-- DiVo-Karte links -->
+          <rect x="42" y="40" width="230" height="170" rx="12" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <text x="62" y="64" font-size="8" fill="#7a7f9a" font-family="sans-serif" font-weight="700">GESPRÄCHSANALYSE</text>
+          <line x1="42" y1="72" x2="272" y2="72" stroke="#2e3347" stroke-width="1"/>
+          <rect x="58" y="82" width="196" height="8" rx="2" fill="#22263a"/>
+          <rect x="58" y="96" width="170" height="8" rx="2" fill="#22263a"/>
+          <rect x="58" y="110" width="186" height="8" rx="2" fill="#22263a"/>
+          <!-- MD-Button -->
+          <rect x="58" y="130" width="40" height="20" rx="5" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.5)" stroke-width="1"/>
+          <text x="78" y="144" font-size="8.5" fill="#a78bfa" font-family="sans-serif" text-anchor="middle" font-weight="700">MD</text>
+          <rect x="104" y="130" width="42" height="20" rx="5" fill="#22263a" stroke="#3a3d5c" stroke-width="1"/>
+          <text x="125" y="144" font-size="8.5" fill="#7a7f9a" font-family="sans-serif" text-anchor="middle">TXT</text>
+          <rect x="152" y="130" width="42" height="20" rx="5" fill="#22263a" stroke="#3a3d5c" stroke-width="1"/>
+          <text x="173" y="144" font-size="8.5" fill="#7a7f9a" font-family="sans-serif" text-anchor="middle">PDF</text>
+          <!-- Pfeil -->
+          <text x="285" y="135" font-size="22" fill="#a78bfa" font-family="sans-serif">→</text>
+          <!-- MD-Datei rechts -->
+          <rect x="316" y="28" width="278" height="210" rx="12" fill="#1a1d27" stroke="#3a2e5c" stroke-width="1.5"/>
+          <rect x="316" y="28" width="278" height="28" rx="12" fill="#22263a" style="border-radius: 12px 12px 0 0"/>
+          <text x="335" y="47" font-size="8" fill="#a78bfa" font-family="sans-serif" font-weight="700">2026-08-01-anna-ben-gespraechsanalyse.md</text>
+          <text x="335" y="76" font-size="7.5" fill="#4a4f6a" font-family="monospace">---</text>
+          <text x="335" y="89" font-size="7.5" fill="#6366f1" font-family="monospace">datum: 2026-08-01</text>
+          <text x="335" y="102" font-size="7.5" fill="#6366f1" font-family="monospace">teilnehmer: [anna, ben]</text>
+          <text x="335" y="115" font-size="7.5" fill="#6366f1" font-family="monospace">tags: [konflikt, planung]</text>
+          <text x="335" y="128" font-size="7.5" fill="#6366f1" font-family="monospace">perspektive: gespraechsanalyse</text>
+          <text x="335" y="141" font-size="7.5" fill="#4a4f6a" font-family="monospace">---</text>
+          <text x="335" y="158" font-size="8.5" fill="#e8eaf0" font-family="monospace" font-weight="700"># Auswertung: Anna &amp; Ben</text>
+          <rect x="335" y="168" width="240" height="7" rx="2" fill="#22263a"/>
+          <rect x="335" y="180" width="210" height="7" rx="2" fill="#22263a"/>
+          <rect x="335" y="192" width="225" height="7" rx="2" fill="#22263a"/>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh_md)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v6.19</span>
+          <h3>MD-Export — Analysen ins Second Brain</h3>
+        </div>
+      </div>
+
+      <h2>Jede Analyse als Markdown-Datei — bereit für Obsidian und Co.</h2>
+      <p class="lead">Neben TXT und PDF gibt es jetzt einen <strong>MD-Button</strong> bei jeder Analyse und beim Transkript. Ein Klick erzeugt eine sauber strukturierte Markdown-Datei mit YAML-Frontmatter — direkt in dein Second Brain importierbar.</p>
+
+      <h3>YAML-Frontmatter mit allen Metadaten</h3>
+      <p>Jede exportierte Datei beginnt mit einem Frontmatter-Block: <code>datum</code>, <code>projekte</code>, <code>teilnehmer</code>, <code>tags</code>, <code>typ</code> und <code>perspektive</code>. Obsidian, Notion und andere Tools lesen diese Felder automatisch aus und ermöglichen Filterung, Verlinkung und Dataview-Abfragen — ohne manuelle Nacharbeit.</p>
+
+      <h3>Kernaussage und Kernbefund</h3>
+      <p>Jede Datei enthält in der ersten Zeile nach der Überschrift einen einzelnen Satz: die Kernaussage (beim Transkript) oder den Kernbefund (bei Analysen). Dieser Satz fasst den wichtigsten Inhalt in max. 25 Wörtern zusammen — ideal als Teaser in Listenansichten. Wurde die entsprechende Analyse noch nicht gestartet, generiert die App die Kernaussage per Mini-Call automatisch.</p>
+
+      <h3>Tags nach Second-Brain-Regeln</h3>
+      <p>Die Gesprächsanalyse generiert automatisch 2–4 inhaltsspezifische Tags: keine Gattungsbegriffe wie „Meeting" oder „Todo", sondern Schlagworte die den konkreten Gesprächsinhalt benennen. Werden beim Export noch keine Tags gefunden, startet ein automatischer Mini-Call. Die Tags landen direkt in der Sitzung und werden beim nächsten Speichern übernommen.</p>
+
+      <h3>Dateiname mit Datum und Teilnehmern</h3>
+      <p>Der Dateiname folgt dem Format <code>YYYY-MM-DD-sprecher-a-sprecher-b-typ.md</code> — chronologisch sortierbar und direkt aussagekräftig, ohne in die Datei hineinschauen zu müssen.</p>
+
+      <div class="news-info-box">
+        <strong>So nutzt du den MD-Export:</strong> Sitzung öffnen → Tab „Analysen" → gewünschte Analyse aufklappen → MD-Button klicken. Beim Transkript: Tab „Transkript" → MD-Button neben „Bearbeiten".
+      </div>
+    </article>
+
+
+    <!-- ════════════════════════════════════════
+         ARTIKEL: Pause & Resume (v6.8)
+         ════════════════════════════════════════ -->
+    <article class="news-article" id="pause-resume">
+      <div class="news-meta">
+        <span class="news-version">v6.8</span>
+        <span class="news-date">28. Juni 2026</span>
+        <span class="news-category">Verbesserung</span>
+      </div>
+
+      <div class="news-tile-hero" style="background:#0f1117">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%">
+          <defs><linearGradient id="nh_pr" x1="0" y1="0" x2="0" y2="1"><stop offset="30%" stop-color="#0f1117" stop-opacity="0"/><stop offset="100%" stop-color="#0f1117" stop-opacity="0.95"/></linearGradient></defs>
+          <circle cx="320" cy="130" r="180" fill="#ef4444" opacity="0.05"/>
+          <!-- Recorder UI -->
+          <rect x="160" y="50" width="320" height="160" rx="16" fill="#1a1d27" stroke="#2e3347" stroke-width="1.5"/>
+          <!-- Waveform -->
+          <g opacity="0.6">
+            <rect x="184" y="100" width="6" height="30" rx="3" fill="#ef4444"/>
+            <rect x="196" y="88" width="6" height="54" rx="3" fill="#ef4444"/>
+            <rect x="208" y="96" width="6" height="38" rx="3" fill="#ef4444"/>
+            <rect x="220" y="80" width="6" height="70" rx="3" fill="#ef4444"/>
+            <rect x="232" y="92" width="6" height="46" rx="3" fill="#ef4444"/>
+            <rect x="244" y="85" width="6" height="60" rx="3" fill="#ef4444"/>
+            <rect x="256" y="95" width="6" height="40" rx="3" fill="#ef4444"/>
+            <rect x="268" y="90" width="6" height="50" rx="3" fill="#ef4444"/>
+            <rect x="280" y="98" width="6" height="34" rx="3" fill="#4a4f6a"/>
+            <rect x="292" y="92" width="6" height="46" rx="3" fill="#4a4f6a"/>
+            <rect x="304" y="100" width="6" height="30" rx="3" fill="#4a4f6a"/>
+            <rect x="316" y="88" width="6" height="54" rx="3" fill="#4a4f6a"/>
+            <rect x="328" y="94" width="6" height="42" rx="3" fill="#4a4f6a"/>
+            <rect x="340" y="84" width="6" height="62" rx="3" fill="#4a4f6a"/>
+            <rect x="352" y="96" width="6" height="38" rx="3" fill="#4a4f6a"/>
+            <rect x="364" y="90" width="6" height="50" rx="3" fill="#4a4f6a"/>
+            <rect x="376" y="98" width="6" height="34" rx="3" fill="#4a4f6a"/>
+            <rect x="388" y="92" width="6" height="46" rx="3" fill="#4a4f6a"/>
+            <rect x="400" y="86" width="6" height="58" rx="3" fill="#4a4f6a"/>
+            <rect x="412" y="96" width="6" height="38" rx="3" fill="#4a4f6a"/>
+            <rect x="424" y="100" width="6" height="30" rx="3" fill="#4a4f6a"/>
+            <rect x="436" y="90" width="6" height="50" rx="3" fill="#4a4f6a"/>
+          </g>
+          <!-- Pausen-Marker -->
+          <line x1="277" y1="72" x2="277" y2="168" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <rect x="262" y="64" width="32" height="14" rx="4" fill="#f59e0b" opacity="0.9"/>
+          <text x="278" y="75" font-size="7" fill="#fff" font-family="sans-serif" text-anchor="middle" font-weight="700">PAUSE</text>
+          <!-- Buttons -->
+          <rect x="206" y="180" width="80" height="24" rx="8" fill="#22263a" stroke="#3a3d5c" stroke-width="1"/>
+          <text x="246" y="196" font-size="9" fill="#f59e0b" font-family="sans-serif" text-anchor="middle" font-weight="700">⏸ Pause</text>
+          <rect x="298" y="180" width="80" height="24" rx="8" fill="#22263a" stroke="#3a3d5c" stroke-width="1"/>
+          <text x="338" y="196" font-size="9" fill="#10b981" font-family="sans-serif" text-anchor="middle" font-weight="700">▶ Weiter</text>
+          <rect x="390" y="180" width="72" height="24" rx="8" fill="#ef4444" opacity="0.9"/>
+          <text x="426" y="196" font-size="9" fill="#fff" font-family="sans-serif" text-anchor="middle" font-weight="700">⏹ Stop</text>
+          <rect x="0" y="0" width="640" height="280" fill="url(#nh_pr)"/>
+        </svg>
+        <div class="news-tile-hero-text">
+          <span>Neu in v6.8</span>
+          <h3>Pause &amp; Resume — Aufnahme unterbrechen</h3>
+        </div>
+      </div>
+
+      <h2>Kurze Unterbrechung, eine Aufnahme</h2>
+      <p class="lead">Wer die Direktaufnahme bisher für eine Pause stoppen musste, startete damit automatisch eine neue Sitzung. Mit Pause &amp; Resume lässt sich die Aufnahme jederzeit unterbrechen und nahtlos fortsetzen — alles landet in einer einzigen Sitzung.</p>
+
+      <h3>Wann das nützlich ist</h3>
+      <p>Kurze Unterbrechungen mitten in einem Gespräch — jemand verlässt kurz den Raum, das Telefon klingelt, eine vertrauliche Passage soll nicht transkribiert werden — ließen sich bisher nicht ohne Sitzungsbruch überbrücken. Der Pause-Button hält die Aufnahme an, ohne sie zu beenden. Der Weiter-Button setzt sie fort. Die Wellenform zeigt den Pause-Zeitpunkt als Marker, das fertige Transkript enthält keine Lücke.</p>
+
+      <div class="news-info-box">
+        <strong>So nutzt du Pause &amp; Resume:</strong> Direktaufnahme starten → bei Bedarf ⏸ Pause drücken → mit ▶ Weiter fortfahren → am Ende ⏹ Stop drücken und transkribieren lassen.
+      </div>
+    </article>
 
 
     <!-- ════════════════════════════════════════
@@ -460,6 +848,9 @@
       <div class="news-info-box">
         <strong>So nutzt du Chat-Gedanken:</strong> Sitzung öffnen → Analyse-Chat oder Gesprächs-Chat nutzen → unter einer Antwort auf „Merken" klicken → Tab „Chat-Gedanken" öffnen. Für Projekte: Projekt-Assistent nutzen → „Merken" → im Projekt-Header auf „Chat-Gedanken" klicken.
       </div>
+
+      <h3>Gedanken bearbeiten und drucken (v6.9)</h3>
+      <p>Gespeicherte Chat-Gedanken lassen sich jetzt nachträglich bearbeiten — ein Stift-Icon öffnet die Karte zum Editieren, sodass eigene Notizen ergänzt oder ungenaue Formulierungen korrigiert werden können. Über den Drucken-Button wird jede Karte als sauber formatiertes PDF exportiert: mit Frage, Antwort, Datum und Rollen. Das macht Chat-Gedanken zu eigenständigen, teilbaren Dokumenten — nicht nur zu App-internen Notizen.</p>
     </article>
 
 
@@ -744,6 +1135,9 @@
       <div class="news-info-box">
         <strong>So nutzt du Rollen:</strong> Sitzung öffnen → Folge-Gespräch aufklappen → im Dropdown oben eine Rolle wählen → Frage eingeben und absenden. Claude antwortet direkt in der gewählten Rolle. Die Rolle lässt sich jederzeit wechseln – auch mitten im Gespräch.
       </div>
+
+      <h3>@Rollen-Direktansprache (v6.4)</h3>
+      <p>Wer mehrere Rollen gleichzeitig aktiv hat (Experten-Runde), kann jetzt einzelne Rollen gezielt ansprechen: einfach <strong>@RollenName</strong> am Anfang der Nachricht tippen. Ein Autocomplete-Dropdown zeigt die verfügbaren Rollen — nach Auswahl antwortet nur diese eine Rolle, ohne dass alle anderen ebenfalls reagieren. Das spart Zeit und Token bei gezielten Folgefragen, bei denen man die Einschätzung nur einer spezifischen Perspektive braucht.</p>
     </article>
 
 
