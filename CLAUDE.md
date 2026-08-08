@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.38** (Stand: 08.08.2026)
+**v6.39** (Stand: 08.08.2026)
+- Feature: PaddleOCR als dritte, experimentelle Scan-Engine neben Claude Vision und Tesseract (scan.js: _ocrImagePaddleOCR(), Bibliothek "ppu-paddle-ocr" + KI-Modell per CDN geladen, quelloffen/Apache-2.0, komplett lokal im Browser). Grund: Tesseract liest Spalten-/Label-Layouts oft in falscher Reihenfolge (Text als durchgehender Strom); PaddleOCR erkennt Textblöcke einzeln (Detection-Modell zuerst), sollte dadurch robuster sein. Konnte im Entwicklungs-Sandbox nicht vorab getestet werden (Netzwerk-Einschränkung dort, siehe Memory feedback_sandbox_network_limits) – als "experimentell" markiert bis Daniel es live testet. Modell-Vendoring ins eigene Repo (Daniels Wunsch wegen Abhängigkeit von externer Quelle) noch nicht umgesetzt, siehe Memory project_scan_import.
+
+## v6.38 (Stand: 08.08.2026)
 - Fix: startScanImport() (scan.js) hat den OCR-Text aller Fotos zusammengeklebt und an parsePlainText() übergeben – diese Funktion splittet an jeder Leerzeile, wodurch eine einzelne fotografierte Seite mit mehreren Absätzen/Listenpunkten fälschlich als mehrere "Seiten" angezeigt wurde. Fix: pro Foto (bzw. Bildhälfte bei Doppelseite) wird jetzt direkt genau eine Utterance/"Seite" gebaut, kein Re-Splitting mehr. css/styles.css: .utterance-text hat jetzt white-space:pre-line, damit Absätze innerhalb einer Seite weiterhin als eigene Zeilen lesbar bleiben.
 
 ## v6.37 (Stand: 08.08.2026)
@@ -167,6 +170,7 @@ Aktuelle Kacheln: Rollen (v5.89), Foto-Analyse, Lesezeichen, Kontakte/Themen, Au
 ## Changelog-Highlights (letzte Versionen)
 | Version | Datum | Feature/Fix |
 |---|---|---|
+| v6.39 | 08.08.2026 | Feature: PaddleOCR als dritte, experimentelle Scan-Engine (Spalten/Layout-robuster als Tesseract) |
 | v6.38 | 08.08.2026 | Fix: Scan-Import zählte Absätze statt Fotos als "Seiten" – jetzt 1 Foto = 1 Seite |
 | v6.37 | 08.08.2026 | Fix: Scan-Notizen im Text-Tab ohne "Aufnahme"- und "Sprecher"-Bereich (kein Audio, kein zweiter Sprecher) |
 | v6.36 | 08.08.2026 | Fix: Scan-Notizen im Text-Tab ohne wiederholtes "Ich"-Sprecher-Label, stattdessen "Seite N" |

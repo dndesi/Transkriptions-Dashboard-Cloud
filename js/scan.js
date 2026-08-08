@@ -168,6 +168,45 @@ async function _ocrImageTesseract(file, onProgress) {
   return (data.text || '').trim();
 }
 
+// ── Ein Foto per PaddleOCR (lokal, kein API-Key) zu Text ──
+// v6.39: dritte Engine – erkennt Textblöcke einzeln statt als einen
+// durchgehenden Strom (Detection-Modell statt reiner Zeilen-Segmentierung
+// wie bei Tesseract) und sollte dadurch bei Spalten-/Label-Layouts
+// (siehe v6.35-Lehre) robuster sein. Bibliothek + Modell werden per CDN
+// geladen (jsDelivr/GitHub, quelloffen, Apache-2.0) – läuft komplett lokal
+// im Browser, keine Bild-/Textdaten verlassen das Gerät.
+let _paddleOcrServicePromise = null;
+async function _getPaddleOcrService() {
+  if (!_paddleOcrServicePromise) {
+    _paddleOcrServicePromise = (async () => {
+      const { PaddleOcrService } = await import('https://cdn.jsdelivr.net/npm/ppu-paddle-ocr/web/+esm');
+      const service = new PaddleOcrService({ session: { executionProviders: ['wasm'] } });
+      await service.initialize();
+      return service;
+    })();
+  }
+  return _paddleOcrServicePromise;
+}
+
+async function _ocrImagePaddleOCR(file) {
+  const resized = await _resizePhoto(file, 2000, 0.92); // EXIF-Ausrichtung normalisieren, wie bei Claude/Tesseract
+  const service = await _getPaddleOcrService();
+  const url = URL.createObjectURL(resized.blob);
+  const img = await new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Bild konnte nicht geladen werden'));
+    image.src = url;
+  });
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  canvas.getContext('2d').drawImage(img, 0, 0);
+  URL.revokeObjectURL(url);
+  const result = await service.recognize(canvas);
+  return (result.text || '').trim();
+}
+
 // ── Scan verarbeiten: alle Fotos → ein Text → eine Session ──
 async function startScanImport() {
   if (!_scanFiles.length) return;
@@ -201,6 +240,8 @@ async function startScanImport() {
       statusEl.textContent = `⏳ Text wird erkannt (${i + 1}/${ocrUnits.length})…`;
       const text = engine === 'tesseract'
         ? await _ocrImageTesseract(ocrUnits[i], pct => { statusEl.textContent = `⏳ Text wird erkannt (${i + 1}/${ocrUnits.length}) – ${pct}%…`; })
+        : engine === 'paddleocr'
+        ? await _ocrImagePaddleOCR(ocrUnits[i])
         : await _ocrImage(ocrUnits[i]);
       if (text) pageTexts.push(text);
     }
