@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.47** (Stand: 08.08.2026)
+**v6.48** (Stand: 09.08.2026)
+- UI: Systemarchitektur-Ansicht überarbeitet. `flowCard()` begrenzt Beschreibungstext auf max-height:4.5em + ▼/▲-Button zum Aufklappen — alle Karten jetzt einheitlich hoch. Neue Karte `embeddings.js` (lokale Semantiksuche). `search.js`-Karte: lokale Semantiksuche via embeddings.js ergänzt. `scan.js`-Karte: langen Changelog durch kompakte Zustandsbeschreibung ersetzt. Modul-Liste: scan.js, embeddings.js, templateLibrary.js ergänzt.
+
+## v6.47 (Stand: 08.08.2026)
 - Fix: `calculateSessionCost()` (config.js) berechnet AssemblyAI-Kosten jetzt nicht mehr für `source === 'scan_import'` — kein Audio, keine Transkription über AssemblyAI. Gilt auch für bestehende Sitzungen mit fiktiver Dauer. Claude-Kosten (claudeCostLog) bleiben unverändert korrekt.
 
 ## v6.46 (Stand: 08.08.2026)
