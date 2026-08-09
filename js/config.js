@@ -106,6 +106,16 @@ function fmtEur(eur) {
   return eur.toFixed(4).replace('.', ',') + ' €';
 }
 
+// v6.49: Globales Kosten-Log für nicht-sitzungsbezogene Claude-Calls
+// (Semantiksuche, Prompt-Generator – haben keinen Session-Kontext)
+function addToGlobalCostLog(inputTokens, outputTokens, label) {
+  try {
+    const log = JSON.parse(localStorage.getItem('distill_globalCostLog') || '[]');
+    log.push({ date: new Date().toISOString(), input: inputTokens || 0, output: outputTokens || 0, label });
+    localStorage.setItem('distill_globalCostLog', JSON.stringify(log));
+  } catch(e) {}
+}
+
 const CLIENT_ID    = '607815751793-jlm965pkt597fpfnk63367rks19tbhkg.apps.googleusercontent.com';
 const SCOPE        = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/gmail.compose';
 const DRIVE_API    = 'https://www.googleapis.com/drive/v3';

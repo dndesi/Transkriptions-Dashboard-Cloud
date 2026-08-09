@@ -437,6 +437,23 @@ function renderCostsView() {
     return;
   }
 
+  // v6.49: Globales Kosten-Log lesen (Semantiksuche, Prompt-Generator etc.)
+  const globalLog = JSON.parse(localStorage.getItem('distill_globalCostLog') || '[]');
+  const globalByLabel = {};
+  let totalGlobalEur = 0;
+  const globalRate = USD_TO_EUR_FALLBACK;
+  globalLog.forEach(entry => {
+    const lbl = entry.label || 'Sonstige';
+    if (!globalByLabel[lbl]) globalByLabel[lbl] = { calls: 0, input: 0, output: 0, eur: 0 };
+    const cost = ((entry.input || 0) / 1e6 * PRICING.claude.inputPerMToken
+                + (entry.output || 0) / 1e6 * PRICING.claude.outputPerMToken) * globalRate;
+    globalByLabel[lbl].calls++;
+    globalByLabel[lbl].input  += entry.input  || 0;
+    globalByLabel[lbl].output += entry.output || 0;
+    globalByLabel[lbl].eur   += cost;
+    totalGlobalEur += cost;
+  });
+
   // Gesamtkosten – werden nach byMonth-Aufbau aus den Monatssummen aggregiert (weiter unten).
   // Vorläufige Initialisierung, Werte werden nach der Monatsgruppierung gesetzt.
   let totalAsmEur = 0, totalClaudeEur = 0;
@@ -495,7 +512,7 @@ function renderCostsView() {
     totalAsmEur    += m.asmEur;
     totalClaudeEur += m.claudeEur;
   });
-  const totalAllEur = totalAsmEur + totalClaudeEur;
+  const totalAllEur = totalAsmEur + totalClaudeEur + totalGlobalEur;
 
   const pricingUpdated = PRICING.assemblyai.updatedAt;
 
@@ -581,6 +598,40 @@ function renderCostsView() {
         </table>
       </div>`;
     }).join('')}
+
+    <!-- v6.49: Sonstige API-Kosten (nicht sitzungsbezogen) -->
+    ${Object.keys(globalByLabel).length > 0 ? `
+    <div style="margin-bottom:24px">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px">
+        <h3 style="font-size:0.88rem; font-weight:700; color:var(--accent2)">Sonstige API-Kosten <span style="font-size:0.72rem; font-weight:400; color:var(--muted)">(nicht sitzungsbezogen)</span></h3>
+        <span style="font-size:0.82rem; color:var(--green); font-weight:600">${fmtEur(totalGlobalEur)}</span>
+      </div>
+      <table style="width:100%; border-collapse:collapse; font-size:0.8rem">
+        <thead>
+          <tr style="color:var(--muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em">
+            <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--border)">Funktion</th>
+            <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--border)">Aufrufe</th>
+            <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--border)">Input-Tokens</th>
+            <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--border)">Output-Tokens</th>
+            <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--border)">Kosten</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${Object.entries(globalByLabel).map(([lbl, g]) => `
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:8px 8px; font-weight:600">${escHtml(lbl)}</td>
+            <td style="padding:8px 8px; text-align:right; color:var(--muted)">${g.calls}</td>
+            <td style="padding:8px 8px; text-align:right; color:var(--muted)">${g.input.toLocaleString('de-DE')}</td>
+            <td style="padding:8px 8px; text-align:right; color:var(--muted)">${g.output.toLocaleString('de-DE')}</td>
+            <td style="padding:8px 8px; text-align:right; font-weight:700; color:var(--green)">${fmtEur(g.eur)}</td>
+          </tr>`).join('')}
+          <tr style="font-weight:700; font-size:0.78rem; color:var(--muted); background:rgba(255,255,255,0.02)">
+            <td colspan="4" style="padding:8px 8px">Summe</td>
+            <td style="padding:8px 8px; text-align:right; color:var(--green)">${fmtEur(totalGlobalEur)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>` : ''}
 
     <!-- Preishinweis -->
     <div style="margin-top:16px; padding:12px 16px; background:rgba(107,114,128,0.08);

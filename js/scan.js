@@ -186,7 +186,8 @@ async function _ocrImage(file) {
     { type: 'text', text: SCAN_OCR_PROMPT }
   ];
   const result = await callClaudeAPIVision(messageContent);
-  return result.text.trim();
+  // v6.49: Tokens zurückgeben damit startScanImport() sie auf die Session buchen kann
+  return { text: result.text.trim(), inputTokens: result.inputTokens || 0, outputTokens: result.outputTokens || 0 };
 }
 
 // ── Ein Foto per PaddleOCR (lokal, kein API-Key) zu Text ──
@@ -307,13 +308,19 @@ async function startScanImport() {
     }
 
     const pageTexts = [];
+    let _claudeOcrIn = 0, _claudeOcrOut = 0; // v6.49: Token-Summe für Claude Vision OCR
     for (let i = 0; i < ocrUnits.length; i++) {
       statusEl.style.color = 'var(--muted)';
       statusEl.textContent = `⏳ Text wird erkannt (${i + 1}/${ocrUnits.length})…`;
-      const text = engine === 'claude'
-        ? await _ocrImage(ocrUnits[i])
-        : await _ocrImagePaddleOCR(ocrUnits[i]);
-      if (text) pageTexts.push(_reflowOcrText(text));
+      if (engine === 'claude') {
+        const ocrResult = await _ocrImage(ocrUnits[i]);
+        _claudeOcrIn  += ocrResult.inputTokens;
+        _claudeOcrOut += ocrResult.outputTokens;
+        if (ocrResult.text) pageTexts.push(_reflowOcrText(ocrResult.text));
+      } else {
+        const text = await _ocrImagePaddleOCR(ocrUnits[i]);
+        if (text) pageTexts.push(_reflowOcrText(text));
+      }
     }
 
     if (!pageTexts.length) {
@@ -361,6 +368,10 @@ async function startScanImport() {
     };
 
     sessions.unshift(session);
+    // v6.49: Claude Vision OCR-Tokens auf neue Session buchen
+    if (engine === 'claude' && (_claudeOcrIn || _claudeOcrOut)) {
+      addTokensToSession(session, _claudeOcrIn, _claudeOcrOut);
+    }
     await saveSessions();
 
     // Zurücksetzen

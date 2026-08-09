@@ -213,8 +213,8 @@ async function runClaudeSearch() {
 
     const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
 
-    // Tokens global tracken (keine spezifische Session)
-    console.log(`[GlobalSearch] Tokens: ${inputTokens} in / ${outputTokens} out`);
+    // v6.49: Tokens global tracken (keine spezifische Session)
+    addToGlobalCostLog(inputTokens, outputTokens, 'Semantiksuche');
 
     renderClaudeSearchResult(text, allSessions);
   } catch(e) {

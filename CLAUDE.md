@@ -2,7 +2,13 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.48** (Stand: 09.08.2026)
+**v6.50** (Stand: 09.08.2026)
+- Feature: Transkript-Abschnitte löschen. Im Bearbeitungsmodus erscheint neben jedem Utterance ein Papierkorb-Icon (`utt-delete-btn`, `display:none` im Normal-View). Neue Funktion `deleteUtterance(idx)` (claude.js): ruft `_applyTextareaEdits(session)` → `splice(idx,1)` → `saveSessions()` → `renderUtterances()` → `toggleTranscriptEdit()`. Kein Undo. Funktioniert für normale Sitzungen (Sprecher-Name-Zeile) und Scan-Import (Seite-N-Zeile).
+
+## v6.49 (Stand: 09.08.2026)
+- Vollständiges Kosten-Tracking. Neu: `addToGlobalCostLog(inputTokens, outputTokens, label)` (config.js) für Calls ohne Session-Kontext → localStorage `distill_globalCostLog`. Session-Tracking nachgezogen in: scan.js (Claude Vision OCR-Tokens nach Session-Erstellung), calendar.js (Termine + E-Mail), claude.js (Kernbefund + Auto-Tags), photos.js (Foto-Analyse), projects.js (Projekt-Analyse auf projSessions[0]). Kostenseite: neue Sektion "Sonstige API-Kosten" nach Label aufgeschlüsselt. Gesamt-Total inkludiert jetzt alle Calls.
+
+## v6.48 (Stand: 09.08.2026)
 - UI: Systemarchitektur-Ansicht überarbeitet. `flowCard()` begrenzt Beschreibungstext auf max-height:4.5em + ▼/▲-Button zum Aufklappen — alle Karten jetzt einheitlich hoch. Neue Karte `embeddings.js` (lokale Semantiksuche). `search.js`-Karte: lokale Semantiksuche via embeddings.js ergänzt. `scan.js`-Karte: langen Changelog durch kompakte Zustandsbeschreibung ersetzt. Modul-Liste: scan.js, embeddings.js, templateLibrary.js ergänzt.
 
 ## v6.47 (Stand: 08.08.2026)

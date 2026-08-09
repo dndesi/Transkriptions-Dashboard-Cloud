@@ -1867,7 +1867,8 @@ async function _kernbefundMiniCall(type, session) {
       ? 'Worum ging es in diesem Gespräch? Antworte mit GENAU EINEM deutschen Satz.'
       : 'Was ist der Kernbefund dieser Analyse? Antworte mit GENAU EINEM deutschen Satz.';
 
-    const { text } = await callClaudeAPI(`${question}\n\n${content}`);
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(`${question}\n\n${content}`);
+    addTokensToSession(session, inputTokens, outputTokens); // v6.49
     const result = text.trim().split('\n')[0].replace(/^[-•*]\s*/, '');
 
     // Ergebnis cachen
@@ -1883,7 +1884,7 @@ async function _generateTagsMiniCall(session) {
   try {
     const content = (typeof buildTranscriptText === 'function' ? buildTranscriptText(session) : '').slice(0, 6000) || session.label || '';
     if (!content) return [];
-    const { text } = await callClaudeAPI(`Analysiere diesen Gesprächsinhalt und gib 2-4 spezifische Tags zurück, die den INHALT dieses konkreten Gesprächs beschreiben.
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(`Analysiere diesen Gesprächsinhalt und gib 2-4 spezifische Tags zurück, die den INHALT dieses konkreten Gesprächs beschreiben.
 
 Regeln:
 - Keine Gattungsbegriffe. Verboten: meeting, gespräch, besprechung, todo, aufgaben, teamarbeit, produktivität, notiz, transkript, auswertung.
@@ -1895,6 +1896,8 @@ Regeln:
 Antworte NUR mit einem JSON-Array: ["tag1", "tag2"]
 
 ${content}`);
+    addTokensToSession(session, inputTokens, outputTokens); // v6.49
+    saveSessions();
     const arr = JSON.parse(extractJSON(text, '['));
     return Array.isArray(arr) ? arr.map(t => String(t).toLowerCase().replace(/\s+/g, '-')).filter(Boolean) : [];
   } catch { return []; }
@@ -3325,6 +3328,8 @@ function toggleTranscriptEdit() {
       ta.rows = Math.max(2, Math.ceil(rawText.length / 60));
       el.replaceWith(ta);
     });
+    // v6.50: Löschen-Buttons einblenden
+    document.querySelectorAll('#utterancesContainer .utt-delete-btn').forEach(b => b.style.display = 'inline-flex');
     const btn = document.getElementById('transcriptEditBtn');
     const saveBtn = document.getElementById('transcriptSaveBtn');
     if (btn) { btn.textContent = 'Abbrechen'; btn.style.color = 'var(--muted)'; }
@@ -3353,6 +3358,29 @@ async function saveTranscriptEdits() {
   saveToArchive(session).catch(() => {});
   renderUtterances(session);
   showToast(changed > 0 ? `${changed} Abschnitt${changed === 1 ? '' : 'e'} gespeichert ✓` : 'Keine Änderungen.', 'success');
+}
+
+// v6.50: Textarea-Werte in session.utterances[] übernehmen (ohne Speichern/Rendern)
+function _applyTextareaEdits(session) {
+  document.querySelectorAll('#utterancesContainer .utterance-edit-ta').forEach(ta => {
+    const idx = parseInt(ta.dataset.idx, 10);
+    if (!isNaN(idx) && session.utterances[idx] !== undefined) {
+      session.utterances[idx].text = ta.value;
+    }
+  });
+}
+
+// v6.50: Einzelnen Utterance-Block löschen (im Bearbeitungsmodus)
+async function deleteUtterance(idx) {
+  const session = sessions.find(s => s.id === currentSessionId);
+  if (!session || !session.utterances[idx]) return;
+  _applyTextareaEdits(session);          // offene Textarea-Änderungen sichern
+  session.utterances.splice(idx, 1);
+  await saveSessions();
+  saveToArchive(session).catch(() => {});
+  renderUtterances(session);
+  toggleTranscriptEdit();                // zurück in Bearbeitungsmodus
+  showToast('Abschnitt gelöscht.', 'success');
 }
 
 function renderUtterances(session) {
@@ -3387,7 +3415,12 @@ function renderUtterances(session) {
     if (isScan) {
       div.innerHTML = `
         <div class="utterance-body">
-          <div style="font-size:0.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px">Seite ${idx + 1}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+            <div style="font-size:0.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Seite ${idx + 1}</div>
+            <button class="utt-delete-btn" onclick="deleteUtterance(${idx})" title="Abschnitt löschen"
+              style="display:none;background:none;border:none;cursor:pointer;color:var(--muted);padding:0;line-height:1"
+              onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--muted)'">${icon('trash-2', 12)}</button>
+          </div>
           <div class="utterance-text">${escHtml(u.text)}</div>
         </div>
       `;
@@ -3415,6 +3448,9 @@ function renderUtterances(session) {
           style="display:none;background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-size:0.68rem;padding:1px 6px;cursor:pointer;margin-left:4px;white-space:nowrap">
           ↓ ab hier
         </button>
+        <button class="utt-delete-btn" onclick="deleteUtterance(${idx})" title="Abschnitt löschen"
+          style="display:none;background:none;border:none;cursor:pointer;color:var(--muted);padding:1px 4px;line-height:1;margin-left:4px"
+          onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--muted)'">${icon('trash-2', 13)}</button>
       </div>
       <div class="utterance-body">
         <div class="utterance-text">${escHtml(u.text)}</div>

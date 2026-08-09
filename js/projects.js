@@ -774,7 +774,12 @@ async function runProjectAnalysis(projId) {
   }
 
   try {
-    const { text } = await callClaudeAPI(prompt);
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
+    // v6.49: Tokens auf erste Projekt-Session buchen
+    if (projSessions[0] && typeof addTokensToSession === 'function') {
+      addTokensToSession(projSessions[0], inputTokens, outputTokens);
+      if (typeof saveSessions === 'function') saveSessions();
+    }
 
     // Ergebnis parsen: JSON versuchen, sonst Plaintext
     let resultHtml;

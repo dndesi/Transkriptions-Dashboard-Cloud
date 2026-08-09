@@ -318,6 +318,10 @@ async function runPhotoAnalysis(session) {
     messageContent.push({ type: 'text', text: promptText });
 
     var result = await callClaudeAPIVision(messageContent);
+    if (typeof addTokensToSession === 'function') { // v6.49
+      addTokensToSession(session, result.inputTokens || 0, result.outputTokens || 0);
+      if (typeof saveSessions === 'function') saveSessions();
+    }
 
     // Ergebnis-Block
     var photoLabel  = photos.length === 1 ? photos[0].name : photos.length + ' Fotos';

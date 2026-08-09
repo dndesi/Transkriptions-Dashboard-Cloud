@@ -2558,7 +2558,8 @@ WICHTIG: Das JSON muss RFC-8259-konform sein. Verwende \\n für Zeilenumbrüche 
 }`;
 
   try {
-    const { text } = await callClaudeAPI(promptText);
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(promptText);
+    addToGlobalCostLog(inputTokens, outputTokens, 'Prompt-Generator'); // v6.49
     // v5.79: Markdown-Fence entfernen + JSON bereinigen (echte Zeilenumbrüche in Strings fixen)
     let jsonStr = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
     // Fallback: echte Newlines innerhalb von JSON-String-Werten durch \n ersetzen

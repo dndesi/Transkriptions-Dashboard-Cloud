@@ -59,7 +59,8 @@ Regeln:
 - Falls keine Termine: events = []`;
 
   try {
-    const { text } = await callClaudeAPI(prompt);
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
+    if (calendarSession) { addTokensToSession(calendarSession, inputTokens, outputTokens); saveSessions(); } // v6.49
     const data = JSON.parse(extractJSON(text, '{'));
     calendarEvents = data.events || [];
 
@@ -310,7 +311,8 @@ Regeln:
 - Falls keine E-Mails nötig: drafts = []`;
 
   try {
-    const { text } = await callClaudeAPI(prompt);
+    const { text, inputTokens, outputTokens } = await callClaudeAPI(prompt);
+    if (calendarSession) { addTokensToSession(calendarSession, inputTokens, outputTokens); saveSessions(); } // v6.49
     const data = JSON.parse(extractJSON(text, '{'));
     gmailDrafts = data.drafts || [];
 
