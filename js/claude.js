@@ -1977,6 +1977,59 @@ async function exportTranscriptMd() {
   _downloadMd(md, _mdFilename(session, isScan ? 'notiz' : 'transkript'));
 }
 
+// ── Transkript-PDF-Export v6.51 ──────────────────────────────────────────
+async function exportTranscriptPdf() {
+  const session = getSession(currentSessionId);
+  if (!session) return;
+
+  showToast('PDF wird erstellt…', 'info');
+
+  const isScan = session.source === 'scan_import';
+  const titel  = session.label || '<unbekannt>';
+  const datum  = _formatDateYmd(session.date || session.startTime || session.createdAt);
+
+  let verlauf = '';
+  if (session.utterances?.length) {
+    if (isScan) {
+      verlauf = session.utterances.map((u, i) =>
+        `<p><strong>Seite ${i + 1}</strong><br>${u.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</p>`
+      ).join('\n');
+    } else {
+      let lastSpeaker = '';
+      const parts = [];
+      session.utterances.forEach(u => {
+        const name = u.speaker === 'A' ? (session.speakerA || 'A') : (session.speakerB || 'B');
+        const txt  = u.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        if (name !== lastSpeaker) { parts.push(`<p><strong>${name}:</strong> ${txt}</p>`); lastSpeaker = name; }
+        else { parts[parts.length - 1] = parts[parts.length - 1].replace(/<\/p>$/, ` ${txt}</p>`); }
+      });
+      verlauf = parts.join('\n');
+    }
+  } else {
+    verlauf = '<p><em>Kein Transkript vorhanden</em></p>';
+  }
+
+  const win = window.open('', '_blank', 'width=800,height=900');
+  if (!win) { showToast('Popup blockiert – bitte Popup-Blocker deaktivieren.', 'error'); return; }
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${titel.replace(/</g,'&lt;')}</title>
+    <style>
+      body { font-family: system-ui, sans-serif; font-size: 13px; line-height: 1.7;
+             max-width: 700px; margin: 40px auto; padding: 0 24px; color: #111; }
+      h1   { font-size: 1.2rem; margin-bottom: 4px; }
+      .meta{ font-size: 0.8rem; color: #666; margin-bottom: 24px; }
+      p    { margin: 0 0 8px; }
+      @media print { body { margin: 20px; } }
+    </style></head>
+    <body>
+      <h1>${isScan ? 'Notiz' : 'Transkript'}: ${titel.replace(/</g,'&lt;')}</h1>
+      <div class="meta">${datum}</div>
+      ${verlauf}
+      <script>setTimeout(()=>{ window.print(); window.close(); }, 300);<\/script>
+    </body></html>`);
+  win.document.close();
+}
+
 // Analyse als MD exportieren
 async function exportAnalysisMd(type) {
   const session = getSession(currentSessionId);
@@ -3330,14 +3383,28 @@ function toggleTranscriptEdit() {
     });
     // v6.50: Löschen-Buttons einblenden
     document.querySelectorAll('#utterancesContainer .utt-delete-btn').forEach(b => b.style.display = 'inline-flex');
-    const btn = document.getElementById('transcriptEditBtn');
-    const saveBtn = document.getElementById('transcriptSaveBtn');
-    if (btn) { btn.textContent = 'Abbrechen'; btn.style.color = 'var(--muted)'; }
-    if (saveBtn) saveBtn.style.display = 'inline-flex';
+    // v6.51: getrennte Buttons für Edit / Speichern / Abbrechen
+    const editBtn   = document.getElementById('transcriptEditBtn');
+    const saveBtn   = document.getElementById('transcriptSaveBtn');
+    const cancelBtn = document.getElementById('transcriptCancelBtn');
+    if (editBtn)   editBtn.style.display   = 'none';
+    if (saveBtn)   saveBtn.style.display   = 'inline-flex';
+    if (cancelBtn) cancelBtn.style.display = 'inline-flex';
   } else {
-    // Abbrechen: unverändert neu rendern
+    // Abbrechen: unverändert neu rendern + Buttons zurücksetzen
     renderUtterances(session);
+    _resetTranscriptEditButtons();
   }
+}
+
+// v6.51: Hilfsfunktion — Transkript-Header-Buttons zurücksetzen
+function _resetTranscriptEditButtons() {
+  const editBtn   = document.getElementById('transcriptEditBtn');
+  const saveBtn   = document.getElementById('transcriptSaveBtn');
+  const cancelBtn = document.getElementById('transcriptCancelBtn');
+  if (editBtn)   editBtn.style.display   = '';
+  if (saveBtn)   saveBtn.style.display   = 'none';
+  if (cancelBtn) cancelBtn.style.display = 'none';
 }
 
 // ── Transkript-Editor: Speichern ─────────────────────────────────────────
@@ -3357,6 +3424,7 @@ async function saveTranscriptEdits() {
   await saveSessions();
   saveToArchive(session).catch(() => {});
   renderUtterances(session);
+  _resetTranscriptEditButtons(); // v6.51
   showToast(changed > 0 ? `${changed} Abschnitt${changed === 1 ? '' : 'e'} gespeichert ✓` : 'Keine Änderungen.', 'success');
 }
 

@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.50** (Stand: 09.08.2026)
+**v6.51** (Stand: 12.08.2026)
+- Transkript-Header umgebaut: „Bearbeiten"-Button direkt neben dem Wort „Transkript" (links). Im Bearbeitungsmodus: Speichern + Abbrechen ersetzen ihn (links). Export-Buttons MD + PDF rechts, im `insights-export-btn`-Stil (border, hover). Neue Funktion `exportTranscriptPdf()` (claude.js): baut HTML mit H1-Überschrift = Sitzungsname + Datum, öffnet `window.open()` + `window.print()`. Neue Hilfsfunktion `_resetTranscriptEditButtons()` wird in `toggleTranscriptEdit()` und `saveTranscriptEdits()` aufgerufen.
+
+## v6.50 (Stand: 09.08.2026)
 - Feature: Transkript-Abschnitte löschen. Im Bearbeitungsmodus erscheint neben jedem Utterance ein Papierkorb-Icon (`utt-delete-btn`, `display:none` im Normal-View). Neue Funktion `deleteUtterance(idx)` (claude.js): ruft `_applyTextareaEdits(session)` → `splice(idx,1)` → `saveSessions()` → `renderUtterances()` → `toggleTranscriptEdit()`. Kein Undo. Funktioniert für normale Sitzungen (Sprecher-Name-Zeile) und Scan-Import (Seite-N-Zeile).
 
 ## v6.49 (Stand: 09.08.2026)

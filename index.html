@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Distill Voice" />
   <meta name="theme-color" content="#6c63ff" />
-  <link rel="stylesheet" href="css/styles.css?v=6.50" />
+  <link rel="stylesheet" href="css/styles.css?v=6.51" />
   <script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
@@ -97,7 +97,7 @@
         background:none; border:none; color:var(--muted); font-size:0.7rem;
         padding:0; cursor:pointer; letter-spacing:0.03em; white-space:nowrap;"
         onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">v6.50</button>
+        onmouseout="this.style.color='var(--muted)'">v6.51</button>
       <a href="help.html" target="_blank" title="Hilfe öffnen" style="
         display:inline-flex; align-items:center; justify-content:center;
         width:22px; height:22px; border-radius:50%;
@@ -1414,18 +1414,21 @@
             </div>
 
             <div class="sdc-section-label" style="display:flex;align-items:center;justify-content:space-between">
-              <span style="display:flex;align-items:center;gap:5px">
-                <i data-lucide="align-left" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i> <span id="sdcSectionTranskriptLabel">Transkript</span>
-              </span>
-              <span style="display:flex;align-items:center;gap:8px">
+              <span style="display:flex;align-items:center;gap:6px">
+                <i data-lucide="align-left" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none"></i>
+                <span id="sdcSectionTranskriptLabel">Transkript</span>
+                <button id="transcriptEditBtn" onclick="toggleTranscriptEdit()"
+                  style="background:none;border:none;color:var(--accent);font-size:0.75rem;font-weight:600;cursor:pointer;padding:0">Bearbeiten</button>
                 <button id="transcriptSaveBtn" onclick="saveTranscriptEdits()"
                   style="display:none;align-items:center;gap:4px;background:var(--accent);border:none;border-radius:7px;color:#fff;font-size:0.75rem;font-weight:600;padding:3px 10px;cursor:pointer">
                   <i data-lucide="check" style="width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none"></i> Speichern
                 </button>
-                <button onclick="exportTranscriptMd()"
-                  style="background:none;border:none;color:var(--accent);font-size:0.75rem;font-weight:600;cursor:pointer;padding:0" title="Als Markdown speichern">MD</button>
-                <button id="transcriptEditBtn" onclick="toggleTranscriptEdit()"
-                  style="background:none;border:none;color:var(--accent);font-size:0.75rem;font-weight:600;cursor:pointer;padding:0">Bearbeiten</button>
+                <button id="transcriptCancelBtn" onclick="toggleTranscriptEdit()"
+                  style="display:none;background:none;border:none;color:var(--muted);font-size:0.75rem;font-weight:600;cursor:pointer;padding:0">Abbrechen</button>
+              </span>
+              <span style="display:flex;align-items:center;gap:5px">
+                <button class="insights-export-btn" onclick="exportTranscriptMd()" title="Als Markdown speichern">MD</button>
+                <button class="insights-export-btn" onclick="exportTranscriptPdf()" title="Als PDF exportieren">PDF</button>
               </span>
             </div>
             <div style="margin-bottom:10px">
@@ -1838,6 +1841,18 @@
       <button onclick="closeChangelogModal()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1">×</button>
     </div>
     <div style="overflow-y:auto; flex:1; padding-right:4px">
+
+      <!-- ── v6.51 ── -->
+      <div class="cl-entry">
+        <div class="cl-header"><span class="cl-version">v6.51</span><span class="cl-date">12.08.2026</span></div>
+        <div class="cl-title">Transkript-Header: PDF-Export, Bearbeiten-Button links, Export-Buttons rechts</div>
+        <ul class="cl-list">
+          <li>Neuer PDF-Export für Transkript: exportTranscriptPdf() öffnet druckbares Fenster mit Sitzungsname als H1-Überschrift</li>
+          <li>Export-Buttons (MD, PDF) jetzt im Analyse-Stil (insights-export-btn: border, hover-Effekt) auf der rechten Seite des Headers</li>
+          <li>„Bearbeiten"-Button jetzt direkt neben dem Wort „Transkript" (links); Speichern + Abbrechen ersetzen ihn im Bearbeitungsmodus</li>
+          <li>Sitzungsname zwingend als Überschrift in beiden Transkript-Exporten (MD bereits vorhanden, PDF neu)</li>
+        </ul>
+      </div>
 
       <!-- ── v6.50 ── -->
       <div class="cl-entry">
@@ -5573,35 +5588,35 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/icons.js?v=6.50"></script>
-<script src="js/storage.js?v=6.50"></script>
-<script src="js/config.js?v=6.50"></script>
-<script src="js/auth.js?v=6.50"></script>
-<script src="js/drive.js?v=6.50"></script>
-<script src="js/sessions.js?v=6.50"></script>
-<script src="js/assemblyai.js?v=6.50"></script>
-<script src="js/claude.js?v=6.50"></script>
-<script src="js/ui.js?v=6.50"></script>
-<script src="js/tags.js?v=6.50"></script>
-<script src="js/notes.js?v=6.50"></script>
-<script src="js/photos.js?v=6.50"></script>
-<script src="js/persons.js?v=6.50"></script>
-<script src="js/audio.js?v=6.50"></script>
-<script src="js/recorder.js?v=6.50"></script>
-<script src="js/contacts.js?v=6.50"></script>
-<script src="js/app.js?v=6.50"></script>
+<script src="js/icons.js?v=6.51"></script>
+<script src="js/storage.js?v=6.51"></script>
+<script src="js/config.js?v=6.51"></script>
+<script src="js/auth.js?v=6.51"></script>
+<script src="js/drive.js?v=6.51"></script>
+<script src="js/sessions.js?v=6.51"></script>
+<script src="js/assemblyai.js?v=6.51"></script>
+<script src="js/claude.js?v=6.51"></script>
+<script src="js/ui.js?v=6.51"></script>
+<script src="js/tags.js?v=6.51"></script>
+<script src="js/notes.js?v=6.51"></script>
+<script src="js/photos.js?v=6.51"></script>
+<script src="js/persons.js?v=6.51"></script>
+<script src="js/audio.js?v=6.51"></script>
+<script src="js/recorder.js?v=6.51"></script>
+<script src="js/contacts.js?v=6.51"></script>
+<script src="js/app.js?v=6.51"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>if (window.lucide) lucide.createIcons();</script>
 <script>document.addEventListener('DOMContentLoaded', () => { if (typeof initHighlightSelection === 'function') initHighlightSelection(); });</script>
-<script src="js/features.js?v=6.50"></script>
-<script src="js/search.js?v=6.50"></script>
-<script src="js/embeddings.js?v=6.50"></script>
-<script src="js/calendar.js?v=6.50"></script>
-<script src="js/templateLibrary.js?v=6.50"></script>
-<script src="js/prompts.js?v=6.50"></script>
-<script src="js/projects.js?v=6.50"></script>
-<script src="js/import.js?v=6.50"></script>
-<script src="js/scan.js?v=6.50"></script>
+<script src="js/features.js?v=6.51"></script>
+<script src="js/search.js?v=6.51"></script>
+<script src="js/embeddings.js?v=6.51"></script>
+<script src="js/calendar.js?v=6.51"></script>
+<script src="js/templateLibrary.js?v=6.51"></script>
+<script src="js/prompts.js?v=6.51"></script>
+<script src="js/projects.js?v=6.51"></script>
+<script src="js/import.js?v=6.51"></script>
+<script src="js/scan.js?v=6.51"></script>
 <!-- PDF.js für PDF-Import (v4.91) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
