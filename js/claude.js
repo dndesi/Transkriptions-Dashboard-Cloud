@@ -3578,14 +3578,31 @@ function filterTranscript(query) {
 function renameSpeaker(speaker, newName) {
   const s = getSession();
   if (!s || !newName.trim()) return;
+  const name = newName.trim();
+
+  // Alten Namen dieses Sprechers merken, bevor er überschrieben wird (für Personen-Abgleich unten)
+  let oldName = (s.speakers && s.speakers.length > 0)
+    ? s.speakers.find(p => p.id === speaker)?.name
+    : (speaker === 'B' ? s.speakerB : null);
+
   // Multi-Sprecher (Samsung Import): speakers-Array aktualisieren
   if (s.speakers && s.speakers.length > 0) {
     const sp = s.speakers.find(p => p.id === speaker);
-    if (sp) sp.name = newName.trim();
+    if (sp) sp.name = name;
   }
   // Immer auch speakerA/speakerB für Kompatibilität pflegen
-  if (speaker === 'A') s.speakerA = newName.trim();
-  else if (speaker === 'B') s.speakerB = newName.trim();
+  if (speaker === 'A') s.speakerA = name;
+  else if (speaker === 'B') s.speakerB = name;
+  // v6.55/56: Umbenannter Sprecher (außer Daniel selbst / "kein zweiter Sprecher") automatisch
+  // als "Beteiligte Person" pflegen. Bei Korrektur (z.B. Tippfehler) ersetzt der neue Name
+  // den alten, statt ihn zu verdoppeln.
+  if (speaker !== 'A' && !_isNoSecondSpeaker(name) && !_isMyName(name)) {
+    let list = (s.persons || []).filter(p => !(oldName && p.toLowerCase().trim() === oldName.toLowerCase().trim()));
+    if (!list.some(p => p.toLowerCase().trim() === name.toLowerCase())) list = [...list, name];
+    s.persons = list;
+    const personsEl = document.getElementById('editSessionPersons');
+    if (personsEl) personsEl.value = s.persons.join(', ');
+  }
   saveSessions();
   saveToArchive(s);
   // Pflichtpfad: Required-Highlight entfernen, Status aktualisieren
@@ -3620,19 +3637,27 @@ function renderExtraSpeakerFields(session) {
   }
 
   const colors = { C: 'var(--speaker-c)', D: 'var(--speaker-d)' };
-  container.innerHTML = extra.map(sp => `
+  container.innerHTML = extra.map(sp => {
+    const acId = `speakerExtraAutocomplete_${sp.id}`;
+    return `
     <div class="speaker-name-field" style="margin-bottom:8px">
       <span class="speaker-name-dot" style="background:${colors[sp.id] || 'var(--speaker-extra)'}"></span>
-      <input
-        class="speaker-name-input"
-        placeholder="Sprecher ${sp.id}"
-        value="${(sp.name || sp.label || '').replace(/"/g, '&quot;')}"
-        onchange="renameSpeaker('${sp.id}', this.value)"
-        onkeydown="if(event.key==='Enter') this.blur()"
-        style="border-color:${colors[sp.id] || 'var(--speaker-extra)'}22"
-      />
-    </div>
-  `).join('');
+      <div style="position:relative; flex:1; min-width:80px">
+        <input
+          class="speaker-name-input"
+          placeholder="Sprecher ${sp.id}"
+          value="${(sp.name || sp.label || '').replace(/"/g, '&quot;')}"
+          style="width:100%; border-color:${colors[sp.id] || 'var(--speaker-extra)'}22"
+          oninput="showPersonsAutocomplete(this, '${acId}')"
+          onkeydown="handlePersonsKey(event, '${acId}'); if(event.key==='Enter') this.blur()"
+          onchange="renameSpeaker('${sp.id}', this.value)"
+          onblur="setTimeout(()=>hidePersonsAutocomplete('${acId}'),200)"
+          autocomplete="off"
+        />
+        <div id="${acId}" class="persons-autocomplete" style="display:none"></div>
+      </div>
+    </div>`;
+  }).join('');
   container.style.display = '';
 }
 

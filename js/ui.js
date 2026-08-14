@@ -546,7 +546,7 @@ function renderArchView() {
         <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:4px; display:flex;align-items:center;gap:8px">${icon('layers',18)} Systemarchitektur</h2>
         <p style="font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0">
           Alle Komponenten laufen vollständig im Browser – kein Backend-Server. API-Keys bleiben lokal.
-          <span style="color:var(--accent); font-weight:600">Version 6.54</span> · 26 JS-Module
+          <span style="color:var(--accent); font-weight:600">Version 6.55</span> · 26 JS-Module
         </p>
       </div>
       <button onclick="exportArchPdf()" class="btn btn-ghost" style="font-size:0.8rem;padding:6px 14px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0">
@@ -612,7 +612,7 @@ function renderArchView() {
       ${flowCard('search.js', 'Globale Suche', 'Instant-Textsuche über alle Felder · Claude-Semantiksuche (API, sendet Transkripte) · Lokale Semantiksuche via embeddings.js (runLocalSemanticSearch(), komplett offline)', '#6ee7b7')}
       ${flowCard('embeddings.js', 'Lokale Semantiksuche', 'Transformers.js (Xenova/paraphrase-multilingual-MiniLM-L12-v2, ~118MB, Browser-Download). embGetOrCompute() berechnet Vektor einmalig, IDB-Cache (emb_+id). embSearch() per Cosinus-Ähnlichkeit, Top-N-Ergebnisse mit Relevanz-Badge. embInvalidate() löscht gecachten Vektor. Kein API-Key, komplett lokal.', '#22d3ee')}
       ${flowCard('calendar.js', 'Kalender & Mail', 'Termine via Claude extrahieren → Google Calendar API · E-Mail-Entwürfe → Gmail API', '#f472b6')}
-      ${flowCard('persons.js', 'Personen-Profile', 'Profil-Synthese, Selbst-Synthese, Beziehungskontext, Kosten-Übersicht, Ausblenden/Einblenden (toggleHiddenPersons/unhidePerson) · v6.54: Liste „Sitzungen mit unklarer Sprecherzuordnung" (getSessionsUnclearSpeakers)', '#f472b6')}
+      ${flowCard('persons.js', 'Personen-Profile', 'Profil-Synthese, Selbst-Synthese, Beziehungskontext, Kosten-Übersicht, Ausblenden/Einblenden (toggleHiddenPersons/unhidePerson) · v6.54: Liste „Sitzungen mit unklarer Sprecherzuordnung" (getSessionsUnclearSpeakers) · v6.55: Personen aus benannten Sprechern nachtragen (syncPersonsFromSpeakers) + Namensvarianten-Merge über _personKey() (z.B. "Jan"/"Jan R.")', '#f472b6')}
       ${flowCard('ui.js', 'UI-Rendering', 'Session-Browser, Zeitstrahl, Personen, Kosten, Systemarchitektur · v4.74: switchSessionTab(), toggleSessionSidebar(), setSidebarMode() · v4.82: switchAnalysenSubtab(), _analysenVisibleBlocks[] – echtes Tab-Verhalten in Analysen · v4.80: sdc-flap als Desktop-Stil auch auf Mobile (kein FAB)', '#c084fc')}
       ${flowCard('audio.js', 'Audio & Zeitstrahl', 'Audio-Player, Sync zu Utterances, Zeitstrahl-Ansicht nach Monat gruppiert', '#34d399')}
       ${flowCard('recorder.js', 'Audio-Aufnahme', 'MediaRecorder API, Mikrofon-Zugriff, WebM-Aufnahme direkt im Browser', '#34d399')}

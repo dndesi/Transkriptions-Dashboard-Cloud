@@ -709,11 +709,13 @@ function deletePerson(name) {
   renderPersonsView();
 }
 function deletePersonPermanently(name) {
-  const affected = sessions.filter(s => (s.persons||[]).some(p => p.toLowerCase().trim() === name.toLowerCase().trim()));
+  // v6.55: über Merge-Schlüssel statt exaktem Namen – erfasst auch Namensvarianten (z.B. "Jan" bei "Jan R.")
+  const key = _personKey(name);
+  const affected = sessions.filter(s => (s.persons||[]).some(p => _personKey(p) === key));
   if (!confirm(`"${name}" endgültig löschen?\n\n${affected.length} Sitzung(en) sind betroffen. Der Name wird aus allen Sitzungsdaten entfernt.\n\nDies kann NICHT rückgängig gemacht werden.`)) return;
   sessions.forEach(s => {
-    if (s.persons?.some(p => p.toLowerCase().trim() === name.toLowerCase().trim())) {
-      s.persons = s.persons.filter(p => p.toLowerCase().trim() !== name.toLowerCase().trim());
+    if (s.persons?.some(p => _personKey(p) === key)) {
+      s.persons = s.persons.filter(p => _personKey(p) !== key);
       saveToArchive(s).catch(() => {});
     }
   });

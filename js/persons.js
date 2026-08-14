@@ -1,23 +1,32 @@
 // PERSONEN-PROFILE
 // ═══════════════════════════════════════════════════
 
+// v6.55: Merge-Schlüssel für Namensvarianten derselben Person (z.B. "Jan" / "Jan R." → gleicher Schlüssel "jan")
+// Gleiche Heuristik wie in projects.js (_resolvePersonKey): erstes Wort, kleingeschrieben.
+function _personKey(name) {
+  return (name || '').trim().toLowerCase().split(/[\s(,]/)[0];
+}
+
 function getAllPersons() {
-  const hidden = getHiddenPersons().map(h => h.toLowerCase().trim());
+  const hidden = getHiddenPersons().map(h => _personKey(h));
   const map = {};
   sessions.forEach(s => {
     if (s.status !== 'done' && !s.utterances?.length) return;
+    const seenKeys = new Set(); // eine Sitzung nur einmal zählen, auch wenn mehrere Namensvarianten drinstehen
     (s.persons || []).forEach(p => {
-      const key = p.toLowerCase().trim();
+      const key = _personKey(p);
       if (!key || hidden.includes(key)) return;
       if (!map[key]) map[key] = { name: p, count: 0, lastDate: null, topics: [] };
-      map[key].count++;
-      if (!map[key].lastDate || s.date > map[key].lastDate) {
-        map[key].lastDate = s.date;
-        map[key].name = p;
+      // Längere Form gewinnt als Anzeigename (z.B. "Jan R." statt "Jan")
+      if (p.length > map[key].name.length) map[key].name = p;
+      if (!map[key].lastDate || s.date > map[key].lastDate) map[key].lastDate = s.date;
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key);
+        map[key].count++;
+        // Nur ⭐ markierte Themen ins Profil
+        const starred = (s.claudeTopics || []).filter(t => typeof t === 'object' && t.status === 'starred').map(t => t.text);
+        if (starred.length) map[key].topics.push(...starred);
       }
-      // Nur ⭐ markierte Themen ins Profil
-      const starred = (s.claudeTopics || []).filter(t => typeof t === 'object' && t.status === 'starred').map(t => t.text);
-      if (starred.length) map[key].topics.push(...starred);
     });
   });
   return Object.values(map).sort((a, b) => new Date(b.lastDate) - new Date(a.lastDate));
@@ -25,9 +34,11 @@ function getAllPersons() {
 
 function getPersonData(name) {
   const nameLower = name.toLowerCase().trim();
+  const key = _personKey(name);
+  // v6.55: Sitzungen über Namensvarianten (gleicher Merge-Schlüssel) finden, nicht nur exakten Namen
   const personSessions = sessions
     .filter(s => (s.status === 'done' || s.utterances?.length > 0) &&
-                 s.persons?.some(p => p.toLowerCase().trim() === nameLower))
+                 s.persons?.some(p => _personKey(p) === key))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const wishes = [], agreements = [], openTopics = [], workTasks = [], allTopics = [];
@@ -64,6 +75,12 @@ function getPersonData(name) {
 function _isMyName(name) {
   const myNames = new Set(['ich', 'daniel', (ownerName || '').toLowerCase().trim()].filter(Boolean));
   return myNames.has((name || '').toLowerCase().trim());
+}
+
+// v6.55: erkennt bewusst eingetragenes "kein zweiter Sprecher" (z.B. Sprecher B = "keinen")
+function _isNoSecondSpeaker(name) {
+  const none = new Set(['keinen', 'keiner', 'niemand', 'kein', 'none', '-', '0']);
+  return none.has((name || '').toLowerCase().trim());
 }
 
 function getMeinProfilData() {
@@ -127,9 +144,51 @@ function getSessionsUnclearSpeakers() {
               && s.source !== 'scan_import'
               && (
                    !s.speakerA || s.speakerA.trim().toLowerCase() === 'sprecher a'
-                || !s.speakerB || genericB.includes(s.speakerB.trim().toLowerCase())
+                || (!_isNoSecondSpeaker(s.speakerB) && (!s.speakerB || genericB.includes(s.speakerB.trim().toLowerCase())))
                  ))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+// v6.55: Für Sitzungen mit bereits eindeutigen Sprechernamen (nicht in getSessionsUnclearSpeakers)
+// den benannten Sprecher B (bzw. C/D bei Mehr-Personen-Aufnahmen) als "Beteiligte Person" nachtragen.
+// Ergänzt nur, überschreibt/löscht nie bestehende Einträge. "Sprecher = keinen" wird korrekt übersprungen.
+function syncPersonsFromSpeakers() {
+  const unclearIds = new Set(getSessionsUnclearSpeakers().map(s => s.id));
+  const candidates = sessions.filter(s =>
+       (s.status === 'done' || s.utterances?.length > 0)
+    && s.type !== 'gedanken'
+    && s.source !== 'scan_import'
+    && !unclearIds.has(s.id)
+  );
+
+  let changed = 0;
+  candidates.forEach(s => {
+    // v6.55: Merge-Schlüssel statt exaktem Namen – "Jan R." wird nicht doppelt ergänzt wenn "Jan" schon drinsteht
+    const have = new Set((s.persons || []).map(p => _personKey(p)));
+    const extra = (s.speakers || []).filter(sp => sp.id !== 'A' && sp.id !== 'B');
+    const toAdd = [];
+    [s.speakerB, ...extra.map(sp => sp.name || sp.label)].forEach(n => {
+      if (!n) return;
+      const key = _personKey(n);
+      if (!key || _isNoSecondSpeaker(n) || _isMyName(n) || have.has(key)) return;
+      toAdd.push(n.trim());
+      have.add(key);
+    });
+    if (toAdd.length) {
+      s.persons = [...(s.persons || []), ...toAdd];
+      saveToArchive(s).catch(() => {});
+      changed++;
+    }
+  });
+  if (changed) saveSessions();
+  return changed;
+}
+
+function runSyncPersonsFromSpeakers() {
+  if (!confirm('Beteiligte Personen aus bereits eindeutig benannten Sprechern nachtragen?\n\nBestehende Einträge bleiben erhalten, es wird nur ergänzt. Sitzungen mit noch unklaren Sprechernamen (Liste oben) werden dabei übersprungen – die zuerst korrigieren.')) return;
+  const changed = syncPersonsFromSpeakers();
+  showToast(changed ? `${changed} Sitzung(en) ergänzt ✓` : 'Nichts zu ergänzen – schon vollständig', changed ? 'success' : 'info');
+  renderPersonsView();
 }
 
 function renderPersonsView() {
@@ -160,6 +219,9 @@ function renderPersonsView() {
           ${showHidden ? 'Ausgeblendete verbergen' : `${hidden.length} ausgeblendet`}
         </button>` : ''}
         <span style="font-size:0.78rem; color:var(--muted)">${persons.length} Person${persons.length!==1?'en':''} + du</span>
+        <button onclick="runSyncPersonsFromSpeakers()" title="Einmalige Nachholung für bestehende Sitzungen – neue Sitzungen übernehmen Sprecher automatisch" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:0.78rem;color:var(--muted);cursor:pointer">
+          ${icon('refresh-cw',12,'margin-right:4px;vertical-align:middle')}Personen aus Sprechern nachtragen
+        </button>
       </div>
     </div>
     ${unclear.length ? `
@@ -709,7 +771,8 @@ function toggleHiddenPersons() {
 }
 
 function unhidePerson(name) {
-  const hidden = getHiddenPersons().filter(h => h.toLowerCase().trim() !== name.toLowerCase().trim());
+  const key = _personKey(name); // v6.55: Merge-Schlüssel statt exaktem Namen
+  const hidden = getHiddenPersons().filter(h => _personKey(h) !== key);
   localStorage.setItem('hiddenPersons', JSON.stringify(hidden));
   renderPersonsView();
   showToast(`"${name}" wieder eingeblendet`, 'ok');
