@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.51** (Stand: 12.08.2026)
+**v6.52** (Stand: 14.08.2026)
+- Fix: Sidenav-Button „Personen" (unter „Analyse") war seit der Umbenennung „Kontakte" → „Kontexte" per `style="display:none"` fest ausgeblendet, obwohl `js/persons.js` (Profile, Beziehungskontext, Kosten-Aufschlüsselung) weiterhin voll funktionsfähig war. Button in index.html wieder sichtbar gemacht. Zusätzlich behoben: doppeltes `id`-Attribut (`id="navPersons" id="headerPersonsBtn"`) auf demselben Button – der Browser nutzte nur die erste ID, wodurch `_setHeaderBtn()`/`_showOverlay()` (ui.js) das Element per `headerPersonsBtn` nicht fanden. Jetzt nur noch `id="headerPersonsBtn"`.
+
+## v6.51 (Stand: 12.08.2026)
 - Transkript-Header umgebaut: „Bearbeiten"-Button direkt neben dem Wort „Transkript" (links). Im Bearbeitungsmodus: Speichern + Abbrechen ersetzen ihn (links). Export-Buttons MD + PDF rechts, im `insights-export-btn`-Stil (border, hover). Neue Funktion `exportTranscriptPdf()` (claude.js): baut HTML mit H1-Überschrift = Sitzungsname + Datum, öffnet `window.open()` + `window.print()`. Neue Hilfsfunktion `_resetTranscriptEditButtons()` wird in `toggleTranscriptEdit()` und `saveTranscriptEdits()` aufgerufen.
 
 ## v6.50 (Stand: 09.08.2026)
