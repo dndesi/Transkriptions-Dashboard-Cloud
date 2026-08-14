@@ -59,8 +59,16 @@ function getPersonData(name) {
            lastContact: personSessions[0]?.date, firstContact: personSessions[personSessions.length-1]?.date };
 }
 
+// v6.54: "Mein Profil" nur noch aus Sitzungen, in denen Daniel tatsächlich Sprecher A ODER B ist
+// (Text-/Scan-Importe ohne ihn als Sprecher fielen vorher fälschlich mit rein)
+function _isMyName(name) {
+  const myNames = new Set(['ich', 'daniel', (ownerName || '').toLowerCase().trim()].filter(Boolean));
+  return myNames.has((name || '').toLowerCase().trim());
+}
+
 function getMeinProfilData() {
-  const done = sessions.filter(s => s.status === 'done' || s.utterances?.length > 0);
+  const done = sessions.filter(s => (s.status === 'done' || s.utterances?.length > 0)
+    && (s.type === 'gedanken' || _isMyName(s.speakerA) || _isMyName(s.speakerB)));
   done.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const myWishes = [], myCommitments = [], myTasks = [],
@@ -69,7 +77,8 @@ function getMeinProfilData() {
   done.forEach(s => {
     const dateStr = new Date(s.date).toLocaleDateString('de-DE');
     const meta    = { sessionDate: s.date, sessionLabel: s.label, dateStr, sessionType: s.type };
-    const meName  = (s.speakerA || ownerName || 'Ich').toLowerCase();
+    // meName: die Sprecherseite, die tatsächlich Daniel ist (A oder B) – Fallback wie bisher speakerA
+    const meName  = (_isMyName(s.speakerB) && !_isMyName(s.speakerA) ? s.speakerB : (s.speakerA || ownerName || 'Ich')).toLowerCase();
 
     // Eigene Wünsche: wishes wo person = speakerA / "Ich"
     (s.privateAnalysis?.wishes || []).forEach(w => {
@@ -108,12 +117,18 @@ function getMeinProfilData() {
   return { sessions: done, myWishes, myCommitments, myTasks, openTopics, keyThoughts, nextSteps, topTopics };
 }
 
-// v6.53: Sitzungen ohne Personen-Zuordnung (Gedanken-Sitzungen ausgenommen – gehören immer zu Daniel selbst)
-function getSessionsMissingPersons() {
+// v6.54: Sitzungen mit unklarer Sprecherzuordnung (Sprecher A/B noch auf Platzhalter, nie umbenannt)
+// Gedanken-Sitzungen (nur ein Sprecher, immer Daniel) und Scan-Import (keine Sprecher) sind ausgenommen.
+function getSessionsUnclearSpeakers() {
+  const genericB = ['gesprächspartner/in', 'kollege/kollegin', 'sprecher b', ''];
   return sessions
     .filter(s => (s.status === 'done' || s.utterances?.length > 0)
               && s.type !== 'gedanken'
-              && (!s.persons || s.persons.length === 0))
+              && s.source !== 'scan_import'
+              && (
+                   !s.speakerA || s.speakerA.trim().toLowerCase() === 'sprecher a'
+                || !s.speakerB || genericB.includes(s.speakerB.trim().toLowerCase())
+                 ))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
@@ -122,7 +137,7 @@ function renderPersonsView() {
   const persons = getAllPersons();
   const meine = getMeinProfilData();
   const meinTopics = meine.topTopics.slice(0,3).map(t=>t.topic);
-  const missing = getSessionsMissingPersons();
+  const unclear = getSessionsUnclearSpeakers();
 
   const meinCard = `
     <div class="person-card" onclick="renderMeinProfil()" style="
@@ -147,18 +162,19 @@ function renderPersonsView() {
         <span style="font-size:0.78rem; color:var(--muted)">${persons.length} Person${persons.length!==1?'en':''} + du</span>
       </div>
     </div>
-    ${missing.length ? `
+    ${unclear.length ? `
     <div style="margin-bottom:20px; padding:14px 16px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.25); border-radius:10px">
       <div style="font-size:0.8rem; font-weight:600; margin-bottom:8px; display:flex;align-items:center;gap:6px">
-        ${icon('alert-circle',13)} ${missing.length} Sitzung${missing.length!==1?'en':''} ohne Personen-Zuordnung
+        ${icon('alert-circle',13)} ${unclear.length} Sitzung${unclear.length!==1?'en':''} mit unklarer Sprecherzuordnung
       </div>
       <div style="display:flex; flex-direction:column; gap:2px">
-        ${missing.map(s => {
+        ${unclear.map(s => {
           const d = new Date(s.date).toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'});
           return `<div style="font-size:0.8rem; cursor:pointer; padding:4px 6px; border-radius:6px"
             onclick="showTranscript(sessions.find(x=>x.id==='${s.id}'))"
             onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background=''">
             <span style="color:var(--muted)">${d}</span> · ${escHtml(s.label)}
+            <span style="color:var(--muted)"> — A: ${escHtml(s.speakerA || '–')} · B: ${escHtml(s.speakerB || '–')}</span>
           </div>`;
         }).join('')}
       </div>

@@ -2,7 +2,11 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.53** (Stand: 14.08.2026)
+**v6.54** (Stand: 14.08.2026)
+- Korrektur zu v6.53: Die Liste in der Personen-Ansicht zeigte Sitzungen ohne "Beteiligte Personen"-Eintrag – nicht hilfreich, da Sprecher A/B meist schon klar sind. `getSessionsMissingPersons()` ersetzt durch `getSessionsUnclearSpeakers()` (persons.js): zeigt Sitzungen, bei denen `speakerA`/`speakerB` noch auf dem unbenannten Platzhalter stehen ("Sprecher A/B", "Gesprächspartner/in", "Kollege/Kollegin"). Gedanken-Sitzungen und Scan-Import ausgenommen (kein Sprecherkonzept). Zeigt pro Zeile zusätzlich die aktuellen Sprecher-A/B-Werte.
+- Bug behoben: "Mein Profil" zählte bisher ALLE abgeschlossenen Sitzungen unabhängig davon, ob Daniel tatsächlich Sprecher war (Text-/Share-Importe und Scan-Notizen liefen fälschlich mit rein). `getMeinProfilData()` filtert jetzt auf Sitzungen bei denen `speakerA` ODER `speakerB` "Ich"/"Daniel"/`ownerName` entspricht (oder Typ 'gedanken'). Neue Hilfsfunktion `_isMyName(name)`. Die `meName`-Ermittlung für Wünsche/Aufgaben-Zuordnung berücksichtigt jetzt auch den Fall, dass Daniel Sprecher B ist.
+
+## v6.53 (Stand: 14.08.2026)
 - Personen nachträglich zu Sitzungen zuordnen: Das `persons`-Feld einer Sitzung konnte bisher nur beim Hochladen (Schritt 2) gesetzt werden. Neu: editierbares Feld „Beteiligte Personen" im Transkript-Header (`#editSessionPersons`, neben den Sprecher-Feldern), speichert per `updateSessionPersons()` (claude.js) in `session.persons` + Drive. Personen-Ansicht (`renderPersonsView()`, persons.js) zeigt oben eine Liste aller abgeschlossenen Sitzungen ohne Personen-Zuordnung (`getSessionsMissingPersons()`) – Gedanken-Sitzungen (`type==='gedanken'`) sind ausgenommen, da sie immer zu Daniel selbst gehören. Die Autocomplete-Helfer in sessions.js (`showPersonsAutocomplete`, `selectPersonSuggestion`, `hidePersonsAutocomplete`, `handlePersonsKey`) nehmen jetzt eine optionale Element-ID entgegen, damit sie sowohl im Upload-Formular (`#sessionPersons`) als auch im Transkript-Header (`#editSessionPersons`) funktionieren.
 
 ## v6.52 (Stand: 14.08.2026)
