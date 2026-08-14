@@ -108,11 +108,21 @@ function getMeinProfilData() {
   return { sessions: done, myWishes, myCommitments, myTasks, openTopics, keyThoughts, nextSteps, topTopics };
 }
 
+// v6.53: Sitzungen ohne Personen-Zuordnung (Gedanken-Sitzungen ausgenommen – gehören immer zu Daniel selbst)
+function getSessionsMissingPersons() {
+  return sessions
+    .filter(s => (s.status === 'done' || s.utterances?.length > 0)
+              && s.type !== 'gedanken'
+              && (!s.persons || s.persons.length === 0))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
 function renderPersonsView() {
   const el = document.getElementById('personsView');
   const persons = getAllPersons();
   const meine = getMeinProfilData();
   const meinTopics = meine.topTopics.slice(0,3).map(t=>t.topic);
+  const missing = getSessionsMissingPersons();
 
   const meinCard = `
     <div class="person-card" onclick="renderMeinProfil()" style="
@@ -137,6 +147,23 @@ function renderPersonsView() {
         <span style="font-size:0.78rem; color:var(--muted)">${persons.length} Person${persons.length!==1?'en':''} + du</span>
       </div>
     </div>
+    ${missing.length ? `
+    <div style="margin-bottom:20px; padding:14px 16px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.25); border-radius:10px">
+      <div style="font-size:0.8rem; font-weight:600; margin-bottom:8px; display:flex;align-items:center;gap:6px">
+        ${icon('alert-circle',13)} ${missing.length} Sitzung${missing.length!==1?'en':''} ohne Personen-Zuordnung
+      </div>
+      <div style="display:flex; flex-direction:column; gap:2px">
+        ${missing.map(s => {
+          const d = new Date(s.date).toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'});
+          return `<div style="font-size:0.8rem; cursor:pointer; padding:4px 6px; border-radius:6px"
+            onclick="showTranscript(sessions.find(x=>x.id==='${s.id}'))"
+            onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background=''">
+            <span style="color:var(--muted)">${d}</span> · ${escHtml(s.label)}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
+
     <div class="person-grid">
       ${meinCard}
       ${persons.map(p => {

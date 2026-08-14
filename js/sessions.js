@@ -660,8 +660,8 @@ function getAllKnownPersonNames() {
   sessions.forEach(s => (s.persons || []).forEach(p => { if (p.trim()) names.add(p.trim()); }));
   return [...names].sort((a, b) => a.localeCompare(b, 'de'));
 }
-function showPersonsAutocomplete(input) {
-  const ac = document.getElementById('personsAutocomplete');
+function showPersonsAutocomplete(input, acId = 'personsAutocomplete') {
+  const ac = document.getElementById(acId);
   if (!ac) return;
   const val = input.value;
   const lastComma = val.lastIndexOf(',');
@@ -671,28 +671,31 @@ function showPersonsAutocomplete(input) {
   const matches = known.filter(n => n.toLowerCase().startsWith(token) && !val.split(',').map(p=>p.trim().toLowerCase()).includes(n.toLowerCase()));
   if (matches.length === 0) { ac.style.display = 'none'; return; }
   ac.innerHTML = matches.map(n =>
-    `<div class="persons-autocomplete-item" onmousedown="selectPersonSuggestion('${escHtml(n).replace(/'/g,"\\'")}')">
+    `<div class="persons-autocomplete-item" onmousedown="selectPersonSuggestion('${escHtml(n).replace(/'/g,"\\'")}', '${input.id}', '${acId}')">
       ${escHtml(n)}</div>`).join('');
   ac.style.display = 'block';
 }
-function selectPersonSuggestion(name) {
-  const input = document.getElementById('sessionPersons');
+// v6.53: acId ergänzt, damit dieselbe Autocomplete-Logik auch im Transkript-Header (editSessionPersons) läuft
+function selectPersonSuggestion(name, inputId = 'sessionPersons', acId = 'personsAutocomplete') {
+  const input = document.getElementById(inputId);
   if (!input) return;
   const val = input.value;
   const lastComma = val.lastIndexOf(',');
   input.value = (lastComma >= 0 ? val.slice(0, lastComma + 1) + ' ' : '') + name;
-  hidePersonsAutocomplete();
-  updateSpeakerSummary();
+  hidePersonsAutocomplete(acId);
+  // input-Event feuern statt Funktionsname hartzukodieren – oninput/onchange der jeweiligen Feldes übernimmt Folgeaktion
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true }));
   input.focus();
 }
-function hidePersonsAutocomplete() {
-  const ac = document.getElementById('personsAutocomplete');
+function hidePersonsAutocomplete(acId = 'personsAutocomplete') {
+  const ac = document.getElementById(acId);
   if (ac) ac.style.display = 'none';
 }
-function handlePersonsKey(e) {
-  const ac = document.getElementById('personsAutocomplete');
+function handlePersonsKey(e, acId = 'personsAutocomplete') {
+  const ac = document.getElementById(acId);
   if (!ac || ac.style.display === 'none') return;
-  if (e.key === 'Escape') { hidePersonsAutocomplete(); e.preventDefault(); }
+  if (e.key === 'Escape') { hidePersonsAutocomplete(acId); e.preventDefault(); }
 }
 
 // ── Personen löschen / verstecken ────────────────────────────────────────

@@ -1347,6 +1347,7 @@ function showTranscript(session) {
   // Namensfelder befüllen
   document.getElementById('editSpeakerA').value = session.speakerA || 'Sprecher A';
   document.getElementById('editSpeakerB').value = session.speakerB || 'Sprecher B';
+  document.getElementById('editSessionPersons').value = (session.persons || []).join(', ');
   renderExtraSpeakerFields(session);
   updateSpeakerStatus();
   updateAnalyseDropdown();
@@ -3594,6 +3595,16 @@ function renameSpeaker(speaker, newName) {
   // Nur Utterances neu rendern, nicht die Inputs (die hat der User gerade editiert)
   renderUtterances(s);
   showToast(`Sprecher ${speaker} → „${newName.trim()}" ✓`, 'success');
+}
+
+// v6.53: Beteiligte Personen im Transkript-Header nachträglich bearbeiten
+function updateSessionPersons(value) {
+  const s = getSession();
+  if (!s) return;
+  s.persons = value.split(',').map(p => p.trim()).filter(Boolean);
+  saveSessions();
+  saveToArchive(s);
+  showToast('Beteiligte Personen gespeichert ✓', 'success');
 }
 
 // Zeigt Umbenennung für Sprecher C, D, … (Samsung Multi-Speaker)

@@ -2,7 +2,10 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.52** (Stand: 14.08.2026)
+**v6.53** (Stand: 14.08.2026)
+- Personen nachträglich zu Sitzungen zuordnen: Das `persons`-Feld einer Sitzung konnte bisher nur beim Hochladen (Schritt 2) gesetzt werden. Neu: editierbares Feld „Beteiligte Personen" im Transkript-Header (`#editSessionPersons`, neben den Sprecher-Feldern), speichert per `updateSessionPersons()` (claude.js) in `session.persons` + Drive. Personen-Ansicht (`renderPersonsView()`, persons.js) zeigt oben eine Liste aller abgeschlossenen Sitzungen ohne Personen-Zuordnung (`getSessionsMissingPersons()`) – Gedanken-Sitzungen (`type==='gedanken'`) sind ausgenommen, da sie immer zu Daniel selbst gehören. Die Autocomplete-Helfer in sessions.js (`showPersonsAutocomplete`, `selectPersonSuggestion`, `hidePersonsAutocomplete`, `handlePersonsKey`) nehmen jetzt eine optionale Element-ID entgegen, damit sie sowohl im Upload-Formular (`#sessionPersons`) als auch im Transkript-Header (`#editSessionPersons`) funktionieren.
+
+## v6.52 (Stand: 14.08.2026)
 - Fix: Sidenav-Button „Personen" (unter „Analyse") war seit der Umbenennung „Kontakte" → „Kontexte" per `style="display:none"` fest ausgeblendet, obwohl `js/persons.js` (Profile, Beziehungskontext, Kosten-Aufschlüsselung) weiterhin voll funktionsfähig war. Button in index.html wieder sichtbar gemacht. Zusätzlich behoben: doppeltes `id`-Attribut (`id="navPersons" id="headerPersonsBtn"`) auf demselben Button – der Browser nutzte nur die erste ID, wodurch `_setHeaderBtn()`/`_showOverlay()` (ui.js) das Element per `headerPersonsBtn` nicht fanden. Jetzt nur noch `id="headerPersonsBtn"`.
 
 ## v6.51 (Stand: 12.08.2026)
