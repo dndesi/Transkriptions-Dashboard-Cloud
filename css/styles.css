@@ -1439,6 +1439,8 @@
       transition: border-color 0.2s, transform 0.15s;
     }
     .person-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .person-avatar, .person-avatar-placeholder { flex-shrink: 0; border-radius: 50%; object-fit: cover; }
+    .person-avatar-placeholder { display: flex; align-items: center; justify-content: center; background: rgba(108,99,255,0.15); color: var(--accent2); font-weight: 700; }
     .person-card-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
     .person-card-meta { font-size: 0.75rem; color: var(--muted); margin-bottom: 10px; }
     .person-card-topics { display: flex; flex-wrap: wrap; gap: 4px; }

@@ -202,6 +202,10 @@ async function saveSettingsToDrive() {
       personRelationships: (() => {
         try { return JSON.parse(localStorage.getItem('personRelationships') || '{}'); } catch { return {}; }
       })(),
+      // v6.58: Profilbilder (Data-URLs, per Person)
+      personPhotos: (() => {
+        try { return JSON.parse(localStorage.getItem('personPhotos') || '{}'); } catch { return {}; }
+      })(),
       contacts: (typeof contacts !== 'undefined') ? contacts : [],
     };
     const result = await driveUploadJSON(
@@ -325,6 +329,15 @@ async function loadSettingsFromDrive() {
       })();
       const merged = { ...data.personRelationships, ...local };
       localStorage.setItem('personRelationships', JSON.stringify(merged));
+    }
+
+    // ── Profilbilder: zusammenführen (lokal hat Priorität) – v6.58 ──
+    if (data.personPhotos && typeof data.personPhotos === 'object') {
+      const localPhotos = (() => {
+        try { return JSON.parse(localStorage.getItem('personPhotos') || '{}'); } catch { return {}; }
+      })();
+      const mergedPhotos = { ...data.personPhotos, ...localPhotos };
+      localStorage.setItem('personPhotos', JSON.stringify(mergedPhotos));
     }
 
     // ── Contacts (v5.42) ──────────────────────────────────────────────────────

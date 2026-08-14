@@ -94,6 +94,13 @@ function runInstantSearch(query) {
       hits.push({ field: 'Personen', snippet: personHits.join(', ') });
     }
 
+    // Sprecher (A/B/C/D) – unabhängig vom "Beteiligte Personen"-Feld
+    const speakerNames = [s.speakerA, s.speakerB, ...(s.speakers || []).map(sp => sp.name || sp.label)].filter(Boolean);
+    const speakerHits = speakerNames.filter(n => terms.some(t => n.toLowerCase().includes(t)));
+    if (speakerHits.length) {
+      hits.push({ field: 'Sprecher', snippet: [...new Set(speakerHits)].join(', ') });
+    }
+
     if (hits.length) results.push({ session: s, hits });
   });
 

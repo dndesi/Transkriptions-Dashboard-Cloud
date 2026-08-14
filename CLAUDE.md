@@ -2,7 +2,11 @@
 > Pflichtlektüre vor jeder Coding-Session. Bei jeder Versionsänderung aktualisieren.
 
 ## Aktuelle Version
-**v6.56** (Stand: 14.08.2026)
+**v6.57** (Stand: 14.08.2026)
+- Sitzungssuche filtert jetzt auch nach Sprechern: Sofortsuche (search.js: `runInstantSearch()`) durchsucht zusätzlich `speakerA`/`speakerB`/`speakers[]` (C/D) – unabhängig vom `persons`-Feld. Eigenes Treffer-Feld "Sprecher" in den Suchergebnissen.
+- Profilbilder für Personen: Klick auf den Avatar im Personen-Profil (`_avatarHtml()`, persons.js) öffnet `#personPhotoInput` (index.html), Bild wird per Canvas auf 200×200 zugeschnitten (Cover-Crop, JPEG q=0.85) und als rundes Vorschaubild auf Personen-Karte + Profil-Header angezeigt (ohne Foto: Initialen-Kreis). Speicherung in `localStorage.personPhotos` (Schlüssel = Anzeigename, gleiches Muster wie `personRelationships`), per `queueSettingsSave()`/`loadSettingsFromDrive()` mit Drive synchronisiert (`distill_settings.json`, lokal hat beim Merge Priorität). Neue Funktionen: `loadPersonPhotos()`, `savePersonPhoto()`, `getPersonPhoto()`, `removePersonPhoto()`, `triggerPersonPhotoUpload()`, `handlePersonPhotoSelected()`.
+
+## v6.56 (Stand: 14.08.2026)
 - Bug behoben: `syncPersonsFromSpeakers()` und `renameSpeaker()` prüften bisher nur Sprecher B/C/D auf externe Personen – Sprecher A wurde immer stillschweigend als "das ist Daniel" übersprungen. Bei Sitzungen, wo die externe Person tatsächlich Sprecher A ist (z.B. nach "Tauschen"/swapAllSpeakers()), wurde ihr Name dadurch nie ins `persons`-Feld übernommen. Beide Funktionen prüfen jetzt alle Sprecher-Slots (A, B, C, D) symmetrisch per `_isMyName()` statt fest anzunehmen, A sei immer Daniel.
 - Neue Platzhalter-Erkennung `_isUnclearSpeakerName(name)` ("Sprecher A/B/C/D", "Gesprächspartner/in", "Kollege/Kollegin", "?", "unbekannt", "unklar", leer) – verhindert dass z.B. ein Sprecher namens "?" fälschlich als Person übernommen wird. `getSessionsUnclearSpeakers()` prüft Sprecher A jetzt symmetrisch zu B (vorher nur der Literal-Platzhalter "sprecher a"). `syncPersonsFromSpeakers()` schließt Platzhalter auch bei C/D aus, die von `getSessionsUnclearSpeakers()` nicht geprüft werden.
 

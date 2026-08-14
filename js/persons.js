@@ -1,6 +1,72 @@
 // PERSONEN-PROFILE
 // ═══════════════════════════════════════════════════
 
+// ── Profilbilder (v6.58) ────────────────────────────────────────────────
+// Gleiches Muster wie loadRelationships/saveRelationship (claude.js): localStorage,
+// per Drive-Settings synchronisiert. Schlüssel = Anzeigename der Person (wie bei Beziehungskontext).
+function loadPersonPhotos() {
+  try { return JSON.parse(localStorage.getItem('personPhotos') || '{}'); } catch { return {}; }
+}
+function savePersonPhoto(name, dataUrl) {
+  const photos = loadPersonPhotos();
+  if (dataUrl) photos[name] = dataUrl; else delete photos[name];
+  localStorage.setItem('personPhotos', JSON.stringify(photos));
+  if (typeof queueSettingsSave === 'function') queueSettingsSave();
+}
+function getPersonPhoto(name) {
+  return loadPersonPhotos()[name] || '';
+}
+function removePersonPhoto(name) {
+  if (!confirm(`Profilbild von "${name}" entfernen?`)) return;
+  savePersonPhoto(name, '');
+  renderPersonProfile(name);
+}
+
+let _personPhotoTargetName = null;
+function triggerPersonPhotoUpload(name) {
+  _personPhotoTargetName = name;
+  document.getElementById('personPhotoInput')?.click();
+}
+// Bild verkleinern/quadratisch zuschneiden (Cover-Crop, 200×200) bevor es in localStorage landet
+function handlePersonPhotoSelected(event) {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file || !_personPhotoTargetName) return;
+  const targetName = _personPhotoTargetName;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const size = 200;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const scale = Math.max(size / img.width, size / img.height);
+      const w = img.width * scale, h = img.height * scale;
+      ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+      savePersonPhoto(targetName, canvas.toDataURL('image/jpeg', 0.85));
+      if (typeof renderPersonProfile === 'function') renderPersonProfile(targetName);
+      showToast('Profilbild gespeichert ✓', 'success');
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// Rundes Avatar-Bild oder Initialen-Placeholder, für Karte + Profil-Header
+function _avatarHtml(name, size, clickable) {
+  const photo = getPersonPhoto(name);
+  const cursorStyle = clickable ? 'cursor:pointer;' : '';
+  const clickAttr = clickable
+    ? ` onclick="event.stopPropagation(); triggerPersonPhotoUpload('${escHtml(name).replace(/'/g,"\\'")}')" title="Profilbild ändern"`
+    : '';
+  if (photo) {
+    return `<img src="${photo}" class="person-avatar" style="width:${size}px;height:${size}px;${cursorStyle}"${clickAttr} />`;
+  }
+  const initial = escHtml((name || '?').trim().charAt(0).toUpperCase());
+  return `<div class="person-avatar-placeholder" style="width:${size}px;height:${size}px;font-size:${Math.round(size*0.42)}px"${clickAttr}>${initial}</div>`;
+}
+
 // v6.55: Merge-Schlüssel für Namensvarianten derselben Person (z.B. "Jan" / "Jan R." → gleicher Schlüssel "jan")
 // Gleiche Heuristik wie in projects.js (_resolvePersonKey): erstes Wort, kleingeschrieben.
 function _personKey(name) {
@@ -262,7 +328,10 @@ function renderPersonsView() {
         const top3 = Object.entries(topicCount).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t])=>t);
         const lastDate = p.lastDate ? new Date(p.lastDate).toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'}) : '–';
         return `<div class="person-card" onclick="renderPersonProfile('${escHtml(p.name).replace(/'/g,"\\'")}')">
-          <div class="person-card-name">${escHtml(p.name)}</div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px">
+            ${_avatarHtml(p.name, 40, false)}
+            <div class="person-card-name" style="margin-bottom:0">${escHtml(p.name)}</div>
+          </div>
           <div class="person-card-meta">${p.count} Gespräch${p.count!==1?'e':''} · zuletzt ${lastDate}</div>
           <div class="person-card-topics">${top3.map(t=>`<span class="person-topic-chip">${escHtml(t)}</span>`).join('')}</div>
         </div>`;
@@ -432,7 +501,12 @@ function renderPersonProfile(name) {
     <button class="profile-back" onclick="renderPersonsView()">← Alle Personen</button>
 
     <div class="profile-header">
-      <div style="flex:1; min-width:0">
+      <div style="display:flex; align-items:flex-start; gap:14px; flex:1; min-width:0">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex-shrink:0">
+          ${_avatarHtml(name, 64, true)}
+          ${getPersonPhoto(name) ? `<button onclick="removePersonPhoto('${escHtml(name).replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--muted);font-size:0.68rem;cursor:pointer;padding:0">entfernen</button>` : ''}
+        </div>
+        <div style="flex:1; min-width:0">
         <div class="profile-name">${escHtml(name)}</div>
         <div class="profile-stats">
           ${data.sessions.length} Gespräch${data.sessions.length!==1?'e':''}
@@ -448,6 +522,7 @@ function renderPersonProfile(name) {
             onfocus="this.style.borderColor='var(--accent)'"
             onblur="this.style.borderColor='var(--border)'; saveRelationship('${escHtml(name).replace(/'/g,"\\'")}', this.value)"
             onkeydown="if(event.key==='Enter') this.blur()" />
+        </div>
         </div>
       </div>
       <div style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap">
