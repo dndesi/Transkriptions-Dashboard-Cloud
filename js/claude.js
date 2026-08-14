@@ -3583,7 +3583,7 @@ function renameSpeaker(speaker, newName) {
   // Alten Namen dieses Sprechers merken, bevor er überschrieben wird (für Personen-Abgleich unten)
   let oldName = (s.speakers && s.speakers.length > 0)
     ? s.speakers.find(p => p.id === speaker)?.name
-    : (speaker === 'B' ? s.speakerB : null);
+    : (speaker === 'A' ? s.speakerA : speaker === 'B' ? s.speakerB : null);
 
   // Multi-Sprecher (Samsung Import): speakers-Array aktualisieren
   if (s.speakers && s.speakers.length > 0) {
@@ -3593,10 +3593,11 @@ function renameSpeaker(speaker, newName) {
   // Immer auch speakerA/speakerB für Kompatibilität pflegen
   if (speaker === 'A') s.speakerA = name;
   else if (speaker === 'B') s.speakerB = name;
-  // v6.55/56: Umbenannter Sprecher (außer Daniel selbst / "kein zweiter Sprecher") automatisch
-  // als "Beteiligte Person" pflegen. Bei Korrektur (z.B. Tippfehler) ersetzt der neue Name
-  // den alten, statt ihn zu verdoppeln.
-  if (speaker !== 'A' && !_isNoSecondSpeaker(name) && !_isMyName(name)) {
+  // v6.55/56: Umbenannter Sprecher automatisch als "Beteiligte Person" pflegen – unabhängig davon
+  // ob es Slot A, B, C oder D ist (bei manchen Sitzungen ist Daniel Sprecher A statt B, z.B. nach
+  // swapAllSpeakers()). Ausgenommen: Daniel selbst und "kein zweiter Sprecher". Bei Korrektur
+  // (z.B. Tippfehler) ersetzt der neue Name den alten, statt ihn zu verdoppeln.
+  if (!_isNoSecondSpeaker(name) && !_isUnclearSpeakerName(name) && !_isMyName(name)) {
     let list = (s.persons || []).filter(p => !(oldName && p.toLowerCase().trim() === oldName.toLowerCase().trim()));
     if (!list.some(p => p.toLowerCase().trim() === name.toLowerCase())) list = [...list, name];
     s.persons = list;

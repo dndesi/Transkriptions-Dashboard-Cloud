@@ -83,6 +83,16 @@ function _isNoSecondSpeaker(name) {
   return none.has((name || '').toLowerCase().trim());
 }
 
+// v6.56: Platzhalter-/unklare Sprechernamen – weder "kein Sprecher" noch ein echter Name.
+// Gilt symmetrisch für jeden Sprecher-Slot (A, B, C, D), nicht nur B.
+function _isUnclearSpeakerName(name) {
+  const placeholders = new Set([
+    'sprecher a', 'sprecher b', 'sprecher c', 'sprecher d',
+    'gesprächspartner/in', 'kollege/kollegin', '?', 'unbekannt', 'unklar', ''
+  ]);
+  return placeholders.has((name || '').trim().toLowerCase());
+}
+
 function getMeinProfilData() {
   const done = sessions.filter(s => (s.status === 'done' || s.utterances?.length > 0)
     && (s.type === 'gedanken' || _isMyName(s.speakerA) || _isMyName(s.speakerB)));
@@ -137,21 +147,22 @@ function getMeinProfilData() {
 // v6.54: Sitzungen mit unklarer Sprecherzuordnung (Sprecher A/B noch auf Platzhalter, nie umbenannt)
 // Gedanken-Sitzungen (nur ein Sprecher, immer Daniel) und Scan-Import (keine Sprecher) sind ausgenommen.
 function getSessionsUnclearSpeakers() {
-  const genericB = ['gesprächspartner/in', 'kollege/kollegin', 'sprecher b', ''];
   return sessions
     .filter(s => (s.status === 'done' || s.utterances?.length > 0)
               && s.type !== 'gedanken'
               && s.source !== 'scan_import'
               && (
-                   !s.speakerA || s.speakerA.trim().toLowerCase() === 'sprecher a'
-                || (!_isNoSecondSpeaker(s.speakerB) && (!s.speakerB || genericB.includes(s.speakerB.trim().toLowerCase())))
+                   _isUnclearSpeakerName(s.speakerA)
+                || (!_isNoSecondSpeaker(s.speakerB) && _isUnclearSpeakerName(s.speakerB))
                  ))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
 // v6.55: Für Sitzungen mit bereits eindeutigen Sprechernamen (nicht in getSessionsUnclearSpeakers)
-// den benannten Sprecher B (bzw. C/D bei Mehr-Personen-Aufnahmen) als "Beteiligte Person" nachtragen.
-// Ergänzt nur, überschreibt/löscht nie bestehende Einträge. "Sprecher = keinen" wird korrekt übersprungen.
+// die externen Sprecher als "Beteiligte Person" nachtragen. Ergänzt nur, überschreibt/löscht nie
+// bestehende Einträge. "Sprecher = keinen" wird korrekt übersprungen.
+// v6.56: Prüft ALLE Sprecher-Slots (A, B, C, D) statt nur B – bei manchen Sitzungen ist Daniel
+// Sprecher A und die externe Person Sprecher B (z.B. nach swapAllSpeakers()), das wurde vorher übersehen.
 function syncPersonsFromSpeakers() {
   const unclearIds = new Set(getSessionsUnclearSpeakers().map(s => s.id));
   const candidates = sessions.filter(s =>
@@ -163,14 +174,15 @@ function syncPersonsFromSpeakers() {
 
   let changed = 0;
   candidates.forEach(s => {
-    // v6.55: Merge-Schlüssel statt exaktem Namen – "Jan R." wird nicht doppelt ergänzt wenn "Jan" schon drinsteht
+    // Merge-Schlüssel statt exaktem Namen – "Jan R." wird nicht doppelt ergänzt wenn "Jan" schon drinsteht
     const have = new Set((s.persons || []).map(p => _personKey(p)));
     const extra = (s.speakers || []).filter(sp => sp.id !== 'A' && sp.id !== 'B');
     const toAdd = [];
-    [s.speakerB, ...extra.map(sp => sp.name || sp.label)].forEach(n => {
+    [s.speakerA, s.speakerB, ...extra.map(sp => sp.name || sp.label)].forEach(n => {
       if (!n) return;
       const key = _personKey(n);
-      if (!key || _isNoSecondSpeaker(n) || _isMyName(n) || have.has(key)) return;
+      // v6.56: auch bei C/D (von getSessionsUnclearSpeakers nicht geprüft) Platzhalter wie "?" ausschließen
+      if (!key || _isNoSecondSpeaker(n) || _isUnclearSpeakerName(n) || _isMyName(n) || have.has(key)) return;
       toAdd.push(n.trim());
       have.add(key);
     });
